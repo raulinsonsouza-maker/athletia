@@ -1,0 +1,450 @@
+[
+  {
+    "id": "abdominal-bicicleta",
+    "nome": "Abdominal Bicicleta",
+    "antes": "Exercício para desenvolvimento dos músculos abdominais e core. Trabalha a estabilização e flexão do tronco, promovendo força funcional e definição. Essencial para postura e prevenção de lesões na coluna.",
+    "depois": "Abdominais e core.",
+    "tamanhoAntes": 203,
+    "tamanhoDepois": 18
+  },
+  {
+    "id": "abdominal-cruzado",
+    "nome": "Abdominal Cruzado",
+    "antes": "Exercício para desenvolvimento dos músculos abdominais e core. Trabalha a estabilização e flexão do tronco, promovendo força funcional e definição. Essencial para postura e prevenção de lesões na coluna.",
+    "depois": "Abdominais e core.",
+    "tamanhoAntes": 203,
+    "tamanhoDepois": 18
+  },
+  {
+    "id": "abdominal-infra",
+    "nome": "Abdominal Infra",
+    "antes": "Exercício para desenvolvimento dos músculos abdominais e core. Trabalha a estabilização e flexão do tronco, promovendo força funcional e definição. Essencial para postura e prevenção de lesões na coluna.",
+    "depois": "Abdominais e core.",
+    "tamanhoAntes": 203,
+    "tamanhoDepois": 18
+  },
+  {
+    "id": "abdominal-lateral",
+    "nome": "Abdominal Lateral",
+    "antes": "Exercício para desenvolvimento dos músculos abdominais e core. Trabalha a estabilização e flexão do tronco, promovendo força funcional e definição. Essencial para postura e prevenção de lesões na coluna.",
+    "depois": "Abdominais e core.",
+    "tamanhoAntes": 203,
+    "tamanhoDepois": 18
+  },
+  {
+    "id": "abdominal",
+    "nome": "Abdominal Reto",
+    "antes": "Exercício para desenvolvimento dos músculos abdominais e core. Trabalha a estabilização e flexão do tronco, promovendo força funcional e definição. Essencial para postura e prevenção de lesões na coluna.",
+    "depois": "Abdominais e core.",
+    "tamanhoAntes": 203,
+    "tamanhoDepois": 18
+  },
+  {
+    "id": "afundo",
+    "nome": "Afundo",
+    "antes": "Exercício para desenvolvimento dos músculos quadríceps (frente da coxa). Trabalha a extensão do joelho, promovendo hipertrofia e força das pernas. Fundamental para estabilidade e potência das pernas. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Quadríceps (frente da coxa).",
+    "tamanhoAntes": 300,
+    "tamanhoDepois": 28
+  },
+  {
+    "id": "agachamento-hack",
+    "nome": "Agachamento Hack",
+    "antes": "Exercício para desenvolvimento dos músculos quadríceps (frente da coxa). Trabalha a extensão do joelho, promovendo hipertrofia e força das pernas. Fundamental para estabilidade e potência das pernas. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Quadríceps (frente da coxa).",
+    "tamanhoAntes": 296,
+    "tamanhoDepois": 28
+  },
+  {
+    "id": "agachamento",
+    "nome": "Agachamento Livre",
+    "antes": "Exercício para desenvolvimento dos músculos quadríceps (frente da coxa). Trabalha a extensão do joelho, promovendo hipertrofia e força das pernas. Fundamental para estabilidade e potência das pernas. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Quadríceps (frente da coxa).",
+    "tamanhoAntes": 272,
+    "tamanhoDepois": 28
+  },
+  {
+    "id": "4f16d6dd-2b8a-4ee8-9aeb-2a1752d6e457",
+    "nome": "Alongamento Geral",
+    "antes": "Exercício de alongamento e flexibilidade. Promove aumento da amplitude de movimento, melhora da mobilidade articular e prevenção de lesões. Essencial para recuperação e manutenção da saúde musculoesquelética.",
+    "depois": "Alongamento e flexibilidade. Promove aumento da amplitude de movimento, melhora da mobilidade articular e prevenção de lesões. Essencial para recuperação e manutenção da saúde musculoesquelética.",
+    "tamanhoAntes": 208,
+    "tamanhoDepois": 195
+  },
+  {
+    "id": "barra-fixa",
+    "nome": "Barra Fixa",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 282,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "4e152e53-3441-4838-b229-292c2e0b4f3d",
+    "nome": "Bicicleta Ergométrica",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico. Promove queima de gordura, melhora da capacidade cardiorrespiratória e resistência. Essencial para saúde cardiovascular e emagrecimento.",
+    "depois": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "tamanhoAntes": 202,
+    "tamanhoDepois": 65
+  },
+  {
+    "id": "cadeira-extensora",
+    "nome": "Cadeira Extensora",
+    "antes": "Exercício para desenvolvimento dos músculos quadríceps (frente da coxa). Trabalha a extensão do joelho, promovendo hipertrofia e força das pernas. Fundamental para estabilidade e potência das pernas. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Quadríceps (frente da coxa).",
+    "tamanhoAntes": 296,
+    "tamanhoDepois": 28
+  },
+  {
+    "id": "crucifixo",
+    "nome": "Crucifixo",
+    "antes": "Exercício para desenvolvimento dos músculos peitorais. Trabalha principalmente a porção do peito indicada pela variação do exercício, promovendo hipertrofia e força através de movimento de adução horizontal do ombro. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Peitorais.",
+    "tamanhoAntes": 317,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "crucifixo-halteres",
+    "nome": "Crucifixo com Halteres",
+    "antes": "Exercício isolado para peitoral. Funciona melhor com pegada neutra (palmas voltadas para dentro). Quanto mais baixo descerem, maior alongamento, mas maior risco de lesão.",
+    "depois": "Peitoral. Funciona melhor com pegada neutra (palmas voltadas para dentro). Quanto mais baixo descerem, maior alongamento, mas maior risco de lesão.",
+    "tamanhoAntes": 170,
+    "tamanhoDepois": 147
+  },
+  {
+    "id": "crucifixo-declinado-halteres",
+    "nome": "Crucifixo Declinado com Halteres",
+    "antes": "Exercício isolado para peitoral inferior. Quanto mais descerem os halteres, maior alongamento, mas maior probabilidade de lesão.",
+    "depois": "Peitoral inferior. Quanto mais descerem os halteres, maior alongamento, mas maior probabilidade de lesão.",
+    "tamanhoAntes": 128,
+    "tamanhoDepois": 105
+  },
+  {
+    "id": "crucifixo-inclinado-halteres",
+    "nome": "Crucifixo Inclinado com Halteres",
+    "antes": "Exercício isolado para peitoral superior. Quanto mais baixo descerem os halteres, maior o alongamento, mas também maior risco de lesão.",
+    "depois": "Peitoral superior. Quanto mais baixo descerem os halteres, maior o alongamento, mas também maior risco de lesão.",
+    "tamanhoAntes": 135,
+    "tamanhoDepois": 112
+  },
+  {
+    "id": "crucifixo-invertido",
+    "nome": "Crucifixo Invertido",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 306,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "desenvolvimento",
+    "nome": "Desenvolvimento com Barra",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 278,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "desenvolvimento-halteres",
+    "nome": "Desenvolvimento com Halteres",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 306,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "desenvolvimento-ombros-barra",
+    "nome": "Desenvolvimento de Ombros (Shoulder Press) com Barra",
+    "antes": "Exercício fundamental para desenvolvimento do deltóide anterior. Sentado em banco, pegada na largura dos ombros, palmas voltadas para frente.",
+    "depois": "Desenvolvimento do deltóide anterior. Sentado em banco, pegada na largura dos ombros, palmas voltadas para frente.",
+    "tamanhoAntes": 141,
+    "tamanhoDepois": 114
+  },
+  {
+    "id": "elevacao-frontal",
+    "nome": "Elevação Frontal",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 278,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "elevacao-lateral",
+    "nome": "Elevação Lateral",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 306,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "3792c82d-a26d-4074-bad1-f48d51249a08",
+    "nome": "Elíptico",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico. Promove queima de gordura, melhora da capacidade cardiorrespiratória e resistência. Essencial para saúde cardiovascular e emagrecimento.",
+    "depois": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "tamanhoAntes": 202,
+    "tamanhoDepois": 65
+  },
+  {
+    "id": "b2214cfb-f71c-485d-9a4e-00b017afe73c",
+    "nome": "Escada",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico. Promove queima de gordura, melhora da capacidade cardiorrespiratória e resistência. Essencial para saúde cardiovascular e emagrecimento.",
+    "depois": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "tamanhoAntes": 202,
+    "tamanhoDepois": 65
+  },
+  {
+    "id": "a479b07f-8642-4b04-9a44-50441330b722",
+    "nome": "Esteira",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico. Promove queima de gordura, melhora da capacidade cardiorrespiratória e resistência. Essencial para saúde cardiovascular e emagrecimento.",
+    "depois": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "tamanhoAntes": 202,
+    "tamanhoDepois": 65
+  },
+  {
+    "id": "leg-press",
+    "nome": "Leg Press",
+    "antes": "Exercício para desenvolvimento dos músculos quadríceps (frente da coxa). Trabalha a extensão do joelho, promovendo hipertrofia e força das pernas. Fundamental para estabilidade e potência das pernas. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Quadríceps (frente da coxa).",
+    "tamanhoAntes": 296,
+    "tamanhoDepois": 28
+  },
+  {
+    "id": "levantamento-frontal-halteres",
+    "nome": "Levantamento Frontal com Halteres",
+    "antes": "Exercício isolado para deltóide anterior. Pegada neutra (polegar para frente) enfatiza deltóide anterior; pegada pronada permite ajuda do deltóide lateral.",
+    "depois": "Deltóide anterior. Pegada neutra (polegar para frente) enfatiza deltóide anterior; pegada pronada permite ajuda do deltóide lateral.",
+    "tamanhoAntes": 155,
+    "tamanhoDepois": 132
+  },
+  {
+    "id": "levantamento-lateral-halteres",
+    "nome": "Levantamento Lateral com Halteres",
+    "antes": "Exercício isolado para deltóide lateral. Terminar no nível dos ombros mantém tensão no deltóide; acima disso, trapézio assume o trabalho.",
+    "depois": "Deltóide lateral. Terminar no nível dos ombros mantém tensão no deltóide; acima disso, trapézio assume o trabalho.",
+    "tamanhoAntes": 137,
+    "tamanhoDepois": 114
+  },
+  {
+    "id": "levantamento-terra",
+    "nome": "Levantamento Terra",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 282,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "mesa-flexora",
+    "nome": "Mesa Flexora",
+    "antes": "Exercício para desenvolvimento dos músculos posteriores da coxa (isquiotibiais). Trabalha a flexão do joelho e extensão do quadril, promovendo hipertrofia e força. Essencial para equilíbrio muscular e prevenção de lesões. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Posteriores da coxa (isquiotibiais).",
+    "tamanhoAntes": 318,
+    "tamanhoDepois": 36
+  },
+  {
+    "id": "panturrilha-em-pe",
+    "nome": "Panturrilha em Pé",
+    "antes": "Exercício para desenvolvimento dos músculos da panturrilha (gastrocnêmio e sóleo). Trabalha a flexão plantar, promovendo hipertrofia e força. Importante para estabilidade e estética das pernas. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Da panturrilha (gastrocnêmio e sóleo).",
+    "tamanhoAntes": 266,
+    "tamanhoDepois": 38
+  },
+  {
+    "id": "panturrilha-sentado",
+    "nome": "Panturrilha Sentado",
+    "antes": "Exercício para desenvolvimento dos músculos da panturrilha (gastrocnêmio e sóleo). Trabalha a flexão plantar, promovendo hipertrofia e força. Importante para estabilidade e estética das pernas. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Da panturrilha (gastrocnêmio e sóleo).",
+    "tamanhoAntes": 290,
+    "tamanhoDepois": 38
+  },
+  {
+    "id": "panturrilha-unilateral",
+    "nome": "Panturrilha Unilateral",
+    "antes": "Exercício para desenvolvimento dos músculos da panturrilha (gastrocnêmio e sóleo). Trabalha a flexão plantar, promovendo hipertrofia e força. Importante para estabilidade e estética das pernas. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Da panturrilha (gastrocnêmio e sóleo).",
+    "tamanhoAntes": 294,
+    "tamanhoDepois": 38
+  },
+  {
+    "id": "peck-deck",
+    "nome": "Peck Deck",
+    "antes": "Exercício para desenvolvimento dos músculos peitorais. Trabalha principalmente a porção do peito indicada pela variação do exercício, promovendo hipertrofia e força através de movimento de adução horizontal do ombro. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Peitorais.",
+    "tamanhoAntes": 313,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "prancha",
+    "nome": "Prancha",
+    "antes": "Exercício para desenvolvimento dos músculos abdominais e core. Trabalha a estabilização e flexão do tronco, promovendo força funcional e definição. Essencial para postura e prevenção de lesões na coluna.",
+    "depois": "Abdominais e core.",
+    "tamanhoAntes": 203,
+    "tamanhoDepois": 18
+  },
+  {
+    "id": "puxada-aberta",
+    "nome": "Puxada Aberta",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 282,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "puxada-frente",
+    "nome": "Puxada Frontal",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza máquina/aparelho, oferecendo maior segurança e guia de movimento, ideal para iniciantes.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 306,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "remada-baixa",
+    "nome": "Remada Baixa",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza cabos/polias, oferecendo resistência constante em toda a amplitude do movimento.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 298,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "remada-curvada",
+    "nome": "Remada Curvada com Barra",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 282,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "remada-unilateral",
+    "nome": "Remada Unilateral com Halter",
+    "antes": "Exercício para desenvolvimento dos músculos das costas. Trabalha principalmente os músculos dorsais, promovendo hipertrofia e força através de movimento de puxada, essencial para postura e equilíbrio muscular. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Das costas.",
+    "tamanhoAntes": 310,
+    "tamanhoDepois": 11
+  },
+  {
+    "id": "remada-vertical-barra",
+    "nome": "Remada Vertical com Barra",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 278,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "rosca-concentrada",
+    "nome": "Rosca Concentrada",
+    "antes": "Exercício isolado para desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza halteres,...",
+    "tamanhoAntes": 256,
+    "tamanhoDepois": 153
+  },
+  {
+    "id": "rosca-direta",
+    "nome": "Rosca Direta com Barra",
+    "antes": "Exercício isolado para desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza barra, pe...",
+    "tamanhoAntes": 228,
+    "tamanhoDepois": 153
+  },
+  {
+    "id": "rosca-martelo",
+    "nome": "Rosca Martelo",
+    "antes": "Exercício isolado para desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza halteres,...",
+    "tamanhoAntes": 256,
+    "tamanhoDepois": 153
+  },
+  {
+    "id": "rosca-scott",
+    "nome": "Rosca Scott",
+    "antes": "Exercício isolado para desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza barra, pe...",
+    "tamanhoAntes": 228,
+    "tamanhoDepois": 153
+  },
+  {
+    "id": "rotacao-interna-cabo",
+    "nome": "Rotação Interna com Cabo",
+    "antes": "Exercício para desenvolvimento dos músculos deltoides. Trabalha principalmente a porção do ombro indicada pela variação, promovendo hipertrofia e força através de movimento de elevação ou abdução do braço. Utiliza cabos/polias, oferecendo resistência constante em toda a amplitude do movimento.",
+    "depois": "Deltoides.",
+    "tamanhoAntes": 294,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "stiff",
+    "nome": "Stiff",
+    "antes": "Exercício para desenvolvimento dos músculos posteriores da coxa (isquiotibiais). Trabalha a flexão do joelho e extensão do quadril, promovendo hipertrofia e força. Essencial para equilíbrio muscular e prevenção de lesões. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Posteriores da coxa (isquiotibiais).",
+    "tamanhoAntes": 294,
+    "tamanhoDepois": 36
+  },
+  {
+    "id": "supino-declinado",
+    "nome": "Supino Declinado com Barra",
+    "antes": "Exercício para desenvolvimento dos músculos peitorais. Trabalha principalmente a porção do peito indicada pela variação do exercício, promovendo hipertrofia e força através de movimento de adução horizontal do ombro. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Peitorais.",
+    "tamanhoAntes": 289,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "supino-declinado-barra",
+    "nome": "Supino em Banco Declinado",
+    "antes": "Foca na porção inferior do peitoral (cabeça esternal). Ângulo de declinação de 20-40° é ideal; ângulos maiores transferem enfoque para tríceps.",
+    "depois": "Porção inferior do peitoral (cabeça esternal). Ângulo de declinação de 20-40° é ideal; ângulos maiores transferem enfoque para tríceps.",
+    "tamanhoAntes": 143,
+    "tamanhoDepois": 135
+  },
+  {
+    "id": "supino-inclinado-barra",
+    "nome": "Supino Inclinado com Barra",
+    "antes": "Foca na porção superior do peitoral (cabeça clavicular). Inclinação de 30-45° é ideal; inclinações maiores transferem enfoque para deltóide anterior.",
+    "depois": "Porção superior do peitoral (cabeça clavicular). Inclinação de 30-45° é ideal; inclinações maiores transferem enfoque para deltóide anterior.",
+    "tamanhoAntes": 149,
+    "tamanhoDepois": 141
+  },
+  {
+    "id": "supino-inclinado",
+    "nome": "Supino Inclinado com Halteres",
+    "antes": "Exercício para desenvolvimento dos músculos peitorais. Trabalha principalmente a porção do peito indicada pela variação do exercício, promovendo hipertrofia e força através de movimento de adução horizontal do ombro. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Peitorais.",
+    "tamanhoAntes": 317,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "supino-reto",
+    "nome": "Supino Reto com Barra",
+    "antes": "Exercício para desenvolvimento dos músculos peitorais. Trabalha principalmente a porção do peito indicada pela variação do exercício, promovendo hipertrofia e força através de movimento de adução horizontal do ombro. Utiliza barra, permitindo maior carga e desenvolvimento de força máxima.",
+    "depois": "Peitorais.",
+    "tamanhoAntes": 289,
+    "tamanhoDepois": 10
+  },
+  {
+    "id": "triceps-coice",
+    "nome": "Tríceps Coice",
+    "antes": "Exercício isolado para desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para desenvolvimento completo dos braços. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para...",
+    "tamanhoAntes": 311,
+    "tamanhoDepois": 153
+  },
+  {
+    "id": "triceps-corda",
+    "nome": "Tríceps Corda",
+    "antes": "Exercício isolado para desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para desenvolvimento completo dos braços.",
+    "depois": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para desenvolvimento completo dos braços.",
+    "tamanhoAntes": 210,
+    "tamanhoDepois": 187
+  },
+  {
+    "id": "triceps-frances",
+    "nome": "Tríceps Francês",
+    "antes": "Exercício isolado para desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para desenvolvimento completo dos braços. Utiliza halteres, permitindo maior amplitude de movimento e estabilização independente de cada lado.",
+    "depois": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para...",
+    "tamanhoAntes": 311,
+    "tamanhoDepois": 153
+  },
+  {
+    "id": "triceps-puxada",
+    "nome": "Tríceps Puxada",
+    "antes": "Exercício isolado para desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para desenvolvimento completo dos braços. Utiliza cabos/polias, oferecendo resistência constante em toda a amplitude do movimento.",
+    "depois": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para...",
+    "tamanhoAntes": 299,
+    "tamanhoDepois": 153
+  }
+]

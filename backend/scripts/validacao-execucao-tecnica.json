@@ -1,0 +1,2886 @@
+{
+  "dataValidacao": "2025-11-19T14:56:37.902Z",
+  "totalExercicios": 70,
+  "problemas": [
+    {
+      "id": "abdominal-bicicleta",
+      "nome": "Abdominal Bicicleta",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "tronco"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "flexione",
+          "tronco",
+          "abdômen",
+          "core"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 457,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "abdominal-cruzado",
+      "nome": "Abdominal Cruzado",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "tronco"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "flexione",
+          "tronco",
+          "abdômen",
+          "core"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 457,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "abdominal-infra",
+      "nome": "Abdominal Infra",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "tronco"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "flexione",
+          "tronco",
+          "abdômen",
+          "core"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 457,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "abdominal-lateral",
+      "nome": "Abdominal Lateral",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "tronco"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "flexione",
+          "tronco",
+          "abdômen",
+          "core"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 457,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "abdominal",
+      "nome": "Abdominal Reto",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "tronco"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "flexione",
+          "tronco",
+          "abdômen",
+          "core"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 457,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "afundo",
+      "nome": "Afundo",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 502,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "agachamento-hack",
+      "nome": "Agachamento Hack",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: pés, flexione, desça",
+        "Equipamento: Equipamento não mencionado: Máquina",
+        "Posição: Posição esperada \"em pé\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "joelhos"
+        ],
+        "palavrasEsperadas": [
+          "pés",
+          "joelhos",
+          "flexione",
+          "desça",
+          "quadril",
+          "em pé"
+        ],
+        "divergencia": "Faltam palavras-chave: pés, flexione, desça"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "em pé",
+        "divergencia": "Posição esperada \"em pé\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 502,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "agachamento",
+      "nome": "Agachamento Livre",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: pés, flexione, desça",
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Posição: Posição esperada \"em pé\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "joelhos"
+        ],
+        "palavrasEsperadas": [
+          "pés",
+          "joelhos",
+          "flexione",
+          "desça",
+          "quadril",
+          "em pé"
+        ],
+        "divergencia": "Faltam palavras-chave: pés, flexione, desça"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "em pé",
+        "divergencia": "Posição esperada \"em pé\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 502,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "4f16d6dd-2b8a-4ee8-9aeb-2a1752d6e457",
+      "nome": "Alongamento Geral",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 249,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "barra-fixa",
+      "nome": "Barra Fixa",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra fixa",
+        "Posição: Posição esperada \"suspenso\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "puxe",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "costas",
+          "acima",
+          "suspenso"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra fixa"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra fixa"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "suspenso",
+        "divergencia": "Posição esperada \"suspenso\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "4e152e53-3441-4838-b229-292c2e0b4f3d",
+      "nome": "Bicicleta Ergométrica",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Bicicleta Ergométrica",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "bicicleta ergometrica"
+        ],
+        "divergencia": "Equipamento não mencionado: Bicicleta Ergométrica"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 261,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "cadeira-extensora",
+      "nome": "Cadeira Extensora",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Máquina",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 502,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo",
+      "nome": "Crucifixo",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, halteres",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "peito"
+        ],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, halteres"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 445,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-aparelho",
+      "nome": "Crucifixo com Aparelho",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, halteres",
+        "Equipamento: Equipamento não mencionado: Máquinas",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, halteres"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquinas"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquinas"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 223,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-cabos-polias-baixas",
+      "nome": "Crucifixo com Cabos em Polias Baixas",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, halteres",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, halteres"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "polia"
+        ],
+        "equipamentoEsperado": [
+          "cabo",
+          "polia"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 256,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-halteres",
+      "nome": "Crucifixo com Halteres",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, peito",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "halteres"
+        ],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, peito"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "deitado",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 358,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-declinado-halteres",
+      "nome": "Crucifixo Declinado com Halteres",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, peito",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "halteres"
+        ],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, peito"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco declinado"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "deitado",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 324,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-aparelho-posterior",
+      "nome": "Crucifixo em Aparelho, Deltóide Posterior",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, halteres",
+        "Equipamento: Equipamento não mencionado: Máquinas",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "peito"
+        ],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, halteres"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [
+          "aparelho",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "maquinas"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquinas"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 316,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-inclinado-halteres",
+      "nome": "Crucifixo Inclinado com Halteres",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, peito",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "halteres"
+        ],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, peito"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco inclinado"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 279,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "crucifixo-invertido",
+      "nome": "Crucifixo Invertido",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: abra, braços, halteres",
+        "Equipamento: Equipamento não mencionado: Halteres",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "peito"
+        ],
+        "palavrasEsperadas": [
+          "abra",
+          "braços",
+          "halteres",
+          "peito",
+          "cruz"
+        ],
+        "divergencia": "Faltam palavras-chave: abra, braços, halteres"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 421,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "cruzamento-cabos",
+      "nome": "Cruzamento de Cabos",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "polia"
+        ],
+        "equipamentoEsperado": [
+          "cabo",
+          "polia"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 276,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "desenvolvimento",
+      "nome": "Desenvolvimento com Barra",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "eleve",
+          "ombros",
+          "acima"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "ombros",
+          "barra",
+          "halteres",
+          "acima",
+          "cabeça"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "sentado",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 421,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "desenvolvimento-halteres",
+      "nome": "Desenvolvimento com Halteres",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "eleve",
+          "ombros",
+          "acima"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "ombros",
+          "barra",
+          "halteres",
+          "acima",
+          "cabeça"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "sentado",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 421,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "desenvolvimento-ombros-barra",
+      "nome": "Desenvolvimento de Ombros (Shoulder Press) com Barra",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "ombros",
+          "barra"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "ombros",
+          "barra",
+          "halteres",
+          "acima",
+          "cabeça"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "barra",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "banco",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "sentado",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 256,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "desenvolvimento-ombros-halteres",
+      "nome": "Desenvolvimento de Ombros com Halteres",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "ombros",
+          "halteres"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "ombros",
+          "barra",
+          "halteres",
+          "acima",
+          "cabeça"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "sentado",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 208,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "elevacao-frontal",
+      "nome": "Elevação Frontal",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 421,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "elevacao-lateral",
+      "nome": "Elevação Lateral",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 421,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "3792c82d-a26d-4074-bad1-f48d51249a08",
+      "nome": "Elíptico",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Elíptico",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "eliptico"
+        ],
+        "divergencia": "Equipamento não mencionado: Elíptico"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 261,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "b2214cfb-f71c-485d-9a4e-00b017afe73c",
+      "nome": "Escada",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Escada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "escada"
+        ],
+        "divergencia": "Equipamento não mencionado: Escada"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 261,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "a479b07f-8642-4b04-9a44-50441330b722",
+      "nome": "Esteira",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Esteira",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "esteira"
+        ],
+        "divergencia": "Equipamento não mencionado: Esteira"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 261,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "flexao-barras-paralelas",
+      "nome": "Flexão de Braços em Barras Paralelas",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "barra"
+        ],
+        "equipamentoEsperado": [
+          "barras paralelas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 247,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "leg-press",
+      "nome": "Leg Press",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Máquina",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 502,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "levantamento-posterior-cabo",
+      "nome": "Levantamento com Cabo, Inclinação para a Frente",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "cabo",
+          "polia"
+        ],
+        "equipamentoEsperado": [
+          "cabo",
+          "polia"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "incline",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 342,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "levantamento-posterior-inclinado",
+      "nome": "Levantamento de Halteres, Inclinação para a Frente",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter"
+        ],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "incline",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 296,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "levantamento-frontal-barra",
+      "nome": "Levantamento Frontal com Barra",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "barra"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 257,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "levantamento-frontal-cabo",
+      "nome": "Levantamento Frontal com Cabo",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "cabo",
+          "polia"
+        ],
+        "equipamentoEsperado": [
+          "cabo",
+          "polia"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 232,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "levantamento-frontal-halteres",
+      "nome": "Levantamento Frontal com Halteres",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter"
+        ],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 225,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "levantamento-lateral-aparelho",
+      "nome": "Levantamento Lateral com Aparelho",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Máquinas"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [
+          "aparelho"
+        ],
+        "equipamentoEsperado": [
+          "maquinas"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquinas"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 188,
+        "complexidade": "media",
+        "problemas": []
+      }
+    },
+    {
+      "id": "levantamento-terra",
+      "nome": "Levantamento Terra",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "mesa-flexora",
+      "nome": "Mesa Flexora",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Máquina",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 434,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "panturrilha-em-pe",
+      "nome": "Panturrilha em Pé",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: calcanhares, pés, em pé",
+        "Equipamento: Equipamento não mencionado: Máquina, Barra",
+        "Posição: Posição esperada \"em pé\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "eleve"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "calcanhares",
+          "pés",
+          "em pé",
+          "sentado"
+        ],
+        "divergencia": "Faltam palavras-chave: calcanhares, pés, em pé"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina",
+          "barra"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina, Barra"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "em pé",
+        "divergencia": "Posição esperada \"em pé\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 443,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "panturrilha-sentado",
+      "nome": "Panturrilha Sentado",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: calcanhares, pés, em pé",
+        "Equipamento: Equipamento não mencionado: Máquina",
+        "Posição: Posição esperada \"em pé\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "eleve"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "calcanhares",
+          "pés",
+          "em pé",
+          "sentado"
+        ],
+        "divergencia": "Faltam palavras-chave: calcanhares, pés, em pé"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "em pé",
+        "divergencia": "Posição esperada \"em pé\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 443,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "panturrilha-unilateral",
+      "nome": "Panturrilha Unilateral",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: calcanhares, pés, em pé",
+        "Equipamento: Equipamento não mencionado: Halter",
+        "Posição: Posição esperada \"em pé\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "eleve"
+        ],
+        "palavrasEsperadas": [
+          "eleve",
+          "calcanhares",
+          "pés",
+          "em pé",
+          "sentado"
+        ],
+        "divergencia": "Faltam palavras-chave: calcanhares, pés, em pé"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halter"
+        ],
+        "divergencia": "Equipamento não mencionado: Halter"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "em pé",
+        "divergencia": "Posição esperada \"em pé\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 443,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "peck-deck",
+      "nome": "Peck Deck",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Máquina",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "maquina"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 445,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "prancha",
+      "nome": "Prancha",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: apoie, braços, corpo",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [
+          "apoie",
+          "braços",
+          "corpo",
+          "retilíneo",
+          "isométrico"
+        ],
+        "divergencia": "Faltam palavras-chave: apoie, braços, corpo"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 457,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "puxada-aberta",
+      "nome": "Puxada Aberta",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Polia, Barra",
+        "Posição: Posição esperada \"suspenso\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "puxe",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "cabo",
+          "polia",
+          "costas",
+          "acima"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "polia",
+          "barra"
+        ],
+        "divergencia": "Equipamento não mencionado: Polia, Barra"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "suspenso",
+        "divergencia": "Posição esperada \"suspenso\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "puxada-frente",
+      "nome": "Puxada Frontal",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Máquina, Polia",
+        "Posição: Posição esperada \"suspenso\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "puxe",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "cabo",
+          "polia",
+          "costas",
+          "acima"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "maquina",
+          "polia"
+        ],
+        "divergencia": "Equipamento não mencionado: Máquina, Polia"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "suspenso",
+        "divergencia": "Posição esperada \"suspenso\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "remada-baixa",
+      "nome": "Remada Baixa",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Polia, Cabo",
+        "Posição: Posição esperada \"incline\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "puxe",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "halteres",
+          "costas",
+          "tronco",
+          "incline"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "polia",
+          "cabo"
+        ],
+        "divergencia": "Equipamento não mencionado: Polia, Cabo"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "incline",
+        "divergencia": "Posição esperada \"incline\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "remada-curvada",
+      "nome": "Remada Curvada com Barra",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Posição: Posição esperada \"incline\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "puxe",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "halteres",
+          "costas",
+          "tronco",
+          "incline"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "incline",
+        "divergencia": "Posição esperada \"incline\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "remada-unilateral",
+      "nome": "Remada Unilateral com Halter",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres, Banco",
+        "Posição: Posição esperada \"incline\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "puxe",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "halteres",
+          "costas",
+          "tronco",
+          "incline"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres, Banco"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "incline",
+        "divergencia": "Posição esperada \"incline\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 418,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "remada-vertical-barra",
+      "nome": "Remada Vertical com Barra",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: puxe, halteres, costas",
+        "Posição: Posição esperada \"incline\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "barra"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "halteres",
+          "costas",
+          "tronco",
+          "incline"
+        ],
+        "divergencia": "Faltam palavras-chave: puxe, halteres, costas"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "barra"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "incline",
+        "divergencia": "Posição esperada \"incline\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 249,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "rosca-concentrada",
+      "nome": "Rosca Concentrada",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres, Banco",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "flexione",
+          "cotovelos"
+        ],
+        "palavrasEsperadas": [
+          "flexione",
+          "braços",
+          "halteres",
+          "barra",
+          "cotovelos"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres, Banco"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 468,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "rosca-direta",
+      "nome": "Rosca Direta com Barra",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "flexione",
+          "cotovelos"
+        ],
+        "palavrasEsperadas": [
+          "flexione",
+          "braços",
+          "halteres",
+          "barra",
+          "cotovelos"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 468,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "rosca-martelo",
+      "nome": "Rosca Martelo",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "flexione",
+          "cotovelos"
+        ],
+        "palavrasEsperadas": [
+          "flexione",
+          "braços",
+          "halteres",
+          "barra",
+          "cotovelos"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 468,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "rosca-scott",
+      "nome": "Rosca Scott",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Banco Scott, Anilhas",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "flexione",
+          "cotovelos"
+        ],
+        "palavrasEsperadas": [
+          "flexione",
+          "braços",
+          "halteres",
+          "barra",
+          "cotovelos"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "banco scott",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Banco Scott, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 468,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "rotacao-externa-cabo",
+      "nome": "Rotação Externa com Cabo",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres), Muitas vírgulas, texto pode ser simplificado"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "polia"
+        ],
+        "equipamentoEsperado": [
+          "cabo",
+          "polia"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 374,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)",
+          "Muitas vírgulas, texto pode ser simplificado"
+        ]
+      }
+    },
+    {
+      "id": "rotacao-interna-cabo",
+      "nome": "Rotação Interna com Cabo",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "polia"
+        ],
+        "equipamentoEsperado": [
+          "cabo",
+          "polia"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 359,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "stiff",
+      "nome": "Stiff",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Barra, Anilhas",
+        "Posição: Posição esperada \"em pé\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "flexione",
+          "quadril",
+          "costas"
+        ],
+        "palavrasEsperadas": [
+          "flexione",
+          "quadril",
+          "costas",
+          "barra",
+          "halteres"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "barra",
+          "anilhas"
+        ],
+        "divergencia": "Equipamento não mencionado: Barra, Anilhas"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "",
+        "posicaoEsperada": "em pé",
+        "divergencia": "Posição esperada \"em pé\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 434,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "supino-declinado",
+      "nome": "Supino Declinado com Barra",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "banco",
+          "empurre",
+          "peito"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "banco",
+          "barra",
+          "halteres",
+          "empurre",
+          "desça",
+          "peito"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "banco declinado",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 445,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "supino-declinado-barra",
+      "nome": "Supino em Banco Declinado",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "banco",
+          "barra",
+          "empurre"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "banco",
+          "barra",
+          "halteres",
+          "empurre",
+          "desça",
+          "peito"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "barra",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "banco declinado",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 270,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "supino-inclinado-barra",
+      "nome": "Supino Inclinado com Barra",
+      "problemas": [
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "banco",
+          "barra",
+          "empurre"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "banco",
+          "barra",
+          "halteres",
+          "empurre",
+          "desça",
+          "peito"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "barra",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "banco inclinado",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 266,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "supino-inclinado",
+      "nome": "Supino Inclinado com Halteres",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "banco",
+          "empurre",
+          "peito"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "banco",
+          "barra",
+          "halteres",
+          "empurre",
+          "desça",
+          "peito"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco inclinado"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 445,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "supino-reto",
+      "nome": "Supino Reto com Barra",
+      "problemas": [
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [
+          "deite",
+          "banco",
+          "empurre",
+          "peito"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "banco",
+          "barra",
+          "halteres",
+          "empurre",
+          "desça",
+          "peito"
+        ],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "barra",
+          "banco",
+          "anilhas"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "deite",
+        "posicaoEsperada": "deite",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 445,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "supino-reto-halteres",
+      "nome": "Supino Reto com Halteres",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: deite, barra, empurre",
+        "Posição: Posição esperada \"deite\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "banco",
+          "halteres"
+        ],
+        "palavrasEsperadas": [
+          "deite",
+          "banco",
+          "barra",
+          "halteres",
+          "empurre",
+          "desça",
+          "peito"
+        ],
+        "divergencia": "Faltam palavras-chave: deite, barra, empurre"
+      },
+      "validacaoEquipamento": {
+        "valido": true,
+        "equipamentoMencionado": [
+          "halteres",
+          "halter",
+          "banco"
+        ],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": ""
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "deitado",
+        "posicaoEsperada": "deite",
+        "divergencia": "Posição esperada \"deite\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 237,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "triceps-coice",
+      "nome": "Tríceps Coice",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 422,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "triceps-corda",
+      "nome": "Tríceps Corda",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Polia, Corda",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "polia",
+          "corda"
+        ],
+        "divergencia": "Equipamento não mencionado: Polia, Corda"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 422,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "triceps-frances",
+      "nome": "Tríceps Francês",
+      "problemas": [
+        "Equipamento: Equipamento não mencionado: Halteres, Banco",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": true,
+        "palavrasEncontradas": [],
+        "palavrasEsperadas": [],
+        "divergencia": ""
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "halteres",
+          "banco"
+        ],
+        "divergencia": "Equipamento não mencionado: Halteres, Banco"
+      },
+      "validacaoPosicao": {
+        "valido": true,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "",
+        "divergencia": ""
+      },
+      "complexidade": {
+        "tamanho": 422,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    },
+    {
+      "id": "triceps-puxada",
+      "nome": "Tríceps Puxada",
+      "problemas": [
+        "Palavras-chave: Faltam palavras-chave: puxe, barra, cabo",
+        "Equipamento: Equipamento não mencionado: Polia, Cabo",
+        "Posição: Posição esperada \"suspenso\" não mencionada",
+        "Complexidade: Execução muito longa (>200 caracteres)"
+      ],
+      "validacaoPalavras": {
+        "valido": false,
+        "palavrasEncontradas": [
+          "acima"
+        ],
+        "palavrasEsperadas": [
+          "puxe",
+          "barra",
+          "cabo",
+          "polia",
+          "costas",
+          "acima"
+        ],
+        "divergencia": "Faltam palavras-chave: puxe, barra, cabo"
+      },
+      "validacaoEquipamento": {
+        "valido": false,
+        "equipamentoMencionado": [],
+        "equipamentoEsperado": [
+          "polia",
+          "cabo"
+        ],
+        "divergencia": "Equipamento não mencionado: Polia, Cabo"
+      },
+      "validacaoPosicao": {
+        "valido": false,
+        "posicaoMencionada": "sentado",
+        "posicaoEsperada": "suspenso",
+        "divergencia": "Posição esperada \"suspenso\" não mencionada"
+      },
+      "complexidade": {
+        "tamanho": 422,
+        "complexidade": "complexa",
+        "problemas": [
+          "Execução muito longa (>200 caracteres)"
+        ]
+      }
+    }
+  ]
+}

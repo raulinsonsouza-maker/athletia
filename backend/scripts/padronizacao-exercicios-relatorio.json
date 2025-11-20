@@ -1,0 +1,266 @@
+[
+  {
+    "id": "abdominal-na-polia-corda",
+    "nomeAtual": "Abdominal na Polia (Corda)",
+    "nomeNovo": "Abdominal na Polia",
+    "descricaoAtual": "Variação com carga progressiva ideal para aumentar força e volume no reto abdominal.",
+    "descricaoNova": "Variação com carga progressiva ideal para aumentar força e volume no reto abdominal.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": null,
+    "mudancas": [
+      "Nome: \"Abdominal na Polia (Corda)\" → \"Abdominal na Polia\""
+    ]
+  },
+  {
+    "id": "4e152e53-3441-4838-b229-292c2e0b4f3d",
+    "nomeAtual": "Bicicleta Ergométrica",
+    "nomeNovo": "Bicicleta Ergométrica",
+    "descricaoAtual": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "descricaoNova": "Exercício cardiovascular que melhora o condicionamento físico. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": null,
+    "mudancas": [
+      "Descrição melhorada (removidas repetições/redundâncias)"
+    ]
+  },
+  {
+    "id": "crucifixo",
+    "nomeAtual": "Crucifixo",
+    "nomeNovo": "Crucifixo",
+    "descricaoAtual": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "descricaoNova": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "crucifixo-aparelho",
+    "nomeAtual": "Crucifixo com Aparelho",
+    "nomeNovo": "Crucifixo com Aparelho",
+    "descricaoAtual": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "descricaoNova": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": "Iniciante",
+    "mudancas": [
+      "Nível: \"Intermediário\" → \"Iniciante\""
+    ]
+  },
+  {
+    "id": "crucifixo-aparelho-posterior",
+    "nomeAtual": "Crucifixo em Aparelho, Deltóide Posterior",
+    "nomeNovo": "Crucifixo em Aparelho, Deltóide Posterior",
+    "descricaoAtual": "Movimento de abertura de braços que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de abertura de braços que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": "Iniciante",
+    "mudancas": [
+      "Nível: \"Intermediário\" → \"Iniciante\""
+    ]
+  },
+  {
+    "id": "desenvolvimento-com-barra-shoulder-press",
+    "nomeAtual": "Desenvolvimento com Barra (Shoulder Press)",
+    "nomeNovo": "Desenvolvimento com Barra",
+    "descricaoAtual": "Movimento de elevação vertical que trabalha principalmente o deltoide anterior e medial. Essencial para força e volume na região dos ombros.",
+    "descricaoNova": "Movimento de elevação vertical que trabalha principalmente o deltoide anterior e medial. Essencial para força e volume na região dos ombros.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": null,
+    "mudancas": [
+      "Nome: \"Desenvolvimento com Barra (Shoulder Press)\" → \"Desenvolvimento com Barra\""
+    ]
+  },
+  {
+    "id": "desenvolvimento-ombros-barra",
+    "nomeAtual": "Desenvolvimento de Ombros (Shoulder Press) com Barra",
+    "nomeNovo": "Desenvolvimento de Ombros com Barra",
+    "descricaoAtual": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": null,
+    "mudancas": [
+      "Nome: \"Desenvolvimento de Ombros (Shoulder Press) com Barra\" → \"Desenvolvimento de Ombros com Barra\""
+    ]
+  },
+  {
+    "id": "elevacao-pelvica-hip-thrust",
+    "nomeAtual": "Elevação Pélvica / Hip Thrust",
+    "nomeNovo": "Elevação Pélvica",
+    "descricaoAtual": "Exercício fundamental para glúteo máximo, sendo um dos mais eficientes para hipertrofia e força dos glúteos.",
+    "descricaoNova": "Exercício fundamental para glúteo máximo, sendo um dos mais eficientes para hipertrofia e força dos glúteos.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": null,
+    "mudancas": [
+      "Nome: \"Elevação Pélvica / Hip Thrust\" → \"Elevação Pélvica\""
+    ]
+  },
+  {
+    "id": "3792c82d-a26d-4074-bad1-f48d51249a08",
+    "nomeAtual": "Elíptico",
+    "nomeNovo": "Elíptico",
+    "descricaoAtual": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "descricaoNova": "Exercício cardiovascular que melhora o condicionamento físico. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": null,
+    "mudancas": [
+      "Descrição melhorada (removidas repetições/redundâncias)"
+    ]
+  },
+  {
+    "id": "b2214cfb-f71c-485d-9a4e-00b017afe73c",
+    "nomeAtual": "Escada",
+    "nomeNovo": "Escada",
+    "descricaoAtual": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "descricaoNova": "Exercício cardiovascular que melhora o condicionamento físico. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": null,
+    "mudancas": [
+      "Descrição melhorada (removidas repetições/redundâncias)"
+    ]
+  },
+  {
+    "id": "a479b07f-8642-4b04-9a44-50441330b722",
+    "nomeAtual": "Esteira",
+    "nomeNovo": "Esteira",
+    "descricaoAtual": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "descricaoNova": "Exercício cardiovascular que melhora o condicionamento físico. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": null,
+    "mudancas": [
+      "Descrição melhorada (removidas repetições/redundâncias)"
+    ]
+  },
+  {
+    "id": "levantamento-posterior-cabo",
+    "nomeAtual": "Levantamento com Cabo, Inclinação para a Frente",
+    "nomeNovo": "Levantamento com Cabo Inclinado",
+    "descricaoAtual": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": null,
+    "mudancas": [
+      "Nome: \"Levantamento com Cabo, Inclinação para a Frente\" → \"Levantamento com Cabo Inclinado\""
+    ]
+  },
+  {
+    "id": "levantamento-posterior-inclinado",
+    "nomeAtual": "Levantamento de Halteres, Inclinação para a Frente",
+    "nomeNovo": "Levantamento de Halteres Inclinado",
+    "descricaoAtual": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": null,
+    "mudancas": [
+      "Nome: \"Levantamento de Halteres, Inclinação para a Frente\" → \"Levantamento de Halteres Inclinado\""
+    ]
+  },
+  {
+    "id": "levantamento-frontal-halteres",
+    "nomeAtual": "Levantamento Frontal com Halteres",
+    "nomeNovo": "Levantamento Frontal com Halteres",
+    "descricaoAtual": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "levantamento-lateral-halteres",
+    "nomeAtual": "Levantamento Lateral com Halteres",
+    "nomeNovo": "Levantamento Lateral com Halteres",
+    "descricaoAtual": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "panturrilha-no-leg-press",
+    "nomeAtual": "Panturrilha no Leg Press",
+    "nomeNovo": "Panturrilha no Leg Press",
+    "descricaoAtual": "Variação prática e segura de panturrilha, ideal para iniciantes e alunos com dificuldade em ficar em pé.",
+    "descricaoNova": "Variação prática e segura de panturrilha, ideal para iniciantes e alunos com dificuldade em ficar em pé.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "panturrilha-unilateral",
+    "nomeAtual": "Panturrilha Unilateral",
+    "nomeNovo": "Panturrilha Unilateral",
+    "descricaoAtual": "Movimento de elevação que trabalha principalmente as panturrilhas. Essencial para fortalecer as panturrilhas, melhorar a estabilidade.",
+    "descricaoNova": "Movimento de elevação que trabalha principalmente as panturrilhas. Essencial para fortalecer as panturrilhas, melhorar a estabilidade.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Avançado",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Avançado\""
+    ]
+  },
+  {
+    "id": "peck-deck",
+    "nomeAtual": "Peck Deck",
+    "nomeNovo": "Peck Deck",
+    "descricaoAtual": "Exercício que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "descricaoNova": "Exercício que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "remada-baixa",
+    "nomeAtual": "Remada Baixa",
+    "nomeNovo": "Remada Baixa",
+    "descricaoAtual": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "descricaoNova": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "remada-unilateral",
+    "nomeAtual": "Remada Unilateral com Halter",
+    "nomeNovo": "Remada Unilateral com Halter",
+    "descricaoAtual": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "descricaoNova": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "nivelAtual": "Intermediário",
+    "nivelNovo": "Avançado",
+    "mudancas": [
+      "Nível: \"Intermediário\" → \"Avançado\""
+    ]
+  },
+  {
+    "id": "rosca-direta",
+    "nomeAtual": "Rosca Direta com Barra",
+    "nomeNovo": "Rosca Direta com Barra",
+    "descricaoAtual": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "descricaoNova": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  },
+  {
+    "id": "rosca-scott",
+    "nomeAtual": "Rosca Scott",
+    "nomeNovo": "Rosca Scott",
+    "descricaoAtual": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "descricaoNova": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "nivelAtual": "Iniciante",
+    "nivelNovo": "Intermediário",
+    "mudancas": [
+      "Nível: \"Iniciante\" → \"Intermediário\""
+    ]
+  }
+]

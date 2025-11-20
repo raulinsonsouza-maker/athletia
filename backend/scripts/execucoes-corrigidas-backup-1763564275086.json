@@ -1,0 +1,324 @@
+[
+  {
+    "id": "abdominal-bicicleta",
+    "nome": "Abdominal Bicicleta",
+    "antes": "Posição inicial: Deite no chão com os joelhos flexionados e pés apoiados, ou na posição indicada pela variação do exercício. Fase concêntrica: Contraia os músculos abdominais elevando o tronco ou aproximando os joelhos do peito, dependendo da variação. Fase excêntrica: Retorne à posição inicial de forma controlada, mantendo a tensão nos abdominais. Respire: expire na contração, inspire no retorno. Mantenha o movimento controlado e evite puxar o pescoço.",
+    "depois": "Deite no chão. Flexione os joelhos e simule pedalar. Toque o cotovelo no joelho oposto.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "abdominal-cruzado",
+    "nome": "Abdominal Cruzado",
+    "antes": "Posição inicial: Deite no chão com os joelhos flexionados e pés apoiados, ou na posição indicada pela variação do exercício. Fase concêntrica: Contraia os músculos abdominais elevando o tronco ou aproximando os joelhos do peito, dependendo da variação. Fase excêntrica: Retorne à posição inicial de forma controlada, mantendo a tensão nos abdominais. Respire: expire na contração, inspire no retorno. Mantenha o movimento controlado e evite puxar o pescoço.",
+    "depois": "Deite no chão. Flexione o tronco levantando os ombros. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "abdominal-infra",
+    "nome": "Abdominal Infra",
+    "antes": "Posição inicial: Deite no chão com os joelhos flexionados e pés apoiados, ou na posição indicada pela variação do exercício. Fase concêntrica: Contraia os músculos abdominais elevando o tronco ou aproximando os joelhos do peito, dependendo da variação. Fase excêntrica: Retorne à posição inicial de forma controlada, mantendo a tensão nos abdominais. Respire: expire na contração, inspire no retorno. Mantenha o movimento controlado e evite puxar o pescoço.",
+    "depois": "Deite no chão. Eleve as pernas. Desça controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "abdominal-lateral",
+    "nome": "Abdominal Lateral",
+    "antes": "Posição inicial: Deite no chão com os joelhos flexionados e pés apoiados, ou na posição indicada pela variação do exercício. Fase concêntrica: Contraia os músculos abdominais elevando o tronco ou aproximando os joelhos do peito, dependendo da variação. Fase excêntrica: Retorne à posição inicial de forma controlada, mantendo a tensão nos abdominais. Respire: expire na contração, inspire no retorno. Mantenha o movimento controlado e evite puxar o pescoço.",
+    "depois": "Deite de lado. Flexione o tronco lateralmente. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "abdominal",
+    "nome": "Abdominal Reto",
+    "antes": "Posição inicial: Deite no chão com os joelhos flexionados e pés apoiados, ou na posição indicada pela variação do exercício. Fase concêntrica: Contraia os músculos abdominais elevando o tronco ou aproximando os joelhos do peito, dependendo da variação. Fase excêntrica: Retorne à posição inicial de forma controlada, mantendo a tensão nos abdominais. Respire: expire na contração, inspire no retorno. Mantenha o movimento controlado e evite puxar o pescoço.",
+    "depois": "Deite no chão. Flexione o tronco levantando os ombros. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "agachamento-hack",
+    "nome": "Agachamento Hack",
+    "antes": "Posição inicial: Fique em pé com os pés na largura dos ombros, pés ligeiramente apontados para fora. Segure o peso nos ombros ou nas mãos. Fase excêntrica: Desça o corpo flexionando os joelhos e quadris, mantendo o tronco ereto, até os joelhos formarem um ângulo de aproximadamente 90 graus. Fase concêntrica: Estenda os joelhos e quadris retornando à posição inicial, contraindo os quadríceps. Respire: expire na subida, inspire na descida. Mantenha os joelhos alinhados com os pés e o core contraído.",
+    "depois": "Posicione-se no aparelho. Flexione os joelhos descendo. Retorne à posição inicial.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "agachamento",
+    "nome": "Agachamento Livre",
+    "antes": "Posição inicial: Fique em pé com os pés na largura dos ombros, pés ligeiramente apontados para fora. Segure o peso nos ombros ou nas mãos. Fase excêntrica: Desça o corpo flexionando os joelhos e quadris, mantendo o tronco ereto, até os joelhos formarem um ângulo de aproximadamente 90 graus. Fase concêntrica: Estenda os joelhos e quadris retornando à posição inicial, contraindo os quadríceps. Respire: expire na subida, inspire na descida. Mantenha os joelhos alinhados com os pés e o core contraído.",
+    "depois": "Em pé, pés na largura dos ombros. Segure a barra nos ombros. Flexione os joelhos descendo. Retorne à posição inicial.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo",
+    "nome": "Crucifixo",
+    "antes": "Posição inicial: Deite no banco com os pés apoiados no chão. Segure o peso com os braços estendidos acima do peito. Fase excêntrica: Abaixe o peso de forma controlada até sentir alongamento no peito, mantendo os cotovelos ligeiramente flexionados. Fase concêntrica: Empurre o peso de volta à posição inicial, contraindo os músculos peitorais. Respire: expire na subida, inspire na descida. Mantenha o core contraído e as escápulas estabilizadas.",
+    "depois": "Deite no banco. Segure os halteres e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-aparelho",
+    "nome": "Crucifixo com Aparelho",
+    "antes": "1. Agarre pegadores verticais, com cotovelos ligeiramente dobrados. 2. Tracione simultaneamente os pegadores até que se toquem à frente do tórax. 3. Deixe suas mãos retornarem à posição inicial, mantendo cotovelos elevados.",
+    "depois": "Deite no banco. Segure os halteres e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-cabos-polias-baixas",
+    "nome": "Crucifixo com Cabos em Polias Baixas",
+    "antes": "1. Em cada mão, agarre pegador em D preso a polias baixas, fique em pé ereto. 2. Levante as mãos em arco para frente até que os pegadores se encontrem na altura da cabeça. 3. Mantendo cotovelos bloqueados, abaixe os pegadores de volta para posição inicial.",
+    "depois": "Deite no banco. Segure o cabo e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-halteres",
+    "nome": "Crucifixo com Halteres",
+    "antes": "1. Deitado em banco horizontal, comece com halteres diretamente acima do tórax médio, palmas voltadas para dentro. 2. Abaixe os halteres com amplo movimento de abertura (para fora), dobrando ligeiramente os cotovelos durante a descida até nível do tórax. 3. Levante os halteres em movimento simultâneo, fazendo arco ascendente, em retorno à posição vertical.",
+    "depois": "Deite no banco. Segure os halteres e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-declinado-halteres",
+    "nome": "Crucifixo Declinado com Halteres",
+    "antes": "1. Deitado em banco declinado, comece com halteres diretamente acima do tórax, palmas voltadas para dentro. 2. Abaixe os halteres com movimento de abertura (para fora), dobrando ligeiramente os cotovelos durante a descida até nível do tórax. 3. Levante simultaneamente os halteres de volta à posição inicial, até se tocarem.",
+    "depois": "Deite no banco declinado. Segure os halteres e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-aparelho-posterior",
+    "nome": "Crucifixo em Aparelho, Deltóide Posterior",
+    "antes": "1. Sente-se de frente para o aparelho com peito contra encosto do banco. 2. Agarre pegadores diretamente à frente com braços estendidos no nível do ombro. 3. Puxe os pegadores para trás no arco mais distante possível, mantendo cotovelos elevados e braços paralelos ao chão. 4. Retorne os pegadores à posição inicial.",
+    "depois": "Sente no aparelho. Segure os pegadores e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-inclinado-halteres",
+    "nome": "Crucifixo Inclinado com Halteres",
+    "antes": "1. Sentado em banco inclinado, comece com halteres diretamente acima do tórax, palmas voltadas para dentro. 2. Abaixe os halteres para fora, dobrando ligeiramente os cotovelos enquanto pesos descem até nível do tórax. 3. Levante os halteres de volta, unindo-os na parte superior.",
+    "depois": "Deite no banco inclinado. Segure os halteres e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "crucifixo-invertido",
+    "nome": "Crucifixo Invertido",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso ao lado do corpo. Fase excêntrica: Eleve o peso de forma controlada até a altura dos ombros ou acima da cabeça, dependendo da variação. Fase concêntrica: Retorne à posição inicial de forma controlada, mantendo o controle do movimento. Respire: expire na elevação, inspire no retorno. Mantenha o core estável e evite arquear as costas.",
+    "depois": "Incline o tronco. Segure os halteres e abra os braços. Feche controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "desenvolvimento",
+    "nome": "Desenvolvimento com Barra",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso ao lado do corpo. Fase excêntrica: Eleve o peso de forma controlada até a altura dos ombros ou acima da cabeça, dependendo da variação. Fase concêntrica: Retorne à posição inicial de forma controlada, mantendo o controle do movimento. Respire: expire na elevação, inspire no retorno. Mantenha o core estável e evite arquear as costas.",
+    "depois": "Em pé, Segure a barra na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "desenvolvimento-halteres",
+    "nome": "Desenvolvimento com Halteres",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso ao lado do corpo. Fase excêntrica: Eleve o peso de forma controlada até a altura dos ombros ou acima da cabeça, dependendo da variação. Fase concêntrica: Retorne à posição inicial de forma controlada, mantendo o controle do movimento. Respire: expire na elevação, inspire no retorno. Mantenha o core estável e evite arquear as costas.",
+    "depois": "Em pé, Segure os halteres na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "desenvolvimento-ombros-barra",
+    "nome": "Desenvolvimento de Ombros (Shoulder Press) com Barra",
+    "antes": "1. Sentado em banco, faça pegada na barra com afastamento igual à largura dos ombros; palmas das mãos voltadas para a frente. 2. Abaixe lentamente o peso até tocar a parte superior do tórax. 3. Impulsione verticalmente para cima até bloqueio dos cotovelos.",
+    "depois": "Em pé, Segure a barra na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "desenvolvimento-ombros-halteres",
+    "nome": "Desenvolvimento de Ombros com Halteres",
+    "antes": "1. Sentado em banco, comece com halteres no nível do ombro, palmas voltadas para frente. 2. Impulsione verticalmente para cima até bloqueio dos cotovelos. 3. Abaixe os halteres de volta até tocarem os ombros.",
+    "depois": "Em pé, Segure os halteres na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "elevacao-frontal",
+    "nome": "Elevação Frontal",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso ao lado do corpo. Fase excêntrica: Eleve o peso de forma controlada até a altura dos ombros ou acima da cabeça, dependendo da variação. Fase concêntrica: Retorne à posição inicial de forma controlada, mantendo o controle do movimento. Respire: expire na elevação, inspire no retorno. Mantenha o core estável e evite arquear as costas.",
+    "depois": "Em pé, segure a barra. Eleve os braços à frente. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "elevacao-lateral",
+    "nome": "Elevação Lateral",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso ao lado do corpo. Fase excêntrica: Eleve o peso de forma controlada até a altura dos ombros ou acima da cabeça, dependendo da variação. Fase concêntrica: Retorne à posição inicial de forma controlada, mantendo o controle do movimento. Respire: expire na elevação, inspire no retorno. Mantenha o core estável e evite arquear as costas.",
+    "depois": "Em pé, segure os halteres. Eleve os braços lateralmente. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "panturrilha-em-pe",
+    "nome": "Panturrilha em Pé",
+    "antes": "Posição inicial: Fique em pé com os pés na largura dos ombros, pés apoiados no chão ou em uma plataforma elevada. Segure o peso nos ombros ou nas mãos. Fase concêntrica: Eleve o corpo na ponta dos pés, contraindo as panturrilhas ao máximo. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento das panturrilhas. Respire: expire na elevação, inspire no retorno. Mantenha o tronco ereto e o movimento controlado.",
+    "depois": "Em pé, eleve os calcanhares. Desça controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "panturrilha-sentado",
+    "nome": "Panturrilha Sentado",
+    "antes": "Posição inicial: Fique em pé com os pés na largura dos ombros, pés apoiados no chão ou em uma plataforma elevada. Segure o peso nos ombros ou nas mãos. Fase concêntrica: Eleve o corpo na ponta dos pés, contraindo as panturrilhas ao máximo. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento das panturrilhas. Respire: expire na elevação, inspire no retorno. Mantenha o tronco ereto e o movimento controlado.",
+    "depois": "Sentado, eleve os calcanhares. Desça controladamente.",
+    "motivo": "Adicionado \"sentado\" conforme nome"
+  },
+  {
+    "id": "panturrilha-unilateral",
+    "nome": "Panturrilha Unilateral",
+    "antes": "Posição inicial: Fique em pé com os pés na largura dos ombros, pés apoiados no chão ou em uma plataforma elevada. Segure o peso nos ombros ou nas mãos. Fase concêntrica: Eleve o corpo na ponta dos pés, contraindo as panturrilhas ao máximo. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento das panturrilhas. Respire: expire na elevação, inspire no retorno. Mantenha o tronco ereto e o movimento controlado.",
+    "depois": "Em pé, eleve os calcanhares. Desça controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "prancha",
+    "nome": "Prancha",
+    "antes": "Posição inicial: Deite no chão com os joelhos flexionados e pés apoiados, ou na posição indicada pela variação do exercício. Fase concêntrica: Contraia os músculos abdominais elevando o tronco ou aproximando os joelhos do peito, dependendo da variação. Fase excêntrica: Retorne à posição inicial de forma controlada, mantendo a tensão nos abdominais. Respire: expire na contração, inspire no retorno. Mantenha o movimento controlado e evite puxar o pescoço.",
+    "depois": "Apoie os antebraços no chão. Mantenha o corpo retilíneo. Segure a posição.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "puxada-aberta",
+    "nome": "Puxada Aberta",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso com os braços estendidos. Fase excêntrica: Puxe o peso de forma controlada, aproximando as escápulas e contraindo as costas. Fase concêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos músculos dorsais. Respire: expire na puxada, inspire no retorno. Mantenha o core estável e evite balançar o corpo.",
+    "depois": "Segure a barra acima da cabeça. Puxe até o peito. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "puxada-frente",
+    "nome": "Puxada Frontal",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso com os braços estendidos. Fase excêntrica: Puxe o peso de forma controlada, aproximando as escápulas e contraindo as costas. Fase concêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos músculos dorsais. Respire: expire na puxada, inspire no retorno. Mantenha o core estável e evite balançar o corpo.",
+    "depois": "Segure a barra acima da cabeça. Puxe até o peito. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "remada-baixa",
+    "nome": "Remada Baixa",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso com os braços estendidos. Fase excêntrica: Puxe o peso de forma controlada, aproximando as escápulas e contraindo as costas. Fase concêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos músculos dorsais. Respire: expire na puxada, inspire no retorno. Mantenha o core estável e evite balançar o corpo.",
+    "depois": "Incline o tronco. Segure a barra e puxe até o abdômen. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "remada-curvada",
+    "nome": "Remada Curvada com Barra",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso com os braços estendidos. Fase excêntrica: Puxe o peso de forma controlada, aproximando as escápulas e contraindo as costas. Fase concêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos músculos dorsais. Respire: expire na puxada, inspire no retorno. Mantenha o core estável e evite balançar o corpo.",
+    "depois": "Incline o tronco. Segure a barra e puxe até o abdômen. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "remada-unilateral",
+    "nome": "Remada Unilateral com Halter",
+    "antes": "Posição inicial: Fique em pé ou sentado com postura ereta, peito aberto. Segure o peso com os braços estendidos. Fase excêntrica: Puxe o peso de forma controlada, aproximando as escápulas e contraindo as costas. Fase concêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos músculos dorsais. Respire: expire na puxada, inspire no retorno. Mantenha o core estável e evite balançar o corpo.",
+    "depois": "Apoie um joelho no banco. Incline o tronco. Segure os halteres e puxe até o abdômen. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "remada-vertical-barra",
+    "nome": "Remada Vertical com Barra",
+    "antes": "1. Segure barra com afastamento igual à largura dos ombros; dorso das mãos voltado para cima. 2. Tracione a barra verticalmente para cima até chegar ao queixo; eleve o máximo possível os cotovelos. 3. Abaixe a barra lentamente até braços estendidos.",
+    "depois": "Incline o tronco. Segure a barra e puxe até o abdômen. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "rosca-concentrada",
+    "nome": "Rosca Concentrada",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços ao lado do corpo, cotovelos próximos ao tronco. Segure o peso com pegada supinada (palmas para cima). Fase concêntrica: Flexione os cotovelos elevando o peso até contrair completamente os bíceps, mantendo os cotovelos fixos. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos bíceps. Respire: expire na flexão, inspire no retorno. Mantenha o tronco estável e evite balançar.",
+    "depois": "Segure os halteres  com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "rosca-direta",
+    "nome": "Rosca Direta com Barra",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços ao lado do corpo, cotovelos próximos ao tronco. Segure o peso com pegada supinada (palmas para cima). Fase concêntrica: Flexione os cotovelos elevando o peso até contrair completamente os bíceps, mantendo os cotovelos fixos. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos bíceps. Respire: expire na flexão, inspire no retorno. Mantenha o tronco estável e evite balançar.",
+    "depois": "Segure a barra  com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "rosca-martelo",
+    "nome": "Rosca Martelo",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços ao lado do corpo, cotovelos próximos ao tronco. Segure o peso com pegada supinada (palmas para cima). Fase concêntrica: Flexione os cotovelos elevando o peso até contrair completamente os bíceps, mantendo os cotovelos fixos. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos bíceps. Respire: expire na flexão, inspire no retorno. Mantenha o tronco estável e evite balançar.",
+    "depois": "Segure os halteres com pegada neutra com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "rosca-scott",
+    "nome": "Rosca Scott",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços ao lado do corpo, cotovelos próximos ao tronco. Segure o peso com pegada supinada (palmas para cima). Fase concêntrica: Flexione os cotovelos elevando o peso até contrair completamente os bíceps, mantendo os cotovelos fixos. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos bíceps. Respire: expire na flexão, inspire no retorno. Mantenha o tronco estável e evite balançar.",
+    "depois": "Apoie os braços no banco Scott. Segure a barra  com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "stiff",
+    "nome": "Stiff",
+    "antes": "Posição inicial: Fique em pé com os pés na largura dos ombros. Segure o peso nas mãos ou nos ombros. Fase excêntrica: Flexione o quadril mantendo os joelhos ligeiramente flexionados, descendo o tronco até sentir alongamento nos posteriores. Fase concêntrica: Estenda o quadril retornando à posição inicial, contraindo os músculos posteriores. Respire: expire na subida, inspire na descida. Mantenha as costas retas e o core contraído.",
+    "depois": "Em pé, segure a barra. Flexione o quadril mantendo as costas retas. Retorne à posição inicial.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "supino-declinado",
+    "nome": "Supino Declinado com Barra",
+    "antes": "Posição inicial: Deite no banco com os pés apoiados no chão. Segure o peso com os braços estendidos acima do peito. Fase excêntrica: Abaixe o peso de forma controlada até sentir alongamento no peito, mantendo os cotovelos ligeiramente flexionados. Fase concêntrica: Empurre o peso de volta à posição inicial, contraindo os músculos peitorais. Respire: expire na subida, inspire na descida. Mantenha o core contraído e as escápulas estabilizadas.",
+    "depois": "Deite no banco declinado. Segure a barra na largura dos ombros. Desça até o peito e empurre para cima.",
+    "motivo": "Adicionado \"declinado\" conforme nome"
+  },
+  {
+    "id": "supino-declinado-barra",
+    "nome": "Supino em Banco Declinado",
+    "antes": "1. Deite-se em banco declinado, faça pegada na barra com dorso das mãos voltado para cima, afastamento igual à largura dos ombros. 2. Abaixe lentamente o peso até tocar a parte inferior do tórax. 3. Empurre a barra diretamente para cima até extensão total dos cotovelos.",
+    "depois": "Deite no banco declinado. Segure a barra na largura dos ombros. Desça até o peito e empurre para cima.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "supino-inclinado-barra",
+    "nome": "Supino Inclinado com Barra",
+    "antes": "1. Sentado em banco inclinado, faça pegada na barra com palmas voltadas para cima, afastamento igual à largura dos ombros. 2. Abaixe lentamente o peso até que a barra toque a parte superior do tórax. 3. Empurre a barra diretamente para cima até cotovelos estendidos.",
+    "depois": "Deite no banco inclinado. Segure a barra na largura dos ombros. Desça até o peito e empurre para cima.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "supino-inclinado",
+    "nome": "Supino Inclinado com Halteres",
+    "antes": "Posição inicial: Deite no banco com os pés apoiados no chão. Segure o peso com os braços estendidos acima do peito. Fase excêntrica: Abaixe o peso de forma controlada até sentir alongamento no peito, mantendo os cotovelos ligeiramente flexionados. Fase concêntrica: Empurre o peso de volta à posição inicial, contraindo os músculos peitorais. Respire: expire na subida, inspire na descida. Mantenha o core contraído e as escápulas estabilizadas.",
+    "depois": "Deite no banco inclinado. Segure os halteres na largura dos ombros. Desça até o peito e empurre para cima.",
+    "motivo": "Adicionado \"inclinado\" conforme nome"
+  },
+  {
+    "id": "supino-reto",
+    "nome": "Supino Reto com Barra",
+    "antes": "Posição inicial: Deite no banco com os pés apoiados no chão. Segure o peso com os braços estendidos acima do peito. Fase excêntrica: Abaixe o peso de forma controlada até sentir alongamento no peito, mantendo os cotovelos ligeiramente flexionados. Fase concêntrica: Empurre o peso de volta à posição inicial, contraindo os músculos peitorais. Respire: expire na subida, inspire na descida. Mantenha o core contraído e as escápulas estabilizadas.",
+    "depois": "Deite no banco. Segure a barra na largura dos ombros. Desça até o peito e empurre para cima.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "supino-reto-halteres",
+    "nome": "Supino Reto com Halteres",
+    "antes": "1. Deitado em banco horizontal, comece com halteres no nível do tórax, palmas voltadas para frente. 2. Impulsione verticalmente os halteres até extensão total dos cotovelos. 3. Abaixe os halteres retornando-os até a parte média do tórax.",
+    "depois": "Deite no banco. Segure os halteres na largura dos ombros. Desça até o peito e empurre para cima.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "triceps-coice",
+    "nome": "Tríceps Coice",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços elevados, cotovelos próximos à cabeça. Segure o peso atrás da cabeça ou acima. Fase concêntrica: Estenda os cotovelos elevando o peso, contraindo completamente os tríceps. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos tríceps. Respire: expire na extensão, inspire no retorno. Mantenha os cotovelos fixos e o tronco estável.",
+    "depois": "Em pé, Segure os halteres acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "triceps-corda",
+    "nome": "Tríceps Corda",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços elevados, cotovelos próximos à cabeça. Segure o peso atrás da cabeça ou acima. Fase concêntrica: Estenda os cotovelos elevando o peso, contraindo completamente os tríceps. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos tríceps. Respire: expire na extensão, inspire no retorno. Mantenha os cotovelos fixos e o tronco estável.",
+    "depois": "Em pé, Segure o cabo acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "triceps-frances",
+    "nome": "Tríceps Francês",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços elevados, cotovelos próximos à cabeça. Segure o peso atrás da cabeça ou acima. Fase concêntrica: Estenda os cotovelos elevando o peso, contraindo completamente os tríceps. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos tríceps. Respire: expire na extensão, inspire no retorno. Mantenha os cotovelos fixos e o tronco estável.",
+    "depois": "Deite no banco. Segure os halteres acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  },
+  {
+    "id": "triceps-puxada",
+    "nome": "Tríceps Puxada",
+    "antes": "Posição inicial: Fique em pé ou sentado com os braços elevados, cotovelos próximos à cabeça. Segure o peso atrás da cabeça ou acima. Fase concêntrica: Estenda os cotovelos elevando o peso, contraindo completamente os tríceps. Fase excêntrica: Retorne à posição inicial de forma controlada, sentindo o alongamento dos tríceps. Respire: expire na extensão, inspire no retorno. Mantenha os cotovelos fixos e o tronco estável.",
+    "depois": "Segure a barra acima da cabeça. Puxe até o peito. Retorne controladamente.",
+    "motivo": "Correção baseada no nome do exercício"
+  }
+]

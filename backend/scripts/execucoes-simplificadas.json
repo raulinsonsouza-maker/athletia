@@ -1,0 +1,314 @@
+[
+  {
+    "id": "afundo",
+    "nome": "Afundo",
+    "antes": "Fique em pé com os pés na largura dos ombros.  pés ligeiramente apontados para fora.  Segure o peso nos ombros ou nas mãos.  Fase : Desça o corpo flexionando os joelhos e quadris.",
+    "depois": "Em pé, segure os halteres nas mãos. Dê um passo à frente e flexione os joelhos. Retorne à posição inicial.",
+    "tamanhoAntes": 179,
+    "tamanhoDepois": 106
+  },
+  {
+    "id": "agachamento",
+    "nome": "Agachamento Livre",
+    "antes": "Em pé, pés na largura dos ombros. Segure a barra nos ombros. Flexione os joelhos descendo. Retorne à posição inicial.",
+    "depois": "Em pé, pés na largura dos ombros. Flexione os joelhos descendo. Retorne à posição inicial.",
+    "tamanhoAntes": 117,
+    "tamanhoDepois": 90
+  },
+  {
+    "id": "4f16d6dd-2b8a-4ee8-9aeb-2a1752d6e457",
+    "nome": "Alongamento Geral",
+    "antes": "Inicie em posição confortável.  Execute o alongamento de forma lenta e controlada.  mantendo a respiração profunda.  Mantenha a posição por 20-30 segundos.",
+    "depois": "Inicie em posição confortável. Execute o alongamento de forma lenta e controlada. mantendo a respiração profunda. Mantenha a posição por 20-30 segundos.",
+    "tamanhoAntes": 155,
+    "tamanhoDepois": 152
+  },
+  {
+    "id": "barra-fixa",
+    "nome": "Barra Fixa",
+    "antes": "Fique em pé ou sentado com postura ereta.  peito aberto.  Segure o peso com os braços estendidos.  Fase : Puxe o peso de forma controlada.",
+    "depois": "Segure a barra acima da cabeça. Puxe o corpo até o queixo passar a barra. Desça controladamente.",
+    "tamanhoAntes": 138,
+    "tamanhoDepois": 96
+  },
+  {
+    "id": "cadeira-extensora",
+    "nome": "Cadeira Extensora",
+    "antes": "Fique em pé com os pés na largura dos ombros.  pés ligeiramente apontados para fora.  Segure o peso nos ombros ou nas mãos.  Fase : Desça o corpo flexionando os joelhos e quadris.",
+    "depois": "Sente no aparelho. Estenda as pernas levantando os pés. Retorne controladamente.",
+    "tamanhoAntes": 179,
+    "tamanhoDepois": 80
+  },
+  {
+    "id": "crucifixo-cabos-polias-baixas",
+    "nome": "Crucifixo com Cabos em Polias Baixas",
+    "antes": "Deite no banco. Segure o cabo e abra os braços. Feche controladamente.",
+    "depois": "Em pé, segure o cabo. Abra os braços em arco. Feche controladamente.",
+    "tamanhoAntes": 70,
+    "tamanhoDepois": 68
+  },
+  {
+    "id": "cruzamento-cabos",
+    "nome": "Cruzamento de Cabos",
+    "antes": "1.  Em pé ereto.  agarre pegadores em D presos às polias altas.  2.",
+    "depois": "1. Em pé ereto. agarre pegadores em D presos às polias altas. 2.",
+    "tamanhoAntes": 67,
+    "tamanhoDepois": 64
+  },
+  {
+    "id": "desenvolvimento",
+    "nome": "Desenvolvimento com Barra",
+    "antes": "Em pé, Segure a barra na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "depois": "Segure a barra na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "tamanhoAntes": 87,
+    "tamanhoDepois": 80
+  },
+  {
+    "id": "desenvolvimento-halteres",
+    "nome": "Desenvolvimento com Halteres",
+    "antes": "Em pé, Segure os halteres na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "depois": "Segure os halteres na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "tamanhoAntes": 91,
+    "tamanhoDepois": 84
+  },
+  {
+    "id": "desenvolvimento-ombros-barra",
+    "nome": "Desenvolvimento de Ombros (Shoulder Press) com Barra",
+    "antes": "Em pé, Segure a barra na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "depois": "Segure a barra na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "tamanhoAntes": 87,
+    "tamanhoDepois": 80
+  },
+  {
+    "id": "desenvolvimento-ombros-halteres",
+    "nome": "Desenvolvimento de Ombros com Halteres",
+    "antes": "Em pé, Segure os halteres na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "depois": "Segure os halteres na altura dos ombros. Empurre para cima. Retorne controladamente.",
+    "tamanhoAntes": 91,
+    "tamanhoDepois": 84
+  },
+  {
+    "id": "flexao-barras-paralelas",
+    "nome": "Flexão de Braços em Barras Paralelas",
+    "antes": "1.  Agarre as barras paralelas.  sustentando o corpo com cotovelos estendidos e bloqueados.  2.",
+    "depois": "1. Agarre as barras paralelas. sustentando o corpo com cotovelos estendidos e bloqueados. 2.",
+    "tamanhoAntes": 95,
+    "tamanhoDepois": 92
+  },
+  {
+    "id": "leg-press",
+    "nome": "Leg Press",
+    "antes": "Fique em pé com os pés na largura dos ombros.  pés ligeiramente apontados para fora.  Segure o peso nos ombros ou nas mãos.  Fase : Desça o corpo flexionando os joelhos e quadris.",
+    "depois": "Sente no aparelho. Flexione os joelhos descendo. Empurre as pernas estendendo.",
+    "tamanhoAntes": 179,
+    "tamanhoDepois": 78
+  },
+  {
+    "id": "levantamento-posterior-cabo",
+    "nome": "Levantamento com Cabo, Inclinação para a Frente",
+    "antes": "1.  Agarre pegadores presos a duas polias baixas (pegador esquerdo na mão direita.  direito na esquerda).  2.",
+    "depois": "1. Agarre pegadores presos a duas polias baixas (pegador esquerdo na mão direita. direito na esquerda). 2.",
+    "tamanhoAntes": 109,
+    "tamanhoDepois": 106
+  },
+  {
+    "id": "levantamento-posterior-inclinado",
+    "nome": "Levantamento de Halteres, Inclinação para a Frente",
+    "antes": "1.  Segurando dois halteres com braços estendidos.  incline o corpo para frente usando a cintura.  mantendo costas retas.",
+    "depois": "1. Segurando dois halteres com braços estendidos. incline o corpo para frente usando a cintura. mantendo costas retas.",
+    "tamanhoAntes": 121,
+    "tamanhoDepois": 118
+  },
+  {
+    "id": "levantamento-frontal-barra",
+    "nome": "Levantamento Frontal com Barra",
+    "antes": "1.  Pegada com dorso das mãos voltado para cima.  na largura dos ombros.  2.",
+    "depois": "1. Pegada com dorso das mãos voltado para cima. na largura dos ombros. 2.",
+    "tamanhoAntes": 76,
+    "tamanhoDepois": 73
+  },
+  {
+    "id": "levantamento-frontal-cabo",
+    "nome": "Levantamento Frontal com Cabo",
+    "antes": "1.  Com uma mão.  agarre pegador em D preso a polia baixa.  pegada pronada.",
+    "depois": "1. Com uma mão. agarre pegador em D preso a polia baixa. pegada pronada.",
+    "tamanhoAntes": 75,
+    "tamanhoDepois": 72
+  },
+  {
+    "id": "levantamento-frontal-halteres",
+    "nome": "Levantamento Frontal com Halteres",
+    "antes": "1.  Em pé.  segure halteres aos lados do corpo com braços estendidos.  polegares apontando para frente.",
+    "depois": "1. Em pé. segure halteres aos lados do corpo com braços estendidos. polegares apontando para frente.",
+    "tamanhoAntes": 103,
+    "tamanhoDepois": 100
+  },
+  {
+    "id": "levantamento-lateral-aparelho",
+    "nome": "Levantamento Lateral com Aparelho",
+    "antes": "1.  Sente-se no aparelho com cotovelos contra almofadas protetoras.  2.  Levante os cotovelos até nível do ombro.",
+    "depois": "1. Sente-se no aparelho com cotovelos contra almofadas protetoras. 2. Levante os cotovelos até nível do ombro.",
+    "tamanhoAntes": 113,
+    "tamanhoDepois": 110
+  },
+  {
+    "id": "levantamento-lateral-cabo",
+    "nome": "Levantamento Lateral com Cabo",
+    "antes": "1.  Com uma mão.  agarre pegador em D preso a polia baixa.  2.",
+    "depois": "1. Com uma mão. agarre pegador em D preso a polia baixa. 2.",
+    "tamanhoAntes": 62,
+    "tamanhoDepois": 59
+  },
+  {
+    "id": "levantamento-lateral-halteres",
+    "nome": "Levantamento Lateral com Halteres",
+    "antes": "1.  Em pé ereto.  segure halteres com braços estendidos.  2.",
+    "depois": "1. Em pé ereto. segure halteres com braços estendidos. 2.",
+    "tamanhoAntes": 60,
+    "tamanhoDepois": 57
+  },
+  {
+    "id": "levantamento-terra",
+    "nome": "Levantamento Terra",
+    "antes": "Fique em pé ou sentado com postura ereta.  peito aberto.  Segure o peso com os braços estendidos.  Fase : Puxe o peso de forma controlada.",
+    "depois": "Em pé, segure a barra. Flexione os joelhos e quadris descendo. Retorne à posição inicial.",
+    "tamanhoAntes": 138,
+    "tamanhoDepois": 89
+  },
+  {
+    "id": "mesa-flexora",
+    "nome": "Mesa Flexora",
+    "antes": "Fique em pé com os pés na largura dos ombros.  Segure o peso nas mãos ou nos ombros.  Fase : Flexione o quadril mantendo os joelhos ligeiramente flexi.",
+    "depois": "Deite no aparelho. Flexione os joelhos trazendo os calcanhares em direção ao glúteo. Retorne controladamente.",
+    "tamanhoAntes": 151,
+    "tamanhoDepois": 109
+  },
+  {
+    "id": "panturrilha-em-pe",
+    "nome": "Panturrilha em Pé",
+    "antes": "Em pé, eleve os calcanhares. Desça controladamente.",
+    "depois": "Em pé, eleve os calcanhares o máximo possível. Desça controladamente.",
+    "tamanhoAntes": 51,
+    "tamanhoDepois": 69
+  },
+  {
+    "id": "panturrilha-sentado",
+    "nome": "Panturrilha Sentado",
+    "antes": "Sentado, eleve os calcanhares. Desça controladamente.",
+    "depois": "Sentado, eleve os calcanhares o máximo possível. Desça controladamente.",
+    "tamanhoAntes": 53,
+    "tamanhoDepois": 71
+  },
+  {
+    "id": "panturrilha-unilateral",
+    "nome": "Panturrilha Unilateral",
+    "antes": "Em pé, eleve os calcanhares. Desça controladamente.",
+    "depois": "Em pé, eleve os calcanhares o máximo possível. Desça controladamente.",
+    "tamanhoAntes": 51,
+    "tamanhoDepois": 69
+  },
+  {
+    "id": "peck-deck",
+    "nome": "Peck Deck",
+    "antes": "Deite no banco com os pés apoiados no chão.  Segure o peso com os braços estendidos acima do peito.  Fase : Abaixe o peso de forma controlada até sent.",
+    "depois": "Deite no banco com os pés apoiados no chão. Segure o peso com os braços estendidos acima do peito. Abaixe o peso de forma controlada até sent.",
+    "tamanhoAntes": 151,
+    "tamanhoDepois": 142
+  },
+  {
+    "id": "puxada-aberta",
+    "nome": "Puxada Aberta",
+    "antes": "Segure a barra acima da cabeça. Puxe até o peito. Retorne controladamente.",
+    "depois": "Segure a barra acima da cabeça. Puxe até o peito. Desça controladamente.",
+    "tamanhoAntes": 74,
+    "tamanhoDepois": 72
+  },
+  {
+    "id": "puxada-frente",
+    "nome": "Puxada Frontal",
+    "antes": "Segure a barra acima da cabeça. Puxe até o peito. Retorne controladamente.",
+    "depois": "Segure a barra acima da cabeça. Puxe até o peito. Desça controladamente.",
+    "tamanhoAntes": 74,
+    "tamanhoDepois": 72
+  },
+  {
+    "id": "rosca-concentrada",
+    "nome": "Rosca Concentrada",
+    "antes": "Segure os halteres  com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "depois": "Segure os halteres com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "tamanhoAntes": 101,
+    "tamanhoDepois": 100
+  },
+  {
+    "id": "rosca-direta",
+    "nome": "Rosca Direta com Barra",
+    "antes": "Segure a barra  com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "depois": "Segure a barra com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "tamanhoAntes": 97,
+    "tamanhoDepois": 96
+  },
+  {
+    "id": "rosca-martelo",
+    "nome": "Rosca Martelo",
+    "antes": "Segure os halteres com pegada neutra com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "depois": "Segure os halteres com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "tamanhoAntes": 118,
+    "tamanhoDepois": 100
+  },
+  {
+    "id": "rosca-scott",
+    "nome": "Rosca Scott",
+    "antes": "Apoie os braços no banco Scott. Segure a barra  com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "depois": "Segure a barra com os braços estendidos. Flexione os braços levantando. Retorne controladamente.",
+    "tamanhoAntes": 129,
+    "tamanhoDepois": 96
+  },
+  {
+    "id": "rotacao-externa-cabo",
+    "nome": "Rotação Externa com Cabo",
+    "antes": "1.  Fique de pé.  posicionado de lado com relação a polia ajustada à altura da cintura.  2.",
+    "depois": "1. Fique de pé. posicionado de lado com relação a polia ajustada à altura da cintura. 2.",
+    "tamanhoAntes": 91,
+    "tamanhoDepois": 88
+  },
+  {
+    "id": "rotacao-interna-cabo",
+    "nome": "Rotação Interna com Cabo",
+    "antes": "1.  Fique em pé.  posicionado de lado com relação a polia ajustada à altura da cintura.  2.",
+    "depois": "1. Fique em pé. posicionado de lado com relação a polia ajustada à altura da cintura. 2.",
+    "tamanhoAntes": 91,
+    "tamanhoDepois": 88
+  },
+  {
+    "id": "triceps-coice",
+    "nome": "Tríceps Coice",
+    "antes": "Em pé, Segure os halteres acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "depois": "Segure os halteres acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "tamanhoAntes": 97,
+    "tamanhoDepois": 90
+  },
+  {
+    "id": "triceps-corda",
+    "nome": "Tríceps Corda",
+    "antes": "Em pé, Segure o cabo acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "depois": "Segure o cabo acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "tamanhoAntes": 92,
+    "tamanhoDepois": 85
+  },
+  {
+    "id": "triceps-frances",
+    "nome": "Tríceps Francês",
+    "antes": "Deite no banco. Segure os halteres acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "depois": "Segure os halteres acima da cabeça. Estenda os braços para baixo. Retorne controladamente.",
+    "tamanhoAntes": 106,
+    "tamanhoDepois": 90
+  },
+  {
+    "id": "triceps-puxada",
+    "nome": "Tríceps Puxada",
+    "antes": "Segure a barra acima da cabeça. Puxe até o peito. Retorne controladamente.",
+    "depois": "Segure a barra acima da cabeça. Puxe até o peito. Desça controladamente.",
+    "tamanhoAntes": 74,
+    "tamanhoDepois": 72
+  }
+]

@@ -1,0 +1,259 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  senhaHash     String    @map("senha_hash")
+  nome          String?
+  dataNascimento DateTime? @map("data_nascimento")
+  telefone      String?   // Telefone com máscara
+  plano         String?   // MENSAL, TRIMESTRAL, SEMESTRAL
+  planoAtivo    Boolean   @default(false) @map("plano_ativo")
+  dataPagamento DateTime? @map("data_pagamento")
+  modoTreino    String?   @default("IA") @map("modo_treino") // "IA" ou "MANUAL"
+  currentTrainingSource String? @map("current_training_source") // "IA" ou "MANUAL"
+  currentTrainingId     String? @map("current_training_id") // UUID do treino ativo
+  role          Role      @default(USER)
+  perfil        Perfil?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  historicoPesos HistoricoPeso[]
+  treinos        Treino[]
+  refreshTokens  RefreshToken[]
+  treinosPersonalizadosTemplates TreinoPersonalizadoTemplate[]
+  configuracoesTreino ConfiguracaoTreinoUsuario[]
+
+  @@map("users")
+}
+
+model Perfil {
+  id                  String   @id @default(uuid())
+  userId              String   @unique @map("user_id")
+  idade               Int?
+  sexo                String?
+  tipoCorpo           String?  @map("tipo_corpo") // Ectomorfo, Mesomorfo, Endomorfo (masculino) | Em Forma, Sobrepeso, Acima do Peso, Obesidade (feminino)
+  altura              Float?   // em cm
+  pesoAtual           Float?   @map("peso_atual") // em kg
+  percentualGordura   Float?   @map("percentual_gordura")
+  aguaDiaria          String?  @map("agua_diaria") // Consumo diário de água
+  experiencia         String?  // Iniciante, Intermediário, Avançado
+  objetivo            String?  // Emagrecimento, Hipertrofia, Força, Condicionamento
+  frequenciaSemanal   Int?     @map("frequencia_semanal")
+  tempoDisponivel     Int?     @map("tempo_disponivel") // em minutos
+  localTreino         String?  @map("local_treino") // Casa, Academia, Misto
+  problemasAnteriores String[] @map("problemas_anteriores") // Problemas em tentativas anteriores de condicionamento físico
+  objetivosAdicionais String[] @map("objetivos_adicionais") // Objetivos adicionais de estilo de vida
+  lesoes              String[] // array de strings
+  equipamentos        String[] // array de strings - DEPRECATED, será removido
+  preferencias        String[] // array de strings
+  rpePreferido        Int?     @map("rpe_preferido")
+  ultimaAtualizacaoPeriodica DateTime? @map("ultima_atualizacao_periodica") // Data da última atualização periódica (a cada 30 dias)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("perfis")
+}
+
+model HistoricoPeso {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  peso      Float    // em kg
+  data      DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("historico_pesos")
+}
+
+model Treino {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  data        DateTime
+  tipo        String
+  concluido   Boolean  @default(false)
+  tempoEstimado Int?   @map("tempo_estimado") // em minutos
+  criadoPor   String   @default("IA") @map("criado_por") // "IA" ou "USUARIO"
+  nome        String   // Nome obrigatório para treinos personalizados
+  templateId  String?  @map("template_id") // ID do template usado (se aplicável)
+  diaSemana   Int?     @map("dia_semana") // 0=domingo, 1=segunda, etc. Para treinos recorrentes
+  recorrente  Boolean  @default(false) // Se é treino recorrente (A-G)
+  letraTreino String?  @map("letra_treino") // A, B, C, D, E, F ou G
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercicios ExercicioTreino[]
+  templatePersonalizado TreinoPersonalizadoTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@map("treinos")
+}
+
+model Exercicio {
+  id                    String   @id @default(uuid())
+  nome                  String
+  grupoMuscularPrincipal String   @map("grupo_muscular_principal")
+  sinergistas          String[]  // array de grupos musculares
+  descricao            String?   @db.Text
+  execucaoTecnica      String?   @map("execucao_tecnica") @db.Text
+  errosComuns          String[]  @map("erros_comuns")
+  imagemUrl            String?   @map("imagem_url")
+  gifUrl               String?   @map("gif_url")
+  cargaInicialSugerida Float?    @map("carga_inicial_sugerida")
+  rpeSugerido          Int?      @map("rpe_sugerido")
+  equipamentoNecessario String[] @map("equipamento_necessario")
+  nivelDificuldade     String    @map("nivel_dificuldade") // Iniciante, Intermediário, Avançado
+  alternativas         String[]  // IDs de exercícios alternativos
+  ativo                Boolean   @default(true)
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  exerciciosTreino ExercicioTreino[]
+  templateExercicios TreinoTemplateExercicio[]
+  templatePersonalizadoExercicios TreinoPersonalizadoTemplateExercicio[]
+
+  @@map("exercicios")
+}
+
+model ExercicioTreino {
+  id          String   @id @default(uuid())
+  treinoId    String   @map("treino_id")
+  exercicioId String   @map("exercicio_id")
+  ordem       Int
+  series      Int
+  repeticoes  String   // pode ser "8-12" ou número fixo
+  carga       Float?   // em kg
+  rpe         Int?
+  descanso    Int?     // em segundos
+  concluido   Boolean  @default(false)
+  observacoes String?  @db.Text
+
+  treino    Treino    @relation(fields: [treinoId], references: [id], onDelete: Cascade)
+  exercicio Exercicio @relation(fields: [exercicioId], references: [id])
+
+  @@map("exercicios_treino")
+}
+
+// Template de treino pré-estruturado baseado em objetivos, nível e frequência
+model TreinoTemplate {
+  id                String   @id @default(uuid())
+  nome              String   // Ex: "Hipertrofia Iniciante 3x Full Body"
+  descricao         String?  @db.Text
+  objetivo          String   // Hipertrofia, Força, Resistência, Emagrecimento, Condicionamento
+  nivelExperiencia  String   @map("nivel_experiencia") // Iniciante, Intermediário, Avançado
+  frequenciaSemanal Int      @map("frequencia_semanal") // 2, 3, 4, 5, 6
+  divisaoTreino     String   @map("divisao_treino") // Full Body, A-B, A-B-C, A-B-C-D, Push Pull Legs
+  diaSemana         Int?     @map("dia_semana") // 1=segunda, 2=terça, etc. (null = qualquer dia)
+  gruposMusculares  String[] @map("grupos_musculares") // Grupos trabalhados neste template
+  tempoEstimado     Int      @map("tempo_estimado") // em minutos
+  volumeTotal       Int?     @map("volume_total") // Total de séries
+  ativo             Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  exercicios TreinoTemplateExercicio[]
+
+  @@map("treino_templates")
+}
+
+// Exercícios que compõem um template de treino
+model TreinoTemplateExercicio {
+  id                String   @id @default(uuid())
+  templateId        String   @map("template_id")
+  exercicioId       String   @map("exercicio_id")
+  ordem             Int
+  series            Int
+  repeticoes        String   // pode ser "8-12" ou número fixo
+  rpeSugerido       Int?     @map("rpe_sugerido")
+  descanso          Int?     // em segundos
+  observacoes       String?  @db.Text
+  obrigatorio       Boolean  @default(true) // Se false, pode ser substituído por alternativa
+
+  template  TreinoTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exercicio Exercicio      @relation(fields: [exercicioId], references: [id])
+
+  @@unique([templateId, exercicioId, ordem])
+  @@map("treino_template_exercicios")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// Template de treino personalizado criado pelo usuário
+model TreinoPersonalizadoTemplate {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  nome        String
+  descricao   String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercicios TreinoPersonalizadoTemplateExercicio[]
+  treinos    Treino[]
+
+  @@map("treino_personalizado_templates")
+}
+
+// Exercícios que compõem um template de treino personalizado
+model TreinoPersonalizadoTemplateExercicio {
+  id                String   @id @default(uuid())
+  templateId        String   @map("template_id")
+  exercicioId       String   @map("exercicio_id")
+  ordem             Int
+  series            Int
+  repeticoes        String   // pode ser "8-12" ou número fixo
+  carga             Float?   // em kg
+  descanso          Int?     // em segundos
+  observacoes       String?  @db.Text
+
+  template  TreinoPersonalizadoTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  exercicio Exercicio                   @relation(fields: [exercicioId], references: [id])
+
+  @@unique([templateId, exercicioId, ordem])
+  @@map("treino_personalizado_template_exercicios")
+}
+
+model ConfiguracaoTreinoUsuario {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  diaSemana   Int      @map("dia_semana") // 0=domingo, 1=segunda, etc.
+  tipoTreino  String   @map("tipo_treino") // 'IA', 'RECORRENTE'
+  letraTreino String?  @map("letra_treino") // A-G (se tipoTreino = 'RECORRENTE')
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, diaSemana])
+  @@map("configuracao_treino_usuario")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+

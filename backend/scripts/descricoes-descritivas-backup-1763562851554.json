@@ -1,0 +1,562 @@
+[
+  {
+    "id": "abdominal-bicicleta",
+    "nome": "Abdominal Bicicleta",
+    "antes": "Abdominais e core.",
+    "depois": "Exercício que fortalece o abdômen e o core. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 18,
+    "tamanhoDepois": 105
+  },
+  {
+    "id": "abdominal-cruzado",
+    "nome": "Abdominal Cruzado",
+    "antes": "Abdominais e core.",
+    "depois": "Exercício que fortalece o abdômen e o core. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 18,
+    "tamanhoDepois": 105
+  },
+  {
+    "id": "abdominal-infra",
+    "nome": "Abdominal Infra",
+    "antes": "Abdominais e core.",
+    "depois": "Exercício que fortalece o abdômen e o core. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 18,
+    "tamanhoDepois": 105
+  },
+  {
+    "id": "abdominal-lateral",
+    "nome": "Abdominal Lateral",
+    "antes": "Abdominais e core.",
+    "depois": "Exercício que fortalece o abdômen e o core. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 18,
+    "tamanhoDepois": 105
+  },
+  {
+    "id": "abdominal",
+    "nome": "Abdominal Reto",
+    "antes": "Abdominais e core.",
+    "depois": "Exercício que fortalece o abdômen e o core. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 18,
+    "tamanhoDepois": 105
+  },
+  {
+    "id": "afundo",
+    "nome": "Afundo",
+    "antes": "Quadríceps (frente da coxa).",
+    "depois": "Exercício que trabalha principalmente os quadríceps. Essencial para desenvolver força nas pernas, melhorar a estabilidade.",
+    "tamanhoAntes": 28,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "agachamento-hack",
+    "nome": "Agachamento Hack",
+    "antes": "Quadríceps (frente da coxa).",
+    "depois": "Movimento de agachamento que trabalha principalmente os quadríceps. Essencial para desenvolver força nas pernas, melhorar a estabilidade.",
+    "tamanhoAntes": 28,
+    "tamanhoDepois": 137
+  },
+  {
+    "id": "agachamento",
+    "nome": "Agachamento Livre",
+    "antes": "Quadríceps (frente da coxa).",
+    "depois": "Movimento de agachamento que trabalha principalmente os quadríceps. Essencial para desenvolver força nas pernas, melhorar a estabilidade.",
+    "tamanhoAntes": 28,
+    "tamanhoDepois": 137
+  },
+  {
+    "id": "4f16d6dd-2b8a-4ee8-9aeb-2a1752d6e457",
+    "nome": "Alongamento Geral",
+    "antes": "Alongamento e flexibilidade. Promove aumento da amplitude de movimento, melhora da mobilidade articular e prevenção de lesões. Essencial para recuperação e manutenção da saúde musculoesquelética.",
+    "depois": "Exercício de alongamento que melhora a flexibilidade e mobilidade. Essencial para aumentar a amplitude de movimento, prevenir lesões.",
+    "tamanhoAntes": 195,
+    "tamanhoDepois": 133
+  },
+  {
+    "id": "barra-fixa",
+    "nome": "Barra Fixa",
+    "antes": "Das costas.",
+    "depois": "Movimento de puxada na barra que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 129
+  },
+  {
+    "id": "4e152e53-3441-4838-b229-292c2e0b4f3d",
+    "nome": "Bicicleta Ergométrica",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "depois": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "tamanhoAntes": 65,
+    "tamanhoDepois": 141
+  },
+  {
+    "id": "cadeira-extensora",
+    "nome": "Cadeira Extensora",
+    "antes": "Quadríceps (frente da coxa).",
+    "depois": "Exercício que trabalha principalmente os quadríceps. Essencial para desenvolver força nas pernas, melhorar a estabilidade.",
+    "tamanhoAntes": 28,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "crucifixo",
+    "nome": "Crucifixo",
+    "antes": "Peitorais.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "crucifixo-aparelho",
+    "nome": "Crucifixo com Aparelho",
+    "antes": "Aparelho proporciona resistência uniforme. Parte central interna do músculo peitoral faz maior parte do trabalho quando pegadores são tracionados simultaneamente.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 162,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "crucifixo-cabos-polias-baixas",
+    "nome": "Crucifixo com Cabos em Polias Baixas",
+    "antes": "Cabo proporciona resistência uniforme. Posição em pé projetada para frente permite melhor trajetória para mobilização dos músculos peitorais.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 141,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "crucifixo-halteres",
+    "nome": "Crucifixo com Halteres",
+    "antes": "Peitoral. Funciona melhor com pegada neutra (palmas voltadas para dentro). Quanto mais baixo descerem, maior alongamento, mas maior risco de lesão.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 147,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "crucifixo-declinado-halteres",
+    "nome": "Crucifixo Declinado com Halteres",
+    "antes": "Peitoral inferior. Quanto mais descerem os halteres, maior alongamento, mas maior probabilidade de lesão.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 105,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "crucifixo-aparelho-posterior",
+    "nome": "Crucifixo em Aparelho, Deltóide Posterior",
+    "antes": "Aparelho proporciona resistência uniforme e diversos ajustes técnicos. Pegadores horizontais com pegada pronada isola melhor o deltóide posterior.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 146,
+    "tamanhoDepois": 144
+  },
+  {
+    "id": "crucifixo-inclinado-halteres",
+    "nome": "Crucifixo Inclinado com Halteres",
+    "antes": "Peitoral superior. Quanto mais baixo descerem os halteres, maior o alongamento, mas também maior risco de lesão.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 112,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "crucifixo-invertido",
+    "nome": "Crucifixo Invertido",
+    "antes": "Deltoides.",
+    "depois": "Movimento de abertura de braços que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 144
+  },
+  {
+    "id": "cruzamento-cabos",
+    "nome": "Cruzamento de Cabos",
+    "antes": "Trajetória baixa (pegadores se encontram à frente dos quadris) mobiliza fibras inferiores do peitoral. Trajetória alta mobiliza seção média.",
+    "depois": "Exercício que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 140,
+    "tamanhoDepois": 112
+  },
+  {
+    "id": "desenvolvimento",
+    "nome": "Desenvolvimento com Barra",
+    "antes": "Deltoides.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "desenvolvimento-halteres",
+    "nome": "Desenvolvimento com Halteres",
+    "antes": "Deltoides.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "desenvolvimento-ombros-barra",
+    "nome": "Desenvolvimento de Ombros (Shoulder Press) com Barra",
+    "antes": "Desenvolvimento do deltóide anterior. Sentado em banco, pegada na largura dos ombros, palmas voltadas para frente.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 114,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "desenvolvimento-ombros-halteres",
+    "nome": "Desenvolvimento de Ombros com Halteres",
+    "antes": "Variação com halteres que permite maior amplitude de movimento. Pegada pronada trabalha cabeça anterior e lateral; pegada neutra isola melhor o deltóide anterior.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 162,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "elevacao-frontal",
+    "nome": "Elevação Frontal",
+    "antes": "Deltoides.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "elevacao-lateral",
+    "nome": "Elevação Lateral",
+    "antes": "Deltoides.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "3792c82d-a26d-4074-bad1-f48d51249a08",
+    "nome": "Elíptico",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "depois": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "tamanhoAntes": 65,
+    "tamanhoDepois": 141
+  },
+  {
+    "id": "b2214cfb-f71c-485d-9a4e-00b017afe73c",
+    "nome": "Escada",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "depois": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "tamanhoAntes": 65,
+    "tamanhoDepois": 141
+  },
+  {
+    "id": "a479b07f-8642-4b04-9a44-50441330b722",
+    "nome": "Esteira",
+    "antes": "Exercício cardiovascular para melhoria do condicionamento físico.",
+    "depois": "Exercício cardiovascular que trabalha o sistema cardiovascular. Essencial para melhorar o condicionamento físico, promover queima de gordura.",
+    "tamanhoAntes": 65,
+    "tamanhoDepois": 141
+  },
+  {
+    "id": "flexao-barras-paralelas",
+    "nome": "Flexão de Braços em Barras Paralelas",
+    "antes": "Ligeira inclinação para frente mobiliza os peitorais; postura ereta transfere enfoque para tríceps. Mantenha cotovelos junto aos lados do corpo.",
+    "depois": "Exercício que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 144,
+    "tamanhoDepois": 112
+  },
+  {
+    "id": "leg-press",
+    "nome": "Leg Press",
+    "antes": "Quadríceps (frente da coxa).",
+    "depois": "Exercício que trabalha principalmente os quadríceps. Essencial para desenvolver força nas pernas, melhorar a estabilidade.",
+    "tamanhoAntes": 28,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "levantamento-posterior-cabo",
+    "nome": "Levantamento com Cabo, Inclinação para a Frente",
+    "antes": "Cabo proporciona resistência uniforme. Para enfatizar deltóide posterior, braços devem se movimentar diretamente para fora, afastando-se dos lados do corpo.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 156,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-posterior-inclinado",
+    "nome": "Levantamento de Halteres, Inclinação para a Frente",
+    "antes": "Pegada neutra (polegares para frente) permite que deltóide lateral atue; pegada pronada (polegares para dentro) enfatiza deltóide posterior.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 140,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-frontal-barra",
+    "nome": "Levantamento Frontal com Barra",
+    "antes": "Pegada estreita enfatiza deltóide anterior; pegada mais aberta depende da assistência do deltóide lateral.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 106,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-frontal-cabo",
+    "nome": "Levantamento Frontal com Cabo",
+    "antes": "Cabo proporciona resistência uniforme durante todo o movimento, diferente dos halteres onde a resistência varia.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 112,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-frontal-halteres",
+    "nome": "Levantamento Frontal com Halteres",
+    "antes": "Deltóide anterior. Pegada neutra (polegar para frente) enfatiza deltóide anterior; pegada pronada permite ajuda do deltóide lateral.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 132,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-lateral-aparelho",
+    "nome": "Levantamento Lateral com Aparelho",
+    "antes": "Aparelho proporciona resistência uniforme e estabilidade. Pegada pronada faz rotação interna, direcionando para deltóide lateral.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 129,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-lateral-cabo",
+    "nome": "Levantamento Lateral com Cabo",
+    "antes": "Cabo proporciona resistência uniforme durante todo o movimento, diferente dos halteres onde a resistência varia.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 112,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-lateral-halteres",
+    "nome": "Levantamento Lateral com Halteres",
+    "antes": "Deltóide lateral. Terminar no nível dos ombros mantém tensão no deltóide; acima disso, trapézio assume o trabalho.",
+    "depois": "Movimento de elevação que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 114,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "levantamento-terra",
+    "nome": "Levantamento Terra",
+    "antes": "Das costas.",
+    "depois": "Movimento de elevação que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "mesa-flexora",
+    "nome": "Mesa Flexora",
+    "antes": "Posteriores da coxa (isquiotibiais).",
+    "depois": "Exercício que trabalha principalmente a parte posterior das coxas. Essencial para fortalecer a parte posterior das coxas, melhorar a estabilidade do joelho.",
+    "tamanhoAntes": 36,
+    "tamanhoDepois": 156
+  },
+  {
+    "id": "panturrilha-em-pe",
+    "nome": "Panturrilha em Pé",
+    "antes": "Da panturrilha (gastrocnêmio e sóleo).",
+    "depois": "Movimento de elevação que trabalha principalmente as panturrilhas. Essencial para fortalecer as panturrilhas, melhorar a estabilidade.",
+    "tamanhoAntes": 38,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "panturrilha-sentado",
+    "nome": "Panturrilha Sentado",
+    "antes": "Da panturrilha (gastrocnêmio e sóleo).",
+    "depois": "Movimento de elevação que trabalha principalmente as panturrilhas. Essencial para fortalecer as panturrilhas, melhorar a estabilidade.",
+    "tamanhoAntes": 38,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "panturrilha-unilateral",
+    "nome": "Panturrilha Unilateral",
+    "antes": "Da panturrilha (gastrocnêmio e sóleo).",
+    "depois": "Movimento de elevação que trabalha principalmente as panturrilhas. Essencial para fortalecer as panturrilhas, melhorar a estabilidade.",
+    "tamanhoAntes": 38,
+    "tamanhoDepois": 134
+  },
+  {
+    "id": "peck-deck",
+    "nome": "Peck Deck",
+    "antes": "Peitorais.",
+    "depois": "Exercício que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 112
+  },
+  {
+    "id": "prancha",
+    "nome": "Prancha",
+    "antes": "Abdominais e core.",
+    "depois": "Exercício isométrico que fortalece o abdômen e o core. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 18,
+    "tamanhoDepois": 116
+  },
+  {
+    "id": "puxada-aberta",
+    "nome": "Puxada Aberta",
+    "antes": "Das costas.",
+    "depois": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 120
+  },
+  {
+    "id": "puxada-frente",
+    "nome": "Puxada Frontal",
+    "antes": "Das costas.",
+    "depois": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 120
+  },
+  {
+    "id": "remada-baixa",
+    "nome": "Remada Baixa",
+    "antes": "Das costas.",
+    "depois": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 120
+  },
+  {
+    "id": "remada-curvada",
+    "nome": "Remada Curvada com Barra",
+    "antes": "Das costas.",
+    "depois": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 120
+  },
+  {
+    "id": "remada-unilateral",
+    "nome": "Remada Unilateral com Halter",
+    "antes": "Das costas.",
+    "depois": "Movimento de puxada que trabalha principalmente as costas. Essencial para melhorar a postura, prevenir dores nas costas.",
+    "tamanhoAntes": 11,
+    "tamanhoDepois": 120
+  },
+  {
+    "id": "remada-vertical-barra",
+    "nome": "Remada Vertical com Barra",
+    "antes": "Deltoides.",
+    "depois": "Movimento de puxada que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 132
+  },
+  {
+    "id": "rosca-concentrada",
+    "nome": "Rosca Concentrada",
+    "antes": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza halteres,...",
+    "depois": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 145
+  },
+  {
+    "id": "rosca-direta",
+    "nome": "Rosca Direta com Barra",
+    "antes": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza barra, pe...",
+    "depois": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 145
+  },
+  {
+    "id": "rosca-martelo",
+    "nome": "Rosca Martelo",
+    "antes": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza halteres,...",
+    "depois": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 145
+  },
+  {
+    "id": "rosca-scott",
+    "nome": "Rosca Scott",
+    "antes": "Desenvolvimento dos músculos bíceps braquial. Trabalha a flexão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Utiliza barra, pe...",
+    "depois": "Movimento de flexão de braço que trabalha principalmente os bíceps. Essencial para desenvolver força nos braços, melhorar a capacidade funcional.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 145
+  },
+  {
+    "id": "rotacao-externa-cabo",
+    "nome": "Rotação Externa com Cabo",
+    "antes": "Exercício essencial para fortalecer manguito rotador e prevenir lesões. Infra-espinal e redondo menor promovem rotação externa.",
+    "depois": "Exercício que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 127,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "rotacao-interna-cabo",
+    "nome": "Rotação Interna com Cabo",
+    "antes": "Deltoides.",
+    "depois": "Exercício que trabalha principalmente os ombros. Essencial para aumentar a mobilidade dos ombros, melhorar a estabilidade.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "stiff",
+    "nome": "Stiff",
+    "antes": "Posteriores da coxa (isquiotibiais).",
+    "depois": "Movimento de flexão de quadril que trabalha principalmente a parte posterior das coxas. Essencial para fortalecer a parte posterior das coxas, melhorar a estabilidade do joelho.",
+    "tamanhoAntes": 36,
+    "tamanhoDepois": 177
+  },
+  {
+    "id": "supino-declinado",
+    "nome": "Supino Declinado com Barra",
+    "antes": "Peitorais.",
+    "depois": "Movimento de supino declinado que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 132
+  },
+  {
+    "id": "supino-declinado-barra",
+    "nome": "Supino em Banco Declinado",
+    "antes": "Porção inferior do peitoral (cabeça esternal). Ângulo de declinação de 20-40° é ideal; ângulos maiores transferem enfoque para tríceps.",
+    "depois": "Movimento de supino declinado que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 135,
+    "tamanhoDepois": 132
+  },
+  {
+    "id": "supino-inclinado-barra",
+    "nome": "Supino Inclinado com Barra",
+    "antes": "Porção superior do peitoral (cabeça clavicular). Inclinação de 30-45° é ideal; inclinações maiores transferem enfoque para deltóide anterior.",
+    "depois": "Movimento de supino inclinado que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 141,
+    "tamanhoDepois": 132
+  },
+  {
+    "id": "supino-inclinado",
+    "nome": "Supino Inclinado com Halteres",
+    "antes": "Peitorais.",
+    "depois": "Movimento de supino inclinado que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 132
+  },
+  {
+    "id": "supino-reto",
+    "nome": "Supino Reto com Barra",
+    "antes": "Peitorais.",
+    "depois": "Movimento de supino que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 10,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "supino-reto-halteres",
+    "nome": "Supino Reto com Halteres",
+    "antes": "Halteres permitem maior amplitude de movimento. Pegada pronada proporciona mais alongamento; pegada neutra permite maior contração.",
+    "depois": "Movimento de supino que trabalha principalmente o peitoral. Essencial para desenvolver força no peito, melhorar a postura.",
+    "tamanhoAntes": 131,
+    "tamanhoDepois": 122
+  },
+  {
+    "id": "triceps-coice",
+    "nome": "Tríceps Coice",
+    "antes": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para...",
+    "depois": "Movimento de extensão de braço que trabalha principalmente os tríceps. Essencial para desenvolver força nos braços, melhorar a capacidade de empurrar.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 150
+  },
+  {
+    "id": "triceps-corda",
+    "nome": "Tríceps Corda",
+    "antes": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para desenvolvimento completo dos braços.",
+    "depois": "Movimento de extensão de braço que trabalha principalmente os tríceps. Essencial para desenvolver força nos braços, melhorar a capacidade de empurrar.",
+    "tamanhoAntes": 187,
+    "tamanhoDepois": 150
+  },
+  {
+    "id": "triceps-frances",
+    "nome": "Tríceps Francês",
+    "antes": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para...",
+    "depois": "Movimento de extensão de braço que trabalha principalmente os tríceps. Essencial para desenvolver força nos braços, melhorar a capacidade de empurrar.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 150
+  },
+  {
+    "id": "triceps-puxada",
+    "nome": "Tríceps Puxada",
+    "antes": "Desenvolvimento dos músculos tríceps braquial. Trabalha a extensão do cotovelo, promovendo hipertrofia e definição muscular dos braços. Essencial para...",
+    "depois": "Movimento de puxada que trabalha principalmente os tríceps. Essencial para desenvolver força nos braços, melhorar a capacidade de empurrar.",
+    "tamanhoAntes": 153,
+    "tamanhoDepois": 139
+  }
+]
