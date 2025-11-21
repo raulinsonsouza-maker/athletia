@@ -187,14 +187,11 @@ export default function TreinoDoDia() {
   // Carregar treinos semanais
   const carregarTreinosSemanais = async () => {
     try {
-      setCarregandoSemanais(true)
       const response = await buscarTreinosSemanais()
       setTreinosSemanais(response.treinos || [])
     } catch (err: any) {
       console.error('Erro ao carregar treinos semanais:', err)
       // Não mostrar erro ao usuário, apenas logar
-    } finally {
-      setCarregandoSemanais(false)
     }
   }
 
@@ -393,7 +390,7 @@ export default function TreinoDoDia() {
             <VisaoSemanalTreinos
               treinos={treinosSemanais}
               treinoAtualId={null}
-              onTreinoClick={(treinoSelecionado) => {
+              onTreinoClick={() => {
                 // Tentar carregar o treino selecionado
                 carregarTreino()
               }}

@@ -168,7 +168,7 @@ export default function Admin() {
     role: 'USER' as 'USER' | 'ADMIN'
   })
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [, setSelectedUserId] = useState<string | null>(null) // Usado apenas para setter
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [detailsTab, setDetailsTab] = useState<'basicas' | 'onboarding' | 'treinos' | 'historico'>('basicas')

@@ -26,15 +26,15 @@ interface OnboardingData {
   rpePreferido?: number
 }
 
-interface Planos {
-  id: string
-  nome: string
-  preco: number
-  periodo: string
-  desconto?: string
-  popular?: boolean
-  economia?: string
-}
+// interface Planos { // Não utilizado
+//   id: string
+//   nome: string
+//   preco: number
+//   periodo: string
+//   desconto?: string
+//   popular?: boolean
+//   economia?: string
+// }
 
 // const PLANOS: Planos[] = [ // Não utilizado
 //   {
