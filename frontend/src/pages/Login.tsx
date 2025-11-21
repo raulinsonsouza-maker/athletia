@@ -19,7 +19,22 @@ export default function Login() {
       await login(email, senha)
       navigate('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Erro ao fazer login')
+      console.error('Erro no login:', err)
+      
+      // Tratamento específico para diferentes tipos de erro
+      if (err.response?.status === 502) {
+        setError('Servidor temporariamente indisponível. O backend pode estar offline ou reiniciando. Tente novamente em alguns instantes.')
+      } else if (err.response?.status === 503) {
+        setError('Serviço temporariamente indisponível. Tente novamente em alguns instantes.')
+      } else if (err.response?.status === 401) {
+        setError('Email ou senha incorretos. Verifique suas credenciais.')
+      } else if (err.isNetworkError || !err.response) {
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet.')
+      } else if (err.response?.status >= 500) {
+        setError('Erro no servidor. Tente novamente em alguns instantes.')
+      } else {
+        setError(err.response?.data?.error || err.response?.data?.message || 'Erro ao fazer login')
+      }
     } finally {
       setLoading(false)
     }

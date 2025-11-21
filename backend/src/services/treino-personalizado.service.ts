@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 /**
  * Calcula tempo estimado do treino baseado nos exercícios
@@ -230,15 +228,15 @@ export async function editarTreinoPersonalizado(
     throw new Error('Treino não encontrado');
   }
 
+  // Atualizar dados do treino
+  const updateData: any = {};
+  
   // Preparar data se fornecida
   if (data.data) {
     const novaData = new Date(data.data);
     novaData.setHours(0, 0, 0, 0);
     updateData.data = novaData;
   }
-
-  // Atualizar dados do treino
-  const updateData: any = {};
   if (data.nome !== undefined) {
     if (!data.nome || data.nome.trim() === '') {
       throw new Error('Nome do treino é obrigatório');
@@ -332,7 +330,7 @@ export async function duplicarTreinoPersonalizado(
 
   return await criarTreinoPersonalizado(userId, {
     data: novaData,
-    nome: treinoOriginal.nome ? `${treinoOriginal.nome} (Cópia)` : undefined,
+    nome: treinoOriginal.nome ? `${treinoOriginal.nome} (Cópia)` : `Treino Copiado - ${novaData.toLocaleDateString('pt-BR')}`,
     exercicios
   });
 }

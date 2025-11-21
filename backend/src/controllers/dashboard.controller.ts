@@ -4,9 +4,7 @@ import { buscarTreinoDoDia, buscarTreinosSemanais } from '../services/treino.ser
 import { calcularEvolucaoPeso, calcularSequenciaAtual, calcularMelhorSequencia, calcularProgressaoForca, calcularEstatisticasProgresso } from '../services/progressao.service';
 import { calcularNivelUsuario, obterConquistas } from '../services/conquistas.service';
 import { gerarMensagemMotivacional } from '../services/mensagens.service';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 /**
  * Obter resumo completo do dashboard

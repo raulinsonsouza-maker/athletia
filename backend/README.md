@@ -26,9 +26,38 @@ npm install
 
 2. Configurar variáveis de ambiente:
 ```bash
-cp .env.example .env
+# Copiar arquivo de exemplo
+cp env.example.txt .env
+
 # Editar .env com suas configurações
 ```
+
+**Arquivo `.env` - Configurações necessárias:**
+
+Todas as variáveis de ambiente necessárias estão no arquivo `env.example.txt`. Copie esse arquivo para `.env` e configure:
+
+```env
+# Database - URL de conexão com PostgreSQL
+DATABASE_URL="postgresql://usuario:senha@localhost:5432/athletia?schema=public"
+
+# JWT - Chaves secretas para autenticação (GERE CHAVES ALEATÓRIAS E SEGURAS!)
+JWT_SECRET="seu-jwt-secret-super-seguro-aqui"
+JWT_REFRESH_SECRET="seu-refresh-token-secret-aqui"
+JWT_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
+
+# Server - Configurações do servidor
+PORT=3001
+NODE_ENV=development
+
+# CORS - URL do frontend (para permitir requisições)
+FRONTEND_URL="http://localhost:5173"
+```
+
+**⚠️ IMPORTANTE:**
+- **Nunca commite o arquivo `.env` no Git** - ele contém informações sensíveis
+- **Gere chaves secretas únicas e seguras** para `JWT_SECRET` e `JWT_REFRESH_SECRET`
+- Em produção, use variáveis de ambiente seguras e não armazene credenciais no código
 
 3. Configurar banco de dados:
 ```bash

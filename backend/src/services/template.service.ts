@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
 import { calcularCargaExercicio } from './workout-intelligence.service';
-
-const prisma = new PrismaClient();
 
 /**
  * Calcula pontuação de um template baseado na compatibilidade com o objetivo
@@ -485,6 +483,7 @@ export async function criarTreinoDoTemplate(
       userId,
       data,
       tipo: template.divisaoTreino,
+      nome: template.nome || `Treino ${template.divisaoTreino}`, // Nome obrigatório do schema
       tempoEstimado: template.tempoEstimado,
       concluido: false
     }

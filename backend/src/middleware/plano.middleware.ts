@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 // Middleware para verificar se usuário tem plano ativo
 export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFunction) => {

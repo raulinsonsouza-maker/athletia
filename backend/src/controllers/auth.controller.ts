@@ -1,27 +1,38 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
+// Validar variáveis de ambiente críticas para segurança
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET não está definido nas variáveis de ambiente. Configure no arquivo .env antes de iniciar o servidor.');
+}
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
+if (!process.env.JWT_REFRESH_SECRET) {
+  throw new Error('JWT_REFRESH_SECRET não está definido nas variáveis de ambiente. Configure no arquivo .env antes de iniciar o servidor.');
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
 // Gerar tokens
 const generateTokens = (userId: string) => {
+  if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+    throw new Error('JWT secrets não configurados');
+  }
+  
   const accessToken = jwt.sign(
     { userId, type: 'access' },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+    { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
   );
 
   const refreshToken = jwt.sign(
     { userId, type: 'refresh' },
     JWT_REFRESH_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES_IN }
+    { expiresIn: JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions
   );
 
   return { accessToken, refreshToken };
@@ -417,14 +428,17 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
       // Não falhar o cadastro se não conseguir gerar treinos
     }
 
-    // TODO: Enviar e-mail com credenciais
-    // Por enquanto, apenas logamos
-    console.log(`📧 E-mail para ${email}:`);
-    console.log(`   Usuário: ${email}`);
-    console.log(`   Senha: ${senhaGerada}`);
-    console.log(`   Link de login: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`);
-
-    // Em produção, aqui você enviaria um e-mail real
+    // Nota: Envio de e-mail com credenciais deve ser implementado no futuro
+    // Para produção, é recomendado integrar com serviço de e-mail (SendGrid, AWS SES, etc.)
+    // e enviar as credenciais de forma segura via e-mail ao invés de retornar no JSON
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📧 E-mail para ${email}:`);
+      console.log(`   Usuário: ${email}`);
+      console.log(`   Senha: ${senhaGerada}`);
+      console.log(`   Link de login: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`);
+    }
+    
+    // Exemplo de implementação futura:
     // await sendEmail({
     //   to: email,
     //   subject: 'Bem-vindo ao AthletIA - Suas credenciais de acesso',
@@ -502,17 +516,43 @@ export const ativarPlanoAposPagamento = async (req: Request, res: Response) => {
     // Gerar treinos para 30 dias automaticamente
     try {
       const { gerarTreinos30Dias } = await import('../services/treino.service');
-      console.log(`🔄 Gerando treinos para os próximos 30 dias para o usuário ${userId}...`);
+      console.log(`🔄 [Ativação Plano] Gerando treinos para os próximos 30 dias para o usuário ${userId}...`);
+      
+      // Verificar se perfil existe e tem dados necessários
+      if (!user.perfil) {
+        console.warn(`⚠️ [Ativação Plano] Usuário ${userId} não possui perfil. Treinos não serão gerados.`);
+      } else {
+        const perfil = user.perfil;
+        if (!perfil.frequenciaSemanal || !perfil.experiencia || !perfil.objetivo) {
+          console.warn(`⚠️ [Ativação Plano] Perfil do usuário ${userId} incompleto. Dados faltando:`, {
+            frequenciaSemanal: perfil.frequenciaSemanal,
+            experiencia: perfil.experiencia,
+            objetivo: perfil.objetivo
+          });
+        }
+      }
+      
       const treinosGerados = await gerarTreinos30Dias(userId);
-      console.log(`✅ ${treinosGerados.length} treinos gerados com sucesso!`);
+      console.log(`✅ [Ativação Plano] ${treinosGerados.length} treinos gerados com sucesso para o usuário ${userId}!`);
       
       if (treinosGerados.length === 0) {
-        console.warn('⚠️ Nenhum treino foi gerado. Verifique se há exercícios cadastrados e se a frequência semanal está configurada.');
+        console.warn(`⚠️ [Ativação Plano] Nenhum treino foi gerado para o usuário ${userId}. Verifique se há exercícios cadastrados e se a frequência semanal está configurada.`);
+      } else {
+        console.log(`📊 [Ativação Plano] Detalhes dos treinos gerados:`, {
+          total: treinosGerados.length,
+          primeiroTreino: treinosGerados[0]?.data,
+          ultimoTreino: treinosGerados[treinosGerados.length - 1]?.data
+        });
       }
     } catch (error: any) {
-      console.error('⚠️ Erro ao gerar treinos após pagamento:', error);
+      console.error(`❌ [Ativação Plano] Erro ao gerar treinos após pagamento para o usuário ${userId}:`, error);
+      console.error(`📋 [Ativação Plano] Detalhes do erro:`, {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       // Não falhar a ativação se não conseguir gerar treinos
-      // O usuário pode gerar manualmente depois
+      // O treino será gerado automaticamente quando o usuário acessar a página de treino
     }
 
     res.status(200).json({

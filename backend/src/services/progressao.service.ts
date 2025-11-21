@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { nearestAllowedWeight, getEquipmentStep } from './progression.service';
-
-const prisma = new PrismaClient();
 
 /**
  * Arredonda carga para múltiplo de 2.5kg e depois para inteiro

@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { nearestAllowedWeight, getEquipmentStep } from './progression.service';
-
-const prisma = new PrismaClient();
 
 export interface PerfilUsuario {
   experiencia?: string;
@@ -139,6 +137,38 @@ export function determinarGruposDoDia(
 }
 
 /**
+ * Função local para calcular parâmetros de treino (evita dependência circular)
+ */
+function calcularParametrosTreinoLocal(
+  objetivo: string,
+  experiencia: string
+): { series: number; repeticoes: string; rpe: number; descanso: number } {
+  let series = 3;
+  let repeticoes = '10-12';
+  let rpe = 7;
+  let descanso = 90;
+
+  if (objetivo === 'Força') {
+    series = experiencia === 'Avançado' ? 5 : 4;
+    repeticoes = '3-5';
+    rpe = 8;
+    descanso = 180;
+  } else if (objetivo === 'Hipertrofia') {
+    series = experiencia === 'Iniciante' ? 3 : 4;
+    repeticoes = experiencia === 'Iniciante' ? '10-12' : '8-12';
+    rpe = 7;
+    descanso = 90;
+  } else if (objetivo === 'Emagrecimento') {
+    series = 3;
+    repeticoes = '12-15';
+    rpe = 6;
+    descanso = 60;
+  }
+
+  return { series, repeticoes, rpe, descanso };
+}
+
+/**
  * Calcula séries e repetições baseado no objetivo
  * @deprecated Use calcularParametrosTreino de workout-intelligence.service.ts
  */
@@ -146,8 +176,8 @@ export function calcularSeriesRepeticoes(
   objetivo?: string,
   experiencia?: string
 ): { series: number; repeticoes: string; rpe: number; descanso: number } {
-  // Usar serviço centralizado de inteligência
-  return calcularParametrosTreino(objetivo || 'Hipertrofia', experiencia || 'Iniciante');
+  // Usar função local para evitar dependência circular
+  return calcularParametrosTreinoLocal(objetivo || 'Hipertrofia', experiencia || 'Iniciante');
 }
 
 /**

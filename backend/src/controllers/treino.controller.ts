@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
 
@@ -11,10 +12,25 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
 
     // Se gerarSemana for true, gerar treinos para toda a semana
     if (gerarSemana) {
-      const treinos = await treinoService.gerarTreinosSemana(userId);
+      // Usar gerarTreinos30Dias que gera treinos para 30 dias (inclui a semana)
+      const treinos = await treinoService.gerarTreinos30Dias(userId);
+      // Filtrar apenas os treinos da semana atual
+      const hoje = new Date();
+      const inicioSemana = new Date(hoje);
+      inicioSemana.setDate(hoje.getDate() - hoje.getDay()); // Domingo
+      inicioSemana.setHours(0, 0, 0, 0);
+      const fimSemana = new Date(inicioSemana);
+      fimSemana.setDate(inicioSemana.getDate() + 6); // Sábado
+      fimSemana.setHours(23, 59, 59, 999);
+      
+      const treinosSemana = treinos.filter((t: any) => {
+        const dataTreino = new Date(t.data);
+        return dataTreino >= inicioSemana && dataTreino <= fimSemana;
+      });
+      
       return res.status(201).json({
         message: 'Treinos da semana gerados com sucesso',
-        treinos
+        treinos: treinosSemana
       });
     }
 
@@ -26,10 +42,34 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
       treino
     });
   } catch (error: any) {
-    console.error('Erro ao gerar treino:', error);
+    console.error('❌ Erro ao gerar treino:', error);
+    console.error('📋 Detalhes do erro:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      userId: req.userId
+    });
+    
+    // Verificar tipo de erro para mensagem mais específica
+    let errorMessage = error.message || 'Erro ao gerar treino';
+    
+    if (error.message?.includes('Perfil não encontrado')) {
+      return res.status(404).json({
+        error: 'Perfil não encontrado',
+        message: 'Complete o onboarding primeiro antes de gerar treinos.'
+      });
+    }
+    
+    if (error.message?.includes('frequência semanal') || error.message?.includes('experiência')) {
+      return res.status(400).json({
+        error: 'Dados do perfil incompletos',
+        message: 'Seu perfil precisa estar completo para gerar treinos. Verifique frequência semanal, experiência e objetivo.'
+      });
+    }
+    
     res.status(500).json({
       error: 'Erro ao gerar treino',
-      message: error.message
+      message: errorMessage
     });
   }
 };
@@ -209,8 +249,6 @@ export const buscarTreinosSemanais = async (req: AuthRequest, res: Response) => 
       console.log('📋 Nenhum treino com exercícios encontrado. Gerando treinos semanais automaticamente...');
       try {
         // Deletar treinos sem exercícios primeiro
-        const { PrismaClient } = await import('@prisma/client');
-        const prisma = new PrismaClient();
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         const fimSemana = new Date(hoje);

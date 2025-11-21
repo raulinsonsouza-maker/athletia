@@ -1,9 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { definirTreinoAtivo } from '../services/treino.service';
-
-const prisma = new PrismaClient();
 
 /**
  * Obter modo de treino do usuário

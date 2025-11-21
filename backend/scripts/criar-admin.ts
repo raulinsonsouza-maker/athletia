@@ -4,10 +4,20 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  // ⚠️ AVISO DE SEGURANÇA: Este script é APENAS para desenvolvimento/teste
+  // NUNCA use estas credenciais em produção!
+  // A senha 'admin' é extremamente insegura e deve ser alterada imediatamente após primeiro acesso.
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ ERRO: Este script não deve ser executado em produção!');
+    console.error('   Use um método seguro para criar usuários administradores em produção.');
+    process.exit(1);
+  }
+
   const email = 'admin';
-  const senha = 'admin';
+  const senha = 'admin'; // ⚠️ SENHA HARDCODED APENAS PARA DESENVOLVIMENTO
   const nome = 'Administrador';
 
+  console.log('⚠️  AVISO: Criando usuário administrador com credenciais padrão (apenas para desenvolvimento)\n');
   console.log('🔐 Criando usuário administrador...\n');
 
   try {

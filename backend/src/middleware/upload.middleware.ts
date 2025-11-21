@@ -26,17 +26,19 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filtro para aceitar apenas GIFs
+// Filtro para aceitar apenas GIFs válidos
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  // Verificar extensão
+  // Verificar extensão e MIME type primeiro
   const ext = path.extname(file.originalname).toLowerCase();
   const mimeType = file.mimetype;
 
-  if (ext === '.gif' || mimeType === 'image/gif') {
-    cb(null, true);
-  } else {
-    cb(new Error('Apenas arquivos GIF são permitidos'));
+  if (ext !== '.gif' && mimeType !== 'image/gif') {
+    return cb(new Error('Apenas arquivos GIF são permitidos'));
   }
+
+  // Validação adicional será feita no middleware de validação após upload
+  // pois precisamos ler o arquivo completo para validar magic bytes
+  cb(null, true);
 };
 
 // Configurar multer

@@ -1,8 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 // Buscar perfil do usuário
 export const getPerfil = async (req: AuthRequest, res: Response) => {

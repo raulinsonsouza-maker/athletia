@@ -1,11 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
-
-const prisma = new PrismaClient();
 
 // Listar todos os usuários
 export const listarUsuarios = async (req: AuthRequest, res: Response) => {
@@ -297,10 +295,9 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
         tipoCorpo: usuario.perfil.tipoCorpo,
         experiencia: usuario.perfil.experiencia,
         objetivo: usuario.perfil.objetivo,
-        frequencia: usuario.perfil.frequencia,
+        frequenciaSemanal: usuario.perfil.frequenciaSemanal,
         tempoDisponivel: usuario.perfil.tempoDisponivel,
         localTreino: usuario.perfil.localTreino,
-        rpeMedio: usuario.perfil.rpeMedio,
         lesoes: usuario.perfil.lesoes,
         preferencias: usuario.perfil.preferencias,
         problemasAnteriores: usuario.perfil.problemasAnteriores,
@@ -313,18 +310,16 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
           tipo: t.tipo,
           data: t.data,
           concluido: t.concluido,
-          observacoes: t.observacoes,
           numeroExercicios: t.exercicios.length,
-          tempoEstimado: t.exercicios.reduce((acc, ex) => acc + (ex.exercicio.tempoEstimado || 0), 0)
+          tempoEstimado: t.tempoEstimado || 0
         })),
         passados: treinosPassados.map(t => ({
           id: t.id,
           tipo: t.tipo,
           data: t.data,
           concluido: t.concluido,
-          observacoes: t.observacoes,
           numeroExercicios: t.exercicios.length,
-          tempoEstimado: t.exercicios.reduce((acc, ex) => acc + (ex.exercicio.tempoEstimado || 0), 0)
+          tempoEstimado: t.tempoEstimado || 0
         }))
       },
       estatisticas: {
@@ -599,8 +594,28 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
       });
     }
 
-    console.log('[UploadGif] Arquivo salvo em:', filePath);
-    console.log('[UploadGif] Tamanho do arquivo:', fs.statSync(filePath).size, 'bytes');
+    // Validar magic bytes do arquivo (garantir que é realmente um GIF)
+    const fileBuffer = fs.readFileSync(filePath);
+    const isValidGif = (buffer: Buffer): boolean => {
+      // GIF87a ou GIF89a - assinatura mágica dos arquivos GIF
+      const gif87a = Buffer.from('GIF87a', 'ascii');
+      const gif89a = Buffer.from('GIF89a', 'ascii');
+      const header = buffer.slice(0, 6);
+      return header.equals(gif87a) || header.equals(gif89a);
+    };
+
+    if (!isValidGif(fileBuffer)) {
+      // Deletar arquivo inválido
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        error: 'Arquivo não é um GIF válido. Magic bytes não correspondem a um GIF.'
+      });
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[UploadGif] Arquivo salvo em:', filePath);
+      console.log('[UploadGif] Tamanho do arquivo:', fs.statSync(filePath).size, 'bytes');
+    }
 
     // Construir URL do GIF
     const gifUrl = `/api/uploads/exercicios/${id}/exercicio.gif`;

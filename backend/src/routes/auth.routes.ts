@@ -1,7 +1,21 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
+import rateLimit from 'express-rate-limit';
 import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
+
+// Rate limiting mais restritivo para rotas de autenticação
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // Máximo 5 tentativas por IP a cada 15 minutos
+  message: {
+    error: 'Muitas tentativas de login. Por favor, tente novamente em 15 minutos.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false, // Contar todas as requisições, incluindo bem-sucedidas
+  skip: (req) => req.method === 'OPTIONS' // Pular requisições CORS preflight
+});
 
 const router = Router();
 
@@ -97,9 +111,9 @@ const ativarPlanoValidation = [
 ];
 
 // Rotas
-router.post('/register', registerValidation, validateRequest, register);
-router.post('/login', loginValidation, validateRequest, login);
-router.post('/refresh', refreshTokenValidation, validateRequest, refreshToken);
+router.post('/register', authLimiter, registerValidation, validateRequest, register);
+router.post('/login', authLimiter, loginValidation, validateRequest, login);
+router.post('/refresh', authLimiter, refreshTokenValidation, validateRequest, refreshToken);
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
 router.post('/ativar-plano-pagamento', ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);

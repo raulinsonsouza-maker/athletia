@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { calcularSequenciaAtual, calcularEvolucaoPeso } from './progressao.service';
-
-const prisma = new PrismaClient();
 
 /**
  * Gera mensagem motivacional personalizada baseada no contexto do usuário

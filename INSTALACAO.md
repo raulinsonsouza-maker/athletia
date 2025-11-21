@@ -32,23 +32,49 @@ copy env.example.txt .env
 # Linux/Mac:
 cp env.example.txt .env
 
-# Editar .env com suas configurações:
-# - DATABASE_URL: URL do seu banco PostgreSQL
-# - JWT_SECRET: Chave secreta para JWT (gere uma aleatória)
-# - JWT_REFRESH_SECRET: Chave secreta para refresh token
+# Editar .env com suas configurações
+# Todas as variáveis necessárias estão documentadas no arquivo env.example.txt
 ```
 
-**Exemplo de .env:**
+**📝 Configuração do arquivo `.env`:**
+
+O arquivo `env.example.txt` contém todas as variáveis de ambiente necessárias. Copie para `.env` e configure:
+
+**Variáveis obrigatórias:**
+
+1. **DATABASE_URL**: URL de conexão com PostgreSQL
+   ```env
+   DATABASE_URL="postgresql://usuario:senha@localhost:5432/athletia?schema=public"
+   ```
+   - Substitua `usuario`, `senha` e `athletia` pelos seus valores
+   - Exemplo: `DATABASE_URL="postgresql://postgres:mypassword@localhost:5432/athletia?schema=public"`
+
+2. **JWT_SECRET** e **JWT_REFRESH_SECRET**: Chaves secretas para autenticação
+   ```env
+   JWT_SECRET="sua-chave-secreta-super-segura-aqui"
+   JWT_REFRESH_SECRET="sua-chave-refresh-token-secreta-aqui"
+   ```
+   - ⚠️ **GERE CHAVES ALEATÓRIAS E SEGURAS!** Use pelo menos 32 caracteres aleatórios
+   - Em produção, nunca use valores padrão ou fáceis de adivinhar
+
+3. **FRONTEND_URL**: URL do frontend (para CORS)
+   ```env
+   FRONTEND_URL="http://localhost:5173"
+   ```
+
+**Variáveis opcionais (com valores padrão):**
+
 ```env
-DATABASE_URL="postgresql://postgres:senha@localhost:5432/athletia?schema=public"
-JWT_SECRET="sua-chave-secreta-super-segura-aqui"
-JWT_REFRESH_SECRET="sua-chave-refresh-token-secreta-aqui"
-JWT_EXPIRES_IN="15m"
-JWT_REFRESH_EXPIRES_IN="7d"
-PORT=3001
-NODE_ENV=development
-FRONTEND_URL="http://localhost:5173"
+PORT=3001                    # Porta do servidor backend
+NODE_ENV=development         # development | production
+JWT_EXPIRES_IN="15m"        # Tempo de expiração do access token
+JWT_REFRESH_EXPIRES_IN="7d" # Tempo de expiração do refresh token
 ```
+
+**⚠️ IMPORTANTE:**
+- O arquivo `.env` **NÃO deve ser commitado no Git** (já está no `.gitignore`)
+- Use chaves secretas únicas e seguras em produção
+- Nunca compartilhe suas chaves JWT em lugares públicos
 
 ### 3. Configurar Banco de Dados
 

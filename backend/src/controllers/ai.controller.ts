@@ -5,9 +5,7 @@ import {
   explicarExercicio as explicarExercicioService,
   sugerirAjusteCarga as sugerirAjusteCargaService
 } from '../services/ai.service';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 // Refinar treino com IA
 export const refinarTreino = async (req: AuthRequest, res: Response) => {

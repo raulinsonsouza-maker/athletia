@@ -1,9 +1,14 @@
+// IMPORTANTE: Carregar variáveis de ambiente ANTES de qualquer import
+// Isso garante que as validações de JWT_SECRET nos módulos importados funcionem corretamente
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes';
 import perfilRoutes from './routes/perfil.routes';
 import treinoRoutes from './routes/treino.routes';
@@ -14,9 +19,6 @@ import exercicioRoutes from './routes/exercicio.routes';
 import userRoutes from './routes/user.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 
-// Carregar variáveis de ambiente
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -26,6 +28,18 @@ const uploadDir = path.join(process.cwd(), 'upload', 'exercicios');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+// Rate limiting - Proteção contra brute force e DDoS
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Máximo 100 requisições por IP a cada 15 minutos
+  message: {
+    error: 'Muitas requisições. Por favor, tente novamente mais tarde.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => req.method === 'OPTIONS' // Pular requisições CORS preflight
+});
 
 // Middlewares
 app.use(helmet({
@@ -38,6 +52,9 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Aplicar rate limiting geral em todas as rotas
+app.use('/api/', generalLimiter);
 
 // Servir arquivos estáticos de upload
 const uploadExerciciosPath = path.join(process.cwd(), 'upload', 'exercicios');
@@ -70,7 +87,9 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
   
   // Verificar se o arquivo existe
   if (!fs.existsSync(filePath)) {
-    console.error(`[GIF Route] Arquivo não encontrado: ${filePath}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`[GIF Route] Arquivo não encontrado: ${filePath}`);
+    }
     return res.status(404).json({
       error: 'GIF não encontrado',
       path: filePath
@@ -81,7 +100,9 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
   try {
     const stats = fs.statSync(filePath);
     if (!stats.isFile()) {
-      console.error(`[GIF Route] Caminho não é um arquivo: ${filePath}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(`[GIF Route] Caminho não é um arquivo: ${filePath}`);
+      }
       return res.status(404).json({
         error: 'GIF não encontrado'
       });
@@ -145,9 +166,11 @@ app.use('/api/uploads/exercicios', express.static(uploadExerciciosPath, {
   }
 }));
 
-// Log para debug
-console.log(`📁 Servindo arquivos estáticos de: ${uploadExerciciosPath}`);
-console.log(`🔗 URL base: /api/uploads/exercicios`);
+// Log para debug (apenas em desenvolvimento)
+if (process.env.NODE_ENV !== 'production') {
+  console.log(`📁 Servindo arquivos estáticos de: ${uploadExerciciosPath}`);
+  console.log(`🔗 URL base: /api/uploads/exercicios`);
+}
 
 // Health check
 app.get('/health', (req, res) => {
@@ -188,7 +211,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Frontend URL: ${FRONTEND_URL}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔗 Frontend URL: ${FRONTEND_URL}`);
+  }
 });
 

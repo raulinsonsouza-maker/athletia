@@ -57,6 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(response.user)
     } catch (error: any) {
       console.error('Erro no login:', error)
+      
+      // Adicionar flag isNetworkError se for erro de rede ou 502
+      if (!error.response || error.response?.status === 502 || error.response?.status === 503) {
+        error.isNetworkError = true
+      }
+      
       // Re-throw para que o componente possa tratar o erro
       throw error
     }

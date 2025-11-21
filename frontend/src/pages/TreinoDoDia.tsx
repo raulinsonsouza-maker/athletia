@@ -4,6 +4,7 @@ import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { useVibration } from '../hooks/useVibration'
 import { useAutoAdvance } from '../hooks/useAutoAdvance'
+import { useAuth } from '../contexts/AuthContext'
 import ExercicioAtual from '../components/ExercicioAtual'
 import BarraProgressoTreino from '../components/BarraProgressoTreino'
 import NavegacaoExercicios from '../components/NavegacaoExercicios'
@@ -49,6 +50,7 @@ export default function TreinoDoDia() {
   const { showToast, ToastContainer } = useToast()
   const { vibrarSucesso } = useVibration()
   const { autoAdvanceEnabled } = useAutoAdvance()
+  const { user } = useAuth()
   
   const [treino, setTreino] = useState<Treino | null>(null)
   const [exercicioAtualIndex, setExercicioAtualIndex] = useState(0)
@@ -58,6 +60,8 @@ export default function TreinoDoDia() {
   const [mostrarInstrucoes, setMostrarInstrucoes] = useState(false)
   const [mostrarMenu, setMostrarMenu] = useState(false)
   const [treinoConcluido, setTreinoConcluido] = useState(false)
+  const [gerandoTreino, setGerandoTreino] = useState(false)
+  const [tentouGerarAutomaticamente, setTentouGerarAutomaticamente] = useState(false)
 
   // Função para detectar se é peso corporal
   const isPesoCorporal = (equipamentos: string[]): boolean => {
@@ -190,14 +194,17 @@ export default function TreinoDoDia() {
       } else {
         setTreino(null)
       }
-    } catch (err: any) {
-      console.error('Erro ao carregar treino:', err)
-      if (err.response?.status === 404) {
-        setError('Nenhum treino encontrado')
-      } else {
-        setError(err.response?.data?.error || 'Erro ao carregar treino')
-      }
-      setTreino(null)
+      } catch (err: any) {
+        console.error('Erro ao carregar treino:', err)
+        if (err.response?.status === 404) {
+          setError('Nenhum treino encontrado')
+        } else if (err.response?.status === 500) {
+          setError('Erro no servidor ao carregar treino')
+          console.error('Detalhes do erro 500:', err.response?.data)
+        } else {
+          setError(err.response?.data?.error || err.response?.data?.message || 'Erro ao carregar treino')
+        }
+        setTreino(null)
     } finally {
       setLoading(false)
     }
@@ -206,6 +213,67 @@ export default function TreinoDoDia() {
   useEffect(() => {
     carregarTreino()
   }, [])
+
+  // Tentar gerar treino automaticamente se não houver treino e usuário tiver plano ativo
+  useEffect(() => {
+    // Só tentar uma vez quando a página carregar e não houver treino
+    if (loading) return // Aguardar carregamento inicial terminar
+    if (tentouGerarAutomaticamente) return // Já tentou uma vez, não tentar novamente
+    if (treino) return // Já tem treino, não precisa gerar
+    if (gerandoTreino) return // Já está gerando
+    
+    // Só tentar se usuário tiver plano ativo e não houver erro específico
+    if (!user?.planoAtivo) return
+    if (error && error !== 'Nenhum treino encontrado') return
+
+    const tentarGerarTreinoAutomaticamente = async () => {
+      try {
+        setTentouGerarAutomaticamente(true)
+        setGerandoTreino(true)
+        console.log('🔄 Tentando gerar treino automaticamente...')
+        
+        const response = await api.post('/treino/gerar')
+        console.log('✅ Treino gerado automaticamente:', response.data)
+        
+        // Recarregar treino após gerar
+        setTimeout(async () => {
+          await carregarTreino()
+        }, 1000)
+      } catch (err: any) {
+        console.error('❌ Erro ao gerar treino automaticamente:', err)
+        console.error('📋 Detalhes do erro:', {
+          status: err.response?.status,
+          statusText: err.response?.statusText,
+          message: err.response?.data?.message || err.message,
+          error: err.response?.data?.error,
+          isNetworkError: err.isNetworkError
+        })
+        
+        // Não definir erro genérico para não mostrar mensagem de erro ao usuário
+        // Apenas logar para debug. O usuário verá a mensagem informativa na tela
+        // Se for erro de perfil incompleto ou similar, pode ser útil mostrar, mas não erro 500 genérico
+        if (err.response?.status === 404 && err.response?.data?.message?.includes('Perfil não encontrado')) {
+          setError('Perfil não encontrado. Complete o onboarding primeiro.')
+        } else if (err.response?.status === 400) {
+          // Erro de validação - pode ser útil mostrar
+          const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Dados do perfil incompletos'
+          setError(errorMsg)
+        }
+        // Para erro 500 ou outros erros, não definir mensagem de erro
+        // O usuário verá a mensagem informativa padrão na tela
+      } finally {
+        setGerandoTreino(false)
+      }
+    }
+
+    // Aguardar um pouco antes de tentar gerar (para garantir que carregarTreino terminou)
+    const timer = setTimeout(() => {
+      tentarGerarTreinoAutomaticamente()
+    }, 2000)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]) // Só executar quando loading mudar (quando carregamento inicial terminar)
 
   // Atualizar status do exercício
   const atualizarStatusExercicio = async (exercicioId: string, concluido: boolean) => {
@@ -295,8 +363,8 @@ export default function TreinoDoDia() {
       const resultado = response.data
       
       if (resultado && resultado.alternativas && resultado.alternativas.length > 0) {
-        // Por enquanto, apenas mostrar toast com alternativas
-        // TODO: Implementar modal de seleção de alternativas
+        // Nota: Funcionalidade de modal de seleção de alternativas pode ser implementada no futuro
+        // Por enquanto, apenas exibe toast informativo com a quantidade de alternativas encontradas
         showToast(`${resultado.alternativas.length} alternativa(s) encontrada(s)`, 'info')
       } else {
         showToast('Nenhuma alternativa encontrada', 'warning')
@@ -321,36 +389,68 @@ export default function TreinoDoDia() {
 
   // Estado: Sem Treino
   if (!treino || error) {
+    const temPlanoAtivo = user?.planoAtivo
+    
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-            <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
+            {gerandoTreino ? (
+              <div className="spinner h-12 w-12"></div>
+            ) : (
+              <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            )}
           </div>
-          <h2 className="text-2xl font-bold text-light mb-2">
-            Você ainda não tem um treino gerado
-          </h2>
-          <p className="text-light-muted mb-6">
-            Gere seu treino personalizado agora e comece a treinar!
-          </p>
-          <button
-            onClick={() => {
-              api.post('/treino/gerar')
-                .then(() => {
-                  showToast('Treino gerado com sucesso!', 'success')
-                  carregarTreino()
-                })
-                .catch((err: any) => {
-                  showToast(err.response?.data?.error || 'Erro ao gerar treino', 'error')
-                })
-            }}
-            className="btn-primary px-8 py-4 text-lg font-semibold"
-          >
-            Gerar Treino Agora
-          </button>
+          
+          {gerandoTreino ? (
+            <>
+              <h2 className="text-2xl font-bold text-light mb-2">
+                Gerando seu treino personalizado...
+              </h2>
+              <p className="text-light-muted mb-6">
+                Isso pode levar alguns segundos. Por favor, aguarde.
+              </p>
+            </>
+          ) : temPlanoAtivo ? (
+            <>
+              <h2 className="text-2xl font-bold text-light mb-2">
+                Seu treino está sendo gerado
+              </h2>
+              <p className="text-light-muted mb-4">
+                Os treinos são gerados automaticamente após a ativação do seu plano. 
+                Se você acabou de ativar seu plano, aguarde alguns instantes.
+              </p>
+              <p className="text-light-muted mb-6 text-sm">
+                Se o treino não aparecer em breve, recarregue a página ou entre em contato com o suporte.
+              </p>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="btn-secondary px-6 py-3 text-base font-semibold"
+              >
+                Voltar ao Dashboard
+              </button>
+            </>
+          ) : (
+            <>
+              <h2 className="text-2xl font-bold text-light mb-2">
+                Ative seu plano para gerar treinos
+              </h2>
+              <p className="text-light-muted mb-6">
+                Os treinos são gerados automaticamente após a ativação do seu plano. 
+                Ative seu plano para começar a treinar!
+              </p>
+              <button
+                onClick={() => navigate('/checkout')}
+                className="btn-primary px-8 py-4 text-lg font-semibold"
+              >
+                Ativar Plano
+              </button>
+            </>
+          )}
         </div>
+        <ToastContainer />
       </div>
     )
   }

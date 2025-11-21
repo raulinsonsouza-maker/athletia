@@ -1,8 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AuthRequest } from './auth.middleware';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 /**
  * Middleware para verificar se o usuário é admin

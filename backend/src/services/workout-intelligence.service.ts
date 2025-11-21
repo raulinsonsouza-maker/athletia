@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
-
-const prisma = new PrismaClient();
 
 /**
  * Mapeamento de lesões para grupos musculares afetados
@@ -87,12 +85,12 @@ export function calcularSimilaridadeExercicios(ex1: any, ex2: any): number {
   }
   
   // Calcular palavras em comum
-  const palavras1 = nome1.split(' ').filter(p => p.length > 2);
-  const palavras2 = nome2.split(' ').filter(p => p.length > 2);
+  const palavras1 = nome1.split(' ').filter((p: string) => p.length > 2);
+  const palavras2 = nome2.split(' ').filter((p: string) => p.length > 2);
   
   if (palavras1.length === 0 || palavras2.length === 0) return 0;
   
-  const palavrasComuns = palavras1.filter(p => palavras2.includes(p));
+  const palavrasComuns = palavras1.filter((p: string) => palavras2.includes(p));
   const totalPalavras = Math.max(palavras1.length, palavras2.length);
   
   return palavrasComuns.length / totalPalavras;

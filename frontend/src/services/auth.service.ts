@@ -40,7 +40,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Tratamento de erros de rede (backend offline)
+    // Tratamento de erros de rede (backend offline) e 502/503
     if (!error.response && error.request) {
       // Erro de rede - backend não está respondendo
       const isAdminRoute = originalRequest?.url?.includes('/admin') || false
@@ -56,6 +56,15 @@ api.interceptors.response.use(
         ...error,
         isNetworkError: true,
         message: 'Erro de conexão. Verifique sua internet e tente novamente.'
+      })
+    }
+
+    // Tratamento específico para 502 Bad Gateway e 503 Service Unavailable
+    if (error.response?.status === 502 || error.response?.status === 503) {
+      return Promise.reject({
+        ...error,
+        isNetworkError: true,
+        message: 'Servidor temporariamente indisponível. O backend pode estar offline ou reiniciando.'
       })
     }
 
