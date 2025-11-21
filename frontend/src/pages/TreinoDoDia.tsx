@@ -10,6 +10,8 @@ import BarraProgressoTreino from '../components/BarraProgressoTreino'
 import NavegacaoExercicios from '../components/NavegacaoExercicios'
 import ModalInstrucoes from '../components/ModalInstrucoes'
 import TelaConclusaoTreino from '../components/TelaConclusaoTreino'
+import VisaoSemanalTreinos from '../components/VisaoSemanalTreinos'
+import { buscarTreinosSemanais, TreinoSemanal } from '../services/treino.service'
 
 interface ExercicioTreino {
   id: string
@@ -62,6 +64,9 @@ export default function TreinoDoDia() {
   const [treinoConcluido, setTreinoConcluido] = useState(false)
   const [gerandoTreino, setGerandoTreino] = useState(false)
   const [tentouGerarAutomaticamente, setTentouGerarAutomaticamente] = useState(false)
+  const [treinosSemanais, setTreinosSemanais] = useState<TreinoSemanal[]>([])
+  const [carregandoSemanais, setCarregandoSemanais] = useState(false)
+  const [visaoSemanalExpandida, setVisaoSemanalExpandida] = useState(false)
 
   // Função para detectar se é peso corporal
   const isPesoCorporal = (equipamentos: string[]): boolean => {
@@ -210,8 +215,23 @@ export default function TreinoDoDia() {
     }
   }
 
+  // Carregar treinos semanais
+  const carregarTreinosSemanais = async () => {
+    try {
+      setCarregandoSemanais(true)
+      const response = await buscarTreinosSemanais()
+      setTreinosSemanais(response.treinos || [])
+    } catch (err: any) {
+      console.error('Erro ao carregar treinos semanais:', err)
+      // Não mostrar erro ao usuário, apenas logar
+    } finally {
+      setCarregandoSemanais(false)
+    }
+  }
+
   useEffect(() => {
     carregarTreino()
+    carregarTreinosSemanais()
   }, [])
 
   // Tentar gerar treino automaticamente se não houver treino e usuário tiver plano ativo
@@ -300,6 +320,11 @@ export default function TreinoDoDia() {
       }
       
       setTreino(treinoAtualizado)
+      
+      // Atualizar treinos semanais quando treino for concluído
+      if (todosConcluidos) {
+        carregarTreinosSemanais()
+      }
 
       if (concluido) {
         // Vibração de feedback
@@ -392,8 +417,24 @@ export default function TreinoDoDia() {
     const temPlanoAtivo = user?.planoAtivo
     
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center">
+      <div className="min-h-screen bg-dark">
+        {/* Visão Semanal de Treinos - Expandida quando não há treino */}
+        {treinosSemanais.length > 0 && (
+          <div className="container-custom py-6">
+            <VisaoSemanalTreinos
+              treinos={treinosSemanais}
+              treinoAtualId={null}
+              onTreinoClick={(treinoSelecionado) => {
+                // Tentar carregar o treino selecionado
+                carregarTreino()
+              }}
+              compacto={false}
+            />
+          </div>
+        )}
+        
+        <div className="min-h-[60vh] flex items-center justify-center px-4">
+          <div className="max-w-md w-full text-center">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
             {gerandoTreino ? (
               <div className="spinner h-12 w-12"></div>
@@ -451,6 +492,7 @@ export default function TreinoDoDia() {
           )}
         </div>
         <ToastContainer />
+        </div>
       </div>
     )
   }
@@ -550,6 +592,38 @@ export default function TreinoDoDia() {
           </div>
         )}
       </div>
+
+      {/* Visão Semanal de Treinos */}
+      {treinosSemanais.length > 0 && (
+        <div className="container-custom py-4 border-b border-grey/20">
+          <VisaoSemanalTreinos
+            treinos={treinosSemanais}
+            treinoAtualId={treino?.id || null}
+            onTreinoClick={(treinoSelecionado) => {
+              // Se for o treino atual, não fazer nada
+              if (treinoSelecionado.id === treino?.id) return
+              
+              // Se for treino futuro, mostrar mensagem
+              const dataTreino = new Date(treinoSelecionado.data)
+              const hoje = new Date()
+              hoje.setHours(0, 0, 0, 0)
+              dataTreino.setHours(0, 0, 0, 0)
+              
+              if (dataTreino > hoje) {
+                showToast('Este treino ainda não está disponível. Aguarde a data programada.', 'info')
+              } else if (treinoSelecionado.concluido) {
+                showToast('Treino já concluído! Veja o histórico para mais detalhes.', 'info')
+                navigate('/historico')
+              } else {
+                // Recarregar treino do dia selecionado
+                carregarTreino()
+              }
+            }}
+            compacto={!visaoSemanalExpandida && !!treino}
+            onToggleExpandir={() => setVisaoSemanalExpandida(!visaoSemanalExpandida)}
+          />
+        </div>
+      )}
 
       {/* Conteúdo Principal */}
       <div className="container-custom py-6">
