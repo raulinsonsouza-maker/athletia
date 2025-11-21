@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { ExercicioTreino } from '../types/treino.types'
+import FeedbackSimples, { FeedbackSimples as FeedbackType } from './FeedbackSimples'
 
 interface ExercicioAtualProps {
   exercicio: ExercicioTreino
-  onConcluir: () => void
+  onConcluir: (feedbackSimples?: FeedbackType, aceitouAjuste?: boolean) => void
   onVerInstrucoes: () => void
   concluindo?: boolean
   formatarCarga?: (carga: number | null, equipamentos: string[]) => string | null
@@ -17,6 +18,8 @@ export default function ExercicioAtual({
   formatarCarga
 }: ExercicioAtualProps) {
   const [imagemErro, setImagemErro] = useState(false)
+  const [mostrarFeedback, setMostrarFeedback] = useState(false)
+  const [feedbackSelecionado, setFeedbackSelecionado] = useState<FeedbackType | null>(null)
 
   const formatarCargaLocal = (carga: number | null, equipamentos: string[]): string | null => {
     if (formatarCarga) {
@@ -97,33 +100,70 @@ export default function ExercicioAtual({
         )}
       </div>
 
-      {/* Botão Principal - Marcar Concluído - Mínimo 48px */}
-      <button
-        onClick={onConcluir}
-        disabled={concluindo || exercicio.concluido}
-        className={`
-          w-full max-w-md h-14 md:h-16 rounded-xl font-bold text-lg md:text-xl
-          transition-all duration-200 shadow-lg
-          ${exercicio.concluido
-            ? 'bg-success text-white cursor-default'
-            : 'bg-primary text-white hover:bg-primary/90 active:scale-95'
-          }
-          ${concluindo ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
-      >
-        {exercicio.concluido ? (
-          <div className="flex items-center justify-center gap-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Concluído
-          </div>
-        ) : concluindo ? (
-          'Processando...'
-        ) : (
-          'MARCAR CONCLUÍDO'
-        )}
-      </button>
+      {/* Mostrar Feedback Simples se exercício não foi concluído ainda */}
+      {!exercicio.concluido && mostrarFeedback ? (
+        <div className="w-full max-w-md">
+          <FeedbackSimples
+            onFeedback={(feedback) => {
+              setFeedbackSelecionado(feedback)
+              // Se for "No ponto", concluir imediatamente
+              if (feedback === 'NO_PONTO') {
+                onConcluir(feedback, true)
+                setMostrarFeedback(false)
+              }
+            }}
+            onAceitarAjuste={(aceitar) => {
+              if (feedbackSelecionado) {
+                onConcluir(feedbackSelecionado, aceitar)
+                setMostrarFeedback(false)
+              }
+            }}
+            loading={concluindo}
+          />
+          <button
+            onClick={() => setMostrarFeedback(false)}
+            className="mt-4 w-full btn-secondary"
+          >
+            Voltar
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Botão Principal - Marcar Concluído - Mínimo 48px */}
+          <button
+            onClick={() => {
+              if (exercicio.concluido) {
+                onConcluir()
+              } else {
+                setMostrarFeedback(true)
+              }
+            }}
+            disabled={concluindo || exercicio.concluido}
+            className={`
+              w-full max-w-md h-14 md:h-16 rounded-xl font-bold text-lg md:text-xl
+              transition-all duration-200 shadow-lg
+              ${exercicio.concluido
+                ? 'bg-success text-white cursor-default'
+                : 'bg-primary text-white hover:bg-primary/90 active:scale-95'
+              }
+              ${concluindo ? 'opacity-50 cursor-not-allowed' : ''}
+            `}
+          >
+            {exercicio.concluido ? (
+              <div className="flex items-center justify-center gap-2">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Concluído
+              </div>
+            ) : concluindo ? (
+              'Processando...'
+            ) : (
+              'MARCAR CONCLUÍDO'
+            )}
+          </button>
+        </>
+      )}
 
       {/* Botão Secundário - Ver Instruções */}
       <button

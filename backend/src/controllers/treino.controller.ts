@@ -118,14 +118,16 @@ export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
 export const concluirExercicio = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { rpeRealizado, concluido } = req.body || {};
+    const { rpeRealizado, feedbackSimples, aceitouAjuste, concluido } = req.body || {};
 
     // Se concluido não for especificado, assume true (comportamento padrão)
     const estaConcluido = concluido !== undefined ? concluido : true;
 
     const exercicioTreino = await treinoService.concluirExercicio(
       id, 
-      rpeRealizado || undefined, 
+      rpeRealizado || undefined,
+      feedbackSimples || undefined,
+      aceitouAjuste !== undefined ? aceitouAjuste : null,
       estaConcluido
     );
 

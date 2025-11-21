@@ -11,6 +11,8 @@ export interface ExercicioTreino {
   repeticoes: string
   carga: number | null
   rpe: number | null
+  feedbackSimples?: 'MUITO_FACIL' | 'NO_PONTO' | 'PESADO_DEMAIS' | null
+  aceitouAjuste?: boolean | null
   descanso: number | null
   concluido: boolean
   exercicio: {
@@ -36,6 +38,7 @@ export interface TreinoBase {
   tempoEstimado: number | null
   criadoPor?: string
   letraTreino?: string | null
+  primeiraSemana?: boolean
 }
 
 // Treino completo com todos os exercícios detalhados

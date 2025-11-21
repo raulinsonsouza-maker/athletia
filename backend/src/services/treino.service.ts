@@ -990,10 +990,12 @@ export async function gerarTreinoDoDia(
     throw new Error(`Nenhum exercício encontrado para os grupos: ${gruposPermitidos.join(', ')}. Verifique suas configurações ou contate o administrador.`);
   }
 
-  // 6. Limitar número de exercícios baseado no tempo
-  const tempoDisponivel = Math.min(perfil.tempoDisponivel || 60, 75);
-  const maxExercicios = tempoDisponivel <= 45 ? 4 : tempoDisponivel <= 60 ? 6 : 8;
+  // 6. Limitar número de exercícios baseado no tempo (cálculo inteligente)
+  const tempoDisponivel = Math.min(perfil.tempoDisponivel || 60, 120);
+  const maxExercicios = calcularMaxExerciciosPorTempo(tempoDisponivel, series, descanso);
   const exerciciosFinais = exerciciosSelecionados.slice(0, maxExercicios);
+  
+  logDebug(`⏱️ Tempo disponível: ${tempoDisponivel}min → Máximo de ${maxExercicios} exercícios`);
 
   logDebug(`✅ ${exerciciosFinais.length} exercícios selecionados`);
 
@@ -1004,7 +1006,10 @@ export async function gerarTreinoDoDia(
     perfil.rpePreferido
   );
 
-  // 8. Criar treino
+  // 8. Verificar se é primeira semana (coleta de dados)
+  const ehPrimeiraSemana = await verificarPrimeiraSemana(userId);
+  
+  // 8.1. Criar treino
   const tipoTreinoDia = determinarTipoTreino(perfil.experiencia || 'Iniciante', perfil.frequenciaSemanal || 3);
   const treino = await prisma.treino.create({
     data: {
@@ -1012,9 +1017,18 @@ export async function gerarTreinoDoDia(
       data,
       tipo: tipoTreinoDia,
       nome: `Treino do Dia - ${tipoTreinoDia}`, // Nome obrigatório do schema
-      tempoEstimado: calcularTempoEstimado(exerciciosFinais.length, series, descanso)
+      tempoEstimado: calcularTempoEstimado(exerciciosFinais.length, series, descanso),
+      primeiraSemana: ehPrimeiraSemana
     }
   });
+
+  // 8.5. Verificar se é primeira semana (coleta de dados)
+  const ehPrimeiraSemana = await verificarPrimeiraSemana(userId);
+  const multiplicadorPrimeiraSemana = ehPrimeiraSemana ? 0.75 : 1.0; // 75% da carga na primeira semana
+  
+  if (ehPrimeiraSemana) {
+    logDebug(`📊 Primeira semana detectada - aplicando carga moderada (75%) para coleta de dados`);
+  }
 
   // 9. Adicionar exercícios ao treino
   const pesoUsuario = perfil.pesoAtual || 70;
@@ -1024,7 +1038,7 @@ export async function gerarTreinoDoDia(
     const exercicio = exerciciosFinais[i];
     
     // Calcular carga (usando serviço centralizado)
-    const carga = await calcularCargaExercicioIntelligence(
+    let carga = await calcularCargaExercicioIntelligence(
       userId,
       exercicio.id,
       pesoUsuario,
@@ -1033,6 +1047,14 @@ export async function gerarTreinoDoDia(
       repeticoes,
       perfil.objetivo || undefined
     );
+    
+    // Aplicar multiplicador de primeira semana se necessário
+    if (ehPrimeiraSemana && carga && carga > 0) {
+      carga = carga * multiplicadorPrimeiraSemana;
+      // Arredondar para múltiplos de 2.5kg
+      carga = Math.round(carga / 2.5) * 2.5;
+      if (carga < 2.5) carga = 2.5; // Mínimo 2.5kg
+    }
 
     const exercicioTreino = await prisma.exercicioTreino.create({
       data: {
@@ -1452,12 +1474,65 @@ function determinarTipoTreino(experiencia: string, frequenciaSemanal: number): s
 }
 
 /**
+ * Verifica se é a primeira semana do usuário (7 primeiros dias desde o primeiro treino)
+ * Primeira semana sempre é moderada para coleta de dados
+ */
+async function verificarPrimeiraSemana(userId: string): Promise<boolean> {
+  // Buscar primeiro treino do usuário
+  const primeiroTreino = await prisma.treino.findFirst({
+    where: { userId },
+    orderBy: { data: 'asc' },
+    select: { data: true }
+  });
+  
+  if (!primeiroTreino) {
+    return true; // Se não tem treino, é primeira semana
+  }
+  
+  // Calcular dias desde o primeiro treino
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const primeiroDia = new Date(primeiroTreino.data);
+  primeiroDia.setHours(0, 0, 0, 0);
+  
+  const diasDesdePrimeiro = Math.floor((hoje.getTime() - primeiroDia.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // Primeira semana = primeiros 7 dias
+  return diasDesdePrimeiro < 7;
+}
+
+/**
  * Calcula tempo estimado
  */
 function calcularTempoEstimado(numExercicios: number, series: number, descanso: number): number {
   const tempoPorSerie = 30 + descanso; // 30s execução + descanso
   const tempoTotal = (numExercicios * series * tempoPorSerie) / 60;
   return Math.ceil(tempoTotal + 5); // +5min aquecimento
+}
+
+/**
+ * Calcula máximo de exercícios baseado no tempo disponível
+ * Fórmula: (tempoDisponivel - 3min aquecimento) / (4min por exercício)
+ * Garante que o treino seja viável dentro do tempo real
+ */
+function calcularMaxExerciciosPorTempo(tempoDisponivel: number, series: number, descanso: number): number {
+  const tempoAquecimento = 3; // 3 minutos de aquecimento
+  const tempoUtil = tempoDisponivel - tempoAquecimento;
+  
+  if (tempoUtil <= 0) {
+    return 2; // Mínimo 2 exercícios mesmo com pouco tempo
+  }
+  
+  // Tempo por exercício: ~4 minutos (execução + descanso entre séries)
+  // Considerando: 3 séries × (30s execução + descanso) + tempo de transição
+  const tempoPorExercicio = 4; // minutos
+  const maxExercicios = Math.floor(tempoUtil / tempoPorExercicio);
+  
+  // Limites razoáveis
+  if (maxExercicios < 2) return 2;
+  if (maxExercicios > 10) return 10; // Máximo 10 exercícios
+  
+  return maxExercicios;
 }
 
 /**
@@ -2219,14 +2294,45 @@ export async function buscarTreinoDoDia(userId: string, data?: Date): Promise<an
 
 /**
  * Marca exercício como concluído ou desmarca
+ * Agora suporta feedback simples (novo sistema) e RPE (sistema antigo)
  */
-export async function concluirExercicio(exercicioTreinoId: string, rpeRealizado?: number, concluido: boolean = true): Promise<any> {
+export async function concluirExercicio(
+  exercicioTreinoId: string, 
+  rpeRealizado?: number,
+  feedbackSimples?: string,
+  aceitouAjuste?: boolean | null,
+  concluido: boolean = true
+): Promise<any> {
+  const dadosAtualizacao: any = {
+    concluido: concluido
+  };
+  
+  // Se está concluindo, salvar feedback
+  if (concluido) {
+    // Priorizar feedback simples (novo sistema)
+    if (feedbackSimples) {
+      dadosAtualizacao.feedbackSimples = feedbackSimples;
+      // Se tem feedback simples, não precisa de RPE
+      dadosAtualizacao.rpe = undefined;
+    } else if (rpeRealizado) {
+      // Fallback para RPE (sistema antigo)
+      dadosAtualizacao.rpe = rpeRealizado;
+    }
+    
+    // Salvar se usuário aceitou ajuste
+    if (aceitouAjuste !== undefined) {
+      dadosAtualizacao.aceitouAjuste = aceitouAjuste;
+    }
+  } else {
+    // Se está desmarcando, limpar feedback
+    dadosAtualizacao.rpe = undefined;
+    dadosAtualizacao.feedbackSimples = undefined;
+    dadosAtualizacao.aceitouAjuste = undefined;
+  }
+  
   const exercicioTreino = await prisma.exercicioTreino.update({
     where: { id: exercicioTreinoId },
-    data: { 
-      concluido: concluido, 
-      rpe: concluido ? (rpeRealizado || undefined) : undefined 
-    },
+    data: dadosAtualizacao,
     include: { exercicio: true, treino: { include: { user: true } } }
   });
 

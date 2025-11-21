@@ -263,19 +263,32 @@ export default function TreinoDoDia() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]) // Só executar quando loading mudar (quando carregamento inicial terminar)
 
-  // Atualizar status do exercício
-  const atualizarStatusExercicio = async (exercicioId: string, concluido: boolean) => {
+  // Atualizar status do exercício (agora com feedback simples)
+  const atualizarStatusExercicio = async (
+    exercicioId: string, 
+    concluido: boolean,
+    feedbackSimples?: string,
+    aceitouAjuste?: boolean
+  ) => {
     if (concluindoExercicio || !treino) return
     
     try {
       setConcluindoExercicio(exercicioId)
       
-      await api.post(`/treino/exercicio/${exercicioId}/concluir`, { concluido })
+      const body: any = { concluido }
+      if (feedbackSimples) {
+        body.feedbackSimples = feedbackSimples
+      }
+      if (aceitouAjuste !== undefined) {
+        body.aceitouAjuste = aceitouAjuste
+      }
+      
+      await api.post(`/treino/exercicio/${exercicioId}/concluir`, body)
       
       // Atualizar estado local
       const exerciciosAtualizados = treino.exercicios.map(ex =>
         ex.id === exercicioId 
-          ? { ...ex, concluido } 
+          ? { ...ex, concluido, feedbackSimples: feedbackSimples || ex.feedbackSimples } 
           : ex
       )
       
@@ -658,7 +671,14 @@ export default function TreinoDoDia() {
         {/* Exercício Atual */}
         <ExercicioAtual
           exercicio={exercicioAtual}
-          onConcluir={() => atualizarStatusExercicio(exercicioAtual.id, !exercicioAtual.concluido)}
+          onConcluir={(feedbackSimples, aceitouAjuste) => 
+            atualizarStatusExercicio(
+              exercicioAtual.id, 
+              !exercicioAtual.concluido,
+              feedbackSimples,
+              aceitouAjuste
+            )
+          }
           onVerInstrucoes={() => setMostrarInstrucoes(true)}
           concluindo={concluindoExercicio === exercicioAtual.id}
           formatarCarga={formatarCarga}

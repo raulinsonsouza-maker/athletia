@@ -1,5 +1,11 @@
 import { prisma } from '../lib/prisma';
 import { nearestAllowedWeight, getEquipmentStep } from './progression.service';
+import { 
+  interpretarFeedback, 
+  FeedbackSimples, 
+  aplicarAjusteAutomatico,
+  podeAplicarAjuste 
+} from './feedback-profissional.service';
 
 /**
  * Arredonda carga para múltiplo de 2.5kg e depois para inteiro
@@ -124,7 +130,8 @@ export async function buscarAlternativas(
 
 /**
  * Aplica progressão de carga para o próximo treino
- * Busca o último treino do mesmo tipo e aplica progressão baseada em RPE
+ * Busca o último treino do mesmo tipo e aplica progressão baseada em feedback simples
+ * (Compatível com RPE para treinos antigos)
  */
 export async function aplicarProgressao(
   userId: string,
@@ -143,7 +150,15 @@ export async function aplicarProgressao(
         where: {
           exercicioId: exercicioId
         },
-        take: 1
+        take: 1,
+        include: {
+          exercicio: true
+        }
+      },
+      user: {
+        select: {
+          modoTreino: true
+        }
       }
     },
     orderBy: {
@@ -157,12 +172,121 @@ export async function aplicarProgressao(
 
   const ultimoExercicio = ultimoTreino.exercicios[0];
   
-  if (!ultimoExercicio.carga || !ultimoExercicio.rpe) {
-    return ultimoExercicio.carga; // Se não tem RPE, manter carga
+  // Priorizar feedback simples (novo sistema)
+  if (ultimoExercicio.feedbackSimples) {
+    const perfil = await prisma.perfil.findUnique({
+      where: { userId },
+      select: { objetivo: true }
+    });
+    
+    const interpretacao = interpretarFeedback(
+      ultimoExercicio.feedbackSimples as FeedbackSimples,
+      ultimoExercicio.carga,
+      ultimoExercicio.repeticoes,
+      ultimoExercicio.series,
+      exercicioId,
+      perfil?.objetivo || 'Hipertrofia'
+    );
+    
+    // Se tem ajuste de carga, aplicar
+    if (interpretacao.ajuste && interpretacao.ajuste.tipo === 'CARGA') {
+      return interpretacao.ajuste.valor as number;
+    }
+    
+    // Se não tem ajuste ou ajuste não é de carga, manter carga atual
+    return ultimoExercicio.carga;
+  }
+  
+  // Fallback para RPE (sistema antigo)
+  if (ultimoExercicio.carga && ultimoExercicio.rpe) {
+    return calcularNovaCarga(ultimoExercicio.carga, ultimoExercicio.rpe);
+  }
+  
+  // Se não tem nem feedback nem RPE, manter carga
+  return ultimoExercicio.carga;
+}
+
+/**
+ * Aplica progressão completa (carga, repetições, séries) baseada em feedback simples
+ */
+export async function aplicarProgressaoCompleta(
+  userId: string,
+  tipoTreino: string,
+  exercicioId: string,
+  exercicioAtual: any
+): Promise<Partial<any> | null> {
+  // Buscar último treino concluído do mesmo tipo
+  const ultimoTreino = await prisma.treino.findFirst({
+    where: {
+      userId,
+      tipo: tipoTreino,
+      concluido: true
+    },
+    include: {
+      exercicios: {
+        where: {
+          exercicioId: exercicioId,
+          concluido: true,
+          feedbackSimples: { not: null }
+        },
+        take: 1,
+        include: {
+          exercicio: true
+        }
+      },
+      user: {
+        select: {
+          modoTreino: true
+        }
+      }
+    },
+    orderBy: {
+      data: 'desc'
+    }
+  });
+
+  if (!ultimoTreino || !ultimoTreino.exercicios || ultimoTreino.exercicios.length === 0) {
+    return null; // Não há histórico com feedback
   }
 
-  // Calcular nova carga baseada no RPE
-  return calcularNovaCarga(ultimoExercicio.carga, ultimoExercicio.rpe);
+  const ultimoExercicio = ultimoTreino.exercicios[0];
+  
+  // Verificar se pode aplicar ajuste
+  const proximoTreinoGerado = false; // TODO: verificar se próximo treino já foi gerado
+  const podeAplicar = podeAplicarAjuste(
+    ultimoExercicio.concluido,
+    !!ultimoExercicio.feedbackSimples,
+    ultimoExercicio.aceitouAjuste,
+    proximoTreinoGerado,
+    ultimoTreino.user.modoTreino === 'MANUAL'
+  );
+  
+  if (!podeAplicar || !ultimoExercicio.feedbackSimples) {
+    return null;
+  }
+  
+  // Buscar perfil para objetivo
+  const perfil = await prisma.perfil.findUnique({
+    where: { userId },
+    select: { objetivo: true }
+  });
+  
+  // Interpretar feedback
+  const interpretacao = interpretarFeedback(
+    ultimoExercicio.feedbackSimples as FeedbackSimples,
+    ultimoExercicio.carga,
+    ultimoExercicio.repeticoes,
+    ultimoExercicio.series,
+    exercicioId,
+    perfil?.objetivo || 'Hipertrofia'
+  );
+  
+  // Aplicar ajuste se existir
+  if (interpretacao.ajuste && interpretacao.ajuste.aplicavel) {
+    return aplicarAjusteAutomatico(interpretacao.ajuste, ultimoExercicio);
+  }
+  
+  return null;
 }
 
 /**

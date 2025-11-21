@@ -39,9 +39,17 @@ export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
   const totalExercicios = treino.exercicios.length
   const exerciciosConcluidos = treino.exercicios.filter(ex => ex.concluido).length
 
-  // Calcular melhorias de carga (exercícios onde a carga foi aumentada)
-  // TODO: Comparar com carga anterior do histórico
-  const melhoriasCarga = 0 // Placeholder
+  // Analisar feedbacks fornecidos
+  const exerciciosComFeedback = treino.exercicios.filter(ex => 
+    ex.concluido && ex.feedbackSimples
+  )
+  
+  const muitoFacil = exerciciosComFeedback.filter(ex => ex.feedbackSimples === 'MUITO_FACIL').length
+  const noPonto = exerciciosComFeedback.filter(ex => ex.feedbackSimples === 'NO_PONTO').length
+  const pesadoDemais = exerciciosComFeedback.filter(ex => ex.feedbackSimples === 'PESADO_DEMAIS').length
+  
+  // Exercícios que terão ajuste automático na próxima vez
+  const ajustesAplicados = muitoFacil + pesadoDemais
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-dark">
@@ -86,20 +94,56 @@ export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
                 {treino.exercicios.reduce((acc, ex) => acc + ex.series, 0)}
               </span>
             </div>
-            {melhoriasCarga > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-light-muted">Melhorias de carga</span>
-                <span className="font-bold text-success">+{melhoriasCarga}</span>
-              </div>
-            )}
             {treino.tempoEstimado && (
               <div className="flex items-center justify-between">
                 <span className="text-light-muted">Tempo total</span>
                 <span className="font-bold text-light">{treino.tempoEstimado} min</span>
               </div>
             )}
+            {ajustesAplicados > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-light-muted">Ajustes automáticos</span>
+                <span className="font-bold text-primary">{ajustesAplicados} exercícios</span>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Feedback dos Exercícios */}
+        {exerciciosComFeedback.length > 0 && (
+          <div className="card mb-6 text-left">
+            <h3 className="text-lg font-bold text-light mb-4">Seu Feedback</h3>
+            <div className="space-y-2">
+              {muitoFacil > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-2xl">😊</span>
+                  <span className="text-light-muted">
+                    <strong className="text-light">{muitoFacil}</strong> exercício{muitoFacil > 1 ? 's' : ''} muito fácil - 
+                    <span className="text-primary"> aumentaremos na próxima vez</span>
+                  </span>
+                </div>
+              )}
+              {noPonto > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-2xl">👍</span>
+                  <span className="text-light-muted">
+                    <strong className="text-light">{noPonto}</strong> exercício{noPonto > 1 ? 's' : ''} no ponto certo - 
+                    <span className="text-success"> manteremos assim</span>
+                  </span>
+                </div>
+              )}
+              {pesadoDemais > 0 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-2xl">😓</span>
+                  <span className="text-light-muted">
+                    <strong className="text-light">{pesadoDemais}</strong> exercício{pesadoDemais > 1 ? 's' : ''} pesado demais - 
+                    <span className="text-warning"> reduziremos na próxima vez</span>
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Feedback da IA */}
         {feedbackIA && (

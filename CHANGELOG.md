@@ -4,6 +4,50 @@ Registro de todas as mudanças e implementações do projeto.
 
 ---
 
+## [2.0.0] - 2024-12-20
+
+### 🎨 Reorganização Completa UX/UI
+
+#### Dashboard Redesenhado
+- ✅ Novo Header Inteligente com botão principal destacado
+- ✅ Componente Minha Semana com calendário visual de 7 dias
+- ✅ Treinos Recentes (últimos 3 concluídos)
+- ✅ Minha Evolução com cards resumidos (Peso, Força, Sequência)
+- ✅ Chamado para Ação com mensagens motivacionais da IA
+- ✅ Nova hierarquia visual: Header > Semana > Recentes > Evolução > Performance > Conquistas
+
+#### Novas Páginas
+- ✅ `/minha-semana` - Visualização completa da semana com planilha semanal
+- ✅ `/conquistas` - Página dedicada com gamificação avançada (Desbloqueadas, Quase Lá, Próximos Desafios)
+- ✅ `/evolucao` - Página unificada de evolução
+
+#### Fluxo de Treino Aprimorado
+- ✅ Tela Pré-treino antes de iniciar
+- ✅ Tela Fim do Treino com feedback da IA
+- ✅ Correção: Não redireciona para conclusão automaticamente ao entrar na página
+
+#### Sistema de IA
+- ✅ Serviço de feedback contextual após treinos
+- ✅ Serviço de relatórios humanos (não só números)
+- ✅ Serviço de reordenação automática quando usuário pula treino
+- ✅ Detecção de risco de abandono
+
+#### Navegação
+- ✅ Menu expandido com mais opções (Minha Semana, Conquistas, Evolução)
+- ✅ Organização em seções (Navegação / Mais Opções)
+
+#### Correções
+- ✅ Endpoint de histórico corrigido (`/treino/historico` em vez de `/treino?concluido=true`)
+- ✅ Remoção de imports não utilizados
+- ✅ Correção de tipos TypeScript
+
+### 📚 Documentação
+- ✅ Documentação centralizada em `DOCUMENTACAO.md`
+- ✅ README.md simplificado como ponto de entrada
+- ✅ Todas as informações em um único local
+
+---
+
 ## [1.0.0] - 2024-12-19
 
 ### ✅ Funcionalidades Implementadas
