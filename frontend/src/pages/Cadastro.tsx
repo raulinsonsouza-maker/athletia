@@ -26,7 +26,7 @@ interface OnboardingData {
   rpePreferido?: number
 }
 
-interface Planos {
+// interface Planos {
   id: string
   nome: string
   preco: number
@@ -265,7 +265,7 @@ export default function Cadastro() {
   }
 
   // Função para gerar resumo do onboarding
-  const gerarResumo = () => {
+  // const gerarResumo = () => {
     if (!onboardingData) return null
 
     const resumo = []

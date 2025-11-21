@@ -123,7 +123,7 @@ export default function MeusTreinos() {
     return true
   })
 
-  const handleAcaoTreino = (acao: string, treino: Treino) => {
+  const handleAcaoTreino = (acao: string, treino: any) => {
     switch (acao) {
       case 'ver':
         navigate(`/treino?data=${treino.data.split('T')[0]}`)

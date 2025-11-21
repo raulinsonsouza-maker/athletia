@@ -12,7 +12,7 @@ import ModalInstrucoes from '../components/ModalInstrucoes'
 import TelaConclusaoTreino from '../components/TelaConclusaoTreino'
 import VisaoSemanalTreinos from '../components/VisaoSemanalTreinos'
 import { buscarTreinosSemanais } from '../services/treino.service'
-import { TreinoSemanal, TreinoCompleto, ExercicioTreino } from '../types/treino.types'
+import { TreinoSemanal, TreinoCompleto } from '../types/treino.types'
 import { formatarCarga as formatarCargaUtil } from '../utils/treino.utils'
 
 type Treino = TreinoCompleto
@@ -35,7 +35,6 @@ export default function TreinoDoDia() {
   const [gerandoTreino, setGerandoTreino] = useState(false)
   const [tentouGerarAutomaticamente, setTentouGerarAutomaticamente] = useState(false)
   const [treinosSemanais, setTreinosSemanais] = useState<TreinoSemanal[]>([])
-  const [carregandoSemanais, setCarregandoSemanais] = useState(false)
   const [visaoSemanalExpandida, setVisaoSemanalExpandida] = useState(false)
 
   // Função para detectar se é peso corporal
@@ -651,7 +650,16 @@ export default function TreinoDoDia() {
       {/* Modal de Instruções */}
       {mostrarInstrucoes && (
         <ModalInstrucoes
-          exercicio={exercicioAtual.exercicio}
+          exercicio={{
+            id: exercicioAtual.exercicio.id,
+            nome: exercicioAtual.exercicio.nome,
+            descricao: exercicioAtual.exercicio.descricao ?? null,
+            execucaoTecnica: exercicioAtual.exercicio.execucaoTecnica ?? null,
+            errosComuns: exercicioAtual.exercicio.errosComuns ?? [],
+            gifUrl: exercicioAtual.exercicio.gifUrl ?? null,
+            imagemUrl: exercicioAtual.exercicio.imagemUrl ?? null,
+            equipamentoNecessario: exercicioAtual.exercicio.equipamentoNecessario ?? []
+          }}
           onClose={() => setMostrarInstrucoes(false)}
           formatarEquipamentos={formatarEquipamentos}
         />

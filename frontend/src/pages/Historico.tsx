@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { TreinoCompleto } from '../types/treino.types'
 import { buscarHistoricoTreinos } from '../services/treino.service'
@@ -8,7 +7,6 @@ import TreinoLista from '../components/treino/TreinoLista'
 type Treino = TreinoCompleto
 
 export default function Historico() {
-  const navigate = useNavigate()
   const [treinos, setTreinos] = useState<Treino[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

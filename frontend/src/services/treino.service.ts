@@ -1,5 +1,5 @@
 import api from './auth.service'
-import { TreinoSemanal, TreinosSemanaisResponse, FiltrosTreino, TreinoCompleto } from '../types/treino.types'
+import { TreinosSemanaisResponse, FiltrosTreino, TreinoCompleto } from '../types/treino.types'
 
 /**
  * Função genérica para buscar treinos com filtros
@@ -57,7 +57,7 @@ export const buscarTreinoPorId = async (id: string): Promise<TreinoCompleto | nu
 /**
  * Buscar treinos da semana atual (domingo a sábado)
  */
-export const buscarTreinosSemanais = async (dataInicio?: Date): Promise<TreinosSemanaisResponse> => {
+export const buscarTreinosSemanais = async (): Promise<TreinosSemanaisResponse> => {
   const response = await api.get('/treino/semana')
   return response.data
 }

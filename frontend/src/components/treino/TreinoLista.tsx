@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Treino, FiltrosTreino } from '../../types/treino.types'
+import { Treino } from '../../types/treino.types'
 import TreinoCard from './TreinoCard'
 import { obterStatusTreino } from '../../utils/treino.utils'
 

@@ -3,7 +3,7 @@
  * Todas as funções de cálculo, formatação e lógica de treinos devem estar aqui
  */
 
-import { Treino, TreinoCompleto, StatusTreino, ExercicioTreino } from '../types/treino.types'
+import { Treino, TreinoCompleto, StatusTreino } from '../types/treino.types'
 
 /**
  * Calcula o número médio de repetições de uma string de repetições
@@ -39,9 +39,18 @@ export function calcularVolumeTreino(treino: Treino): number {
     return 0
   }
 
-  return treino.exercicios
-    .filter(ex => ex.concluido && ex.carga)
-    .reduce((acc, ex) => {
+  // Verificar se é TreinoCompleto (tem séries, repetições, carga)
+  const primeiroExercicio = treino.exercicios[0]
+  const temDetalhes = 'series' in primeiroExercicio && 'repeticoes' in primeiroExercicio && 'carga' in primeiroExercicio
+
+  if (!temDetalhes) {
+    // TreinoSemanal ou TreinoResumo não tem detalhes suficientes
+    return 0
+  }
+
+  return (treino.exercicios as any[])
+    .filter((ex: any) => ex.concluido && ex.carga)
+    .reduce((acc, ex: any) => {
       const repeticoesMedias = calcularRepeticoesMedias(ex.repeticoes)
       // Volume = séries × repetições × carga
       return acc + (ex.series * repeticoesMedias * Math.round(ex.carga || 0))

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import Navbar from '../components/Navbar'
 import { LineChart, BarChart, DoughnutChart } from '../components/ChartWrapper'
-import { calcularRepeticoesMedias, calcularVolumeTreino } from '../utils/treino.utils'
+import { calcularVolumeTreino } from '../utils/treino.utils'
 
 interface Estatisticas {
   periodo: number
@@ -303,7 +303,7 @@ export default function Estatisticas() {
                   const semanaKey = inicioSemana.toISOString().split('T')[0]
                   
                   // Usar função utilitária para calcular volume
-                  volumeSemana = calcularVolumeTreino(treino)
+                  const volumeSemana = calcularVolumeTreino(treino)
                   
                   if (volumeSemana > 0) {
                     volumePorSemana[semanaKey] = (volumePorSemana[semanaKey] || 0) + volumeSemana
