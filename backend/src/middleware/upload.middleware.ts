@@ -41,12 +41,35 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   cb(null, true);
 };
 
-// Configurar multer
+// Configurar multer para upload único
 export const uploadGif = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
+
+// Configurar multer para upload múltiplo (bulk)
+export const uploadGifsBulk = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      // Para bulk upload, salvar em pasta temporária
+      const tempPath = path.join(process.cwd(), 'upload', 'temp');
+      if (!fs.existsSync(tempPath)) {
+        fs.mkdirSync(tempPath, { recursive: true });
+      }
+      cb(null, tempPath);
+    },
+    filename: (req, file, cb) => {
+      // Manter nome original para identificar exercício
+      cb(null, file.originalname);
+    }
+  }),
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB por arquivo
+    files: 50 // Máximo 50 arquivos
   }
 });
 

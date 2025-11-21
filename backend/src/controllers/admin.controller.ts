@@ -706,6 +706,277 @@ export const deletarGifExercicio = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Upload em lote de GIFs
+// Formato esperado: FormData com campo 'mapping' (JSON) e arquivos 'gifs'
+// mapping: { "exercicioId1": "nome-arquivo1.gif", "exercicioId2": "nome-arquivo2.gif" }
+export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer.File[] }, res: Response) => {
+  try {
+    const files = req.files as Express.Multer.File[] || [];
+    
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        error: 'Nenhum arquivo enviado'
+      });
+    }
+
+    // Parse do mapping (JSON string no body)
+    let mapping: Record<string, string> = {};
+    try {
+      if (req.body.mapping) {
+        mapping = typeof req.body.mapping === 'string' 
+          ? JSON.parse(req.body.mapping) 
+          : req.body.mapping;
+      }
+    } catch (err) {
+      console.error('Erro ao parsear mapping:', err);
+    }
+
+    const resultados = {
+      total: files.length,
+      sucesso: 0,
+      erros: 0,
+      detalhes: [] as Array<{
+        exercicioId: string;
+        nome?: string;
+        status: 'sucesso' | 'erro';
+        mensagem: string;
+      }>
+    };
+
+    for (const file of files) {
+      // Tentar encontrar exercicioId pelo mapping ou pelo nome do arquivo
+      let exercicioId: string | null = null;
+      
+      // Procurar no mapping
+      for (const [id, filename] of Object.entries(mapping)) {
+        if (filename === file.originalname || filename === file.filename) {
+          exercicioId = id;
+          break;
+        }
+      }
+      
+      // Se não encontrou no mapping, tentar pelo nome do arquivo (assumindo que é o ID)
+      if (!exercicioId) {
+        exercicioId = file.originalname.replace('.gif', '').replace('exercicio', '');
+      }
+      
+      if (!exercicioId) {
+        resultados.erros++;
+        resultados.detalhes.push({
+          exercicioId: 'desconhecido',
+          status: 'erro',
+          mensagem: `Não foi possível identificar o exercício para o arquivo: ${file.originalname}`
+        });
+        if (file.path && fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+        continue;
+      }
+      
+      try {
+        // Verificar se exercício existe
+        const exercicio = await prisma.exercicio.findUnique({
+          where: { id: exercicioId },
+          select: { id: true, nome: true }
+        });
+
+        if (!exercicio) {
+          resultados.erros++;
+          resultados.detalhes.push({
+            exercicioId,
+            status: 'erro',
+            mensagem: 'Exercício não encontrado'
+          });
+          if (file.path && fs.existsSync(file.path)) {
+            fs.unlinkSync(file.path);
+          }
+          continue;
+        }
+
+        // Validar que é GIF válido
+        const fileBuffer = fs.readFileSync(file.path);
+        const isValidGif = (buffer: Buffer): boolean => {
+          const gif87a = Buffer.from('GIF87a', 'ascii');
+          const gif89a = Buffer.from('GIF89a', 'ascii');
+          const header = buffer.slice(0, 6);
+          return header.equals(gif87a) || header.equals(gif89a);
+        };
+
+        if (!isValidGif(fileBuffer)) {
+          fs.unlinkSync(file.path);
+          resultados.erros++;
+          resultados.detalhes.push({
+            exercicioId,
+            nome: exercicio.nome,
+            status: 'erro',
+            mensagem: 'Arquivo não é um GIF válido'
+          });
+          continue;
+        }
+
+        // Mover arquivo para o diretório correto do exercício
+        const destinoDir = path.join(process.cwd(), 'upload', 'exercicios', exercicioId);
+        if (!fs.existsSync(destinoDir)) {
+          fs.mkdirSync(destinoDir, { recursive: true });
+        }
+        
+        const destinoPath = path.join(destinoDir, 'exercicio.gif');
+        fs.copyFileSync(file.path, destinoPath);
+        fs.unlinkSync(file.path); // Remover arquivo temporário
+
+        // Construir URL do GIF
+        const gifUrl = `/api/uploads/exercicios/${exercicioId}/exercicio.gif`;
+
+        // Atualizar exercício com a URL do GIF
+        await prisma.exercicio.update({
+          where: { id: exercicioId },
+          data: { gifUrl }
+        });
+
+        resultados.sucesso++;
+        resultados.detalhes.push({
+          exercicioId,
+          nome: exercicio.nome,
+          status: 'sucesso',
+          mensagem: 'GIF enviado e atualizado com sucesso'
+        });
+
+      } catch (error: any) {
+        resultados.erros++;
+        resultados.detalhes.push({
+          exercicioId,
+          status: 'erro',
+          mensagem: error.message || 'Erro desconhecido'
+        });
+        
+        // Deletar arquivo em caso de erro
+        if (file.path && fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      }
+    }
+
+    res.json({
+      message: `Processamento concluído: ${resultados.sucesso} sucesso, ${resultados.erros} erros`,
+      resultados
+    });
+  } catch (error: any) {
+    console.error('Erro no upload em lote:', error);
+    res.status(500).json({
+      error: 'Erro no upload em lote',
+      message: error.message
+    });
+  }
+};
+
+// Verificar status dos GIFs - quais exercícios têm URL mas arquivo não existe
+export const verificarStatusGifs = async (req: AuthRequest, res: Response) => {
+  try {
+    const uploadBasePath = path.join(process.cwd(), 'upload', 'exercicios');
+    
+    // Buscar todos os exercícios com gifUrl
+    const exerciciosComGif = await prisma.exercicio.findMany({
+      where: {
+        gifUrl: { not: null }
+      },
+      select: {
+        id: true,
+        nome: true,
+        gifUrl: true
+      }
+    });
+
+    const resultados = {
+      total: exerciciosComGif.length,
+      comArquivo: 0,
+      semArquivo: 0,
+      problemas: [] as Array<{
+        id: string;
+        nome: string;
+        gifUrl: string | null;
+        caminhoEsperado: string;
+        erro?: string;
+      }>,
+      estrutura: {
+        pastaUploadExiste: fs.existsSync(uploadBasePath),
+        caminhoUpload: uploadBasePath,
+        permissaoEscrita: false
+      }
+    };
+
+    // Verificar permissões
+    try {
+      if (fs.existsSync(uploadBasePath)) {
+        const testFile = path.join(uploadBasePath, '.test-write');
+        try {
+          fs.writeFileSync(testFile, 'test');
+          fs.unlinkSync(testFile);
+          resultados.estrutura.permissaoEscrita = true;
+        } catch (err) {
+          resultados.estrutura.permissaoEscrita = false;
+        }
+      }
+    } catch (err) {
+      // Ignorar erro de permissão
+    }
+
+    // Verificar cada exercício
+    for (const exercicio of exerciciosComGif) {
+      if (!exercicio.gifUrl) continue;
+      
+      // Extrair ID da URL (formato: /api/uploads/exercicios/{id}/exercicio.gif)
+      const match = exercicio.gifUrl.match(/\/exercicios\/([^\/]+)\/exercicio\.gif/);
+      const exercicioId = match ? match[1] : exercicio.id;
+      
+      const filePath = path.join(uploadBasePath, exercicioId, 'exercicio.gif');
+      const existe = fs.existsSync(filePath);
+      
+      if (existe) {
+        resultados.comArquivo++;
+        try {
+          const stats = fs.statSync(filePath);
+          if (!stats.isFile() || stats.size === 0) {
+            resultados.semArquivo++;
+            resultados.problemas.push({
+              id: exercicio.id,
+              nome: exercicio.nome,
+              gifUrl: exercicio.gifUrl,
+              caminhoEsperado: filePath,
+              erro: 'Arquivo existe mas não é válido (não é arquivo ou está vazio)'
+            });
+          }
+        } catch (err: any) {
+          resultados.semArquivo++;
+          resultados.problemas.push({
+            id: exercicio.id,
+            nome: exercicio.nome,
+            gifUrl: exercicio.gifUrl,
+            caminhoEsperado: filePath,
+            erro: `Erro ao verificar arquivo: ${err.message}`
+          });
+        }
+      } else {
+        resultados.semArquivo++;
+        resultados.problemas.push({
+          id: exercicio.id,
+          nome: exercicio.nome,
+          gifUrl: exercicio.gifUrl,
+          caminhoEsperado: filePath,
+          erro: 'Arquivo não encontrado no sistema de arquivos'
+        });
+      }
+    }
+
+    res.json(resultados);
+  } catch (error: any) {
+    console.error('Erro ao verificar status dos GIFs:', error);
+    res.status(500).json({
+      error: 'Erro ao verificar status dos GIFs',
+      message: error.message
+    });
+  }
+};
+
 // Obter detalhes de um exercício
 export const obterExercicio = async (req: AuthRequest, res: Response) => {
   try {

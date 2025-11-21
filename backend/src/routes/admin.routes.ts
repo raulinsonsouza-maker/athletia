@@ -15,12 +15,14 @@ import {
   criarExercicio,
   atualizarExercicio,
   uploadGifExercicio,
-  deletarGifExercicio
+  deletarGifExercicio,
+  verificarStatusGifs,
+  bulkUploadGifs
 } from '../controllers/admin.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadGif } from '../middleware/upload.middleware';
+import { uploadGif, uploadGifsBulk } from '../middleware/upload.middleware';
 
 const router = Router();
 
@@ -182,6 +184,28 @@ router.post('/exercicios/:id/gif', (req, res, next) => {
   });
 }, uploadGifExercicio);
 router.delete('/exercicios/:id/gif', deletarGifExercicio);
+
+// Endpoint para verificar status de todos os GIFs
+router.get('/gifs/status', verificarStatusGifs);
+
+// Endpoint para upload em lote de GIFs
+router.post('/gifs/bulk-upload', (req, res, next) => {
+  uploadGifsBulk.array('gifs', 50)(req, res, (err: any) => {
+    if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB por arquivo' });
+        }
+        if (err.code === 'LIMIT_FILE_COUNT') {
+          return res.status(400).json({ error: 'Muitos arquivos. Máximo: 50 arquivos por vez' });
+        }
+        return res.status(400).json({ error: err.message });
+      }
+      return res.status(400).json({ error: err.message || 'Erro ao processar arquivos' });
+    }
+    next();
+  });
+}, bulkUploadGifs);
 
 // Endpoint para verificar se o GIF existe
 router.get('/exercicios/:id/gif/verify', async (req, res) => {
