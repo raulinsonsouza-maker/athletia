@@ -9,7 +9,8 @@ import ExercicioAtual from '../components/ExercicioAtual'
 import BarraProgressoTreino from '../components/BarraProgressoTreino'
 import NavegacaoExercicios from '../components/NavegacaoExercicios'
 import ModalInstrucoes from '../components/ModalInstrucoes'
-import TelaConclusaoTreino from '../components/TelaConclusaoTreino'
+import FimTreino from '../components/FimTreino'
+import PreTreino from '../components/PreTreino'
 import VisaoSemanalTreinos from '../components/VisaoSemanalTreinos'
 import { buscarTreinosSemanais } from '../services/treino.service'
 import { TreinoSemanal, TreinoCompleto } from '../types/treino.types'
@@ -32,6 +33,7 @@ export default function TreinoDoDia() {
   const [mostrarInstrucoes, setMostrarInstrucoes] = useState(false)
   const [mostrarMenu, setMostrarMenu] = useState(false)
   const [treinoConcluido, setTreinoConcluido] = useState(false)
+  const [treinoIniciado, setTreinoIniciado] = useState(false)
   const [gerandoTreino, setGerandoTreino] = useState(false)
   const [tentouGerarAutomaticamente, setTentouGerarAutomaticamente] = useState(false)
   const [treinosSemanais, setTreinosSemanais] = useState<TreinoSemanal[]>([])
@@ -502,12 +504,29 @@ export default function TreinoDoDia() {
   }
 
   // Estado: Treino Concluído
-  if (treinoConcluido) {
+  if (treinoConcluido && treino) {
     return (
       <>
-        <TelaConclusaoTreino
+        <FimTreino
           treino={treino}
           onVoltarHome={() => navigate('/dashboard')}
+        />
+        <ToastContainer />
+      </>
+    )
+  }
+
+  // Estado: Pré-treino (mostrar antes de iniciar)
+  if (treino && !treinoIniciado && !treino.concluido) {
+    return (
+      <>
+        <PreTreino
+          treino={treino}
+          onIniciar={() => setTreinoIniciado(true)}
+          onGerarAlternativa={async () => {
+            // TODO: Implementar geração de versão alternativa
+            showToast('Funcionalidade em desenvolvimento', 'info')
+          }}
         />
         <ToastContainer />
       </>

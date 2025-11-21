@@ -15,6 +15,9 @@ import EvolucaoPeso from './pages/EvolucaoPeso'
 import MeusTreinos from './pages/MeusTreinos'
 import GerenciarTreinosRecorrentes from './pages/GerenciarTreinosRecorrentes'
 import ConfigurarTreinosPadrao from './pages/ConfigurarTreinosPadrao'
+import MinhaSemana from './pages/MinhaSemana'
+import Conquistas from './pages/Conquistas'
+import Evolucao from './pages/Evolucao'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -78,6 +81,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <EvolucaoPeso />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/evolucao"
+            element={
+              <ProtectedRoute>
+                <Evolucao />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/minha-semana"
+            element={
+              <ProtectedRoute>
+                <MinhaSemana />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/conquistas"
+            element={
+              <ProtectedRoute>
+                <Conquistas />
               </ProtectedRoute>
             }
           />

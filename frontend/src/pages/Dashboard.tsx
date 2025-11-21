@@ -6,9 +6,11 @@ import { ModoTreino } from '../services/modo-treino.service'
 import { atualizarModoTreino } from '../services/modo-treino.service'
 import { NotificationService } from '../services/notifications.service'
 import Navbar from '../components/Navbar'
-import HeroSection from '../components/HeroSection'
+import HeaderInteligente from '../components/HeaderInteligente'
 import MinhaSemana from '../components/MinhaSemana'
 import TreinosRecent from '../components/TreinosRecent'
+import MinhaEvolucao from '../components/MinhaEvolucao'
+import ChamadoAcao from '../components/ChamadoAcao'
 import StorytellingEvolucao from '../components/StorytellingEvolucao'
 import Conquistas from '../components/Conquistas'
 import MensagemMotivacional from '../components/MensagemMotivacional'
@@ -146,33 +148,53 @@ export default function Dashboard() {
       <Navbar />
 
       <main className="container-custom section">
-        {/* Hero Section - Cabeçalho Inteligente */}
-        <HeroSection
+        {/* 1. Header Inteligente */}
+        <HeaderInteligente
           nome={resumo.usuario.nome}
           treinoHoje={resumo.treinoHoje}
-          modoTreino={resumo.usuario.modoTreino}
-          onModoChange={handleModoChange}
-          loading={false}
         />
 
-        {/* Mensagem Motivacional */}
+        {/* 2. Mensagem Motivacional */}
         <MensagemMotivacional mensagem={resumo.mensagemMotivacional} />
 
-        {/* Minha Semana - Calendário Visual */}
+        {/* 3. Minha Semana - Calendário Visual Compacto */}
         {resumo.treinosSemanais && (
-          <MinhaSemana
-            treinos={resumo.treinosSemanais}
-            treinoHojeId={resumo.treinoHoje?.id}
-            progressoSemanal={resumo.progressoSemanal}
-          />
+          <div className="mb-8">
+            <MinhaSemana
+              treinos={resumo.treinosSemanais}
+              treinoHojeId={resumo.treinoHoje?.id}
+              progressoSemanal={resumo.progressoSemanal}
+            />
+            <div className="text-center mt-4">
+              <button
+                onClick={() => navigate('/minha-semana')}
+                className="btn-secondary text-sm"
+              >
+                Ver Semana Completa
+              </button>
+            </div>
+          </div>
         )}
 
-        {/* Treinos Recentes */}
+        {/* 4. Treinos Recentes */}
         {resumo.treinosRecent && (
           <TreinosRecent treinos={resumo.treinosRecent} />
         )}
 
-        {/* Performance - Storytelling de Evolução */}
+        {/* 5. Minha Evolução - Cards Resumidos */}
+        <MinhaEvolucao
+          evolucao={resumo.evolucao}
+          sequencia={resumo.sequencia}
+        />
+
+        {/* 6. Chamado para Ação (IA) */}
+        <ChamadoAcao
+          mensagem={resumo.mensagemMotivacional}
+          progressoSemanal={resumo.progressoSemanal}
+          sequencia={resumo.sequencia}
+        />
+
+        {/* 7. Performance - Storytelling de Evolução */}
         <StorytellingEvolucao
           evolucaoPeso={resumo.evolucao.peso}
           progressaoForca={resumo.evolucao.progressaoForca}
@@ -181,8 +203,23 @@ export default function Dashboard() {
           totalTreinos={resumo.estatisticas.totalTreinos}
         />
 
-        {/* Conquistas */}
-        <Conquistas nivel={resumo.nivel} conquistas={resumo.conquistas} />
+        {/* 8. Conquistas - Preview */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+              <h3 className="text-xl font-display font-bold text-light">Conquistas</h3>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+            </div>
+            <button
+              onClick={() => navigate('/conquistas')}
+              className="btn-secondary text-sm"
+            >
+              Ver Todas
+            </button>
+          </div>
+          <Conquistas nivel={resumo.nivel} conquistas={resumo.conquistas.slice(0, 5)} />
+        </div>
 
         {/* Acesso Rápido - Reorganizado por Prioridade */}
         <div className="mb-8">
