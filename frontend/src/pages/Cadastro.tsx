@@ -264,38 +264,38 @@ export default function Cadastro() {
     }
   }
 
-  // Função para gerar resumo do onboarding
+  // Função para gerar resumo do onboarding (não utilizada)
   // const gerarResumo = () => {
-    if (!onboardingData) return null
-
-    const resumo = []
-    
-    // Não incluir nome e data de nascimento aqui pois já estão destacados acima
-    // Usar idade calculada se disponível, senão usar a idade do onboarding
-    const idadeParaResumo = calcularIdade() || onboardingData.idade
-    if (idadeParaResumo) resumo.push({ label: 'Idade', value: `${idadeParaResumo} anos` })
-    if (onboardingData.sexo) resumo.push({ label: 'Sexo', value: onboardingData.sexo })
-    if (onboardingData.altura) resumo.push({ label: 'Altura', value: `${onboardingData.altura} cm` })
-    if (onboardingData.pesoAtual) resumo.push({ label: 'Peso', value: `${onboardingData.pesoAtual} kg` })
-    if (onboardingData.tipoCorpo) resumo.push({ label: 'Tipo de Corpo', value: onboardingData.tipoCorpo })
-    if (onboardingData.aguaDiaria) resumo.push({ label: 'Consumo de Água', value: onboardingData.aguaDiaria })
-    if (onboardingData.experiencia) resumo.push({ label: 'Nível', value: onboardingData.experiencia })
-    if (onboardingData.objetivo) resumo.push({ label: 'Objetivo', value: onboardingData.objetivo })
-    if (onboardingData.frequenciaSemanal) resumo.push({ label: 'Frequência', value: `${onboardingData.frequenciaSemanal}x por semana` })
-    if (onboardingData.tempoDisponivel) resumo.push({ label: 'Duração do Treino', value: `${onboardingData.tempoDisponivel} minutos` })
-    if (onboardingData.localTreino) resumo.push({ label: 'Local do Treino', value: onboardingData.localTreino })
-    if (onboardingData.problemasAnteriores && onboardingData.problemasAnteriores.length > 0) {
-      resumo.push({ label: 'Problemas Anteriores', value: onboardingData.problemasAnteriores.join(', ') })
-    }
-    if (onboardingData.objetivosAdicionais && onboardingData.objetivosAdicionais.length > 0) {
-      resumo.push({ label: 'Objetivos Adicionais', value: onboardingData.objetivosAdicionais.join(', ') })
-    }
-    if (onboardingData.lesoes && onboardingData.lesoes.length > 0) {
-      resumo.push({ label: 'Limitações', value: onboardingData.lesoes.join(', ') })
-    }
-
-    return resumo
-  }
+  //   if (!onboardingData) return null
+  //
+  //   const resumo = []
+  //   
+  //   // Não incluir nome e data de nascimento aqui pois já estão destacados acima
+  //   // Usar idade calculada se disponível, senão usar a idade do onboarding
+  //   const idadeParaResumo = calcularIdade() || onboardingData.idade
+  //   if (idadeParaResumo) resumo.push({ label: 'Idade', value: `${idadeParaResumo} anos` })
+  //   if (onboardingData.sexo) resumo.push({ label: 'Sexo', value: onboardingData.sexo })
+  //   if (onboardingData.altura) resumo.push({ label: 'Altura', value: `${onboardingData.altura} cm` })
+  //   if (onboardingData.pesoAtual) resumo.push({ label: 'Peso', value: `${onboardingData.pesoAtual} kg` })
+  //   if (onboardingData.tipoCorpo) resumo.push({ label: 'Tipo de Corpo', value: onboardingData.tipoCorpo })
+  //   if (onboardingData.aguaDiaria) resumo.push({ label: 'Consumo de Água', value: onboardingData.aguaDiaria })
+  //   if (onboardingData.experiencia) resumo.push({ label: 'Nível', value: onboardingData.experiencia })
+  //   if (onboardingData.objetivo) resumo.push({ label: 'Objetivo', value: onboardingData.objetivo })
+  //   if (onboardingData.frequenciaSemanal) resumo.push({ label: 'Frequência', value: `${onboardingData.frequenciaSemanal}x por semana` })
+  //   if (onboardingData.tempoDisponivel) resumo.push({ label: 'Duração do Treino', value: `${onboardingData.tempoDisponivel} minutos` })
+  //   if (onboardingData.localTreino) resumo.push({ label: 'Local do Treino', value: onboardingData.localTreino })
+  //   if (onboardingData.problemasAnteriores && onboardingData.problemasAnteriores.length > 0) {
+  //     resumo.push({ label: 'Problemas Anteriores', value: onboardingData.problemasAnteriores.join(', ') })
+  //   }
+  //   if (onboardingData.objetivosAdicionais && onboardingData.objetivosAdicionais.length > 0) {
+  //     resumo.push({ label: 'Objetivos Adicionais', value: onboardingData.objetivosAdicionais.join(', ') })
+  //   }
+  //   if (onboardingData.lesoes && onboardingData.lesoes.length > 0) {
+  //     resumo.push({ label: 'Limitações', value: onboardingData.lesoes.join(', ') })
+  //   }
+  //
+  //   return resumo
+  // }
 
   const idadeCalculada = calcularIdade()
   // const resumo = gerarResumo() // Não utilizado
