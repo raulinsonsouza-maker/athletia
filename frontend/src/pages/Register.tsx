@@ -9,8 +9,33 @@ export default function Register() {
   const [confirmarSenha, setConfirmarSenha] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [senhaStrength, setSenhaStrength] = useState<'weak' | 'medium' | 'strong' | null>(null)
   const { register } = useAuth()
   const navigate = useNavigate()
+
+  // Validar força da senha em tempo real
+  const validarForcaSenha = (senha: string): 'weak' | 'medium' | 'strong' | null => {
+    if (!senha) return null
+    if (senha.length < 6) return 'weak'
+    if (senha.length < 10) return 'medium'
+    // Verificar complexidade
+    const temMaiuscula = /[A-Z]/.test(senha)
+    const temMinuscula = /[a-z]/.test(senha)
+    const temNumero = /[0-9]/.test(senha)
+    const temEspecial = /[^A-Za-z0-9]/.test(senha)
+    const complexidade = [temMaiuscula, temMinuscula, temNumero, temEspecial].filter(Boolean).length
+    if (complexidade >= 3 && senha.length >= 10) return 'strong'
+    if (complexidade >= 2) return 'medium'
+    return 'weak'
+  }
+
+  const handleSenhaChange = (value: string) => {
+    setSenha(value)
+    setSenhaStrength(validarForcaSenha(value))
+    if (error && error.includes('senha')) {
+      setError('')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,12 +126,45 @@ export default function Register() {
               id="senha"
               type="password"
               value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              onChange={(e) => handleSenhaChange(e.target.value)}
               className="input-field"
               placeholder="••••••••"
               required
               disabled={loading}
+              minLength={6}
             />
+            {senhaStrength && (
+              <div className="mt-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex-1 h-2 bg-dark-lighter rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        senhaStrength === 'weak' ? 'bg-error w-1/3' :
+                        senhaStrength === 'medium' ? 'bg-warning w-2/3' :
+                        'bg-success w-full'
+                      }`}
+                    />
+                  </div>
+                  <span className={`text-xs font-medium ${
+                    senhaStrength === 'weak' ? 'text-error' :
+                    senhaStrength === 'medium' ? 'text-warning' :
+                    'text-success'
+                  }`}>
+                    {senhaStrength === 'weak' ? 'Fraca' :
+                     senhaStrength === 'medium' ? 'Média' :
+                     'Forte'}
+                  </span>
+                </div>
+                {senhaStrength === 'weak' && senha.length >= 6 && (
+                  <p className="text-xs text-warning mt-1">
+                    Dica: Use letras maiúsculas, números e caracteres especiais para aumentar a segurança
+                  </p>
+                )}
+              </div>
+            )}
+            <p className="text-xs text-light-muted mt-1">
+              Mínimo de 6 caracteres
+            </p>
           </div>
 
           <div>

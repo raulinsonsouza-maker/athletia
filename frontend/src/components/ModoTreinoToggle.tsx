@@ -86,13 +86,16 @@ export default function ModoTreinoToggle({ onModoChange }: ModoTreinoToggleProps
           onClick={() => handleToggle('IA')}
           disabled={alterando}
           className={`
-            flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all
+            flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary
             ${modoTreino === 'IA'
               ? 'bg-primary text-white shadow-lg shadow-primary/20'
               : 'bg-dark-tertiary text-light-muted hover:bg-dark-tertiary/80'
             }
             ${alterando ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `}
+          aria-label="Modo de treino: IA"
+          aria-pressed={modoTreino === 'IA'}
+          tabIndex={0}
         >
           IA
         </button>
@@ -101,13 +104,16 @@ export default function ModoTreinoToggle({ onModoChange }: ModoTreinoToggleProps
           onClick={() => handleToggle('MANUAL')}
           disabled={alterando}
           className={`
-            flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all
+            flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary
             ${modoTreino === 'MANUAL'
               ? 'bg-primary text-white shadow-lg shadow-primary/20'
               : 'bg-dark-tertiary text-light-muted hover:bg-dark-tertiary/80'
             }
             ${alterando ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
           `}
+          aria-label="Modo de treino: Manual"
+          aria-pressed={modoTreino === 'MANUAL'}
+          tabIndex={0}
         >
           Manual
         </button>

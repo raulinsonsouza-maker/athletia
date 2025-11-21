@@ -22,6 +22,12 @@ export default function Estatisticas() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [periodo, setPeriodo] = useState(30)
+  const [graficosVisiveis, setGraficosVisiveis] = useState<Record<string, boolean>>({
+    frequencia: true,
+    grupos: true,
+    progressao: true,
+    volume: false // Começar oculto e carregar sob demanda
+  })
 
   useEffect(() => {
     carregarEstatisticas()
@@ -69,6 +75,7 @@ export default function Estatisticas() {
             value={periodo}
             onChange={(e) => setPeriodo(Number(e.target.value))}
             className="input-field"
+            aria-label="Selecione o período de análise"
           >
             <option value={7}>Últimos 7 dias</option>
             <option value={15}>Últimos 15 dias</option>
@@ -288,9 +295,9 @@ export default function Estatisticas() {
               )
             })()}
 
-            {/* Gráfico de Volume ao Longo do Tempo */}
-            {historico.length > 0 && (() => {
-              // Agrupar volume por semana
+            {/* Gráfico de Volume ao Longo do Tempo - Lazy Loading */}
+            {historico.length > 0 && graficosVisiveis.volume && (() => {
+              // Agrupar volume por semana (cálculo otimizado)
               const volumePorSemana: Record<string, number> = {}
               
               historico.forEach(treino => {
@@ -346,6 +353,25 @@ export default function Estatisticas() {
                 </div>
               )
             })()}
+            
+            {/* Botão para carregar gráfico de volume sob demanda */}
+            {historico.length > 0 && !graficosVisiveis.volume && (
+              <div className="card">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-display font-bold text-light">Volume de Treino por Semana</h3>
+                  <button
+                    onClick={() => setGraficosVisiveis(prev => ({ ...prev, volume: true }))}
+                    className="btn-secondary text-sm"
+                    aria-label="Carregar gráfico de volume"
+                  >
+                    Carregar Gráfico
+                  </button>
+                </div>
+                <p className="text-light-muted text-sm">
+                  Clique no botão acima para carregar o gráfico de volume ao longo do tempo.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </main>

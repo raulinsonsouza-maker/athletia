@@ -97,9 +97,10 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-primary-400 transition-colors focus:outline-none p-1 z-10"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-primary-400 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark rounded p-1 z-10"
                 disabled={loading}
                 aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                tabIndex={0}
               >
                 {showPassword ? (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

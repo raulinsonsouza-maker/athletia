@@ -38,23 +38,32 @@ export default function Dashboard() {
           if (perfilResponse.data) {
             NotificationService.requestPermission()
             
-            // Carregar resumo do dashboard
-            const resumoData = await obterResumoDashboard()
-            setResumo(resumoData)
-            
-            // Verificar atualização periódica
+            // Carregar dados em paralelo para melhor performance
             try {
-              const atualizacaoResponse = await api.get('/perfil/atualizacao-periodica')
-              setPrecisaAtualizacao(atualizacaoResponse.data.precisaAtualizar)
-              setDiasRestantes(atualizacaoResponse.data.diasRestantes)
+              const [resumoData, atualizacaoResponse] = await Promise.all([
+                obterResumoDashboard(),
+                api.get('/perfil/atualizacao-periodica').catch(() => ({ data: { precisaAtualizar: false, diasRestantes: null } }))
+              ])
               
-              if (atualizacaoResponse.data.precisaAtualizar) {
+              setResumo(resumoData)
+              setPrecisaAtualizacao(atualizacaoResponse.data?.precisaAtualizar || false)
+              setDiasRestantes(atualizacaoResponse.data?.diasRestantes || null)
+              
+              if (atualizacaoResponse.data?.precisaAtualizar) {
                 setTimeout(() => {
                   setMostrarModalAtualizacao(true)
                 }, 2000)
               }
             } catch (error: any) {
-              console.error('Erro ao verificar atualização periódica:', error)
+              console.error('Erro ao carregar dados do dashboard:', error)
+              // Tentar carregar pelo menos o resumo se a atualização periódica falhar
+              try {
+                const resumoData = await obterResumoDashboard()
+                setResumo(resumoData)
+              } catch (resumoError: any) {
+                console.error('Erro ao carregar resumo:', resumoError)
+                showToast('Erro ao carregar alguns dados do dashboard', 'warning')
+              }
             }
           }
         } catch (error: any) {
@@ -63,18 +72,19 @@ export default function Dashboard() {
           } else {
             console.error('Erro ao verificar perfil:', error)
             setHasPerfil(false)
+            showToast('Erro ao verificar perfil. Verifique sua conexão.', 'error')
           }
         }
       } catch (error: any) {
         console.error('Erro ao carregar dashboard:', error)
-        showToast('Erro ao carregar dados do dashboard', 'error')
+        showToast('Erro ao carregar dados do dashboard. Tente recarregar a página.', 'error')
       } finally {
         setLoading(false)
       }
     }
     
     carregarDashboard()
-  }, [])
+  }, [showToast])
 
   const handleModoChange = async (novoModo: ModoTreino) => {
     try {
@@ -356,6 +366,23 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
   const [lesoes, setLesoes] = useState<string[]>([])
   const [salvando, setSalvando] = useState(false)
   const [error, setError] = useState('')
+  const [temDadosNaoSalvos, setTemDadosNaoSalvos] = useState(false)
+
+  // Detectar se há dados não salvos
+  const verificarDadosNaoSalvos = () => {
+    return pesoAtual !== '' || percentualGordura !== '' || lesoes.length > 0
+  }
+
+  const handleClose = () => {
+    if (temDadosNaoSalvos && !salvando) {
+      if (window.confirm('Você tem dados não salvos. Deseja realmente fechar e perder essas informações?')) {
+        onClose()
+      }
+    } else {
+      onClose()
+    }
+  }
+
 
   const lesoesDisponiveis = ['Joelho', 'Ombro', 'Coluna', 'Pulso', 'Tornozelo', 'Outras']
 
@@ -391,7 +418,15 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        // Fechar apenas se clicar no overlay (não no conteúdo)
+        if (e.target === e.currentTarget) {
+          handleClose()
+        }
+      }}
+    >
       <div className="card max-w-2xl w-full animate-scale-in border border-primary/30">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-3">
@@ -403,9 +438,10 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
             </h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-light-muted hover:text-light transition-colors"
             aria-label="Fechar modal"
+            disabled={salvando}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -427,30 +463,40 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="label-field">Peso Atual (kg)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="30"
-              max="300"
-              value={pesoAtual}
-              onChange={(e) => setPesoAtual(e.target.value)}
-              className="input-field"
-              placeholder="Ex: 75.5"
-            />
+              <input
+                type="number"
+                step="0.1"
+                min="30"
+                max="300"
+                value={pesoAtual}
+                onChange={(e) => {
+                  setPesoAtual(e.target.value)
+                  if (error) setError('')
+                }}
+                className="input-field"
+                placeholder="Ex: 75.5"
+                aria-label="Peso atual em quilogramas"
+                aria-required="false"
+              />
           </div>
 
           <div>
             <label className="label-field">Percentual de Gordura (%)</label>
-            <input
-              type="number"
-              step="0.1"
-              min="5"
-              max="50"
-              value={percentualGordura}
-              onChange={(e) => setPercentualGordura(e.target.value)}
-              className="input-field"
-              placeholder="Ex: 15.5"
-            />
+              <input
+                type="number"
+                step="0.1"
+                min="5"
+                max="50"
+                value={percentualGordura}
+                onChange={(e) => {
+                  setPercentualGordura(e.target.value)
+                  if (error) setError('')
+                }}
+                className="input-field"
+                placeholder="Ex: 15.5"
+                aria-label="Percentual de gordura corporal"
+                aria-required="false"
+              />
           </div>
 
           <div>
@@ -480,11 +526,12 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="btn-secondary"
               disabled={salvando}
+              aria-label="Cancelar e fechar modal"
             >
-              Cancelar
+              {temDadosNaoSalvos ? 'Cancelar e Fechar' : 'Cancelar'}
             </button>
           </div>
         </form>

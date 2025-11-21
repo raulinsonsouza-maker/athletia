@@ -25,10 +25,15 @@ export default function Navbar({ title, showBack = false, backPath, onBack }: Na
     } else if (backPath !== undefined) {
       navigate(backPath)
     } else {
-      // Se não especificado, tenta voltar no histórico ou vai para dashboard
-      if (window.history.length > 1) {
+      // Navegação inteligente: usar referrer se disponível, senão dashboard
+      const referrer = document.referrer
+      const currentOrigin = window.location.origin
+      
+      // Se veio de uma página do mesmo site, tentar voltar
+      if (referrer && referrer.startsWith(currentOrigin)) {
         navigate(-1)
       } else {
+        // Caso contrário, ir para dashboard
         navigate('/dashboard')
       }
     }

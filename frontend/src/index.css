@@ -272,6 +272,8 @@
   .input-field:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background-color: #141210;
+    border-color: #2A2824;
   }
   
   .input-field option {

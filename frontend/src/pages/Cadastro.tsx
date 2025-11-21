@@ -188,8 +188,22 @@ export default function Cadastro() {
       // Atualizar contexto de autenticação diretamente com os dados do endpoint
       setUserFromResponse(user, accessToken, refreshToken)
 
-      // Limpar dados do onboarding do localStorage
+      // Limpar dados do onboarding do localStorage após cadastro bem-sucedido
       localStorage.removeItem('onboardingData')
+      
+      // Limpar também dados temporários de sessão se existirem
+      try {
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && (key.startsWith('onboarding') || key.startsWith('temp_'))) {
+            keysToRemove.push(key)
+          }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key))
+      } catch (error) {
+        console.warn('Erro ao limpar localStorage:', error)
+      }
 
       // Redirecionar para checkout
       navigate('/checkout')
@@ -204,7 +218,7 @@ export default function Cadastro() {
         if (err.response.status === 400) {
           errorMessage = err.response.data?.error || 'Dados inválidos. Verifique as informações e tente novamente.'
         } else if (err.response.status === 409 || err.response.data?.error?.includes('já cadastrado')) {
-          errorMessage = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.'
+          errorMessage = 'Este e-mail já está cadastrado. Você pode fazer login ou usar outro e-mail.'
         } else if (err.response.status >= 500) {
           errorMessage = 'Erro no servidor. Tente novamente em alguns instantes.'
         } else {
@@ -1036,6 +1050,7 @@ export default function Cadastro() {
                     src={transformacao.imagemAtual || ''} 
                     alt="Estado atual"
                     className="w-full h-full object-cover"
+                    loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=Agora`
                     }}
@@ -1058,6 +1073,7 @@ export default function Cadastro() {
                     src={transformacao.imagemFutura || ''} 
                     alt="Estado futuro"
                     className="w-full h-full object-cover"
+                    loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=6+meses`
                     }}
@@ -1229,6 +1245,7 @@ export default function Cadastro() {
                     src={DEPOIMENTOS[depoimentoAtual].imagemAntes}
                     alt={`Transformação de ${DEPOIMENTOS[depoimentoAtual].nome}`}
                     className="w-full h-auto object-cover"
+                    loading="lazy"
                     onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/600x800/4A4946/F9A620?text=Transformação`
                     }}
@@ -1504,6 +1521,9 @@ export default function Cadastro() {
                       className="input-field"
                       placeholder="seu@email.com"
                       required
+                      aria-label="Endereço de e-mail"
+                      aria-required="true"
+                      autoComplete="email"
                     />
                   </div>
 
@@ -1535,6 +1555,9 @@ export default function Cadastro() {
                       placeholder="Digite a senha novamente"
                       required
                       minLength={6}
+                      aria-label="Confirmar senha"
+                      aria-required="true"
+                      autoComplete="new-password"
                     />
                     {formData.senha && formData.confirmarSenha && formData.senha !== formData.confirmarSenha && (
                       <p className="text-error text-xs mt-1">As senhas não coincidem</p>

@@ -381,6 +381,7 @@ export default function TreinoDoDia() {
   // Estado: Sem Treino
   if (!treino || error) {
     const temPlanoAtivo = user?.planoAtivo
+    const erroEspecifico = error && error !== 'Nenhum treino encontrado'
     
     return (
       <div className="min-h-screen bg-dark">
@@ -404,6 +405,10 @@ export default function TreinoDoDia() {
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
             {gerandoTreino ? (
               <div className="spinner h-12 w-12"></div>
+            ) : erroEspecifico ? (
+              <svg className="w-12 h-12 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             ) : (
               <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -411,7 +416,31 @@ export default function TreinoDoDia() {
             )}
           </div>
           
-          {gerandoTreino ? (
+          {erroEspecifico ? (
+            <>
+              <h2 className="text-2xl font-bold text-light mb-2">
+                Erro ao carregar treino
+              </h2>
+              <div className="bg-error/20 border border-error/50 text-error px-4 py-3 rounded-lg mb-4">
+                <p className="text-sm">{error}</p>
+              </div>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={carregarTreino}
+                  className="btn-primary w-full"
+                  disabled={loading}
+                >
+                  {loading ? 'Carregando...' : 'Tentar Novamente'}
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="btn-secondary w-full"
+                >
+                  Voltar ao Dashboard
+                </button>
+              </div>
+            </>
+          ) : gerandoTreino ? (
             <>
               <h2 className="text-2xl font-bold text-light mb-2">
                 Gerando seu treino personalizado...
@@ -430,14 +459,23 @@ export default function TreinoDoDia() {
                 Se você acabou de ativar seu plano, aguarde alguns instantes.
               </p>
               <p className="text-light-muted mb-6 text-sm">
-                Se o treino não aparecer em breve, recarregue a página ou entre em contato com o suporte.
+                Se o treino não aparecer em breve, você pode:
               </p>
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="btn-secondary px-6 py-3 text-base font-semibold"
-              >
-                Voltar ao Dashboard
-              </button>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={carregarTreino}
+                  className="btn-primary w-full"
+                  disabled={loading}
+                >
+                  {loading ? 'Carregando...' : 'Recarregar Treino'}
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="btn-secondary w-full"
+                >
+                  Voltar ao Dashboard
+                </button>
+              </div>
             </>
           ) : (
             <>
@@ -450,7 +488,7 @@ export default function TreinoDoDia() {
               </p>
               <button
                 onClick={() => navigate('/checkout')}
-                className="btn-primary px-8 py-4 text-lg font-semibold"
+                className="btn-primary px-8 py-4 text-lg font-semibold w-full"
               >
                 Ativar Plano
               </button>

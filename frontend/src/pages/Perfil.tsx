@@ -112,14 +112,31 @@ export default function Perfil() {
     }
 
     setPesoError('')
+    const pesoNovo = parseFloat(pesoInput)
     try {
       setRegistrandoPeso(true)
-      await api.post('/peso', { peso: parseFloat(pesoInput) })
+      await api.post('/peso', { peso: pesoNovo })
+      
+      // Atualizar estado local imediatamente para feedback visual instantâneo
+      if (perfil) {
+        setPerfil({ ...perfil, pesoAtual: pesoNovo })
+      }
+      
       setPesoInput('')
-      await carregarPerfil()
       showToast('Peso registrado com sucesso!', 'success')
+      
+      // Recarregar perfil completo em background para sincronizar com servidor
+      setTimeout(() => {
+        carregarPerfil().catch(err => {
+          console.error('Erro ao recarregar perfil:', err)
+        })
+      }, 500)
     } catch (error: any) {
-      showToast(error.response?.data?.error || 'Erro ao registrar peso', 'error')
+      showToast(error.response?.data?.error || 'Erro ao registrar peso. Tente novamente.', 'error')
+      // Reverter estado local em caso de erro
+      if (perfil) {
+        carregarPerfil()
+      }
     } finally {
       setRegistrandoPeso(false)
     }
