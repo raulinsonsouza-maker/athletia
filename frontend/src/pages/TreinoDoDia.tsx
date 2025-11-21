@@ -161,9 +161,9 @@ export default function TreinoDoDia() {
         if (primeiroNaoConcluido !== -1) {
           setExercicioAtualIndex(primeiroNaoConcluido)
         } else {
-          // Todos concluídos, mostrar último
+          // Todos concluídos, mostrar último exercício
+          // NÃO definir treinoConcluido como true aqui - isso só deve acontecer quando o usuário conclui o treino DENTRO da página
           setExercicioAtualIndex(treinoData.exercicios.length - 1)
-          setTreinoConcluido(true)
         }
       } else {
         setTreino(null)

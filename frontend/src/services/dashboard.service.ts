@@ -1,11 +1,15 @@
 import api from './auth.service'
 
+import { TreinoSemanal } from '../types/treino.types'
+
 export interface ResumoDashboard {
   usuario: {
     nome: string
     modoTreino: 'IA' | 'MANUAL'
   }
   treinoHoje: any | null
+  treinosSemanais?: TreinoSemanal[] // Treinos da semana completa (7 dias)
+  treinosRecent?: TreinoSemanal[] // Últimos 3 treinos concluídos
   progressoSemanal: {
     concluidos: number
     meta: number

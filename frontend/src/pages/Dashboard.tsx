@@ -7,6 +7,8 @@ import { atualizarModoTreino } from '../services/modo-treino.service'
 import { NotificationService } from '../services/notifications.service'
 import Navbar from '../components/Navbar'
 import HeroSection from '../components/HeroSection'
+import MinhaSemana from '../components/MinhaSemana'
+import TreinosRecent from '../components/TreinosRecent'
 import ProgressoSemanal from '../components/ProgressoSemanal'
 import StorytellingEvolucao from '../components/StorytellingEvolucao'
 import Conquistas from '../components/Conquistas'
@@ -145,7 +147,7 @@ export default function Dashboard() {
       <Navbar />
 
       <main className="container-custom section">
-        {/* Hero Section */}
+        {/* Hero Section - Cabeçalho Inteligente */}
         <HeroSection
           nome={resumo.usuario.nome}
           treinoHoje={resumo.treinoHoje}
@@ -157,18 +159,21 @@ export default function Dashboard() {
         {/* Mensagem Motivacional */}
         <MensagemMotivacional mensagem={resumo.mensagemMotivacional} />
 
-        {/* Progresso Semanal */}
-        <ProgressoSemanal
-          concluidos={resumo.progressoSemanal.concluidos}
-          meta={resumo.progressoSemanal.meta}
-          porcentagem={resumo.progressoSemanal.porcentagem}
-          faltam={resumo.progressoSemanal.faltam}
-          sequenciaAtual={resumo.sequencia.atual}
-          melhorSequencia={resumo.sequencia.melhor}
-          ehRecorde={resumo.sequencia.ehRecorde}
-        />
+        {/* Minha Semana - Calendário Visual */}
+        {resumo.treinosSemanais && (
+          <MinhaSemana
+            treinos={resumo.treinosSemanais}
+            treinoHojeId={resumo.treinoHoje?.id}
+            progressoSemanal={resumo.progressoSemanal}
+          />
+        )}
 
-        {/* Storytelling de Evolução */}
+        {/* Treinos Recentes */}
+        {resumo.treinosRecent && (
+          <TreinosRecent treinos={resumo.treinosRecent} />
+        )}
+
+        {/* Performance - Storytelling de Evolução */}
         <StorytellingEvolucao
           evolucaoPeso={resumo.evolucao.peso}
           progressaoForca={resumo.evolucao.progressaoForca}

@@ -74,6 +74,34 @@ export const obterResumoDashboard = async (req: AuthRequest, res: Response) => {
     const treinosConcluidosSemana = treinosEstaSemana.filter(t => t.concluido).length;
     const metaSemanal = perfil?.frequenciaSemanal || 3;
 
+    // Buscar treinos recentes (últimos 3 concluídos)
+    const treinosRecent = await prisma.treino.findMany({
+      where: {
+        userId,
+        concluido: true
+      },
+      orderBy: {
+        data: 'desc'
+      },
+      take: 3,
+      include: {
+        exercicios: {
+          include: {
+            exercicio: {
+              select: {
+                id: true,
+                nome: true,
+                grupoMuscularPrincipal: true
+              }
+            }
+          },
+          orderBy: {
+            ordem: 'asc'
+          }
+        }
+      }
+    });
+
     // Calcular total de treinos no mês
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     const totalTreinosMes = await prisma.treino.count({
@@ -93,6 +121,8 @@ export const obterResumoDashboard = async (req: AuthRequest, res: Response) => {
         modoTreino: user?.modoTreino || 'IA'
       },
       treinoHoje,
+      treinosSemanais: treinosEstaSemana, // Treinos da semana completa (7 dias)
+      treinosRecent: treinosRecent, // Últimos 3 treinos concluídos
       progressoSemanal: {
         concluidos: treinosConcluidosSemana,
         meta: metaSemanal,
