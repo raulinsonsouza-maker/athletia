@@ -1,7 +1,7 @@
+import { TreinoBase } from '../types/treino.types'
+
 interface TelaConclusaoTreinoProps {
-  treino: {
-    nome: string | null
-    tempoEstimado: number | null
+  treino: TreinoBase & {
     exercicios: Array<{ concluido: boolean }>
   }
   onVoltarHome: () => void

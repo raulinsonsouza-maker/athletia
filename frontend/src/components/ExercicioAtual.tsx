@@ -1,22 +1,5 @@
 import { useState } from 'react'
-
-interface ExercicioTreino {
-  id: string
-  ordem: number
-  series: number
-  repeticoes: string
-  carga: number | null
-  descanso: number | null
-  concluido: boolean
-  exercicio: {
-    id: string
-    nome: string
-    grupoMuscularPrincipal: string
-    gifUrl: string | null
-    imagemUrl: string | null
-    equipamentoNecessario: string[]
-  }
-}
+import { ExercicioTreino } from '../types/treino.types'
 
 interface ExercicioAtualProps {
   exercicio: ExercicioTreino

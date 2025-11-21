@@ -201,7 +201,8 @@ export const buscarHistorico = async (req: AuthRequest, res: Response) => {
     const { limite } = req.query;
 
     const limiteNum = limite ? parseInt(limite as string) : 30;
-    const historico = await progressaoService.buscarHistoricoTreinos(userId, limiteNum);
+    const { buscarHistoricoTreinosComFiltros } = await import('../services/treino-query.service');
+    const historico = await buscarHistoricoTreinosComFiltros(userId, limiteNum);
 
     res.json(historico);
   } catch (error: any) {
@@ -239,7 +240,16 @@ export const buscarEstatisticas = async (req: AuthRequest, res: Response) => {
 export const buscarTreinosSemanais = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    let treinos = await treinoService.buscarTreinosSemanais(userId);
+    const { buscarTreinosSemanaisComFiltros } = await import('../services/treino-query.service');
+    
+    // Buscar modo de treino do usuário
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { modoTreino: true }
+    });
+    const modoTreino = (user?.modoTreino || 'IA') as 'IA' | 'MANUAL';
+    
+    let treinos = await buscarTreinosSemanaisComFiltros(userId, undefined, modoTreino);
 
     // Filtrar apenas treinos com exercícios
     treinos = treinos.filter(t => t.exercicios && t.exercicios.length > 0);

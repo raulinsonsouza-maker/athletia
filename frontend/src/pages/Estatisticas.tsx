@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import Navbar from '../components/Navbar'
 import { LineChart, BarChart, DoughnutChart } from '../components/ChartWrapper'
+import { calcularRepeticoesMedias, calcularVolumeTreino } from '../utils/treino.utils'
 
 interface Estatisticas {
   periodo: number
@@ -42,27 +43,6 @@ export default function Estatisticas() {
     }
   }
 
-  // Função para calcular repetições médias de uma string (ex: "8-12" = 10)
-  const calcularRepeticoesMedias = (repeticoes: string | null): number => {
-    if (!repeticoes) return 10 // default
-    
-    const parts = repeticoes.split('-').map(s => s.trim())
-    
-    if (parts.length === 1) {
-      const num = parseInt(parts[0], 10)
-      return isNaN(num) ? 10 : num
-    }
-    
-    const lower = parseInt(parts[0], 10)
-    const upper = parseInt(parts[1], 10)
-    
-    if (isNaN(lower) || isNaN(upper)) {
-      return 10 // default
-    }
-    
-    // Retorna a média do range
-    return (lower + upper) / 2
-  }
 
   if (loading) {
     return (
@@ -322,14 +302,8 @@ export default function Estatisticas() {
                   inicioSemana.setDate(data.getDate() - data.getDay())
                   const semanaKey = inicioSemana.toISOString().split('T')[0]
                   
-                  let volumeSemana = 0
-                  treino.exercicios.forEach((ex: any) => {
-                    if (ex.carga && ex.series) {
-                      const repeticoesMedias = calcularRepeticoesMedias(ex.repeticoes)
-                      // Volume = séries × repetições × carga
-                      volumeSemana += ex.series * repeticoesMedias * ex.carga
-                    }
-                  })
+                  // Usar função utilitária para calcular volume
+                  volumeSemana = calcularVolumeTreino(treino)
                   
                   if (volumeSemana > 0) {
                     volumePorSemana[semanaKey] = (volumePorSemana[semanaKey] || 0) + volumeSemana

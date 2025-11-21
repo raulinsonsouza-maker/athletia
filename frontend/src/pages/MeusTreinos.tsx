@@ -10,27 +10,10 @@ import {
   duplicarTreinoPersonalizado,
   aplicarTemplatePersonalizado
 } from '../services/treino-personalizado.service'
+import { TreinoResumo } from '../types/treino.types'
+import TreinoLista from '../components/treino/TreinoLista'
 
-interface Treino {
-  id: string
-  data: string
-  nome: string | null
-  tipo: string
-  concluido: boolean
-  tempoEstimado: number | null
-  criadoPor: string
-  exercicios: Array<{
-    id: string
-    ordem: number
-    series: number
-    repeticoes: string
-    exercicio: {
-      id: string
-      nome: string
-      grupoMuscularPrincipal: string
-    }
-  }>
-}
+type Treino = TreinoResumo
 
 interface Template {
   id: string
@@ -134,20 +117,28 @@ export default function MeusTreinos() {
     }
   }
 
-  const formatarData = (data: string) => {
-    return new Date(data).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      weekday: 'short'
-    })
-  }
-
   const treinosFiltrados = treinos.filter(t => {
     if (filtroConcluido === 'concluido') return t.concluido
     if (filtroConcluido === 'pendente') return !t.concluido
     return true
   })
+
+  const handleAcaoTreino = (acao: string, treino: Treino) => {
+    switch (acao) {
+      case 'ver':
+        navigate(`/treino?data=${treino.data.split('T')[0]}`)
+        break
+      case 'editar':
+        navigate('/treinos-recorrentes')
+        break
+      case 'duplicar':
+        handleDuplicarTreino(treino.id)
+        break
+      case 'deletar':
+        handleDeletarTreino(treino.id)
+        break
+    }
+  }
 
   if (loading) {
     return (
@@ -214,104 +205,20 @@ export default function MeusTreinos() {
               </select>
             </div>
 
-            {treinosFiltrados.length === 0 ? (
-              <div className="card text-center py-12">
-                <p className="text-light-muted mb-4">
-                  {filtroConcluido === 'todos' 
-                    ? 'Nenhum treino personalizado criado ainda.'
-                    : filtroConcluido === 'concluido'
-                    ? 'Nenhum treino concluído.'
-                    : 'Nenhum treino pendente.'}
-                </p>
-                <button
-                  onClick={() => navigate('/treinos-recorrentes')}
-                  className="btn-primary"
-                >
-                  Criar Primeiro Treino
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {treinosFiltrados.map(treino => (
-                  <div key={treino.id} className="card">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-bold text-light">
-                            {treino.nome || 'Treino Personalizado'}
-                          </h3>
-                          {treino.concluido && (
-                            <span className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-400">
-                              Concluído
-                            </span>
-                          )}
-                          {!treino.concluido && (
-                            <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-400">
-                              Pendente
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-light-muted mb-1">
-                          {formatarData(treino.data)}
-                        </p>
-                        <p className="text-sm text-light-muted">
-                          {treino.exercicios.length} exercícios
-                          {treino.tempoEstimado && ` • ${treino.tempoEstimado} min`}
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => navigate(`/treino?data=${treino.data.split('T')[0]}`)}
-                          className="px-3 py-1 text-sm btn-primary"
-                        >
-                          Ver
-                        </button>
-                        <button
-                          onClick={() => navigate('/treinos-recorrentes')}
-                          className="px-3 py-1 text-sm btn-secondary"
-                          title="Editar treino recorrente"
-                        >
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDuplicarTreino(treino.id)}
-                          className="px-3 py-1 text-sm btn-secondary"
-                          title="Duplicar"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDeletarTreino(treino.id)}
-                          className="px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
-                          title="Deletar"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="text-sm text-light-muted">
-                      <p className="font-medium mb-1">Exercícios:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {treino.exercicios.slice(0, 5).map(ex => (
-                          <span key={ex.id} className="px-2 py-1 rounded bg-dark-lighter border border-grey-dark">
-                            {ex.exercicio.nome}
-                          </span>
-                        ))}
-                        {treino.exercicios.length > 5 && (
-                          <span className="px-2 py-1 rounded bg-dark-lighter border border-grey-dark">
-                            +{treino.exercicios.length - 5} mais
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <TreinoLista
+              treinos={treinosFiltrados}
+              variante="resumo"
+              mostrarFiltros={false}
+              mostrarAcoes={true}
+              onAcao={handleAcaoTreino}
+              emptyMessage={
+                filtroConcluido === 'todos' 
+                  ? 'Nenhum treino personalizado criado ainda.'
+                  : filtroConcluido === 'concluido'
+                  ? 'Nenhum treino concluído.'
+                  : 'Nenhum treino pendente.'
+              }
+            />
           </>
         )}
 

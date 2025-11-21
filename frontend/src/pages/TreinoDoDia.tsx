@@ -11,41 +11,11 @@ import NavegacaoExercicios from '../components/NavegacaoExercicios'
 import ModalInstrucoes from '../components/ModalInstrucoes'
 import TelaConclusaoTreino from '../components/TelaConclusaoTreino'
 import VisaoSemanalTreinos from '../components/VisaoSemanalTreinos'
-import { buscarTreinosSemanais, TreinoSemanal } from '../services/treino.service'
+import { buscarTreinosSemanais } from '../services/treino.service'
+import { TreinoSemanal, TreinoCompleto, ExercicioTreino } from '../types/treino.types'
+import { formatarCarga as formatarCargaUtil } from '../utils/treino.utils'
 
-interface ExercicioTreino {
-  id: string
-  ordem: number
-  series: number
-  repeticoes: string
-  carga: number | null
-  rpe: number | null
-  descanso: number | null
-  concluido: boolean
-  exercicio: {
-    id: string
-    nome: string
-    grupoMuscularPrincipal: string
-    descricao: string | null
-    execucaoTecnica: string | null
-    errosComuns: string[]
-    gifUrl: string | null
-    imagemUrl: string | null
-    equipamentoNecessario: string[]
-  }
-}
-
-interface Treino {
-  id: string
-  data: string
-  tipo: string
-  nome: string | null
-  concluido: boolean
-  tempoEstimado: number | null
-  criadoPor?: string
-  letraTreino?: string | null
-  exercicios: ExercicioTreino[]
-}
+type Treino = TreinoCompleto
 
 export default function TreinoDoDia() {
   const navigate = useNavigate()
@@ -87,7 +57,7 @@ export default function TreinoDoDia() {
     )
   }
 
-  // Função para formatar carga
+  // Função para formatar carga (com lógica específica para halteres)
   const formatarCarga = (
     carga: number | null, 
     equipamentos: string[] = []
@@ -111,7 +81,7 @@ export default function TreinoDoDia() {
       }
     }
 
-    return `${cargaArredondada} kg`
+    return formatarCargaUtil(carga, equipamentos) || null
   }
 
   // Função para formatar equipamentos

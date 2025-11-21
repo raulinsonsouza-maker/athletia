@@ -1,4 +1,4 @@
-import { TreinoSemanal } from '../services/treino.service'
+import { TreinoSemanal } from '../types/treino.types'
 
 interface VisaoSemanalTreinosProps {
   treinos: TreinoSemanal[]
