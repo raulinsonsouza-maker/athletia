@@ -14,7 +14,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: false, // Contar todas as requisições, incluindo bem-sucedidas
-  skip: (req) => req.method === 'OPTIONS' // Pular requisições CORS preflight
+  skip: (req: any) => req.method === 'OPTIONS' // Pular requisições CORS preflight
 });
 
 const router = Router();

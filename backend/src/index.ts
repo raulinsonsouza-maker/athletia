@@ -38,7 +38,7 @@ const generalLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req) => req.method === 'OPTIONS' // Pular requisições CORS preflight
+  skip: (req: any) => req.method === 'OPTIONS' // Pular requisições CORS preflight
 });
 
 // Middlewares
