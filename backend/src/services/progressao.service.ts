@@ -173,14 +173,16 @@ export async function aplicarProgressao(
   const ultimoExercicio = ultimoTreino.exercicios[0];
   
   // Priorizar feedback simples (novo sistema)
-  if (ultimoExercicio.feedbackSimples) {
+  // Usar type assertion temporário até Prisma Client ser regenerado após migration
+  const exercicioComFeedback = ultimoExercicio as any;
+  if (exercicioComFeedback.feedbackSimples) {
     const perfil = await prisma.perfil.findUnique({
       where: { userId },
       select: { objetivo: true }
     });
     
     const interpretacao = interpretarFeedback(
-      ultimoExercicio.feedbackSimples as FeedbackSimples,
+      exercicioComFeedback.feedbackSimples as FeedbackSimples,
       ultimoExercicio.carga,
       ultimoExercicio.repeticoes,
       ultimoExercicio.series,
@@ -226,8 +228,8 @@ export async function aplicarProgressaoCompleta(
       exercicios: {
         where: {
           exercicioId: exercicioId,
-          concluido: true,
-          feedbackSimples: { not: null }
+          concluido: true
+          // feedbackSimples será adicionado após migration
         },
         take: 1,
         include: {
@@ -251,17 +253,20 @@ export async function aplicarProgressaoCompleta(
 
   const ultimoExercicio = ultimoTreino.exercicios[0];
   
+  // Usar type assertion temporário até Prisma Client ser regenerado após migration
+  const exercicioComFeedback = ultimoExercicio as any;
+  
   // Verificar se pode aplicar ajuste
   const proximoTreinoGerado = false; // TODO: verificar se próximo treino já foi gerado
   const podeAplicar = podeAplicarAjuste(
     ultimoExercicio.concluido,
-    !!ultimoExercicio.feedbackSimples,
-    ultimoExercicio.aceitouAjuste,
+    !!exercicioComFeedback.feedbackSimples,
+    exercicioComFeedback.aceitouAjuste,
     proximoTreinoGerado,
-    ultimoTreino.user.modoTreino === 'MANUAL'
+    (ultimoTreino as any).user?.modoTreino === 'MANUAL'
   );
   
-  if (!podeAplicar || !ultimoExercicio.feedbackSimples) {
+  if (!podeAplicar || !exercicioComFeedback.feedbackSimples) {
     return null;
   }
   
@@ -273,7 +278,7 @@ export async function aplicarProgressaoCompleta(
   
   // Interpretar feedback
   const interpretacao = interpretarFeedback(
-    ultimoExercicio.feedbackSimples as FeedbackSimples,
+    exercicioComFeedback.feedbackSimples as FeedbackSimples,
     ultimoExercicio.carga,
     ultimoExercicio.repeticoes,
     ultimoExercicio.series,

@@ -990,7 +990,14 @@ export async function gerarTreinoDoDia(
     throw new Error(`Nenhum exercício encontrado para os grupos: ${gruposPermitidos.join(', ')}. Verifique suas configurações ou contate o administrador.`);
   }
 
-  // 6. Limitar número de exercícios baseado no tempo (cálculo inteligente)
+  // 6. Calcular parâmetros de treino primeiro (necessário para cálculo de tempo)
+  const { series, repeticoes, rpe, descanso } = calcularParametrosTreino(
+    perfil.objetivo || 'Hipertrofia',
+    perfil.experiencia || 'Iniciante',
+    perfil.rpePreferido
+  );
+
+  // 6.1. Limitar número de exercícios baseado no tempo (cálculo inteligente)
   const tempoDisponivel = Math.min(perfil.tempoDisponivel || 60, 120);
   const maxExercicios = calcularMaxExerciciosPorTempo(tempoDisponivel, series, descanso);
   const exerciciosFinais = exerciciosSelecionados.slice(0, maxExercicios);
@@ -999,17 +1006,15 @@ export async function gerarTreinoDoDia(
 
   logDebug(`✅ ${exerciciosFinais.length} exercícios selecionados`);
 
-  // 7. Calcular parâmetros de treino
-  const { series, repeticoes, rpe, descanso } = calcularParametrosTreino(
-    perfil.objetivo || 'Hipertrofia',
-    perfil.experiencia || 'Iniciante',
-    perfil.rpePreferido
-  );
-
-  // 8. Verificar se é primeira semana (coleta de dados)
+  // 7. Verificar se é primeira semana (coleta de dados)
   const ehPrimeiraSemana = await verificarPrimeiraSemana(userId);
+  const multiplicadorPrimeiraSemana = ehPrimeiraSemana ? 0.75 : 1.0; // 75% da carga na primeira semana
   
-  // 8.1. Criar treino
+  if (ehPrimeiraSemana) {
+    logDebug(`📊 Primeira semana detectada - aplicando carga moderada (75%) para coleta de dados`);
+  }
+  
+  // 8. Criar treino
   const tipoTreinoDia = determinarTipoTreino(perfil.experiencia || 'Iniciante', perfil.frequenciaSemanal || 3);
   const treino = await prisma.treino.create({
     data: {
@@ -1017,17 +1022,23 @@ export async function gerarTreinoDoDia(
       data,
       tipo: tipoTreinoDia,
       nome: `Treino do Dia - ${tipoTreinoDia}`, // Nome obrigatório do schema
-      tempoEstimado: calcularTempoEstimado(exerciciosFinais.length, series, descanso),
-      primeiraSemana: ehPrimeiraSemana
+      tempoEstimado: calcularTempoEstimado(exerciciosFinais.length, series, descanso)
     }
   });
-
-  // 8.5. Verificar se é primeira semana (coleta de dados)
-  const ehPrimeiraSemana = await verificarPrimeiraSemana(userId);
-  const multiplicadorPrimeiraSemana = ehPrimeiraSemana ? 0.75 : 1.0; // 75% da carga na primeira semana
   
+  // Atualizar primeiraSemana se necessário (após migration)
   if (ehPrimeiraSemana) {
     logDebug(`📊 Primeira semana detectada - aplicando carga moderada (75%) para coleta de dados`);
+    try {
+      await prisma.$executeRaw`
+        UPDATE treinos 
+        SET primeira_semana = true 
+        WHERE id = ${treino.id}
+      `;
+    } catch (error) {
+      // Se o campo não existir ainda (antes da migration), ignorar erro
+      console.log('Campo primeiraSemana ainda não existe no banco (aguardando migration)');
+    }
   }
 
   // 9. Adicionar exercícios ao treino

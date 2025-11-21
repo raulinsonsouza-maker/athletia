@@ -288,7 +288,11 @@ export default function TreinoDoDia() {
       // Atualizar estado local
       const exerciciosAtualizados = treino.exercicios.map(ex =>
         ex.id === exercicioId 
-          ? { ...ex, concluido, feedbackSimples: feedbackSimples || ex.feedbackSimples } 
+          ? { 
+              ...ex, 
+              concluido, 
+              feedbackSimples: (feedbackSimples as 'MUITO_FACIL' | 'NO_PONTO' | 'PESADO_DEMAIS' | null | undefined) || ex.feedbackSimples 
+            } 
           : ex
       )
       
