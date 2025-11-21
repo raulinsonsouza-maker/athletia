@@ -66,16 +66,21 @@ export const buscarTreinosSemanais = async (): Promise<TreinosSemanaisResponse> 
  * Buscar histórico de treinos
  */
 export const buscarHistoricoTreinos = async (limite: number = 30, dataInicio?: Date): Promise<TreinoCompleto[]> => {
-  const filtros: FiltrosTreino = {
-    limite,
-    concluido: true
+  try {
+    const params = new URLSearchParams()
+    params.append('limite', limite.toString())
+    
+    if (dataInicio) {
+      const data = typeof dataInicio === 'string' ? dataInicio : dataInicio.toISOString()
+      params.append('dataInicio', data)
+    }
+    
+    const response = await api.get(`/treino/historico?${params.toString()}`)
+    return response.data || []
+  } catch (error: any) {
+    console.error('Erro ao buscar histórico de treinos:', error)
+    throw error
   }
-  
-  if (dataInicio) {
-    filtros.dataInicio = dataInicio
-  }
-  
-  return buscarTreinos(filtros)
 }
 
 /**

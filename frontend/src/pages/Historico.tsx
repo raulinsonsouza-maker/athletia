@@ -18,10 +18,14 @@ export default function Historico() {
   const carregarHistorico = async () => {
     try {
       setLoading(true)
+      setError('')
       const treinos = await buscarHistoricoTreinos(30)
-      setTreinos(treinos)
+      setTreinos(treinos || [])
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Erro ao carregar histórico')
+      console.error('Erro ao carregar histórico:', err)
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Erro ao carregar histórico'
+      setError(errorMessage)
+      setTreinos([])
     } finally {
       setLoading(false)
     }
