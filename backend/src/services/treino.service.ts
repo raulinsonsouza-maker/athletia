@@ -1119,6 +1119,23 @@ export async function gerarTreinoDoDia(
 
   console.log(`✅ Treino completo retornado com ${treinoCompleto.exercicios.length} exercícios`);
 
+  // Validar treino gerado (volume mínimo, distribuição de grupos)
+  try {
+    const gruposNoTreino = new Set(treinoCompleto.exercicios.map((ex: any) => 
+      ex.exercicio?.grupoMuscularPrincipal
+    ).filter(Boolean));
+    
+    if (gruposNoTreino.size === 0) {
+      console.warn('⚠️ Treino gerado sem grupos musculares válidos');
+    }
+    
+    if (treinoCompleto.exercicios.length < 3) {
+      console.warn('⚠️ Treino gerado com poucos exercícios');
+    }
+  } catch (error) {
+    console.warn('⚠️ Erro ao validar treino (não crítico):', error);
+  }
+
   // Definir treino gerado como ativo
   try {
     await definirTreinoAtivo(userId, treinoCompleto.id);

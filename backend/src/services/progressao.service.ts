@@ -11,6 +11,31 @@ function arredondarCarga(carga: number): number {
 }
 
 /**
+ * Calcula o número médio de repetições de uma string de repetições
+ * Ex: "8-12" retorna 10, "10" retorna 10, "15-20" retorna 17.5
+ */
+function calcularRepeticoesMedias(repeticoes: string | null): number {
+  if (!repeticoes) return 10; // default
+  
+  const parts = repeticoes.split('-').map(s => s.trim());
+  
+  if (parts.length === 1) {
+    const num = parseInt(parts[0], 10);
+    return isNaN(num) ? 10 : num;
+  }
+  
+  const lower = parseInt(parts[0], 10);
+  const upper = parseInt(parts[1], 10);
+  
+  if (isNaN(lower) || isNaN(upper)) {
+    return 10; // default
+  }
+  
+  // Retorna a média do range
+  return (lower + upper) / 2;
+}
+
+/**
  * Calcula nova carga baseada no RPE realizado
  * Agora usa step do equipamento quando disponível
  */
@@ -216,32 +241,43 @@ export async function calcularEstatisticasProgresso(
     0
   );
 
-  // Calcular volume total (séries × carga)
+  // Calcular volume total (séries × repetições × carga)
   let volumeTotal = 0;
-  const cargasPorGrupo: Record<string, number[]> = {};
+  const cargasPorGrupo: Record<string, Array<{ carga: number; data: Date }>> = {};
 
   treinos.forEach((treino) => {
     treino.exercicios.forEach((ex) => {
       if (ex.carga) {
-        const volume = ex.series * ex.carga;
+        // Calcular repetições médias da string (ex: "8-12" = 10)
+        const repeticoesMedias = calcularRepeticoesMedias(ex.repeticoes);
+        // Volume = séries × repetições × carga
+        const volume = ex.series * repeticoesMedias * ex.carga;
         volumeTotal += volume;
 
         const grupo = ex.exercicio.grupoMuscularPrincipal;
         if (!cargasPorGrupo[grupo]) {
           cargasPorGrupo[grupo] = [];
         }
-        cargasPorGrupo[grupo].push(ex.carga);
+        // Armazenar carga com data para ordenação posterior
+        cargasPorGrupo[grupo].push({ 
+          carga: ex.carga, 
+          data: treino.data 
+        });
       }
     });
   });
 
-  // Calcular progressão média por grupo muscular
+  // Calcular progressão média por grupo muscular (ordenando por data)
   const progressaoPorGrupo: Record<string, number> = {};
   Object.keys(cargasPorGrupo).forEach((grupo) => {
-    const cargas = cargasPorGrupo[grupo];
-    if (cargas.length >= 2) {
-      const primeira = cargas[0];
-      const ultima = cargas[cargas.length - 1];
+    const cargasComData = cargasPorGrupo[grupo];
+    if (cargasComData.length >= 2) {
+      // Ordenar por data (mais antiga primeiro)
+      const cargasOrdenadas = [...cargasComData].sort((a, b) => 
+        a.data.getTime() - b.data.getTime()
+      );
+      const primeira = cargasOrdenadas[0].carga;
+      const ultima = cargasOrdenadas[cargasOrdenadas.length - 1].carga;
       progressaoPorGrupo[grupo] = ((ultima - primeira) / primeira) * 100;
     }
   });
@@ -262,7 +298,7 @@ export async function calcularEstatisticasProgresso(
     volumeTotal: Math.round(volumeTotal),
     rpeMedio: rpeMedio ? Math.round(rpeMedio * 10) / 10 : null,
     progressaoPorGrupo,
-    frequenciaSemanal: totalTreinos / (dias / 7)
+    frequenciaSemanal: dias > 0 ? Math.round((totalTreinos / (dias / 7)) * 10) / 10 : 0
   };
 }
 

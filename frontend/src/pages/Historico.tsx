@@ -64,6 +64,28 @@ export default function Historico() {
     return `${Math.round(carga)}kg`
   }
 
+  // Função para calcular repetições médias de uma string (ex: "8-12" = 10)
+  const calcularRepeticoesMedias = (repeticoes: string | null): number => {
+    if (!repeticoes) return 10 // default
+    
+    const parts = repeticoes.split('-').map(s => s.trim())
+    
+    if (parts.length === 1) {
+      const num = parseInt(parts[0], 10)
+      return isNaN(num) ? 10 : num
+    }
+    
+    const lower = parseInt(parts[0], 10)
+    const upper = parseInt(parts[1], 10)
+    
+    if (isNaN(lower) || isNaN(upper)) {
+      return 10 // default
+    }
+    
+    // Retorna a média do range
+    return (lower + upper) / 2
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -172,7 +194,11 @@ export default function Historico() {
                     <p className="text-xl font-bold text-primary">
                       {treino.exercicios
                         .filter(ex => ex.concluido && ex.carga)
-                        .reduce((acc, ex) => acc + (ex.series * Math.round(ex.carga || 0)), 0)
+                        .reduce((acc, ex) => {
+                          const repeticoesMedias = calcularRepeticoesMedias(ex.repeticoes)
+                          // Volume = séries × repetições × carga
+                          return acc + (ex.series * repeticoesMedias * Math.round(ex.carga || 0))
+                        }, 0)
                         .toFixed(0)} kg
                     </p>
                   </div>

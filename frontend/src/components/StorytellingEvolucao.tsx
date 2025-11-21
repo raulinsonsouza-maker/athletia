@@ -56,12 +56,14 @@ export default function StorytellingEvolucao({
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
       </div>
 
-      {/* Mensagem Motivacional */}
-      <div className="card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 mb-6">
-        <p className="text-lg font-semibold text-light text-center">
-          {getMensagemEvolucao()}
-        </p>
-      </div>
+      {/* Mensagem Motivacional - Apenas se houver dados relevantes */}
+      {totalTreinos > 0 && (
+        <div className="card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30 mb-6">
+          <p className="text-lg font-semibold text-light text-center">
+            {getMensagemEvolucao()}
+          </p>
+        </div>
+      )}
 
       {/* Cards de Evolução */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -115,7 +117,7 @@ export default function StorytellingEvolucao({
             </svg>
           </div>
           <div className="text-3xl font-bold text-primary mb-1">{totalTreinosMes}</div>
-          <div className="text-xs text-light-muted">Treinos realizados</div>
+          <div className="text-xs text-light-muted">Treinos concluídos este mês</div>
         </div>
 
         {/* Semanas Seguidas */}

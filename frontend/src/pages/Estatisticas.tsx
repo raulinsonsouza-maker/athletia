@@ -42,14 +42,27 @@ export default function Estatisticas() {
     }
   }
 
-  // const getProgressaoColor = (valor: number) => { // Não utilizado
-  //   if (valor > 10) return 'text-success'
-  //   if (valor > 0) return 'text-success'
-  //   if (valor === 0) return 'text-light-muted'
-  //   return 'text-error'
-  // }
-
-  // Funções não utilizadas removidas
+  // Função para calcular repetições médias de uma string (ex: "8-12" = 10)
+  const calcularRepeticoesMedias = (repeticoes: string | null): number => {
+    if (!repeticoes) return 10 // default
+    
+    const parts = repeticoes.split('-').map(s => s.trim())
+    
+    if (parts.length === 1) {
+      const num = parseInt(parts[0], 10)
+      return isNaN(num) ? 10 : num
+    }
+    
+    const lower = parseInt(parts[0], 10)
+    const upper = parseInt(parts[1], 10)
+    
+    if (isNaN(lower) || isNaN(upper)) {
+      return 10 // default
+    }
+    
+    // Retorna a média do range
+    return (lower + upper) / 2
+  }
 
   if (loading) {
     return (
@@ -107,35 +120,35 @@ export default function Estatisticas() {
           <div className="space-y-6">
             {/* Cards de Resumo */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
+              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20" title={`${estatisticas.totalTreinos} treinos concluídos nos últimos ${periodo} dias`}>
                 <div className="text-xs text-light-muted uppercase tracking-wide mb-1">Treinos</div>
                 <div className="text-2xl font-bold text-primary">{estatisticas.totalTreinos}</div>
-                <div className="text-xs text-light-muted mt-1">Concluídos</div>
+                <div className="text-xs text-light-muted mt-1">Últimos {periodo} dias</div>
               </div>
 
-              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
+              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20" title={`${estatisticas.totalExercicios} exercícios realizados nos últimos ${periodo} dias`}>
                 <div className="text-xs text-light-muted uppercase tracking-wide mb-1">Exercícios</div>
                 <div className="text-2xl font-bold text-primary">{estatisticas.totalExercicios}</div>
-                <div className="text-xs text-light-muted mt-1">Realizados</div>
+                <div className="text-xs text-light-muted mt-1">Últimos {periodo} dias</div>
               </div>
 
-              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
+              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20" title={`Volume total = séries × repetições × carga. Calculado para os últimos ${periodo} dias`}>
                 <div className="text-xs text-light-muted uppercase tracking-wide mb-1">Volume</div>
                 <div className="text-2xl font-bold text-primary">
                   {estatisticas.volumeTotal >= 1000 
                     ? `${(estatisticas.volumeTotal / 1000).toFixed(1)}t`
-                    : `${estatisticas.volumeTotal}kg`
+                    : `${Math.round(estatisticas.volumeTotal).toLocaleString('pt-BR')}kg`
                   }
                 </div>
-                <div className="text-xs text-light-muted mt-1">Total acumulado</div>
+                <div className="text-xs text-light-muted mt-1">Últimos {periodo} dias</div>
               </div>
 
-              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
+              <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20" title="RPE (Rate of Perceived Exertion) médio de 1-10. Quanto maior, mais intenso foi o treino">
                 <div className="text-xs text-light-muted uppercase tracking-wide mb-1">RPE Médio</div>
                 <div className="text-2xl font-bold text-primary">
                   {estatisticas.rpeMedio ? estatisticas.rpeMedio.toFixed(1) : '-'}
                 </div>
-                <div className="text-xs text-light-muted mt-1">Intensidade</div>
+                <div className="text-xs text-light-muted mt-1">Escala 1-10</div>
               </div>
             </div>
 
@@ -146,7 +159,10 @@ export default function Estatisticas() {
               const treinosConcluidosPorSemana: Record<string, number> = {}
               
               historico.forEach(treino => {
+                if (!treino.data) return // Validar dados
                 const data = new Date(treino.data)
+                if (isNaN(data.getTime())) return // Validar data válida
+                
                 const inicioSemana = new Date(data)
                 inicioSemana.setDate(data.getDate() - data.getDay())
                 const semanaKey = inicioSemana.toISOString().split('T')[0]
@@ -162,10 +178,15 @@ export default function Estatisticas() {
               })
               
               const semanas = Object.keys(treinosPorSemana).sort()
+              if (semanas.length === 0) return null // Não renderizar se não houver dados
+              
               const labels = semanas.map(s => {
                 const data = new Date(s)
+                if (isNaN(data.getTime())) return ''
                 return `${data.getDate()}/${data.getMonth() + 1}`
-              })
+              }).filter(Boolean)
+              
+              if (labels.length === 0) return null
               
               return (
                 <div className="card">
@@ -194,6 +215,7 @@ export default function Estatisticas() {
                   <div className="mt-4 text-center">
                     <p className="text-sm text-light-muted">
                       Média: <span className="text-primary font-bold">{estatisticas.frequenciaSemanal.toFixed(1)} treinos/semana</span>
+                      <span className="block text-xs text-light-muted mt-1">Baseado nos últimos {periodo} dias</span>
                     </p>
                   </div>
                 </div>
@@ -205,7 +227,7 @@ export default function Estatisticas() {
               const gruposCount: Record<string, number> = {}
               
               historico.forEach(treino => {
-                if (treino.concluido && treino.exercicios) {
+                if (treino.concluido && treino.exercicios && Array.isArray(treino.exercicios)) {
                   treino.exercicios.forEach((ex: any) => {
                     const grupo = ex.exercicio?.grupoMuscularPrincipal
                     if (grupo && grupo !== 'Cardio' && grupo !== 'Flexibilidade') {
@@ -216,6 +238,7 @@ export default function Estatisticas() {
               })
               
               const grupos = Object.entries(gruposCount)
+                .filter(([_, count]) => count > 0) // Filtrar grupos com contagem válida
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 8)
               
@@ -254,28 +277,36 @@ export default function Estatisticas() {
             })()}
 
             {/* Gráfico de Progressão por Grupo Muscular */}
-            {Object.keys(estatisticas.progressaoPorGrupo).length > 0 && (
-              <div className="card">
-                <h3 className="text-lg font-display font-bold text-light mb-4">Progressão de Carga por Grupo Muscular</h3>
-                <div className="h-64">
-                  <BarChart
-                    data={{
-                      labels: Object.keys(estatisticas.progressaoPorGrupo),
-                      datasets: [{
-                        label: 'Progressão (%)',
-                        data: Object.values(estatisticas.progressaoPorGrupo),
-                        backgroundColor: Object.values(estatisticas.progressaoPorGrupo).map((v: number) => 
-                          v > 0 ? 'rgba(76, 175, 80, 0.8)' : v < 0 ? 'rgba(244, 67, 54, 0.8)' : 'rgba(158, 158, 158, 0.8)'
-                        ),
-                        borderColor: Object.values(estatisticas.progressaoPorGrupo).map((v: number) => 
-                          v > 0 ? 'rgba(76, 175, 80, 1)' : v < 0 ? 'rgba(244, 67, 54, 1)' : 'rgba(158, 158, 158, 1)'
-                        ),
-                      }]
-                    }}
-                  />
+            {Object.keys(estatisticas.progressaoPorGrupo).length > 0 && (() => {
+              const grupos = Object.keys(estatisticas.progressaoPorGrupo)
+              const valores = Object.values(estatisticas.progressaoPorGrupo).filter((v: number) => !isNaN(v) && isFinite(v))
+              
+              if (valores.length === 0) return null
+              
+              return (
+                <div className="card">
+                  <h3 className="text-lg font-display font-bold text-light mb-2">Progressão de Carga por Grupo Muscular</h3>
+                  <p className="text-xs text-light-muted mb-4">Comparação entre primeira e última carga registrada</p>
+                  <div className="h-64">
+                    <BarChart
+                      data={{
+                        labels: grupos.slice(0, valores.length),
+                        datasets: [{
+                          label: 'Progressão (%)',
+                          data: valores,
+                          backgroundColor: valores.map((v: number) => 
+                            v > 0 ? 'rgba(76, 175, 80, 0.8)' : v < 0 ? 'rgba(244, 67, 54, 0.8)' : 'rgba(158, 158, 158, 0.8)'
+                          ),
+                          borderColor: valores.map((v: number) => 
+                            v > 0 ? 'rgba(76, 175, 80, 1)' : v < 0 ? 'rgba(244, 67, 54, 1)' : 'rgba(158, 158, 158, 1)'
+                          ),
+                        }]
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Gráfico de Volume ao Longo do Tempo */}
             {historico.length > 0 && (() => {
@@ -283,8 +314,10 @@ export default function Estatisticas() {
               const volumePorSemana: Record<string, number> = {}
               
               historico.forEach(treino => {
-                if (treino.concluido && treino.exercicios) {
+                if (treino.concluido && treino.exercicios && Array.isArray(treino.exercicios) && treino.data) {
                   const data = new Date(treino.data)
+                  if (isNaN(data.getTime())) return // Validar data
+                  
                   const inicioSemana = new Date(data)
                   inicioSemana.setDate(data.getDate() - data.getDay())
                   const semanaKey = inicioSemana.toISOString().split('T')[0]
@@ -292,41 +325,52 @@ export default function Estatisticas() {
                   let volumeSemana = 0
                   treino.exercicios.forEach((ex: any) => {
                     if (ex.carga && ex.series) {
-                      volumeSemana += ex.carga * ex.series
+                      const repeticoesMedias = calcularRepeticoesMedias(ex.repeticoes)
+                      // Volume = séries × repetições × carga
+                      volumeSemana += ex.series * repeticoesMedias * ex.carga
                     }
                   })
                   
-                  volumePorSemana[semanaKey] = (volumePorSemana[semanaKey] || 0) + volumeSemana
+                  if (volumeSemana > 0) {
+                    volumePorSemana[semanaKey] = (volumePorSemana[semanaKey] || 0) + volumeSemana
+                  }
                 }
               })
               
-              const semanas = Object.keys(volumePorSemana).sort()
+              const semanas = Object.keys(volumePorSemana).sort().filter(s => {
+                const data = new Date(s)
+                return !isNaN(data.getTime())
+              })
+              
+              if (semanas.length === 0) return null
+              
               const labels = semanas.map(s => {
                 const data = new Date(s)
                 return `${data.getDate()}/${data.getMonth() + 1}`
-              })
+              }).filter(Boolean)
               
-              if (semanas.length > 0) {
-                return (
-                  <div className="card">
-                    <h3 className="text-lg font-display font-bold text-light mb-4">Volume de Treino por Semana</h3>
-                    <div className="h-64">
-                      <LineChart
-                        data={{
-                          labels,
-                          datasets: [{
-                            label: 'Volume (kg)',
-                            data: semanas.map(s => volumePorSemana[s]),
-                            borderColor: 'rgba(255, 152, 0, 1)',
-                            backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                          }]
-                        }}
-                      />
-                    </div>
+              const volumes = semanas.map(s => volumePorSemana[s]).filter(v => v > 0 && isFinite(v))
+              
+              if (volumes.length === 0 || labels.length === 0) return null
+              
+              return (
+                <div className="card">
+                  <h3 className="text-lg font-display font-bold text-light mb-4">Volume de Treino por Semana</h3>
+                  <div className="h-64">
+                    <LineChart
+                      data={{
+                        labels,
+                        datasets: [{
+                          label: 'Volume (kg)',
+                          data: volumes,
+                          borderColor: 'rgba(255, 152, 0, 1)',
+                          backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        }]
+                      }}
+                    />
                   </div>
-                )
-              }
-              return null
+                </div>
+              )
             })()}
           </div>
         )}

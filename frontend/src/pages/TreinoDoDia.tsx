@@ -601,7 +601,10 @@ export default function TreinoDoDia() {
             treinoAtualId={treino?.id || null}
             onTreinoClick={(treinoSelecionado) => {
               // Se for o treino atual, não fazer nada
-              if (treinoSelecionado.id === treino?.id) return
+              if (treinoSelecionado.id === treino?.id) {
+                showToast('Este é o treino atual', 'info')
+                return
+              }
               
               // Se for treino futuro, mostrar mensagem
               const dataTreino = new Date(treinoSelecionado.data)
@@ -613,10 +616,12 @@ export default function TreinoDoDia() {
                 showToast('Este treino ainda não está disponível. Aguarde a data programada.', 'info')
               } else if (treinoSelecionado.concluido) {
                 showToast('Treino já concluído! Veja o histórico para mais detalhes.', 'info')
-                navigate('/historico')
+                setTimeout(() => navigate('/historico'), 1500)
               } else {
-                // Recarregar treino do dia selecionado
-                carregarTreino()
+                // Tentar carregar o treino selecionado
+                showToast('Carregando treino...', 'info')
+                // Recarregar página para atualizar treino ativo
+                window.location.href = '/treino'
               }
             }}
             compacto={!visaoSemanalExpandida && !!treino}
