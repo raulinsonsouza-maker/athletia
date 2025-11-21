@@ -26,7 +26,7 @@ interface OnboardingData {
   rpePreferido?: number
 }
 
-// interface Planos {
+interface Planos {
   id: string
   nome: string
   preco: number
