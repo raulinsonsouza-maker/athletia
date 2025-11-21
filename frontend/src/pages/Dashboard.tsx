@@ -368,10 +368,12 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
   const [error, setError] = useState('')
   const [temDadosNaoSalvos, setTemDadosNaoSalvos] = useState(false)
 
-  // Detectar se há dados não salvos
-  const verificarDadosNaoSalvos = () => {
-    return pesoAtual !== '' || percentualGordura !== '' || lesoes.length > 0
-  }
+  // Atualizar estado quando dados mudarem
+  useEffect(() => {
+    const temDados = pesoAtual !== '' || percentualGordura !== '' || lesoes.length > 0
+    setTemDadosNaoSalvos(temDados)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pesoAtual, percentualGordura, lesoes])
 
   const handleClose = () => {
     if (temDadosNaoSalvos && !salvando) {
@@ -382,7 +384,6 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
       onClose()
     }
   }
-
 
   const lesoesDisponiveis = ['Joelho', 'Ombro', 'Coluna', 'Pulso', 'Tornozelo', 'Outras']
 
