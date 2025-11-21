@@ -4,14 +4,12 @@ import Navbar from '../components/Navbar'
 import { obterResumoDashboard } from '../services/dashboard.service'
 import { buscarTreinosSemanais } from '../services/treino.service'
 import { TreinoSemanal } from '../types/treino.types'
-import MinhaSemanaComponent from '../components/MinhaSemana'
 
 export default function MinhaSemana() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [treinosSemanais, setTreinosSemanais] = useState<TreinoSemanal[]>([])
   const [progressoSemanal, setProgressoSemanal] = useState<any>(null)
-  const [treinoHoje, setTreinoHoje] = useState<any>(null)
 
   useEffect(() => {
     carregarDados()
@@ -27,7 +25,6 @@ export default function MinhaSemana() {
       
       setTreinosSemanais(treinosSemana.treinos || [])
       setProgressoSemanal(resumo.progressoSemanal)
-      setTreinoHoje(resumo.treinoHoje)
     } catch (error: any) {
       console.error('Erro ao carregar dados da semana:', error)
     } finally {

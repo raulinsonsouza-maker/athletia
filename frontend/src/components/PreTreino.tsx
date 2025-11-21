@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { TreinoCompleto } from '../types/treino.types'
 
 interface PreTreinoProps {
@@ -8,7 +7,6 @@ interface PreTreinoProps {
 }
 
 export default function PreTreino({ treino, onIniciar, onGerarAlternativa }: PreTreinoProps) {
-  const navigate = useNavigate()
 
   const getGruposMusculares = () => {
     if (!treino?.exercicios) return []

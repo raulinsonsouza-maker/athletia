@@ -6,6 +6,7 @@ interface ChamadoAcaoProps {
     concluidos: number
     meta: number
     faltam: number
+    porcentagem?: number
   }
   sequencia?: {
     atual: number
@@ -26,8 +27,11 @@ export default function ChamadoAcao({ mensagem, progressoSemanal, sequencia }: C
       return 'Falta apenas 1 treino para completar a semana!'
     }
     
-    if (progressoSemanal && progressoSemanal.porcentagem >= 80) {
-      return 'Excelente ritmo! Falta pouco para completar a semana.'
+    if (progressoSemanal && progressoSemanal.meta > 0) {
+      const porcentagem = (progressoSemanal.concluidos / progressoSemanal.meta) * 100
+      if (porcentagem >= 80) {
+        return 'Excelente ritmo! Falta pouco para completar a semana.'
+      }
     }
 
     return mensagem || 'Continue assim! Cada treino te aproxima dos seus objetivos.'

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { TreinoCompleto } from '../types/treino.types'
-import api from '../services/auth.service'
 
 interface FimTreinoProps {
   treino: TreinoCompleto
@@ -41,10 +40,8 @@ export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
   const exerciciosConcluidos = treino.exercicios.filter(ex => ex.concluido).length
 
   // Calcular melhorias de carga (exercícios onde a carga foi aumentada)
-  const melhoriasCarga = treino.exercicios.filter(ex => {
-    // TODO: Comparar com carga anterior do histórico
-    return false // Placeholder
-  }).length
+  // TODO: Comparar com carga anterior do histórico
+  const melhoriasCarga = 0 // Placeholder
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-dark">

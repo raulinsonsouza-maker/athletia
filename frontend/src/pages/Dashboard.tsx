@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { obterResumoDashboard, ResumoDashboard } from '../services/dashboard.service'
-import { ModoTreino } from '../services/modo-treino.service'
-import { atualizarModoTreino } from '../services/modo-treino.service'
 import { NotificationService } from '../services/notifications.service'
 import Navbar from '../components/Navbar'
 import HeaderInteligente from '../components/HeaderInteligente'
@@ -89,16 +87,6 @@ export default function Dashboard() {
     carregarDashboard()
   }, [showToast])
 
-  const handleModoChange = async (novoModo: ModoTreino) => {
-    try {
-      await atualizarModoTreino(novoModo)
-      // Recarregar resumo do dashboard
-      const resumoData = await obterResumoDashboard()
-      setResumo(resumoData)
-    } catch (error: any) {
-      console.error('Erro ao atualizar modo de treino:', error)
-    }
-  }
 
   if (loading) {
     return (
