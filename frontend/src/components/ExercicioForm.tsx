@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Exercicio } from '../services/exercicio.service'
 import { ExercicioTreino } from '../services/treino-personalizado.service'
 

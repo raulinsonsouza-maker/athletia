@@ -98,8 +98,8 @@ export default function Checkout() {
   const precoMensal = planoSelecionadoObj?.id === 'MENSAL' 
     ? planoSelecionadoObj.preco 
     : planoSelecionadoObj?.id === 'TRIMESTRAL' 
-      ? planoSelecionadoObj.preco / 3 
-      : planoSelecionadoObj.preco / 6
+      ? (planoSelecionadoObj?.preco || 0) / 3 
+      : (planoSelecionadoObj?.preco || 0) / 6
 
   const handleAtivarPlano = async () => {
     if (!user?.id) {

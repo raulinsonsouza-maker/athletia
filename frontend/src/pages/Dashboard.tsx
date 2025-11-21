@@ -378,7 +378,7 @@ function ModalAtualizacaoPeriodica({ onClose, onSuccess, showToast }: { onClose:
       if (percentualGordura) dados.percentualGordura = parseFloat(percentualGordura)
       if (lesoes.length > 0) dados.lesoes = lesoes
 
-      const response = await api.post('/perfil/atualizacao-periodica', dados)
+      await api.post('/perfil/atualizacao-periodica', dados)
       
       showToast('Atualização realizada com sucesso! Novos treinos foram gerados para os próximos 30 dias.', 'success')
       onSuccess()

@@ -1,5 +1,3 @@
-import { useNavigate } from 'react-router-dom'
-
 interface TelaConclusaoTreinoProps {
   treino: {
     nome: string | null
@@ -10,7 +8,6 @@ interface TelaConclusaoTreinoProps {
 }
 
 export default function TelaConclusaoTreino({ treino, onVoltarHome }: TelaConclusaoTreinoProps) {
-  const navigate = useNavigate()
   const totalExercicios = treino.exercicios.length
   const exerciciosConcluidos = treino.exercicios.filter(ex => ex.concluido).length
 

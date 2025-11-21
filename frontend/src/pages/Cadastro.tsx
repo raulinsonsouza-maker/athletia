@@ -36,32 +36,32 @@ interface Planos {
   economia?: string
 }
 
-const PLANOS: Planos[] = [
-  {
-    id: 'MENSAL',
-    nome: 'Mensal',
-    preco: 19.90,
-    periodo: 'por mês',
-    desconto: '0%',
-  },
-  {
-    id: 'TRIMESTRAL',
-    nome: 'Trimestral',
-    preco: 39.90,
-    periodo: 'a cada 3 meses',
-    desconto: '33%',
-    popular: true,
-    economia: 'Economize R$ 19,80',
-  },
-  {
-    id: 'SEMESTRAL',
-    nome: 'Semestral',
-    preco: 79.90,
-    periodo: 'a cada 6 meses',
-    desconto: '33%',
-    economia: 'Economize R$ 39,50',
-  },
-]
+// const PLANOS: Planos[] = [ // Não utilizado
+//   {
+//     id: 'MENSAL',
+//     nome: 'Mensal',
+//     preco: 19.90,
+//     periodo: 'por mês',
+//     desconto: '0%',
+//   },
+//   {
+//     id: 'TRIMESTRAL',
+//     nome: 'Trimestral',
+//     preco: 39.90,
+//     periodo: 'a cada 3 meses',
+//     desconto: '33%',
+//     popular: true,
+//     economia: 'Economize R$ 19,80',
+//   },
+//   {
+//     id: 'SEMESTRAL',
+//     nome: 'Semestral',
+//     preco: 79.90,
+//     periodo: 'a cada 6 meses',
+//     desconto: '33%',
+//     economia: 'Economize R$ 39,50',
+//   },
+// ]
 
 interface Depoimento {
   nome: string
@@ -298,7 +298,7 @@ export default function Cadastro() {
   }
 
   const idadeCalculada = calcularIdade()
-  const resumo = gerarResumo()
+  // const resumo = gerarResumo() // Não utilizado
 
   // Calcular IMC
   const calcularIMC = () => {
@@ -1033,7 +1033,7 @@ export default function Cadastro() {
                 <div className="text-base font-semibold text-light-muted mb-3 uppercase tracking-wide">Agora</div>
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-dark-lighter border-2 border-grey/30 shadow-lg">
                   <img 
-                    src={transformacao.imagemAtual} 
+                    src={transformacao.imagemAtual || ''} 
                     alt="Estado atual"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -1055,7 +1055,7 @@ export default function Cadastro() {
                 <div className="text-base font-semibold text-light-muted mb-3 uppercase tracking-wide">6 meses</div>
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/50 shadow-lg">
                   <img 
-                    src={transformacao.imagemFutura} 
+                    src={transformacao.imagemFutura || ''} 
                     alt="Estado futuro"
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -1477,7 +1477,7 @@ export default function Cadastro() {
                     <InputMask
                       mask="(99) 99999-9999"
                       value={formData.telefone}
-                      onChange={(e) => handleChange('telefone', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('telefone', e.target.value)}
                     >
                       {(inputProps: any) => (
                         <input

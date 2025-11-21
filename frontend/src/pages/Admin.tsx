@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import UploadGif from '../components/UploadGif'
-import Navbar from '../components/Navbar'
 
 interface User {
   id: string
@@ -169,7 +168,7 @@ export default function Admin() {
     role: 'USER' as 'USER' | 'ADMIN'
   })
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  // const [selectedUserId, setSelectedUserId] = useState<string | null>(null) // Não utilizado
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [detailsTab, setDetailsTab] = useState<'basicas' | 'onboarding' | 'treinos' | 'historico'>('basicas')
@@ -520,7 +519,7 @@ export default function Admin() {
     setCreating(true)
 
     try {
-      const response = await api.post('/admin/usuarios', formData)
+      await api.post('/admin/usuarios', formData)
       setShowCreateModal(false)
       setFormData({ email: '', senha: '', nome: '', role: 'USER' })
       await carregarUsuarios()

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { ModoTreino } from '../services/modo-treino.service'
 import { useVibration } from '../hooks/useVibration'
 import { useAutoAdvance } from '../hooks/useAutoAdvance'
 import ExercicioAtual from '../components/ExercicioAtual'
@@ -377,7 +375,7 @@ export default function TreinoDoDia() {
     return grupo !== 'Cardio' && grupo !== 'Flexibilidade'
   })
   const exerciciosConcluidos = exerciciosForca.filter(ex => ex.concluido).length
-  const totalExercicios = exerciciosForca.length
+  // const totalExercicios = exerciciosForca.length // Não utilizado - usando treino.exercicios.length diretamente
 
   return (
     <div className="min-h-screen bg-dark">

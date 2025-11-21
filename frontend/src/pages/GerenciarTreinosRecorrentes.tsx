@@ -9,8 +9,8 @@ import {
   listarTreinosRecorrentes,
   criarOuEditarTreinoRecorrente,
   aplicarTreinoRecorrente,
-  ExercicioTreino,
-  CriarTreinoRecorrenteData
+  ExercicioTreino
+  // CriarTreinoRecorrenteData // Não utilizado
 } from '../services/treino-personalizado.service'
 
 const DIAS_SEMANA = [

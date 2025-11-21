@@ -12,16 +12,12 @@ interface UploadGifProps {
 export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUploadSuccess }: UploadGifProps) {
   const { showToast } = useToast()
   const [uploading, setUploading] = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [imageError, setImageError] = useState(false)
-  const [imageLoading, setImageLoading] = useState(true)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Resetar estados quando gifUrl mudar
   useEffect(() => {
-    setImageError(false)
-    setImageLoading(true)
+    // Estados resetados quando necessário
   }, [gifUrl, exercicioId])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,25 +69,7 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm(`Tem certeza que deseja excluir a demonstração do exercício "${exercicioNome}"?`)) {
-      return
-    }
-
-    setDeleting(true)
-
-    try {
-      await api.delete(`/admin/exercicios/${exercicioId}/gif`)
-      showToast('Demonstração excluída com sucesso!', 'success')
-      onUploadSuccess()
-    } catch (error: any) {
-      console.error('Erro ao deletar demonstração:', error)
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao deletar demonstração'
-      showToast(errorMessage, 'error')
-    } finally {
-      setDeleting(false)
-    }
-  }
+  // Função de delete removida - não está sendo usada no componente
 
   const getGifUrl = () => {
     if (!gifUrl) {

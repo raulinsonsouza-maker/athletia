@@ -47,12 +47,12 @@ export default function Landing() {
     }, 400)
   }
 
-  const handleArrayChange = (field: 'lesoes' | 'equipamentos' | 'preferencias', value: string) => {
+  const handleArrayChange = (field: 'lesoes' | 'preferencias', value: string) => {
     setOnboardingData(prev => {
       const current = prev[field] || []
       const index = current.indexOf(value)
       if (index > -1) {
-        return { ...prev, [field]: current.filter(item => item !== value) }
+        return { ...prev, [field]: current.filter((item: string) => item !== value) }
       } else {
         return { ...prev, [field]: [...current, value] }
       }
@@ -535,11 +535,11 @@ export default function Landing() {
                   { label: '40-49', value: 45, image: '/images/onboarding/40 aos 49.png' },
                   { label: '50+', value: 55, image: '/images/onboarding/50+.png' }
                 ].map((faixa) => {
-                  const selected = onboardingData.idade && 
+                  const selected = onboardingData.idade ? 
                     (faixa.label === '18-29' && onboardingData.idade >= 18 && onboardingData.idade <= 29) ||
                     (faixa.label === '30-39' && onboardingData.idade >= 30 && onboardingData.idade <= 39) ||
                     (faixa.label === '40-49' && onboardingData.idade >= 40 && onboardingData.idade <= 49) ||
-                    (faixa.label === '50+' && onboardingData.idade >= 50)
+                    (faixa.label === '50+' && onboardingData.idade >= 50) : false
 
                   return (
                     <button
