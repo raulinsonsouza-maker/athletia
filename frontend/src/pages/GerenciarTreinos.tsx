@@ -422,98 +422,99 @@ export default function GerenciarTreinos() {
                       }
                       
                       return (
-                      <div key={treino.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-light">{treino.nome || 'Treino sem nome'}</h4>
-                            <p className="text-sm text-light-muted">
-                              {treino.data ? new Date(treino.data).toLocaleDateString('pt-BR') : 'Data não disponível'}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                // Fechar outros modais
-                                if (mostrarModalTrocarTreino) {
-                                  setMostrarModalTrocarTreino(false)
-                                  setDiaSelecionado(null)
-                                }
-                                if (mostrarModalDuplicar) {
-                                  setMostrarModalDuplicar(false)
-                                  setTreinoParaDuplicar(null)
-                                }
-                                
-                                if (!treino.id || !treino.nome) {
-                                  showToast('Dados do treino inválidos', 'error')
-                                  return
-                                }
-                                
-                                setTreinoParaAplicar({
-                                  tipo: 'personalizado',
-                                  id: treino.id,
-                                  nome: treino.nome
-                                })
-                                setMostrarModalAplicarTreino(true)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Aplicar em outra data"
-                            >
-                              Aplicar
-                            </button>
-                            <button
-                              onClick={() => {
-                                // Fechar outros modais
-                                if (mostrarModalTrocarTreino) {
-                                  setMostrarModalTrocarTreino(false)
-                                  setDiaSelecionado(null)
-                                }
-                                if (mostrarModalAplicarTreino) {
-                                  setMostrarModalAplicarTreino(false)
-                                  setTreinoParaAplicar(null)
-                                }
-                                
-                                handleDuplicarTreino(treino.id, treino.nome)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Duplicar treino"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (!treino.id) {
-                                  showToast('ID do treino inválido', 'error')
-                                  return
-                                }
-                                navigate(`/meus-treinos?edit=${treino.id}`)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Editar treino"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDeletarTreino(treino.id)}
-                              disabled={deletando === treino.id || deletando !== null}
-                              className="btn-secondary text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Deletar treino"
-                            >
-                              {deletando === treino.id ? (
-                                <div className="spinner w-4 h-4"></div>
-                              ) : (
+                        <div key={treino.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-bold text-light">{treino.nome || 'Treino sem nome'}</h4>
+                              <p className="text-sm text-light-muted">
+                                {treino.data ? new Date(treino.data).toLocaleDateString('pt-BR') : 'Data não disponível'}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  // Fechar outros modais
+                                  if (mostrarModalTrocarTreino) {
+                                    setMostrarModalTrocarTreino(false)
+                                    setDiaSelecionado(null)
+                                  }
+                                  if (mostrarModalDuplicar) {
+                                    setMostrarModalDuplicar(false)
+                                    setTreinoParaDuplicar(null)
+                                  }
+                                  
+                                  if (!treino.id || !treino.nome) {
+                                    showToast('Dados do treino inválidos', 'error')
+                                    return
+                                  }
+                                  
+                                  setTreinoParaAplicar({
+                                    tipo: 'personalizado',
+                                    id: treino.id,
+                                    nome: treino.nome
+                                  })
+                                  setMostrarModalAplicarTreino(true)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Aplicar em outra data"
+                              >
+                                Aplicar
+                              </button>
+                              <button
+                                onClick={() => {
+                                  // Fechar outros modais
+                                  if (mostrarModalTrocarTreino) {
+                                    setMostrarModalTrocarTreino(false)
+                                    setDiaSelecionado(null)
+                                  }
+                                  if (mostrarModalAplicarTreino) {
+                                    setMostrarModalAplicarTreino(false)
+                                    setTreinoParaAplicar(null)
+                                  }
+                                  
+                                  handleDuplicarTreino(treino.id, treino.nome)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Duplicar treino"
+                              >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                              )}
-                            </button>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (!treino.id) {
+                                    showToast('ID do treino inválido', 'error')
+                                    return
+                                  }
+                                  navigate(`/meus-treinos?edit=${treino.id}`)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Editar treino"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => handleDeletarTreino(treino.id)}
+                                disabled={deletando === treino.id || deletando !== null}
+                                className="btn-secondary text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Deletar treino"
+                              >
+                                {deletando === treino.id ? (
+                                  <div className="spinner w-4 h-4"></div>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -531,76 +532,76 @@ export default function GerenciarTreinos() {
                       }
                       
                       return (
-                      <div key={template.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-light">{template.nome || 'Template sem nome'}</h4>
-                            <p className="text-sm text-light-muted">
-                              {Array.isArray(template.exercicios) ? template.exercicios.length : 0} exercícios
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                // Fechar outros modais
-                                if (mostrarModalTrocarTreino) {
-                                  setMostrarModalTrocarTreino(false)
-                                  setDiaSelecionado(null)
-                                }
-                                if (mostrarModalDuplicar) {
-                                  setMostrarModalDuplicar(false)
-                                  setTreinoParaDuplicar(null)
-                                }
-                                
-                                if (!template.id || !template.nome) {
-                                  showToast('Dados do template inválidos', 'error')
-                                  return
-                                }
-                                
-                                setTreinoParaAplicar({
-                                  tipo: 'template',
-                                  id: template.id,
-                                  nome: template.nome
-                                })
-                                setMostrarModalAplicarTreino(true)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Aplicar template"
-                            >
-                              Aplicar
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (!template.id) {
-                                  showToast('ID do template inválido', 'error')
-                                  return
-                                }
-                                navigate(`/meus-treinos?editTemplate=${template.id}`)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Editar template"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDeletarTemplate(template.id)}
-                              disabled={deletando === template.id || deletando !== null}
-                              className="btn-secondary text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title="Deletar template"
-                            >
-                              {deletando === template.id ? (
-                                <div className="spinner w-4 h-4"></div>
-                              ) : (
+                        <div key={template.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-bold text-light">{template.nome || 'Template sem nome'}</h4>
+                              <p className="text-sm text-light-muted">
+                                {Array.isArray(template.exercicios) ? template.exercicios.length : 0} exercícios
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  // Fechar outros modais
+                                  if (mostrarModalTrocarTreino) {
+                                    setMostrarModalTrocarTreino(false)
+                                    setDiaSelecionado(null)
+                                  }
+                                  if (mostrarModalDuplicar) {
+                                    setMostrarModalDuplicar(false)
+                                    setTreinoParaDuplicar(null)
+                                  }
+                                  
+                                  if (!template.id || !template.nome) {
+                                    showToast('Dados do template inválidos', 'error')
+                                    return
+                                  }
+                                  
+                                  setTreinoParaAplicar({
+                                    tipo: 'template',
+                                    id: template.id,
+                                    nome: template.nome
+                                  })
+                                  setMostrarModalAplicarTreino(true)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Aplicar template"
+                              >
+                                Aplicar
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (!template.id) {
+                                    showToast('ID do template inválido', 'error')
+                                    return
+                                  }
+                                  navigate(`/meus-treinos?editTemplate=${template.id}`)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Editar template"
+                              >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                              )}
-                            </button>
+                              </button>
+                              <button
+                                onClick={() => handleDeletarTemplate(template.id)}
+                                disabled={deletando === template.id || deletando !== null}
+                                className="btn-secondary text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Deletar template"
+                              >
+                                {deletando === template.id ? (
+                                  <div className="spinner w-4 h-4"></div>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
                       )
                     })}
                   </div>
@@ -620,63 +621,63 @@ export default function GerenciarTreinos() {
                       }
                       
                       return (
-                      <div key={treino.letraTreino} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="w-12 h-12 rounded-lg bg-primary text-dark flex items-center justify-center font-bold text-2xl">
-                            {treino.letraTreino}
+                        <div key={treino.letraTreino} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="w-12 h-12 rounded-lg bg-primary text-dark flex items-center justify-center font-bold text-2xl">
+                              {treino.letraTreino}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  // Fechar outros modais
+                                  if (mostrarModalTrocarTreino) {
+                                    setMostrarModalTrocarTreino(false)
+                                    setDiaSelecionado(null)
+                                  }
+                                  if (mostrarModalDuplicar) {
+                                    setMostrarModalDuplicar(false)
+                                    setTreinoParaDuplicar(null)
+                                  }
+                                  
+                                  if (!treino.letraTreino || !treino.nome) {
+                                    showToast('Dados do treino inválidos', 'error')
+                                    return
+                                  }
+                                  
+                                  setTreinoParaAplicar({
+                                    tipo: 'recorrente',
+                                    id: treino.letraTreino,
+                                    nome: treino.nome
+                                  })
+                                  setMostrarModalAplicarTreino(true)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Aplicar treino recorrente"
+                              >
+                                Aplicar
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (!treino.letraTreino) {
+                                    showToast('Letra do treino inválida', 'error')
+                                    return
+                                  }
+                                  navigate(`/treinos-recorrentes?edit=${treino.letraTreino}`)
+                                }}
+                                className="btn-secondary text-sm"
+                                title="Editar treino recorrente"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => {
-                                // Fechar outros modais
-                                if (mostrarModalTrocarTreino) {
-                                  setMostrarModalTrocarTreino(false)
-                                  setDiaSelecionado(null)
-                                }
-                                if (mostrarModalDuplicar) {
-                                  setMostrarModalDuplicar(false)
-                                  setTreinoParaDuplicar(null)
-                                }
-                                
-                                if (!treino.letraTreino || !treino.nome) {
-                                  showToast('Dados do treino inválidos', 'error')
-                                  return
-                                }
-                                
-                                setTreinoParaAplicar({
-                                  tipo: 'recorrente',
-                                  id: treino.letraTreino,
-                                  nome: treino.nome
-                                })
-                                setMostrarModalAplicarTreino(true)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Aplicar treino recorrente"
-                            >
-                              Aplicar
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (!treino.letraTreino) {
-                                  showToast('Letra do treino inválida', 'error')
-                                  return
-                                }
-                                navigate(`/treinos-recorrentes?edit=${treino.letraTreino}`)
-                              }}
-                              className="btn-secondary text-sm"
-                              title="Editar treino recorrente"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                          </div>
+                          <h4 className="font-bold text-light mb-1">{treino.nome || 'Treino sem nome'}</h4>
+                          <p className="text-sm text-light-muted">
+                            {Array.isArray(treino.exercicios) ? treino.exercicios.length : 0} exercícios
+                          </p>
                         </div>
-                        <h4 className="font-bold text-light mb-1">{treino.nome || 'Treino sem nome'}</h4>
-                        <p className="text-sm text-light-muted">
-                          {Array.isArray(treino.exercicios) ? treino.exercicios.length : 0} exercícios
-                        </p>
-                      </div>
                       )
                     })}
                   </div>
