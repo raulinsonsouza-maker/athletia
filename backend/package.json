@@ -38,7 +38,8 @@
     "atualizar-treinos-usuarios-apply": "tsx scripts/atualizar-treinos-usuarios.ts --apply",
     "atualizar-treinos-usuarios-all": "tsx scripts/atualizar-treinos-usuarios.ts --apply --all",
     "melhorar-descricoes": "tsx scripts/melhorar-descricoes-exercicios.ts",
-    "tratar-duplicatas": "tsx scripts/tratar-duplicatas-exercicios.ts"
+    "tratar-duplicatas": "tsx scripts/tratar-duplicatas-exercicios.ts",
+    "reorganizar-gifs": "tsx scripts/reorganizar-gifs-e-apontamentos.ts"
   },
   "keywords": [
     "fitness",
