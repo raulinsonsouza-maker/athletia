@@ -387,17 +387,17 @@ export default function GerenciarTreinosRecorrentes() {
         <Navbar showBack onBack={handleCancelarEdicao} />
         <main className="container-custom section">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-light mb-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-light mb-2">
               {treinosRecorrentes.find(t => t && t.letraTreino === treinoEditando) 
                 ? `Editar Treino ${treinoEditando}`
                 : `Criar Treino ${treinoEditando}`}
             </h1>
-            <p className="text-light-muted">Configure o treino recorrente</p>
+            <p className="text-sm sm:text-base text-light-muted">Configure o treino recorrente</p>
           </div>
 
           {/* Informações do Treino */}
-          <div className="card mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="card mb-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <label className="label-field">
                   Letra do Treino
@@ -441,13 +441,13 @@ export default function GerenciarTreinosRecorrentes() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Lista de Exercícios Disponíveis */}
             <div>
-              <h2 className="text-xl font-bold text-light mb-4">Exercícios Disponíveis</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-light mb-4">Exercícios Disponíveis</h2>
               
               {/* Filtros */}
-              <div className="card mb-4 space-y-3">
+              <div className="card mb-4 space-y-3 p-4 sm:p-6">
                 <div>
                   <input
                     type="text"
@@ -457,11 +457,11 @@ export default function GerenciarTreinosRecorrentes() {
                     className="input-field"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <select
                     value={filtroGrupo}
                     onChange={(e) => setFiltroGrupo(e.target.value)}
-                    className="input-field"
+                    className="input-field text-sm sm:text-base"
                   >
                     <option value="">Todos os grupos</option>
                     {gruposMusculares.map(grupo => (
@@ -471,7 +471,7 @@ export default function GerenciarTreinosRecorrentes() {
                   <select
                     value={filtroNivel}
                     onChange={(e) => setFiltroNivel(e.target.value)}
-                    className="input-field"
+                    className="input-field text-sm sm:text-base"
                   >
                     <option value="">Todos os níveis</option>
                     {niveisDificuldade.map(nivel => (
@@ -501,7 +501,7 @@ export default function GerenciarTreinosRecorrentes() {
 
             {/* Treino em Construção */}
             <div>
-              <h2 className="text-xl font-bold text-light mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-light mb-4">
                 Meu Treino ({exercicios.length} exercícios)
               </h2>
 
@@ -528,22 +528,22 @@ export default function GerenciarTreinosRecorrentes() {
                       if (!exercicio) return null
 
                       return (
-                        <div key={`${ex.exercicioId}-${ex.ordem}`} className="card">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xs font-bold text-primary bg-primary/20 px-2 py-1 rounded">
+                        <div key={`${ex.exercicioId}-${ex.ordem}`} className="card p-3 sm:p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span className="text-xs font-bold text-primary bg-primary/20 px-2 py-1 rounded flex-shrink-0">
                                   #{ex.ordem}
                                 </span>
-                                <h3 className="font-semibold text-light">{exercicio.nome}</h3>
+                                <h3 className="font-semibold text-light text-sm sm:text-base break-words">{exercicio.nome}</h3>
                               </div>
-                              <div className="text-sm text-light-muted space-y-1">
+                              <div className="text-xs sm:text-sm text-light-muted space-y-1">
                                 <p>{ex.series} séries × {ex.repeticoes} reps</p>
                                 {ex.carga && <p>Carga: {ex.carga}kg</p>}
                                 {ex.descanso && <p>Descanso: {ex.descanso}s</p>}
                               </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                               <button
                                 onClick={() => handleMoverExercicio(index, 'up')}
                                 disabled={index === 0}
@@ -642,15 +642,15 @@ export default function GerenciarTreinosRecorrentes() {
     <div className="min-h-screen">
       <Navbar showBack />
       <main className="container-custom section">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-light mb-2">Criar Treinos</h1>
-            <p className="text-light-muted">Crie e gerencie seus treinos personalizados, templates e treinos A-G</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-light mb-2">Criar Treinos</h1>
+            <p className="text-sm sm:text-base text-light-muted">Crie e gerencie seus treinos personalizados, templates e treinos A-G</p>
           </div>
           {abaAtiva === 'recorrentes' && (
             <button
               onClick={() => navigate('/configurar-treinos')}
-              className="btn-secondary"
+              className="btn-secondary text-sm sm:text-base whitespace-nowrap"
             >
               Configurar Treinos Padrão
             </button>
@@ -658,10 +658,10 @@ export default function GerenciarTreinosRecorrentes() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-dark-border">
+        <div className="flex gap-2 mb-6 border-b border-dark-border overflow-x-auto">
           <button
             onClick={() => setAbaAtiva('recorrentes')}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
               abaAtiva === 'recorrentes'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-light-muted hover:text-light'
@@ -671,17 +671,17 @@ export default function GerenciarTreinosRecorrentes() {
           </button>
           <button
             onClick={() => setAbaAtiva('personalizados')}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
               abaAtiva === 'personalizados'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-light-muted hover:text-light'
             }`}
           >
-            Treinos Personalizados ({treinosPersonalizados.length})
+            Personalizados ({treinosPersonalizados.length})
           </button>
           <button
             onClick={() => setAbaAtiva('templates')}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-2 font-medium transition-colors whitespace-nowrap text-sm sm:text-base ${
               abaAtiva === 'templates'
                 ? 'text-primary border-b-2 border-primary'
                 : 'text-light-muted hover:text-light'
@@ -693,7 +693,7 @@ export default function GerenciarTreinosRecorrentes() {
 
         {/* Aba Treinos A-G */}
         {abaAtiva === 'recorrentes' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {LETRAS_TREINO.map(letra => {
             const treino = treinosRecorrentes.find(t => t && t.letraTreino === letra)
             

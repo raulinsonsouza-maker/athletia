@@ -173,12 +173,18 @@ export default function CalendarioFlexivel({
                 ${ehTreinoAtual ? 'ring-2 ring-primary ring-offset-2 ring-offset-dark' : ''}
               `}
               onClick={(e) => {
-                // Não navegar se clicar no botão de trocar
-                if ((e.target as HTMLElement).closest('button')) {
+                // Não navegar se clicar no botão de trocar ou em elementos interativos
+                const target = e.target as HTMLElement
+                if (target.closest('button') || target.closest('svg') || target.closest('path') || target.tagName === 'BUTTON') {
                   return
                 }
+                // Só navegar se houver treino e callback
                 if (treino && onTreinoClick) {
-                  onTreinoClick(treino)
+                  try {
+                    onTreinoClick(treino)
+                  } catch (error) {
+                    console.error('Erro ao clicar no treino:', error)
+                  }
                 }
               }}
             >
@@ -230,10 +236,18 @@ export default function CalendarioFlexivel({
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  onTrocarTreino(dia.data)
+                  e.preventDefault()
+                  try {
+                    if (onTrocarTreino) {
+                      onTrocarTreino(dia.data)
+                    }
+                  } catch (error) {
+                    console.error('Erro ao trocar treino:', error)
+                  }
                 }}
                 className="mt-2 w-full text-xs btn-secondary py-1.5"
                 title="Trocar treino"
+                type="button"
               >
                 {treino ? 'Trocar' : 'Adicionar'}
               </button>

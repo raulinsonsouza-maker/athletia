@@ -409,8 +409,8 @@ export default function GerenciarTreinos() {
 
         {/* Seção 2: Calendário Flexível com Navegação de Períodos */}
         <div className="mb-8">
-          <div className="card p-6">
-            <h3 className="text-xl font-bold text-light mb-4">Visualização de Treinos</h3>
+          <div className="card p-4 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-bold text-light mb-4">Visualização de Treinos</h3>
             <NavegacaoPeriodos
               periodoSelecionado={periodoSelecionado}
               onPeriodoChange={setPeriodoSelecionado}
@@ -435,7 +435,7 @@ export default function GerenciarTreinos() {
         {/* Seção 3: Ações Rápidas */}
         <div className="mb-8">
           {/* AcoesRapidas será criado como componente separado */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <button
               onClick={gerarSemanaCompleta}
               disabled={gerandoSemana || loading}
@@ -465,15 +465,6 @@ export default function GerenciarTreinos() {
               <span className="font-bold">Criar Treino</span>
             </button>
             <button
-              onClick={() => navigate('/treinos-recorrentes')}
-              className="btn-secondary p-6 text-center flex flex-col items-center gap-2"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <span className="font-bold">Treinos A-G</span>
-            </button>
-            <button
               onClick={() => navigate('/configurar-treinos')}
               className="btn-secondary p-6 text-center flex flex-col items-center gap-2"
             >
@@ -487,11 +478,11 @@ export default function GerenciarTreinos() {
         </div>
 
         {/* Seção 4: Meus Treinos (Tabs) */}
-        <div className="card">
-          <div className="flex border-b border-grey/20 mb-4">
+        <div className="card p-4 sm:p-6">
+          <div className="flex border-b border-grey/20 mb-4 overflow-x-auto">
             <button
               onClick={() => setAbaAtiva('personalizados')}
-              className={`px-6 py-3 font-semibold transition-colors ${
+              className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                 abaAtiva === 'personalizados'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-light-muted hover:text-light'
@@ -501,7 +492,7 @@ export default function GerenciarTreinos() {
             </button>
             <button
               onClick={() => setAbaAtiva('templates')}
-              className={`px-6 py-3 font-semibold transition-colors ${
+              className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                 abaAtiva === 'templates'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-light-muted hover:text-light'
@@ -511,7 +502,7 @@ export default function GerenciarTreinos() {
             </button>
             <button
               onClick={() => setAbaAtiva('recorrentes')}
-              className={`px-6 py-3 font-semibold transition-colors ${
+              className={`px-3 sm:px-6 py-2 sm:py-3 font-semibold transition-colors whitespace-nowrap text-sm sm:text-base ${
                 abaAtiva === 'recorrentes'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-light-muted hover:text-light'
@@ -534,15 +525,15 @@ export default function GerenciarTreinos() {
                       }
                       
                       return (
-                        <div key={treino.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-bold text-light">{treino.nome || 'Treino sem nome'}</h4>
-                              <p className="text-sm text-light-muted">
+                        <div key={treino.id} className="p-3 sm:p-4 bg-dark-lighter rounded-lg border border-grey/20">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-light text-sm sm:text-base break-words">{treino.nome || 'Treino sem nome'}</h4>
+                              <p className="text-xs sm:text-sm text-light-muted">
                                 {treino.data ? new Date(treino.data).toLocaleDateString('pt-BR') : 'Data não disponível'}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button
                                 onClick={() => {
                                   // Fechar outros modais
@@ -644,15 +635,15 @@ export default function GerenciarTreinos() {
                       }
                       
                       return (
-                        <div key={template.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-bold text-light">{template.nome || 'Template sem nome'}</h4>
-                              <p className="text-sm text-light-muted">
+                        <div key={template.id} className="p-3 sm:p-4 bg-dark-lighter rounded-lg border border-grey/20">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-light text-sm sm:text-base break-words">{template.nome || 'Template sem nome'}</h4>
+                              <p className="text-xs sm:text-sm text-light-muted">
                                 {Array.isArray(template.exercicios) ? template.exercicios.length : 0} exercícios
                               </p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <button
                                 onClick={() => {
                                   // Fechar outros modais
@@ -726,19 +717,19 @@ export default function GerenciarTreinos() {
                 {treinosRecorrentes.length === 0 ? (
                   <p className="text-light-muted text-center py-8">Nenhum treino recorrente configurado</p>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {treinosRecorrentes.map((treino: any) => {
                       if (!treino || !treino.letraTreino) {
                         return null
                       }
                       
                       return (
-                        <div key={treino.letraTreino} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="w-12 h-12 rounded-lg bg-primary text-dark flex items-center justify-center font-bold text-2xl">
+                        <div key={treino.letraTreino} className="p-3 sm:p-4 bg-dark-lighter rounded-lg border border-grey/20">
+                          <div className="flex items-center justify-between mb-2 gap-2">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary text-dark flex items-center justify-center font-bold text-xl sm:text-2xl flex-shrink-0">
                               {treino.letraTreino}
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                               <button
                                 onClick={() => {
                                   // Fechar outros modais

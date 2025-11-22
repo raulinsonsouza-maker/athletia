@@ -33,13 +33,13 @@ export default function NavegacaoPeriodos({
     dataFimCustomizado ? dataFimCustomizado.toISOString().split('T')[0] : ''
   )
 
-  const periodos: Array<{ valor: TipoPeriodo; label: string; icon: string }> = [
-    { valor: 'semana', label: 'Semana Atual', icon: '📅' },
-    { valor: '15dias', label: '15 Dias', icon: '📆' },
-    { valor: '4semanas', label: '4 Semanas', icon: '🗓️' },
-    { valor: 'mes', label: 'Mês Atual', icon: '📊' },
-    { valor: 'mesSeguinte', label: 'Mês Seguinte', icon: '➡️' },
-    { valor: 'customizado', label: 'Customizado', icon: '⚙️' }
+  const periodos: Array<{ valor: TipoPeriodo; label: string; shortLabel: string }> = [
+    { valor: 'semana', label: 'Semana Atual', shortLabel: '7 dias' },
+    { valor: '15dias', label: 'Próximos 15 Dias', shortLabel: '15 dias' },
+    { valor: '4semanas', label: 'Próximas 4 Semanas', shortLabel: '28 dias' },
+    { valor: 'mes', label: 'Mês Atual', shortLabel: 'Mês' },
+    { valor: 'mesSeguinte', label: 'Mês Seguinte', shortLabel: 'Próximo' },
+    { valor: 'customizado', label: 'Período Customizado', shortLabel: 'Custom' }
   ]
 
   const handlePeriodoClick = (periodo: TipoPeriodo) => {
@@ -77,16 +77,26 @@ export default function NavegacaoPeriodos({
               key={periodo.valor}
               onClick={() => handlePeriodoClick(periodo.valor)}
               className={`
-                px-4 py-2 rounded-lg font-medium transition-all
+                px-3 py-2 rounded-lg font-medium transition-all text-sm
+                flex items-center gap-2
                 ${
                   periodoSelecionado === periodo.valor
-                    ? 'bg-primary text-light border-2 border-primary'
-                    : 'bg-dark-lighter text-light-muted border-2 border-transparent hover:border-primary/50'
+                    ? 'bg-primary text-light border-2 border-primary shadow-lg shadow-primary/20'
+                    : 'bg-dark-lighter text-light-muted border-2 border-grey/30 hover:border-primary/50 hover:text-light'
                 }
               `}
             >
-              <span className="mr-2">{periodo.icon}</span>
-              {periodo.label}
+              {periodoSelecionado === periodo.valor ? (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              )}
+              <span className="hidden sm:inline">{periodo.label}</span>
+              <span className="sm:hidden">{periodo.shortLabel}</span>
             </button>
           ))}
         </div>
