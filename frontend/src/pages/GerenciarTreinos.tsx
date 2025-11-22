@@ -193,7 +193,7 @@ export default function GerenciarTreinos() {
               treinos={treinosSemanais}
               treinoHojeId={treinoHoje?.id}
               onTrocarTreino={handleTrocarTreino}
-              onTreinoClick={(treino) => navigate('/treino')}
+              onTreinoClick={() => navigate('/treino')}
             />
           </div>
         </div>

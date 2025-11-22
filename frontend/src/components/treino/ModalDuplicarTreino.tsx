@@ -9,7 +9,6 @@ interface ModalDuplicarTreinoProps {
 }
 
 export default function ModalDuplicarTreino({
-  treinoId,
   treinoNome,
   onClose,
   onConfirm
