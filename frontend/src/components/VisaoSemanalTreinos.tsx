@@ -99,8 +99,9 @@ export default function VisaoSemanalTreinos({
         key={index}
         className={`
           relative rounded-lg border-2 p-3 sm:p-4 transition-all duration-300
+          flex flex-col min-h-[120px] sm:min-h-[140px]
           ${coresPorStatus[status]}
-          ${ehHoje ? 'scale-105 shadow-lg shadow-primary/20' : 'hover:scale-102'}
+          ${ehHoje ? 'shadow-lg shadow-primary/20 ring-2 ring-primary/30' : ''}
           ${treino && onTreinoClick ? 'cursor-pointer hover:border-primary/70 active:scale-95' : ''}
           ${ehTreinoAtual ? 'ring-2 ring-primary ring-offset-2 ring-offset-dark' : ''}
         `}
@@ -124,59 +125,63 @@ export default function VisaoSemanalTreinos({
         </div>
 
         {/* Conteúdo do treino */}
-        {treino ? (
-          <div className="space-y-1">
-            {/* Tipo/Nome do treino */}
-            <div className={`text-xs sm:text-sm font-bold ${textoPorStatus[status]} truncate`}>
-              {formatarTituloTreino(treino)}
-            </div>
+        <div className="flex-1 flex flex-col justify-between">
+          {treino ? (
+            <div className="space-y-1 flex-1">
+              {/* Tipo/Nome do treino */}
+              <div className={`text-xs sm:text-sm font-bold ${textoPorStatus[status]} truncate`}>
+                {formatarTituloTreino(treino)}
+              </div>
 
-            {/* Estatísticas */}
-            <div className="flex items-center gap-2 text-xs text-light-muted">
-              {treino.exercicios && (
-                <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                  {treino.exercicios.length}
-                </span>
-              )}
-              {treino.tempoEstimado && (
-                <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {treino.tempoEstimado}min
-                </span>
-              )}
-            </div>
+              {/* Estatísticas */}
+              <div className="flex items-center gap-2 text-xs text-light-muted">
+                {treino.exercicios && (
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    {treino.exercicios.length}
+                  </span>
+                )}
+                {treino.tempoEstimado && (
+                  <span className="flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {treino.tempoEstimado}min
+                  </span>
+                )}
+              </div>
 
-            {/* Status visual */}
-            {status === 'concluido' && (
-              <div className="flex items-center gap-1 text-success text-xs mt-1">
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                Concluído
+              {/* Status visual */}
+              <div className="mt-auto">
+                {status === 'concluido' && (
+                  <div className="flex items-center gap-1 text-success text-xs mt-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Concluído
+                  </div>
+                )}
+                {status === 'hoje' && (
+                  <div className="flex items-center gap-1 text-primary text-xs mt-1 font-semibold">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    <span className="hidden sm:inline">Hoje</span>
+                  </div>
+                )}
+                {status === 'pendente' && (
+                  <div className="flex items-center gap-1 text-warning text-xs mt-1">
+                    Pendente
+                  </div>
+                )}
               </div>
-            )}
-            {status === 'hoje' && (
-              <div className="flex items-center gap-1 text-primary text-xs mt-1 font-semibold">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span className="hidden sm:inline">Hoje</span>
-              </div>
-            )}
-            {status === 'pendente' && (
-              <div className="flex items-center gap-1 text-warning text-xs mt-1">
-                Pendente
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-xs text-light-muted italic">
-            Sem treino
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="text-xs text-light-muted italic flex-1 flex items-center">
+              Sem treino
+            </div>
+          )}
+        </div>
       </div>
     )
   }
