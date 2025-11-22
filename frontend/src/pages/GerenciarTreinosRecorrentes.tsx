@@ -113,11 +113,14 @@ export default function GerenciarTreinosRecorrentes() {
 
   const carregarTreinosRecorrentes = async () => {
     try {
+      setLoading(true)
       const response = await listarTreinosRecorrentes()
       setTreinosRecorrentes(response.treinos || [])
     } catch (error: any) {
       showToast('Erro ao carregar treinos recorrentes', 'error')
       console.error('Erro ao carregar treinos recorrentes:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -846,7 +849,7 @@ export default function GerenciarTreinosRecorrentes() {
                     <div className="text-sm text-light-muted">
                       <p className="font-medium mb-1">Exercícios:</p>
                       <div className="flex flex-wrap gap-2">
-                        {template.exercicios.slice(0, 5).map((ex, index) => (
+                        {template.exercicios.slice(0, 5).map((ex: any, index: number) => (
                           <span key={index} className="px-2 py-1 rounded bg-dark-lighter border border-grey-dark">
                             {ex.exercicio.nome}
                           </span>

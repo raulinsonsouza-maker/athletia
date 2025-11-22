@@ -188,9 +188,20 @@ export default function GerenciarTreinos() {
       const treinosSemanaisFormatados: TreinoSemanal[] = treinos.map((t: TreinoCompleto) => ({
         id: t.id,
         data: t.data,
+        tipo: t.tipo || '',
         nome: t.nome,
         concluido: t.concluido,
-        exercicios: t.exercicios || []
+        tempoEstimado: t.tempoEstimado || null,
+        exercicios: (t.exercicios || []).map(ex => ({
+          id: ex.id,
+          ordem: ex.ordem,
+          concluido: ex.concluido,
+          exercicio: {
+            id: ex.exercicio.id,
+            nome: ex.exercicio.nome,
+            grupoMuscularPrincipal: ex.exercicio.grupoMuscularPrincipal
+          }
+        }))
       }))
       
       setTreinosSemanais(treinosSemanaisFormatados)
