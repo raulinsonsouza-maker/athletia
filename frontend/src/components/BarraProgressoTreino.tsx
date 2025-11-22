@@ -1,13 +1,11 @@
 interface BarraProgressoTreinoProps {
   exercicioAtual: number
   totalExercicios: number
-  exerciciosConcluidos: number
 }
 
 export default function BarraProgressoTreino({
   exercicioAtual,
-  totalExercicios,
-  exerciciosConcluidos
+  totalExercicios
 }: BarraProgressoTreinoProps) {
   // Porcentagem baseada na posição atual do exercício (não apenas nos concluídos)
   // Se estamos no exercício 8 de 8, mostra 100%

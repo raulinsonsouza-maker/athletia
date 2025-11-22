@@ -537,11 +537,6 @@ export default function TreinoDoDia() {
 
   // Estado: Treino Carregado - Mostrar Exercício Atual
   const exercicioAtual = treino.exercicios[exercicioAtualIndex]
-  const exerciciosForca = treino.exercicios.filter(ex => {
-    const grupo = ex.exercicio?.grupoMuscularPrincipal || ''
-    return grupo !== 'Cardio' && grupo !== 'Flexibilidade'
-  })
-  const exerciciosConcluidos = treino.exercicios.filter(ex => ex.concluido).length
   // const totalExercicios = exerciciosForca.length // Não utilizado - usando treino.exercicios.length diretamente
 
   return (
@@ -678,7 +673,6 @@ export default function TreinoDoDia() {
           <BarraProgressoTreino
             exercicioAtual={exercicioAtualIndex + 1}
             totalExercicios={treino.exercicios.length}
-            exerciciosConcluidos={exerciciosConcluidos}
           />
         </div>
 
