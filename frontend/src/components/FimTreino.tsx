@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TreinoCompleto } from '../types/treino.types'
 import FeedbackSimples, { FeedbackSimples as FeedbackType } from './FeedbackSimples'
-import api from '../services/api'
+import api from '../services/auth.service'
 
 interface FimTreinoProps {
   treino: TreinoCompleto
@@ -121,12 +121,6 @@ export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
               <div className="flex items-center justify-between">
                 <span className="text-light-muted">Tempo total</span>
                 <span className="font-bold text-light">{treino.tempoEstimado} min</span>
-              </div>
-            )}
-            {ajustesAplicados > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-light-muted">Ajustes automáticos</span>
-                <span className="font-bold text-primary">{ajustesAplicados} exercícios</span>
               </div>
             )}
           </div>

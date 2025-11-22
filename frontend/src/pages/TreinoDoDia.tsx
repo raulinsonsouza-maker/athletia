@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../services/api'
+import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { useVibration } from '../hooks/useVibration'
 import { useAutoAdvance } from '../hooks/useAutoAdvance'
@@ -677,12 +677,10 @@ export default function TreinoDoDia() {
         {/* Exercício Atual */}
         <ExercicioAtual
           exercicio={exercicioAtual}
-          onConcluir={(feedbackSimples, aceitouAjuste) => 
+          onConcluir={() => 
             atualizarStatusExercicio(
               exercicioAtual.id, 
-              !exercicioAtual.concluido,
-              feedbackSimples,
-              aceitouAjuste
+              !exercicioAtual.concluido
             )
           }
           onVerInstrucoes={() => setMostrarInstrucoes(true)}

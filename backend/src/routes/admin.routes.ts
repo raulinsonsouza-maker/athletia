@@ -1,4 +1,5 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Response, NextFunction } from 'express';
+import { AuthRequest } from '../middleware/auth.middleware';
 import { body } from 'express-validator';
 import multer from 'multer';
 import path from 'path';
@@ -189,23 +190,28 @@ router.delete('/exercicios/:id/gif', deletarGifExercicio);
 router.get('/gifs/status', verificarStatusGifs);
 
 // Endpoint para upload em lote de GIFs
-router.post('/gifs/bulk-upload', (req: Request, res: Response, next: NextFunction) => {
-  uploadGifsBulk.array('gifs', 50)(req, res, (err: any) => {
-    if (err) {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB por arquivo' });
+router.post('/gifs/bulk-upload', 
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    uploadGifsBulk.array('gifs', 50)(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB por arquivo' });
+          }
+          if (err.code === 'LIMIT_FILE_COUNT') {
+            return res.status(400).json({ error: 'Muitos arquivos. Máximo: 50 arquivos por vez' });
+          }
+          return res.status(400).json({ error: err.message });
         }
-        if (err.code === 'LIMIT_FILE_COUNT') {
-          return res.status(400).json({ error: 'Muitos arquivos. Máximo: 50 arquivos por vez' });
-        }
-        return res.status(400).json({ error: err.message });
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivos' });
       }
-      return res.status(400).json({ error: err.message || 'Erro ao processar arquivos' });
-    }
-    next();
-  });
-}, bulkUploadGifs);
+      next();
+    });
+  },
+  (req: AuthRequest & { files?: Express.Multer.File[] }, res: Response) => {
+    return bulkUploadGifs(req, res);
+  }
+);
 
 // Endpoint para verificar se o GIF existe
 router.get('/exercicios/:id/gif/verify', async (req, res) => {
