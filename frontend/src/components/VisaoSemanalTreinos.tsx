@@ -104,7 +104,7 @@ export default function VisaoSemanalTreinos({
         key={index}
         className={`
           relative rounded-lg border-2 p-3 sm:p-4 transition-all duration-300
-          flex flex-col min-h-[120px] sm:min-h-[140px]
+          flex flex-col h-[140px] sm:h-[160px]
           ${coresPorStatus[status]}
           ${ehHoje ? 'shadow-lg shadow-primary/20 ring-2 ring-primary/30' : ''}
           ${treino && onTreinoClick ? 'cursor-pointer hover:border-primary/70 active:scale-95' : ''}
@@ -134,12 +134,12 @@ export default function VisaoSemanalTreinos({
           {treino ? (
             <div className="space-y-1 flex-1">
               {/* Tipo/Nome do treino */}
-              <div className={`text-xs sm:text-sm font-bold ${textoPorStatus[status]} truncate`}>
+              <div className={`text-xs sm:text-sm font-bold ${textoPorStatus[status]} truncate mb-1`}>
                 {formatarTituloTreino(treino)}
               </div>
 
               {/* Estatísticas */}
-              <div className="flex items-center gap-2 text-xs text-light-muted">
+              <div className="flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs text-light-muted mb-2">
                 {treino.exercicios && (
                   <span className="flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@ export default function VisaoSemanalTreinos({
               </div>
 
               {/* Status visual */}
-              <div className="mt-auto">
+              <div className="mt-auto pt-1">
                 {status === 'concluido' && (
                   <div className="flex items-center gap-1 text-success text-xs mt-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -245,7 +245,7 @@ export default function VisaoSemanalTreinos({
       </div>
 
       {/* Grid de dias - Responsivo */}
-      <div className={`grid grid-cols-7 gap-2 sm:gap-3 transition-all duration-300 ${compacto ? 'max-h-32 overflow-hidden' : ''}`}>
+      <div className={`grid grid-cols-7 gap-2 sm:gap-3 transition-all duration-300 ${compacto ? 'max-h-[140px] sm:max-h-[160px] overflow-hidden' : ''}`}>
         {dias.map((dia, index) => (
           <div
             key={index}

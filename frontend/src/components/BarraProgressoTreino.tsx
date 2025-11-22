@@ -9,7 +9,9 @@ export default function BarraProgressoTreino({
   totalExercicios,
   exerciciosConcluidos
 }: BarraProgressoTreinoProps) {
-  const porcentagem = totalExercicios > 0 ? (exerciciosConcluidos / totalExercicios) * 100 : 0
+  // Porcentagem baseada na posição atual do exercício (não apenas nos concluídos)
+  // Se estamos no exercício 8 de 8, mostra 100%
+  const porcentagem = totalExercicios > 0 ? (exercicioAtual / totalExercicios) * 100 : 0
 
   return (
     <div className="w-full px-4 py-4">

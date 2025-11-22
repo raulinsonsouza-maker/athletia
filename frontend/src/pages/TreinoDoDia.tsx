@@ -541,7 +541,7 @@ export default function TreinoDoDia() {
     const grupo = ex.exercicio?.grupoMuscularPrincipal || ''
     return grupo !== 'Cardio' && grupo !== 'Flexibilidade'
   })
-  const exerciciosConcluidos = exerciciosForca.filter(ex => ex.concluido).length
+  const exerciciosConcluidos = treino.exercicios.filter(ex => ex.concluido).length
   // const totalExercicios = exerciciosForca.length // Não utilizado - usando treino.exercicios.length diretamente
 
   return (
