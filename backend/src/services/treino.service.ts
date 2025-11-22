@@ -2315,62 +2315,132 @@ export async function concluirExercicio(
   aceitouAjuste?: boolean | null,
   concluido: boolean = true
 ): Promise<any> {
+  const logContext = {
+    exercicioTreinoId,
+    userId,
+    concluido,
+    rpeRealizado,
+    feedbackSimples,
+    aceitouAjuste
+  };
+
+  console.log('[concluirExercicio Service] Iniciando processamento:', logContext);
+
   try {
-    // Buscar exercício para obter treinoId - validação mínima
-    const exercicioExistente = await prisma.exercicioTreino.findUnique({
-      where: { id: exercicioTreinoId },
-      select: {
-        treinoId: true
-      }
-    });
-
-    if (!exercicioExistente) {
-      throw new Error('Exercício não encontrado');
+    // Validações iniciais
+    if (!exercicioTreinoId || typeof exercicioTreinoId !== 'string') {
+      console.error('[concluirExercicio Service] ID do exercício inválido:', exercicioTreinoId);
+      throw new Error('ID do exercício é obrigatório e deve ser uma string válida');
     }
 
-    const treinoId = exercicioExistente.treinoId;
+    if (userId && typeof userId !== 'string') {
+      console.error('[concluirExercicio Service] userId inválido:', userId);
+      throw new Error('userId deve ser uma string válida');
+    }
 
-    // Validar permissão se userId fornecido (busca separada)
-    if (userId) {
-      const treino = await prisma.treino.findUnique({
-        where: { id: treinoId },
-        select: { userId: true }
+    // Validar RPE se fornecido
+    if (rpeRealizado !== undefined) {
+      if (typeof rpeRealizado !== 'number' || rpeRealizado < 1 || rpeRealizado > 10) {
+        console.error('[concluirExercicio Service] RPE inválido:', rpeRealizado);
+        throw new Error('RPE deve ser um número entre 1 e 10');
+      }
+    }
+
+    // Validar feedbackSimples se fornecido
+    const feedbackValidos = ['MUITO_FACIL', 'NO_PONTO', 'PESADO_DEMAIS'];
+    if (feedbackSimples !== undefined && feedbackSimples !== null) {
+      if (typeof feedbackSimples !== 'string' || !feedbackValidos.includes(feedbackSimples)) {
+        console.error('[concluirExercicio Service] feedbackSimples inválido:', feedbackSimples);
+        throw new Error(`feedbackSimples deve ser um dos valores: ${feedbackValidos.join(', ')}`);
+      }
+    }
+
+    // Validar que não temos RPE e feedbackSimples ao mesmo tempo
+    if (concluido && rpeRealizado !== undefined && feedbackSimples) {
+      console.error('[concluirExercicio Service] RPE e feedbackSimples não podem ser fornecidos simultaneamente');
+      throw new Error('Não é possível fornecer RPE e feedbackSimples simultaneamente');
+    }
+
+    console.log('[concluirExercicio Service] Validações iniciais passaram');
+
+    // Usar transação para garantir atomicidade
+    const resultado = await prisma.$transaction(async (tx) => {
+      // Buscar exercício e treino em uma única query
+      const exercicioComTreino = await tx.exercicioTreino.findUnique({
+        where: { id: exercicioTreinoId },
+        select: {
+          id: true,
+          treinoId: true,
+          treino: {
+            select: {
+              id: true,
+              userId: true
+            }
+          }
+        }
       });
+
+      if (!exercicioComTreino) {
+        console.error('[concluirExercicio Service] Exercício não encontrado:', exercicioTreinoId);
+        const error = new Error('Exercício não encontrado');
+        (error as any).code = 'P2025';
+        throw error;
+      }
+
+      const treinoId = exercicioComTreino.treinoId;
+      const treinoUserId = exercicioComTreino.treino.userId;
+
+      console.log('[concluirExercicio Service] Exercício encontrado:', {
+        exercicioTreinoId,
+        treinoId,
+        treinoUserId
+      });
+
+      // Validar permissão se userId fornecido
+      if (userId) {
+        if (treinoUserId !== userId) {
+          console.error('[concluirExercicio Service] Permissão negada:', {
+            treinoUserId,
+            userId
+          });
+          throw new Error('Sem permissão para modificar este exercício');
+        }
+        console.log('[concluirExercicio Service] Permissão validada com sucesso');
+      }
+
+      // Preparar dados de atualização
+      const updateData: any = { concluido };
       
-      if (!treino || treino.userId !== userId) {
-        throw new Error('Sem permissão para modificar este exercício');
-      }
-    }
-
-    // Preparar dados de atualização
-    const updateData: any = { concluido };
-    
-    if (concluido) {
-      if (feedbackSimples) {
-        updateData.feedbackSimples = feedbackSimples;
+      if (concluido) {
+        if (feedbackSimples) {
+          updateData.feedbackSimples = feedbackSimples;
+          updateData.rpe = null;
+        } else if (rpeRealizado !== undefined) {
+          updateData.rpe = rpeRealizado;
+          updateData.feedbackSimples = null;
+        }
+        if (aceitouAjuste !== undefined && aceitouAjuste !== null) {
+          updateData.aceitouAjuste = aceitouAjuste;
+        }
+      } else {
+        // Ao desmarcar, limpar todos os dados relacionados
         updateData.rpe = null;
-      } else if (rpeRealizado) {
-        updateData.rpe = rpeRealizado;
         updateData.feedbackSimples = null;
+        updateData.aceitouAjuste = null;
       }
-      if (aceitouAjuste !== undefined) {
-        updateData.aceitouAjuste = aceitouAjuste;
-      }
-    } else {
-      updateData.rpe = null;
-      updateData.feedbackSimples = null;
-      updateData.aceitouAjuste = null;
-    }
 
-    // Atualizar exercício
-    await prisma.exercicioTreino.update({
-      where: { id: exercicioTreinoId },
-      data: updateData
-    });
+      console.log('[concluirExercicio Service] Dados de atualização preparados:', updateData);
 
-    // Atualizar status do treino (não crítico)
-    try {
-      const treino = await prisma.treino.findUnique({
+      // Atualizar exercício
+      await tx.exercicioTreino.update({
+        where: { id: exercicioTreinoId },
+        data: updateData
+      });
+
+      console.log('[concluirExercicio Service] Exercício atualizado com sucesso');
+
+      // Buscar todos os exercícios do treino para verificar se todos estão concluídos
+      const treinoCompleto = await tx.treino.findUnique({
         where: { id: treinoId },
         select: {
           id: true,
@@ -2380,34 +2450,91 @@ export async function concluirExercicio(
         }
       });
 
-      if (treino) {
-        const todosConcluidos = treino.exercicios.every(ex => ex.concluido);
-        await prisma.treino.update({
-          where: { id: treino.id },
+      if (!treinoCompleto) {
+        console.warn('[concluirExercicio Service] Treino não encontrado após atualização do exercício:', treinoId);
+      } else {
+        // Atualizar status do treino baseado em todos os exercícios
+        const todosConcluidos = treinoCompleto.exercicios.length > 0 && 
+                                treinoCompleto.exercicios.every(ex => ex.concluido);
+        
+        await tx.treino.update({
+          where: { id: treinoId },
           data: { concluido: todosConcluidos }
         });
-      }
-    } catch (err: any) {
-      // Ignorar erro na atualização do treino
-      console.warn('[concluirExercicio] Erro ao atualizar treino (ignorado):', err.message);
-    }
 
-    // Retornar exercício atualizado - apenas com exercicio, sem treino
-    const exercicioAtualizado = await prisma.exercicioTreino.findUnique({
-      where: { id: exercicioTreinoId },
-      include: {
-        exercicio: true
+        console.log('[concluirExercicio Service] Status do treino atualizado:', {
+          treinoId,
+          todosConcluidos,
+          totalExercicios: treinoCompleto.exercicios.length
+        });
       }
+
+      // Buscar exercício atualizado com relacionamento
+      const exercicioAtualizado = await tx.exercicioTreino.findUnique({
+        where: { id: exercicioTreinoId },
+        include: {
+          exercicio: true
+        }
+      });
+
+      if (!exercicioAtualizado) {
+        console.error('[concluirExercicio Service] Exercício não encontrado após atualização');
+        throw new Error('Exercício não encontrado após atualização');
+      }
+
+      console.log('[concluirExercicio Service] Processamento concluído com sucesso');
+      return exercicioAtualizado;
+    }, {
+      timeout: 10000, // 10 segundos de timeout
+      isolationLevel: 'ReadCommitted'
     });
 
-    if (!exercicioAtualizado) {
-      throw new Error('Exercício não encontrado após atualização');
+    return resultado;
+  } catch (error: any) {
+    // Tratamento específico de erros do Prisma
+    if (error.code === 'P2025') {
+      console.error('[concluirExercicio Service] Registro não encontrado (P2025):', logContext);
+      const notFoundError = new Error('Exercício não encontrado');
+      (notFoundError as any).code = 'P2025';
+      throw notFoundError;
     }
 
-    return exercicioAtualizado;
-  } catch (error: any) {
-    console.error('[concluirExercicio] Erro:', error);
-    throw error;
+    if (error.code === 'P2002') {
+      console.error('[concluirExercicio Service] Violação de constraint única (P2002):', logContext);
+      throw new Error('Violação de constraint única no banco de dados');
+    }
+
+    if (error.code === 'P2003') {
+      console.error('[concluirExercicio Service] Violação de foreign key (P2003):', logContext);
+      throw new Error('Referência inválida no banco de dados');
+    }
+
+    // Log detalhado do erro
+    console.error('[concluirExercicio Service] Erro completo:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack,
+      name: error.name,
+      context: logContext
+    });
+
+    // Re-throw com contexto adicional se necessário
+    if (error.message && !error.code) {
+      throw error;
+    }
+
+    // Se for um erro conhecido, manter a mensagem original
+    if (error.message.includes('permissão') || 
+        error.message.includes('não encontrado') ||
+        error.message.includes('inválido')) {
+      throw error;
+    }
+
+    // Erro genérico do banco de dados
+    const dbError = new Error('Erro ao processar conclusão do exercício no banco de dados');
+    (dbError as any).code = error.code || 'DATABASE_ERROR';
+    (dbError as any).originalError = error.message;
+    throw dbError;
   }
 }
 
