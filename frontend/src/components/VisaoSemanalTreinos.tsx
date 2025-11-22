@@ -7,6 +7,8 @@ interface VisaoSemanalTreinosProps {
   onTreinoClick?: (treino: TreinoSemanal) => void
   compacto?: boolean
   onToggleExpandir?: () => void
+  metaOriginal?: number
+  concluidos?: number
 }
 
 export default function VisaoSemanalTreinos({
@@ -14,7 +16,9 @@ export default function VisaoSemanalTreinos({
   treinoAtualId,
   onTreinoClick,
   compacto = false,
-  onToggleExpandir
+  onToggleExpandir,
+  metaOriginal,
+  concluidos: concluidosProp
 }: VisaoSemanalTreinosProps) {
   // Obter data atual
   const hoje = new Date()
@@ -67,9 +71,10 @@ export default function VisaoSemanalTreinos({
   }
 
   // Calcular progresso semanal
-  const treinosConcluidos = treinos.filter(t => t.concluido).length
-  const totalTreinos = treinos.length
-  const progresso = totalTreinos > 0 ? Math.round((treinosConcluidos / totalTreinos) * 100) : 0
+  const treinosConcluidos = concluidosProp !== undefined ? concluidosProp : treinos.filter(t => t.concluido).length
+  // Usar meta original se disponível, senão usar total de treinos da semana
+  const metaParaCalculo = metaOriginal || treinos.length
+  const progresso = metaParaCalculo > 0 ? Math.round((treinosConcluidos / metaParaCalculo) * 100) : 0
 
   // Renderizar card de dia
   const renderCardDia = (dia: typeof dias[0], index: number) => {
@@ -219,7 +224,12 @@ export default function VisaoSemanalTreinos({
           <div>
             <p className="text-sm text-light-muted">Progresso Semanal</p>
             <p className="text-lg font-bold text-light">
-              {treinosConcluidos} de {totalTreinos} treinos concluídos
+              {treinosConcluidos} de {metaParaCalculo} treinos concluídos
+              {metaOriginal && metaOriginal !== treinos.length && (
+                <span className="text-sm text-light-muted font-normal ml-2">
+                  ({treinos.length} treinos na semana)
+                </span>
+              )}
             </p>
           </div>
           <div className="text-right">

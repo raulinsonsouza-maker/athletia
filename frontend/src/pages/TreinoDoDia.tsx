@@ -13,6 +13,7 @@ import FimTreino from '../components/FimTreino'
 import PreTreino from '../components/PreTreino'
 import VisaoSemanalTreinos from '../components/VisaoSemanalTreinos'
 import { buscarTreinosSemanais } from '../services/treino.service'
+import { obterResumoDashboard } from '../services/dashboard.service'
 import { TreinoSemanal, TreinoCompleto } from '../types/treino.types'
 import { formatarCarga as formatarCargaUtil, formatarTituloTreino } from '../utils/treino.utils'
 
@@ -38,6 +39,7 @@ export default function TreinoDoDia() {
   const [tentouGerarAutomaticamente, setTentouGerarAutomaticamente] = useState(false)
   const [treinosSemanais, setTreinosSemanais] = useState<TreinoSemanal[]>([])
   const [visaoSemanalExpandida, setVisaoSemanalExpandida] = useState(false)
+  const [progressoSemanal, setProgressoSemanal] = useState<{ metaOriginal?: number; concluidos?: number } | null>(null)
 
   // Função para detectar se é peso corporal
   const isPesoCorporal = (equipamentos: string[]): boolean => {
@@ -186,11 +188,20 @@ export default function TreinoDoDia() {
     }
   }
 
-  // Carregar treinos semanais
+  // Carregar treinos semanais e progresso
   const carregarTreinosSemanais = async () => {
     try {
-      const response = await buscarTreinosSemanais()
+      const [response, resumo] = await Promise.all([
+        buscarTreinosSemanais(),
+        obterResumoDashboard().catch(() => null)
+      ])
       setTreinosSemanais(response.treinos || [])
+      if (resumo?.progressoSemanal) {
+        setProgressoSemanal({
+          metaOriginal: resumo.progressoSemanal.metaOriginal,
+          concluidos: resumo.progressoSemanal.concluidos
+        })
+      }
     } catch (err: any) {
       console.error('Erro ao carregar treinos semanais:', err)
       // Não mostrar erro ao usuário, apenas logar
@@ -366,6 +377,8 @@ export default function TreinoDoDia() {
             <VisaoSemanalTreinos
               treinos={treinosSemanais}
               treinoAtualId={null}
+              metaOriginal={progressoSemanal?.metaOriginal}
+              concluidos={progressoSemanal?.concluidos}
               onTreinoClick={() => {
                 // Tentar carregar o treino selecionado
                 carregarTreino()
@@ -611,6 +624,8 @@ export default function TreinoDoDia() {
           <VisaoSemanalTreinos
             treinos={treinosSemanais}
             treinoAtualId={treino?.id || null}
+            metaOriginal={progressoSemanal?.metaOriginal}
+            concluidos={progressoSemanal?.concluidos}
             onTreinoClick={(treinoSelecionado) => {
               // Se for o treino atual, não fazer nada
               if (treinoSelecionado.id === treino?.id) {
