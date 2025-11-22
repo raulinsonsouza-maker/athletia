@@ -340,36 +340,6 @@ export default function TreinoDoDia() {
     }
   }
 
-  // Pular exercício
-  const pularExercicio = () => {
-    if (!treino) return
-    if (exercicioAtualIndex < treino.exercicios.length - 1) {
-      avancarExercicio()
-      showToast('Exercício pulado', 'info')
-    }
-  }
-
-  // Trocar por similar
-  const trocarPorSimilar = async () => {
-    if (!treino) return
-    
-    const exercicioAtual = treino.exercicios[exercicioAtualIndex]
-    try {
-      const response = await api.get(`/treino/exercicio/${exercicioAtual.id}/alternativas`)
-      const resultado = response.data
-      
-      if (resultado && resultado.alternativas && resultado.alternativas.length > 0) {
-        // Nota: Funcionalidade de modal de seleção de alternativas pode ser implementada no futuro
-        // Por enquanto, apenas exibe toast informativo com a quantidade de alternativas encontradas
-        showToast(`${resultado.alternativas.length} alternativa(s) encontrada(s)`, 'info')
-      } else {
-        showToast('Nenhuma alternativa encontrada', 'warning')
-      }
-    } catch (error: any) {
-      console.error('Erro ao buscar alternativas:', error)
-      showToast('Erro ao buscar alternativas', 'error')
-    }
-  }
 
   // Estado: Carregando
   if (loading) {

@@ -209,7 +209,7 @@ router.post('/gifs/bulk-upload',
     });
   },
   (req: AuthRequest & { files?: Express.Multer.File[] }, res: Response) => {
-    return bulkUploadGifs(req, res);
+    return bulkUploadGifs(req as any, res);
   }
 );
 
