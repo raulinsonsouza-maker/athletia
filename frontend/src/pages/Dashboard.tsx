@@ -186,7 +186,6 @@ export default function Dashboard() {
         {/* 7. Performance - Storytelling de Evolução */}
         <StorytellingEvolucao
           evolucaoPeso={resumo.evolucao.peso}
-          progressaoForca={resumo.evolucao.progressaoForca}
           totalTreinosMes={resumo.evolucao.totalTreinosMes}
           semanasSeguidas={resumo.evolucao.semanasSeguidas}
           totalTreinos={resumo.estatisticas.totalTreinos}

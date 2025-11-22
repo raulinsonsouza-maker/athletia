@@ -4,7 +4,6 @@ interface StorytellingEvolucaoProps {
     atual: number | null
     diferenca: number | null
   }
-  progressaoForca: Record<string, number>
   totalTreinosMes: number
   semanasSeguidas: number
   totalTreinos: number
@@ -12,7 +11,6 @@ interface StorytellingEvolucaoProps {
 
 export default function StorytellingEvolucao({
   evolucaoPeso,
-  progressaoForca,
   totalTreinosMes,
   semanasSeguidas,
   totalTreinos
