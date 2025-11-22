@@ -2354,6 +2354,7 @@ export async function concluirExercicio(
       throw new Error('Você não tem permissão para modificar este exercício');
     }
 
+    // Construir objeto de atualização apenas com campos que precisam ser alterados
     const dadosAtualizacao: any = {
       concluido: concluido
     };
@@ -2363,27 +2364,22 @@ export async function concluirExercicio(
       // Priorizar feedback simples (novo sistema)
       if (feedbackSimples) {
         dadosAtualizacao.feedbackSimples = feedbackSimples;
-        // Se tem feedback simples, não precisa de RPE - usar null ao invés de undefined
+        // Limpar RPE se tiver feedback simples
         dadosAtualizacao.rpe = null;
       } else if (rpeRealizado) {
         // Fallback para RPE (sistema antigo)
         dadosAtualizacao.rpe = rpeRealizado;
         // Limpar feedback simples se estiver usando RPE
         dadosAtualizacao.feedbackSimples = null;
-      } else {
-        // Se não tem feedback nem RPE, limpar ambos
-        dadosAtualizacao.rpe = null;
-        dadosAtualizacao.feedbackSimples = null;
       }
+      // Se não tem feedback nem RPE, não incluir esses campos na atualização
       
-      // Salvar se usuário aceitou ajuste
+      // Salvar se usuário aceitou ajuste (apenas se fornecido explicitamente)
       if (aceitouAjuste !== undefined) {
         dadosAtualizacao.aceitouAjuste = aceitouAjuste;
-      } else {
-        dadosAtualizacao.aceitouAjuste = null;
       }
     } else {
-      // Se está desmarcando, limpar feedback - usar null ao invés de undefined
+      // Se está desmarcando, limpar feedback
       dadosAtualizacao.rpe = null;
       dadosAtualizacao.feedbackSimples = null;
       dadosAtualizacao.aceitouAjuste = null;
@@ -2393,9 +2389,15 @@ export async function concluirExercicio(
     
     let exercicioTreino;
     try {
-      exercicioTreino = await prisma.exercicioTreino.update({
+      // Primeiro, fazer a atualização sem includes complexos para evitar problemas
+      await prisma.exercicioTreino.update({
         where: { id: exercicioTreinoId },
-        data: dadosAtualizacao,
+        data: dadosAtualizacao
+      });
+      
+      // Depois, buscar o exercício completo separadamente
+      exercicioTreino = await prisma.exercicioTreino.findUnique({
+        where: { id: exercicioTreinoId },
         include: { 
           exercicio: true, 
           treino: {
@@ -2407,16 +2409,34 @@ export async function concluirExercicio(
           }
         }
       });
+      
+      if (!exercicioTreino) {
+        throw new Error('Exercício não encontrado após atualização');
+      }
+      
+      // Garantir que treinoId está disponível
+      if (!exercicioTreino.treinoId && exercicioTreino.treino?.id) {
+        exercicioTreino.treinoId = exercicioTreino.treino.id;
+      }
     } catch (error: any) {
       console.error('[concluirExercicio] Erro ao atualizar exercício:', error);
       console.error('[concluirExercicio] Stack trace:', error.stack);
+      console.error('[concluirExercicio] Dados de atualização:', JSON.stringify(dadosAtualizacao, null, 2));
       throw new Error(`Erro ao atualizar exercício: ${error.message}`);
     }
 
     // Verificar se todos os exercícios foram concluídos
     try {
+      // Usar o treinoId do exercício atualizado
+      const treinoId = exercicioTreino.treinoId || exercicioTreino.treino?.id;
+      
+      if (!treinoId) {
+        console.warn('[concluirExercicio] Não foi possível obter treinoId');
+        return exercicioTreino;
+      }
+      
       const treino = await prisma.treino.findUnique({
-        where: { id: exercicioTreino.treinoId },
+        where: { id: treinoId },
         include: { exercicios: true }
       });
 
@@ -2430,6 +2450,7 @@ export async function concluirExercicio(
       }
     } catch (error: any) {
       console.error('[concluirExercicio] Erro ao atualizar status do treino:', error);
+      console.error('[concluirExercicio] Stack trace (treino):', error.stack);
       // Não falhar se houver erro ao atualizar status do treino, apenas logar
     }
 
