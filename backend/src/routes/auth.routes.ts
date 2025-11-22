@@ -4,16 +4,17 @@ import rateLimit from 'express-rate-limit';
 import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
 
-// Rate limiting mais restritivo para rotas de autenticação
+// Rate limiting inteligente para rotas de autenticação
+// Logins bem-sucedidos NÃO contam para o limite, apenas tentativas falhadas
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // Máximo 5 tentativas por IP a cada 15 minutos
+  max: 15, // Máximo 15 tentativas por IP a cada 15 minutos (aumentado para ser mais tolerante)
   message: {
-    error: 'Muitas tentativas de login. Por favor, tente novamente em 15 minutos.'
+    error: 'Muitas tentativas de login. Por favor, tente novamente em alguns minutos.'
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false, // Contar todas as requisições, incluindo bem-sucedidas
+  skipSuccessfulRequests: true, // Logins bem-sucedidos NÃO contam para o limite
   skip: (req: any) => req.method === 'OPTIONS' // Pular requisições CORS preflight
 });
 
