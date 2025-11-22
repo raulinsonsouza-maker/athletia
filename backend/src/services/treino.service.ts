@@ -2309,11 +2309,27 @@ export async function buscarTreinoDoDia(userId: string, data?: Date): Promise<an
  */
 export async function concluirExercicio(
   exercicioTreinoId: string, 
+  userId?: string,
   rpeRealizado?: number,
   feedbackSimples?: string,
   aceitouAjuste?: boolean | null,
   concluido: boolean = true
 ): Promise<any> {
+  // Validar se o exercício existe
+  const exercicioTreinoExistente = await prisma.exercicioTreino.findUnique({
+    where: { id: exercicioTreinoId },
+    include: { treino: { include: { user: true } } }
+  });
+
+  if (!exercicioTreinoExistente) {
+    throw new Error('Exercício não encontrado');
+  }
+
+  // Validar se o exercício pertence ao usuário (se userId foi fornecido)
+  if (userId && exercicioTreinoExistente.treino.userId !== userId) {
+    throw new Error('Você não tem permissão para modificar este exercício');
+  }
+
   const dadosAtualizacao: any = {
     concluido: concluido
   };

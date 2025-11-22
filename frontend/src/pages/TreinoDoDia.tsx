@@ -635,8 +635,8 @@ export default function TreinoDoDia() {
         )}
       </div>
 
-      {/* Visão Semanal de Treinos */}
-      {treinosSemanais.length > 0 && (
+      {/* Visão Semanal de Treinos - Ocultar durante treino ativo */}
+      {treinosSemanais.length > 0 && !treinoIniciado && (
         <div className="container-custom py-4 border-b border-grey/20">
           <VisaoSemanalTreinos
             treinos={treinosSemanais}
@@ -695,23 +695,6 @@ export default function TreinoDoDia() {
             totalExercicios={treino.exercicios.length}
             exerciciosConcluidos={exerciciosConcluidos}
           />
-        </div>
-
-        {/* Botões de Emergência */}
-        <div className="mt-4 flex gap-3 px-4">
-          <button
-            onClick={pularExercicio}
-            disabled={exercicioAtualIndex >= treino.exercicios.length - 1}
-            className="flex-1 h-12 bg-dark-lighter text-light-muted rounded-lg font-semibold hover:bg-dark-lighter/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Pular
-          </button>
-          <button
-            onClick={trocarPorSimilar}
-            className="flex-1 h-12 bg-dark-lighter text-light-muted rounded-lg font-semibold hover:bg-dark-lighter/80 transition-colors"
-          >
-            Trocar
-          </button>
         </div>
 
         {/* Navegação */}

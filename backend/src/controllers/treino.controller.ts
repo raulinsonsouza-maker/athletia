@@ -117,14 +117,24 @@ export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
 // Concluir ou desmarcar exercício
 export const concluirExercicio = async (req: AuthRequest, res: Response) => {
   try {
+    const userId = req.userId!;
     const { id } = req.params;
     const { rpeRealizado, feedbackSimples, aceitouAjuste, concluido } = req.body || {};
+
+    // Validar ID do exercício
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({
+        error: 'ID do exercício é obrigatório',
+        message: 'O ID do exercício deve ser fornecido'
+      });
+    }
 
     // Se concluido não for especificado, assume true (comportamento padrão)
     const estaConcluido = concluido !== undefined ? concluido : true;
 
     const exercicioTreino = await treinoService.concluirExercicio(
-      id, 
+      id,
+      userId,
       rpeRealizado || undefined,
       feedbackSimples || undefined,
       aceitouAjuste !== undefined ? aceitouAjuste : null,
@@ -137,9 +147,26 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Erro ao atualizar status do exercício:', error);
+    
+    // Retornar erro apropriado baseado no tipo
+    if (error.message === 'Exercício não encontrado') {
+      return res.status(404).json({
+        error: 'Exercício não encontrado',
+        message: error.message
+      });
+    }
+    
+    if (error.message.includes('permissão') || error.message.includes('permission')) {
+      return res.status(403).json({
+        error: 'Sem permissão',
+        message: error.message
+      });
+    }
+
+    // Erro genérico do servidor
     res.status(500).json({
       error: 'Erro ao atualizar status do exercício',
-      message: error.message
+      message: error.message || 'Erro interno do servidor'
     });
   }
 };
