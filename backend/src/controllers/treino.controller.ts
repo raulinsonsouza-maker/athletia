@@ -121,16 +121,38 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { rpeRealizado, feedbackSimples, aceitouAjuste, concluido } = req.body || {};
 
+    console.log('[concluirExercicio Controller] Iniciando requisição:', {
+      userId,
+      exercicioId: id,
+      body: { rpeRealizado, feedbackSimples, aceitouAjuste, concluido }
+    });
+
     // Validar ID do exercício
     if (!id || typeof id !== 'string') {
+      console.error('[concluirExercicio Controller] ID inválido:', id);
       return res.status(400).json({
         error: 'ID do exercício é obrigatório',
         message: 'O ID do exercício deve ser fornecido'
       });
     }
 
+    // Validar userId
+    if (!userId) {
+      console.error('[concluirExercicio Controller] userId não encontrado');
+      return res.status(401).json({
+        error: 'Usuário não autenticado',
+        message: 'Token de autenticação inválido ou ausente'
+      });
+    }
+
     // Se concluido não for especificado, assume true (comportamento padrão)
     const estaConcluido = concluido !== undefined ? concluido : true;
+
+    console.log('[concluirExercicio Controller] Chamando service com:', {
+      exercicioId: id,
+      userId,
+      estaConcluido
+    });
 
     const exercicioTreino = await treinoService.concluirExercicio(
       id,
@@ -141,22 +163,29 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
       estaConcluido
     );
 
+    console.log('[concluirExercicio Controller] Sucesso - exercício atualizado');
+
     res.json({
       message: estaConcluido ? 'Exercício concluído com sucesso' : 'Exercício desmarcado com sucesso',
       exercicioTreino
     });
   } catch (error: any) {
-    console.error('Erro ao atualizar status do exercício:', error);
+    console.error('[concluirExercicio Controller] Erro completo:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
     
     // Retornar erro apropriado baseado no tipo
-    if (error.message === 'Exercício não encontrado') {
+    if (error.message === 'Exercício não encontrado' || error.message.includes('não encontrado')) {
       return res.status(404).json({
         error: 'Exercício não encontrado',
         message: error.message
       });
     }
     
-    if (error.message.includes('permissão') || error.message.includes('permission')) {
+    if (error.message.includes('permissão') || error.message.includes('permission') || error.message.includes('Permissão')) {
       return res.status(403).json({
         error: 'Sem permissão',
         message: error.message
@@ -166,7 +195,8 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
     // Erro genérico do servidor
     res.status(500).json({
       error: 'Erro ao atualizar status do exercício',
-      message: error.message || 'Erro interno do servidor'
+      message: error.message || 'Erro interno do servidor',
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
