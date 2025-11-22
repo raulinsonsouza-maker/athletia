@@ -275,7 +275,7 @@ export default function Dashboard() {
 
             {/* Meus Treinos */}
             <button
-              onClick={() => navigate('/meus-treinos')}
+              onClick={() => navigate('/treinos-recorrentes')}
               className="group relative overflow-hidden bg-dark-lighter rounded-xl p-5 border border-grey/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1"
               aria-label="Ver meus treinos"
             >

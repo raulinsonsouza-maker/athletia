@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -113,7 +113,7 @@ function App() {
             path="/meus-treinos"
             element={
               <ProtectedRoute>
-                <MeusTreinos />
+                <Navigate to="/treinos-recorrentes" replace />
               </ProtectedRoute>
             }
           />

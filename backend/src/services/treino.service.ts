@@ -1041,9 +1041,34 @@ export async function gerarTreinoDoDia(
     }
   }
 
-  // 9. Adicionar exercícios ao treino
-  const pesoUsuario = perfil.pesoAtual || 70;
+  // 9. Adicionar exercício aeróbico PRIMEIRO (ordem 0)
+  const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
   const exerciciosTreino = [];
+  
+  try {
+    const exercicioAerobicoTreino = await prisma.exercicioTreino.create({
+      data: {
+        treinoId: treino.id,
+        exercicioId: exercicioAerobico.id,
+        ordem: 0, // PRIMEIRO - Aquecimento cardiovascular
+        series: 1,
+        repeticoes: '20-30 min',
+        carga: null,
+        rpe: 5,
+        descanso: 0,
+        concluido: false,
+        observacoes: 'Exercício aeróbico - ritmo moderado'
+      }
+    });
+    exerciciosTreino.push(exercicioAerobicoTreino);
+    logDebug(`✅ Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
+  } catch (error: any) {
+    console.error(`❌ Erro ao adicionar exercício aeróbico:`, error.message);
+  }
+
+  // 10. Adicionar exercícios de força ao treino (ordem 1, 2, 3...)
+  const pesoUsuario = perfil.pesoAtual || 70;
+  let ordem = 1;
 
   for (let i = 0; i < exerciciosFinais.length; i++) {
     const exercicio = exerciciosFinais[i];
@@ -1071,7 +1096,7 @@ export async function gerarTreinoDoDia(
       data: {
         treinoId: treino.id,
         exercicioId: exercicio.id,
-        ordem: i + 1,
+        ordem: ordem++, // Ordem 1, 2, 3... (após o aeróbico)
         series,
         repeticoes,
         carga: carga != null && carga > 0 ? carga : null,
@@ -1084,31 +1109,7 @@ export async function gerarTreinoDoDia(
     exerciciosTreino.push(exercicioTreino);
   }
 
-  // Adicionar exercício aeróbico após os exercícios de força
-  const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
-  
-  try {
-    const exercicioAerobicoTreino = await prisma.exercicioTreino.create({
-      data: {
-        treinoId: treino.id,
-        exercicioId: exercicioAerobico.id,
-        ordem: exerciciosTreino.length + 1,
-        series: 1,
-        repeticoes: '20-30 min',
-        carga: null,
-        rpe: 5,
-        descanso: 0,
-        concluido: false,
-        observacoes: 'Exercício aeróbico - ritmo moderado'
-      }
-    });
-    exerciciosTreino.push(exercicioAerobicoTreino);
-    logDebug(`✅ Exercício aeróbico adicionado: ${exercicioAerobico.nome}`);
-  } catch (error: any) {
-    console.error(`❌ Erro ao adicionar exercício aeróbico:`, error.message);
-  }
-
-  // Adicionar exercício de alongamento no final
+  // 11. Adicionar exercício de alongamento no FINAL (última ordem)
   const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
   
   try {
@@ -1116,7 +1117,7 @@ export async function gerarTreinoDoDia(
       data: {
         treinoId: treino.id,
         exercicioId: exercicioAlongamento.id,
-        ordem: exerciciosTreino.length + 1,
+        ordem: ordem, // ÚLTIMO - Após todos os exercícios de força
         series: 1,
         repeticoes: '5-10 min',
         carga: null,
@@ -1127,7 +1128,7 @@ export async function gerarTreinoDoDia(
       }
     });
     exerciciosTreino.push(exercicioAlongamentoTreino);
-    logDebug(`✅ Exercício de alongamento adicionado`);
+    logDebug(`✅ Exercício de alongamento adicionado ÚLTIMO`);
   } catch (error: any) {
     console.error(`❌ Erro ao adicionar exercício de alongamento:`, error.message);
   }

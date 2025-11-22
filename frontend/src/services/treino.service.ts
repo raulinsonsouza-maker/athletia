@@ -63,6 +63,21 @@ export const buscarTreinosSemanais = async (): Promise<TreinosSemanaisResponse> 
 }
 
 /**
+ * Buscar treinos por período (data início e fim)
+ */
+export const buscarTreinosPorPeriodo = async (
+  dataInicio: Date,
+  dataFim: Date
+): Promise<TreinoCompleto[]> => {
+  const params = new URLSearchParams()
+  params.append('dataInicio', dataInicio.toISOString())
+  params.append('dataFim', dataFim.toISOString())
+  
+  const response = await api.get(`/treino?${params.toString()}`)
+  return response.data || []
+}
+
+/**
  * Buscar histórico de treinos
  */
 export const buscarHistoricoTreinos = async (limite: number = 30, dataInicio?: Date): Promise<TreinoCompleto[]> => {

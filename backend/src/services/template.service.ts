@@ -489,8 +489,34 @@ export async function criarTreinoDoTemplate(
     }
   });
 
-  // Criar exercícios do treino
+  // Adicionar exercício aeróbico PRIMEIRO (ordem 0)
+  const { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } = await import('./treino.service');
+  const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
   const exerciciosTreino = [];
+  
+  try {
+    const exercicioAerobicoTreino = await prisma.exercicioTreino.create({
+      data: {
+        treinoId: treino.id,
+        exercicioId: exercicioAerobico.id,
+        ordem: 0, // PRIMEIRO - Aquecimento cardiovascular
+        series: 1,
+        repeticoes: '20-30 min',
+        carga: null,
+        rpe: 5,
+        descanso: 0,
+        concluido: false,
+        observacoes: 'Exercício aeróbico - ritmo moderado'
+      }
+    });
+    exerciciosTreino.push(exercicioAerobicoTreino);
+    console.log(`✅ Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
+  } catch (error: any) {
+    console.error(`❌ Erro ao adicionar exercício aeróbico:`, error.message);
+  }
+
+  // Criar exercícios de força do treino (ordem 1, 2, 3...)
+  let ordem = 1;
   for (let i = 0; i < exerciciosAdaptados.length; i++) {
     const templateEx = exerciciosAdaptados[i];
     const exercicio = templateEx.exercicio;
@@ -514,7 +540,7 @@ export async function criarTreinoDoTemplate(
         data: {
           treinoId: treino.id,
           exercicioId: exercicio.id,
-          ordem: i + 1,
+          ordem: ordem++, // Ordem 1, 2, 3... (após o aeróbico)
           series: templateEx.series || 3,
           repeticoes: templateEx.repeticoes || '10-12',
           carga: carga > 0 ? carga : null,
@@ -532,32 +558,7 @@ export async function criarTreinoDoTemplate(
     }
   }
 
-  // Adicionar exercício aeróbico após os exercícios de força
-  const { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } = await import('./treino.service');
-  const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
-  
-  try {
-    const exercicioAerobicoTreino = await prisma.exercicioTreino.create({
-      data: {
-        treinoId: treino.id,
-        exercicioId: exercicioAerobico.id,
-        ordem: exerciciosTreino.length + 1,
-        series: 1,
-        repeticoes: '20-30 min',
-        carga: null,
-        rpe: 5,
-        descanso: 0,
-        concluido: false,
-        observacoes: 'Exercício aeróbico - ritmo moderado'
-      }
-    });
-    exerciciosTreino.push(exercicioAerobicoTreino);
-    console.log(`✅ Exercício aeróbico adicionado: ${exercicioAerobico.nome}`);
-  } catch (error: any) {
-    console.error(`❌ Erro ao adicionar exercício aeróbico:`, error.message);
-  }
-
-  // Adicionar exercício de alongamento no final
+  // Adicionar exercício de alongamento no FINAL (última ordem)
   const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
   
   try {
@@ -565,7 +566,7 @@ export async function criarTreinoDoTemplate(
       data: {
         treinoId: treino.id,
         exercicioId: exercicioAlongamento.id,
-        ordem: exerciciosTreino.length + 1,
+        ordem: ordem, // ÚLTIMO - Após todos os exercícios de força
         series: 1,
         repeticoes: '5-10 min',
         carga: null,
@@ -576,7 +577,7 @@ export async function criarTreinoDoTemplate(
       }
     });
     exerciciosTreino.push(exercicioAlongamentoTreino);
-    console.log(`✅ Exercício de alongamento adicionado`);
+    console.log(`✅ Exercício de alongamento adicionado ÚLTIMO`);
   } catch (error: any) {
     console.error(`❌ Erro ao adicionar exercício de alongamento:`, error.message);
   }

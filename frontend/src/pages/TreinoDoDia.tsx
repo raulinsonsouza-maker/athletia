@@ -583,7 +583,7 @@ export default function TreinoDoDia() {
             <div className="container-custom py-4 space-y-2">
               <button
                 onClick={() => {
-                  navigate('/meus-treinos')
+                  navigate('/treinos-recorrentes')
                   setMostrarMenu(false)
                 }}
                 className="w-full text-left px-4 py-3 hover:bg-dark rounded-lg transition-colors text-light"

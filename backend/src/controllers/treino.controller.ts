@@ -355,6 +355,37 @@ export const gerarVersaoAlternativa = async (req: AuthRequest, res: Response) =>
   }
 };
 
+// Buscar treinos com filtros (dataInicio, dataFim, etc)
+export const buscarTreinos = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!
+    const { dataInicio, dataFim, concluido, tipo, modoTreino, limite } = req.query
+
+    const { buscarTreinosComFiltros } = await import('../services/treino-query.service')
+
+    const filtros: any = {}
+    if (dataInicio) filtros.dataInicio = new Date(dataInicio as string)
+    if (dataFim) filtros.dataFim = new Date(dataFim as string)
+    if (concluido !== undefined) filtros.concluido = concluido === 'true'
+    if (tipo) filtros.tipo = tipo as string
+    if (modoTreino) filtros.modoTreino = modoTreino as 'IA' | 'MANUAL'
+    if (limite) filtros.limite = parseInt(limite as string, 10)
+
+    const treinos = await buscarTreinosComFiltros(userId, filtros, {
+      exercicios: true,
+      exercicioDetalhes: true
+    })
+
+    res.json(treinos)
+  } catch (error: any) {
+    console.error('Erro ao buscar treinos:', error)
+    res.status(500).json({
+      error: 'Erro ao buscar treinos',
+      message: error.message
+    })
+  }
+}
+
 // Buscar alternativas de exercício
 export const obterAlternativas = async (req: AuthRequest, res: Response) => {
   try {

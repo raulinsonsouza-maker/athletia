@@ -9,9 +9,17 @@ import {
   listarTreinosRecorrentes,
   criarOuEditarTreinoRecorrente,
   aplicarTreinoRecorrente,
+  listarTreinosPersonalizados,
+  listarTemplatesPersonalizados,
+  deletarTreinoPersonalizado,
+  deletarTemplatePersonalizado,
+  duplicarTreinoPersonalizado,
+  aplicarTemplatePersonalizado,
   ExercicioTreino
-  // CriarTreinoRecorrenteData // Não utilizado
 } from '../services/treino-personalizado.service'
+import { TreinoResumo } from '../types/treino.types'
+import TreinoLista from '../components/treino/TreinoLista'
+import ModalDuplicarTreino from '../components/treino/ModalDuplicarTreino'
 
 const DIAS_SEMANA = [
   'Domingo',
@@ -30,8 +38,17 @@ export default function GerenciarTreinosRecorrentes() {
   const { showToast, ToastContainer } = useToast()
   
   const [treinosRecorrentes, setTreinosRecorrentes] = useState<any[]>([])
+  const [treinosPersonalizados, setTreinosPersonalizados] = useState<TreinoResumo[]>([])
+  const [templates, setTemplates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [treinoEditando, setTreinoEditando] = useState<string | null>(null)
+  const [abaAtiva, setAbaAtiva] = useState<'recorrentes' | 'personalizados' | 'templates'>('recorrentes')
+  const [filtroConcluido, setFiltroConcluido] = useState<'todos' | 'pendente' | 'concluido'>('todos')
+  const [mostrarModalAplicarTemplate, setMostrarModalAplicarTemplate] = useState(false)
+  const [templateAplicar, setTemplateAplicar] = useState<string | null>(null)
+  const [dataAplicarTemplate, setDataAplicarTemplate] = useState(new Date().toISOString().split('T')[0])
+  const [mostrarModalDuplicar, setMostrarModalDuplicar] = useState(false)
+  const [treinoParaDuplicar, setTreinoParaDuplicar] = useState<{ id: string; nome: string } | null>(null)
   
   // Estados para criar/editar treino
   const [nome, setNome] = useState('')
@@ -59,6 +76,8 @@ export default function GerenciarTreinosRecorrentes() {
   useEffect(() => {
     carregarTreinosRecorrentes()
     carregarExercicios()
+    carregarTreinosPersonalizados()
+    carregarTemplates()
   }, [])
 
   useEffect(() => {
@@ -94,14 +113,104 @@ export default function GerenciarTreinosRecorrentes() {
 
   const carregarTreinosRecorrentes = async () => {
     try {
-      setLoading(true)
       const response = await listarTreinosRecorrentes()
       setTreinosRecorrentes(response.treinos || [])
     } catch (error: any) {
       showToast('Erro ao carregar treinos recorrentes', 'error')
       console.error('Erro ao carregar treinos recorrentes:', error)
-    } finally {
-      setLoading(false)
+    }
+  }
+
+  const carregarTreinosPersonalizados = async () => {
+    try {
+      const response = await listarTreinosPersonalizados()
+      setTreinosPersonalizados(response.treinos || [])
+    } catch (error: any) {
+      console.error('Erro ao carregar treinos personalizados:', error)
+    }
+  }
+
+  const carregarTemplates = async () => {
+    try {
+      const response = await listarTemplatesPersonalizados()
+      setTemplates(response.templates || [])
+    } catch (error: any) {
+      console.error('Erro ao carregar templates:', error)
+    }
+  }
+
+  const handleDeletarTreinoPersonalizado = async (id: string) => {
+    if (!confirm('Tem certeza que deseja deletar este treino?')) return
+
+    try {
+      await deletarTreinoPersonalizado(id)
+      showToast('Treino deletado com sucesso', 'success')
+      await carregarTreinosPersonalizados()
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Erro ao deletar treino', 'error')
+    }
+  }
+
+  const handleDeletarTemplate = async (id: string) => {
+    if (!confirm('Tem certeza que deseja deletar este template?')) return
+
+    try {
+      await deletarTemplatePersonalizado(id)
+      showToast('Template deletado com sucesso', 'success')
+      await carregarTemplates()
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Erro ao deletar template', 'error')
+    }
+  }
+
+  const handleDuplicarTreino = (treino: TreinoResumo) => {
+    setTreinoParaDuplicar({ id: treino.id, nome: treino.nome || 'Treino' })
+    setMostrarModalDuplicar(true)
+  }
+
+  const handleConfirmarDuplicar = async (data: string) => {
+    if (!treinoParaDuplicar) return
+
+    try {
+      await duplicarTreinoPersonalizado(treinoParaDuplicar.id, data)
+      showToast('Treino duplicado com sucesso', 'success')
+      setMostrarModalDuplicar(false)
+      setTreinoParaDuplicar(null)
+      await carregarTreinosPersonalizados()
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Erro ao duplicar treino', 'error')
+    }
+  }
+
+  const handleAplicarTemplate = async () => {
+    if (!templateAplicar) return
+
+    try {
+      await aplicarTemplatePersonalizado(templateAplicar, dataAplicarTemplate)
+      showToast('Template aplicado com sucesso', 'success')
+      setMostrarModalAplicarTemplate(false)
+      setTemplateAplicar(null)
+      await carregarTemplates()
+    } catch (error: any) {
+      showToast(error.response?.data?.message || 'Erro ao aplicar template', 'error')
+    }
+  }
+
+  const handleAcaoTreino = (acao: string, treino: any) => {
+    switch (acao) {
+      case 'ver':
+        navigate(`/treino?data=${treino.data.split('T')[0]}`)
+        break
+      case 'editar':
+        // Navegar para edição (pode ser implementado depois)
+        showToast('Funcionalidade de edição em desenvolvimento', 'info')
+        break
+      case 'duplicar':
+        handleDuplicarTreino(treino)
+        break
+      case 'deletar':
+        handleDeletarTreinoPersonalizado(treino.id)
+        break
     }
   }
 
@@ -520,24 +629,68 @@ export default function GerenciarTreinosRecorrentes() {
   }
 
   // Visualização principal - Grid de treinos A-G
+  const treinosPersonalizadosFiltrados = treinosPersonalizados.filter(t => {
+    if (filtroConcluido === 'concluido') return t.concluido
+    if (filtroConcluido === 'pendente') return !t.concluido
+    return true
+  })
+
   return (
     <div className="min-h-screen">
       <Navbar showBack />
       <main className="container-custom section">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-light mb-2">Gerenciar Treinos Recorrentes</h1>
-            <p className="text-light-muted">Configure seus treinos A-G e associe a dias da semana</p>
+            <h1 className="text-2xl font-bold text-light mb-2">Criar Treinos</h1>
+            <p className="text-light-muted">Crie e gerencie seus treinos personalizados, templates e treinos A-G</p>
           </div>
+          {abaAtiva === 'recorrentes' && (
+            <button
+              onClick={() => navigate('/configurar-treinos')}
+              className="btn-secondary"
+            >
+              Configurar Treinos Padrão
+            </button>
+          )}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6 border-b border-dark-border">
           <button
-            onClick={() => navigate('/configurar-treinos')}
-            className="btn-secondary"
+            onClick={() => setAbaAtiva('recorrentes')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              abaAtiva === 'recorrentes'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-light-muted hover:text-light'
+            }`}
           >
-            Configurar Treinos Padrão
+            Treinos A-G ({treinosRecorrentes.filter(t => t !== null && t !== undefined).length})
+          </button>
+          <button
+            onClick={() => setAbaAtiva('personalizados')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              abaAtiva === 'personalizados'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-light-muted hover:text-light'
+            }`}
+          >
+            Treinos Personalizados ({treinosPersonalizados.length})
+          </button>
+          <button
+            onClick={() => setAbaAtiva('templates')}
+            className={`px-4 py-2 font-medium transition-colors ${
+              abaAtiva === 'templates'
+                ? 'text-primary border-b-2 border-primary'
+                : 'text-light-muted hover:text-light'
+            }`}
+          >
+            Templates ({templates.length})
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {/* Aba Treinos A-G */}
+        {abaAtiva === 'recorrentes' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {LETRAS_TREINO.map(letra => {
             const treino = treinosRecorrentes.find(t => t && t.letraTreino === letra)
             
@@ -604,7 +757,113 @@ export default function GerenciarTreinosRecorrentes() {
               </div>
             )
           })}
-        </div>
+          </div>
+        )}
+
+        {/* Aba Treinos Personalizados */}
+        {abaAtiva === 'personalizados' && (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <select
+                value={filtroConcluido}
+                onChange={(e) => setFiltroConcluido(e.target.value as any)}
+                className="input-field"
+              >
+                <option value="todos">Todos</option>
+                <option value="pendente">Pendentes</option>
+                <option value="concluido">Concluídos</option>
+              </select>
+            </div>
+
+            <TreinoLista
+              treinos={treinosPersonalizadosFiltrados}
+              variante="resumo"
+              mostrarFiltros={false}
+              mostrarAcoes={true}
+              onAcao={handleAcaoTreino}
+              emptyMessage={
+                filtroConcluido === 'todos' 
+                  ? 'Nenhum treino personalizado criado ainda.'
+                  : filtroConcluido === 'concluido'
+                  ? 'Nenhum treino concluído.'
+                  : 'Nenhum treino pendente.'
+              }
+            />
+          </>
+        )}
+
+        {/* Aba Templates */}
+        {abaAtiva === 'templates' && (
+          <>
+            {templates.length === 0 ? (
+              <div className="card text-center py-12">
+                <p className="text-light-muted mb-4">
+                  Nenhum template salvo ainda.
+                </p>
+                <p className="text-sm text-light-muted mb-4">
+                  Crie um treino e salve como template para reutilizar depois.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {templates.map(template => (
+                  <div key={template.id} className="card">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-light mb-2">
+                          {template.nome}
+                        </h3>
+                        {template.descricao && (
+                          <p className="text-sm text-light-muted mb-2">
+                            {template.descricao}
+                          </p>
+                        )}
+                        <p className="text-sm text-light-muted">
+                          {template.exercicios.length} exercícios
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setTemplateAplicar(template.id)
+                            setMostrarModalAplicarTemplate(true)
+                          }}
+                          className="px-3 py-1 text-sm btn-primary"
+                        >
+                          Aplicar
+                        </button>
+                        <button
+                          onClick={() => handleDeletarTemplate(template.id)}
+                          className="px-3 py-1 text-sm bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30"
+                          title="Deletar"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-sm text-light-muted">
+                      <p className="font-medium mb-1">Exercícios:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {template.exercicios.slice(0, 5).map((ex, index) => (
+                          <span key={index} className="px-2 py-1 rounded bg-dark-lighter border border-grey-dark">
+                            {ex.exercicio.nome}
+                          </span>
+                        ))}
+                        {template.exercicios.length > 5 && (
+                          <span className="px-2 py-1 rounded bg-dark-lighter border border-grey-dark">
+                            +{template.exercicios.length - 5} mais
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       {/* Modal Aplicar Treino */}
@@ -668,6 +927,59 @@ export default function GerenciarTreinosRecorrentes() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal Aplicar Template */}
+      {mostrarModalAplicarTemplate && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="card max-w-md w-full">
+            <h2 className="text-xl font-bold text-light mb-4">Aplicar Template</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="label-field">
+                  Data do Treino *
+                </label>
+                <input
+                  type="date"
+                  value={dataAplicarTemplate}
+                  onChange={(e) => setDataAplicarTemplate(e.target.value)}
+                  className="input-field"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setMostrarModalAplicarTemplate(false)
+                    setTemplateAplicar(null)
+                  }}
+                  className="flex-1 btn-secondary"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleAplicarTemplate}
+                  className="flex-1 btn-primary"
+                >
+                  Aplicar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Duplicar Treino */}
+      {mostrarModalDuplicar && treinoParaDuplicar && (
+        <ModalDuplicarTreino
+          treinoId={treinoParaDuplicar.id}
+          treinoNome={treinoParaDuplicar.nome}
+          onClose={() => {
+            setMostrarModalDuplicar(false)
+            setTreinoParaDuplicar(null)
+          }}
+          onConfirm={handleConfirmarDuplicar}
+        />
       )}
 
       <ToastContainer />

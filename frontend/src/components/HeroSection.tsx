@@ -187,7 +187,7 @@ export default function HeroSection({
                 if (modoTreino === 'IA') {
                   navigate('/treino')
                 } else {
-                  navigate('/meus-treinos')
+                  navigate('/treinos-recorrentes')
                 }
               }}
               className="btn-primary px-8 py-3 flex items-center justify-center gap-2 mx-auto text-lg"

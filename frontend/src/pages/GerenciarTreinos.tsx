@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { useToast } from '../hooks/useToast'
-import { buscarTreinoDoDia, buscarTreinosSemanais, gerarTreino } from '../services/treino.service'
+import { buscarTreinoDoDia, buscarTreinosSemanais, buscarTreinosPorPeriodo, gerarTreino } from '../services/treino.service'
 import {
   listarTreinosPersonalizados,
   listarTemplatesPersonalizados,
@@ -13,7 +13,8 @@ import {
 } from '../services/treino-personalizado.service'
 import { TreinoCompleto, TreinoSemanal } from '../types/treino.types'
 import CardTreinoHoje from '../components/treino/CardTreinoHoje'
-import CalendarioSemanalInterativo from '../components/treino/CalendarioSemanalInterativo'
+import CalendarioFlexivel from '../components/treino/CalendarioFlexivel'
+import NavegacaoPeriodos, { TipoPeriodo } from '../components/treino/NavegacaoPeriodos'
 import ModalTrocarTreino from '../components/treino/ModalTrocarTreino'
 import ModalAplicarTreino from '../components/treino/ModalAplicarTreino'
 import ModalDuplicarTreino from '../components/treino/ModalDuplicarTreino'
@@ -31,6 +32,11 @@ export default function GerenciarTreinos() {
   const [loading, setLoading] = useState(true)
   const [gerandoSemana, setGerandoSemana] = useState(false)
 
+  // Estados para navegação de períodos
+  const [periodoSelecionado, setPeriodoSelecionado] = useState<TipoPeriodo>('semana')
+  const [dataInicioCustomizado, setDataInicioCustomizado] = useState<Date | undefined>(undefined)
+  const [dataFimCustomizado, setDataFimCustomizado] = useState<Date | undefined>(undefined)
+
   // Estados para modais
   const [mostrarModalTrocarTreino, setMostrarModalTrocarTreino] = useState(false)
   const [diaSelecionado, setDiaSelecionado] = useState<Date | null>(null)
@@ -46,6 +52,10 @@ export default function GerenciarTreinos() {
   useEffect(() => {
     carregarDados()
   }, [])
+
+  useEffect(() => {
+    carregarTreinosPorPeriodo()
+  }, [periodoSelecionado, dataInicioCustomizado, dataFimCustomizado])
 
   const carregarDados = async () => {
     try {
@@ -112,6 +122,84 @@ export default function GerenciarTreinos() {
     }
   }
 
+  const calcularPeriodo = (periodo: TipoPeriodo): { inicio: Date; fim: Date } => {
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+
+    let inicio: Date
+    let fim: Date
+
+    switch (periodo) {
+      case 'semana': {
+        const diaSemana = hoje.getDay()
+        const diasAteDomingo = diaSemana === 0 ? 0 : -diaSemana
+        inicio = new Date(hoje)
+        inicio.setDate(hoje.getDate() + diasAteDomingo)
+        fim = new Date(inicio)
+        fim.setDate(inicio.getDate() + 6)
+        break
+      }
+      case '15dias': {
+        inicio = new Date(hoje)
+        fim = new Date(hoje)
+        fim.setDate(hoje.getDate() + 14)
+        break
+      }
+      case '4semanas': {
+        inicio = new Date(hoje)
+        fim = new Date(hoje)
+        fim.setDate(hoje.getDate() + 27)
+        break
+      }
+      case 'mes': {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)
+        break
+      }
+      case 'mesSeguinte': {
+        inicio = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1)
+        fim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0)
+        break
+      }
+      case 'customizado': {
+        inicio = dataInicioCustomizado || hoje
+        fim = dataFimCustomizado || hoje
+        break
+      }
+      default: {
+        inicio = hoje
+        fim = new Date(hoje)
+        fim.setDate(hoje.getDate() + 6)
+      }
+    }
+
+    inicio.setHours(0, 0, 0, 0)
+    fim.setHours(23, 59, 59, 999)
+
+    return { inicio, fim }
+  }
+
+  const carregarTreinosPorPeriodo = async () => {
+    try {
+      const { inicio, fim } = calcularPeriodo(periodoSelecionado)
+      const treinos = await buscarTreinosPorPeriodo(inicio, fim)
+      
+      // Converter para formato TreinoSemanal
+      const treinosSemanaisFormatados: TreinoSemanal[] = treinos.map((t: TreinoCompleto) => ({
+        id: t.id,
+        data: t.data,
+        nome: t.nome,
+        concluido: t.concluido,
+        exercicios: t.exercicios || []
+      }))
+      
+      setTreinosSemanais(treinosSemanaisFormatados)
+    } catch (error: any) {
+      console.error('Erro ao carregar treinos por período:', error)
+      // Não mostrar toast para não poluir a interface durante mudanças de período
+    }
+  }
+
   const gerarSemanaCompleta = async () => {
     if (gerandoSemana) {
       return // Prevenir múltiplas requisições
@@ -122,6 +210,7 @@ export default function GerenciarTreinos() {
       await gerarTreino(undefined, true)
       showToast('Semana gerada com sucesso!', 'success')
       await carregarDados()
+      await carregarTreinosPorPeriodo()
     } catch (error: any) {
       console.error('Erro ao gerar semana:', error)
       
@@ -307,13 +396,25 @@ export default function GerenciarTreinos() {
           </div>
         )}
 
-        {/* Seção 2: Calendário Semanal Interativo */}
+        {/* Seção 2: Calendário Flexível com Navegação de Períodos */}
         <div className="mb-8">
           <div className="card p-6">
-            <h3 className="text-xl font-bold text-light mb-4">Semana Atual</h3>
-            <CalendarioSemanalInterativo
+            <h3 className="text-xl font-bold text-light mb-4">Visualização de Treinos</h3>
+            <NavegacaoPeriodos
+              periodoSelecionado={periodoSelecionado}
+              onPeriodoChange={setPeriodoSelecionado}
+              onDataInicioChange={setDataInicioCustomizado}
+              onDataFimChange={setDataFimCustomizado}
+              dataInicioCustomizado={dataInicioCustomizado}
+              dataFimCustomizado={dataFimCustomizado}
+              mostrarNavegacao={false}
+            />
+            <CalendarioFlexivel
               treinos={treinosSemanais}
               treinoHojeId={treinoHoje?.id}
+              periodo={periodoSelecionado}
+              dataInicio={dataInicioCustomizado}
+              dataFim={dataFimCustomizado}
               onTrocarTreino={handleTrocarTreino}
               onTreinoClick={() => navigate('/treino')}
             />
@@ -344,7 +445,7 @@ export default function GerenciarTreinos() {
               )}
             </button>
             <button
-              onClick={() => navigate('/meus-treinos')}
+              onClick={() => navigate('/treinos-recorrentes')}
               className="btn-secondary p-6 text-center flex flex-col items-center gap-2"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -487,7 +588,7 @@ export default function GerenciarTreinos() {
                                     showToast('ID do treino inválido', 'error')
                                     return
                                   }
-                                  navigate(`/meus-treinos?edit=${treino.id}`)
+                                  navigate(`/treinos-recorrentes?edit=${treino.id}`)
                                 }}
                                 className="btn-secondary text-sm"
                                 title="Editar treino"
@@ -576,7 +677,7 @@ export default function GerenciarTreinos() {
                                     showToast('ID do template inválido', 'error')
                                     return
                                   }
-                                  navigate(`/meus-treinos?editTemplate=${template.id}`)
+                                  navigate(`/treinos-recorrentes?editTemplate=${template.id}`)
                                 }}
                                 className="btn-secondary text-sm"
                                 title="Editar template"

@@ -9,6 +9,7 @@ import {
   buscarHistorico,
   buscarEstatisticas,
   buscarTreinosSemanais,
+  buscarTreinos,
   gerarVersaoAlternativa
 } from '../controllers/treino.controller';
 import {
@@ -59,6 +60,7 @@ const substituirExercicioValidation = [
 ];
 
 // Rotas de treino padrão
+router.get('/', buscarTreinos); // Buscar treinos com filtros (dataInicio, dataFim, etc)
 router.get('/dia', buscarTreinoDoDia);
 router.get('/semana', buscarTreinosSemanais);
 router.post('/gerar', gerarTreinoDoDia);
