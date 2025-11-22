@@ -92,22 +92,6 @@ export default function StorytellingEvolucao({
           </div>
         )}
 
-        {/* Progressão de Força */}
-        {getProgressaoForcaTexto() && (
-          <div className="card">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs text-light-muted uppercase tracking-wider font-semibold">Força</div>
-              <svg className="w-5 h-5 text-success/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <div className="text-2xl font-bold text-success mb-1">
-              {getProgressaoForcaTexto()}
-            </div>
-            <div className="text-xs text-light-muted">Este mês</div>
-          </div>
-        )}
-
         {/* Total de Treinos no Mês */}
         <div className="card">
           <div className="flex items-center justify-between mb-3">

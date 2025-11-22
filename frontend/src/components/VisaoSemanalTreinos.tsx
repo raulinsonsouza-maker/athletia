@@ -1,5 +1,5 @@
 import { TreinoSemanal } from '../types/treino.types'
-import { extrairLetraTreino } from '../utils/treino.utils'
+import { formatarTituloTreino } from '../utils/treino.utils'
 
 interface VisaoSemanalTreinosProps {
   treinos: TreinoSemanal[]
@@ -98,7 +98,7 @@ export default function VisaoSemanalTreinos({
       <div
         key={index}
         className={`
-          relative rounded-lg border-2 p-2 sm:p-3 transition-all duration-300
+          relative rounded-lg border-2 p-3 sm:p-4 transition-all duration-300
           ${coresPorStatus[status]}
           ${ehHoje ? 'scale-105 shadow-lg shadow-primary/20' : 'hover:scale-102'}
           ${treino && onTreinoClick ? 'cursor-pointer hover:border-primary/70 active:scale-95' : ''}
@@ -128,7 +128,7 @@ export default function VisaoSemanalTreinos({
           <div className="space-y-1">
             {/* Tipo/Nome do treino */}
             <div className={`text-xs sm:text-sm font-bold ${textoPorStatus[status]} truncate`}>
-              {extrairLetraTreino(treino) || treino.nome || treino.tipo || 'Treino'}
+              {formatarTituloTreino(treino)}
             </div>
 
             {/* Estatísticas */}
@@ -230,7 +230,7 @@ export default function VisaoSemanalTreinos({
       </div>
 
       {/* Grid de dias - Responsivo */}
-      <div className={`grid grid-cols-7 gap-1 sm:gap-2 transition-all duration-300 ${compacto ? 'max-h-32 overflow-hidden' : ''}`}>
+      <div className={`grid grid-cols-7 gap-2 sm:gap-3 transition-all duration-300 ${compacto ? 'max-h-32 overflow-hidden' : ''}`}>
         {dias.map((dia, index) => (
           <div
             key={index}

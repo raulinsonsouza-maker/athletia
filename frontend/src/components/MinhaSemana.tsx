@@ -14,12 +14,14 @@ interface MinhaSemanaProps {
     porcentagem: number
     faltam: number
   }
+  mostrarProgresso?: boolean
 }
 
 export default function MinhaSemana({
   treinos,
   treinoHojeId,
-  progressoSemanal
+  progressoSemanal,
+  mostrarProgresso = true
 }: MinhaSemanaProps) {
   const navigate = useNavigate()
 
@@ -202,47 +204,49 @@ export default function MinhaSemana({
       </div>
 
       {/* Indicador de progresso */}
-      <div className="card mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <p className="text-sm text-light-muted">Progresso Semanal</p>
-            <p className="text-lg font-bold text-light">
-              {progressoSemanal.concluidos} de {progressoSemanal.meta} treinos feitos
-              {progressoSemanal.metaAjustada && progressoSemanal.metaOriginal && (
-                <span className="text-sm text-light-muted font-normal ml-2">
-                  (meta original: {progressoSemanal.metaOriginal})
-                </span>
-              )}
-            </p>
-            {progressoSemanal.metaAjustada && progressoSemanal.diasRestantes !== undefined && (
-              <p className="text-xs text-light-muted mt-1">
-                {progressoSemanal.diasRestantes === 0 
-                  ? 'Semana finalizada - meta ajustada aos treinos realizados'
-                  : `Meta ajustada: ${progressoSemanal.diasRestantes} dia${progressoSemanal.diasRestantes > 1 ? 's' : ''} restante${progressoSemanal.diasRestantes > 1 ? 's' : ''} na semana`
-                }
+      {mostrarProgresso && (
+        <div className="card mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <p className="text-sm text-light-muted">Progresso Semanal</p>
+              <p className="text-lg font-bold text-light">
+                {progressoSemanal.concluidos} de {progressoSemanal.meta} treinos feitos
+                {progressoSemanal.metaAjustada && progressoSemanal.metaOriginal && (
+                  <span className="text-sm text-light-muted font-normal ml-2">
+                    (meta original: {progressoSemanal.metaOriginal})
+                  </span>
+                )}
               </p>
-            )}
+              {progressoSemanal.metaAjustada && progressoSemanal.diasRestantes !== undefined && (
+                <p className="text-xs text-light-muted mt-1">
+                  {progressoSemanal.diasRestantes === 0 
+                    ? 'Semana finalizada - meta ajustada aos treinos realizados'
+                    : `Meta ajustada: ${progressoSemanal.diasRestantes} dia${progressoSemanal.diasRestantes > 1 ? 's' : ''} restante${progressoSemanal.diasRestantes > 1 ? 's' : ''} na semana`
+                  }
+                </p>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-primary">{progressoSemanal.porcentagem}%</div>
+              {progressoSemanal.faltam > 0 && progressoSemanal.diasRestantes !== undefined && progressoSemanal.diasRestantes > 0 && (
+                <p className="text-xs text-light-muted mt-1">Faltam {progressoSemanal.faltam} treino{progressoSemanal.faltam > 1 ? 's' : ''}</p>
+              )}
+              {progressoSemanal.faltam > 0 && progressoSemanal.diasRestantes === 0 && (
+                <p className="text-xs text-warning mt-1">Semana finalizada</p>
+              )}
+              {progressoSemanal.porcentagem >= 100 && (
+                <p className="text-xs text-success mt-1 font-semibold">Meta alcançada!</p>
+              )}
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-2xl font-bold text-primary">{progressoSemanal.porcentagem}%</div>
-            {progressoSemanal.faltam > 0 && progressoSemanal.diasRestantes !== undefined && progressoSemanal.diasRestantes > 0 && (
-              <p className="text-xs text-light-muted mt-1">Faltam {progressoSemanal.faltam} treino{progressoSemanal.faltam > 1 ? 's' : ''}</p>
-            )}
-            {progressoSemanal.faltam > 0 && progressoSemanal.diasRestantes === 0 && (
-              <p className="text-xs text-warning mt-1">Semana finalizada</p>
-            )}
-            {progressoSemanal.porcentagem >= 100 && (
-              <p className="text-xs text-success mt-1 font-semibold">Meta alcançada!</p>
-            )}
+          <div className="w-full bg-dark-lighter rounded-full h-2 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
+              style={{ width: `${Math.min(progressoSemanal.porcentagem, 100)}%` }}
+            />
           </div>
         </div>
-        <div className="w-full bg-dark-lighter rounded-full h-2 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
-            style={{ width: `${Math.min(progressoSemanal.porcentagem, 100)}%` }}
-          />
-        </div>
-      </div>
+      )}
 
       {/* Grid de dias - Responsivo */}
       <div className="grid grid-cols-7 gap-1 sm:gap-2">

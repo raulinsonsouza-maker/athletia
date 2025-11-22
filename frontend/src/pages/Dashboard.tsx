@@ -152,6 +152,7 @@ export default function Dashboard() {
               treinos={resumo.treinosSemanais}
               treinoHojeId={resumo.treinoHoje?.id}
               progressoSemanal={resumo.progressoSemanal}
+              mostrarProgresso={false}
             />
             <div className="text-center mt-4">
               <button

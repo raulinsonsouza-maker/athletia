@@ -104,7 +104,7 @@ export default function Navbar({ title, showBack = false, backPath, onBack }: Na
               <>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-light-muted hidden sm:block">
-                    Olá, {user?.nome || user?.email}
+                    Olá, {user?.nome?.split(' ')[0] || user?.email}
                   </span>
                   <button
                     onClick={() => navigate('/perfil')}

@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar'
 import { obterResumoDashboard } from '../services/dashboard.service'
 import { buscarTreinosSemanais } from '../services/treino.service'
 import { TreinoSemanal } from '../types/treino.types'
+import { formatarTituloTreino } from '../utils/treino.utils'
 
 export default function MinhaSemana() {
   const navigate = useNavigate()
@@ -100,31 +101,46 @@ export default function MinhaSemana() {
         </div>
 
         {/* Bloco 1 - Semana Atual */}
-        {progressoSemanal && (
-          <div className="card mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-bold text-light mb-1">
-                  {progressoSemanal.concluidos} de {progressoSemanal.meta} treinos concluídos
-                </h2>
-                <p className="text-light-muted">
-                  {progressoSemanal.faltam > 0 
-                    ? `Faltam ${progressoSemanal.faltam} treino${progressoSemanal.faltam > 1 ? 's' : ''}`
-                    : 'Semana completa!'}
-                </p>
+        {progressoSemanal && (() => {
+          // Usar meta original para cálculo realista se disponível
+          const metaParaCalculo = progressoSemanal.metaOriginal || progressoSemanal.meta
+          const porcentagemRealista = metaParaCalculo > 0 
+            ? Math.round((progressoSemanal.concluidos / metaParaCalculo) * 100) 
+            : 0
+          
+          return (
+            <div className="card mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-light mb-1">
+                    {progressoSemanal.concluidos} de {metaParaCalculo} treinos concluídos
+                    {progressoSemanal.metaAjustada && progressoSemanal.metaOriginal && (
+                      <span className="text-sm text-light-muted font-normal ml-2">
+                        (meta ajustada: {progressoSemanal.meta})
+                      </span>
+                    )}
+                  </h2>
+                  <p className="text-light-muted">
+                    {progressoSemanal.metaAjustada && progressoSemanal.diasRestantes === 0
+                      ? 'Semana finalizada'
+                      : progressoSemanal.faltam > 0 
+                        ? `Faltam ${progressoSemanal.faltam} treino${progressoSemanal.faltam > 1 ? 's' : ''}`
+                        : 'Semana completa!'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-4xl font-bold text-primary">{porcentagemRealista}%</div>
+                </div>
               </div>
-              <div className="text-right">
-                <div className="text-4xl font-bold text-primary">{progressoSemanal.porcentagem}%</div>
+              <div className="w-full bg-dark-lighter rounded-full h-4 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
+                  style={{ width: `${Math.min(porcentagemRealista, 100)}%` }}
+                />
               </div>
             </div>
-            <div className="w-full bg-dark-lighter rounded-full h-4 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500"
-                style={{ width: `${Math.min(progressoSemanal.porcentagem, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Calendário Visual Expandido */}
         <div className="card mb-8">
@@ -156,7 +172,7 @@ export default function MinhaSemana() {
                   {treino ? (
                     <div>
                       <div className="text-sm font-bold text-light mb-1">
-                        {treino.letraTreino || treino.nome || 'Treino'}
+                        {formatarTituloTreino(treino)}
                       </div>
                       {treino.concluido && (
                         <div className="text-success text-xs">✓ Concluído</div>
@@ -197,7 +213,7 @@ export default function MinhaSemana() {
                     <div>
                       <div className="font-bold text-light">
                         {treino 
-                          ? `${treino.letraTreino || treino.nome || 'Treino'}`
+                          ? formatarTituloTreino(treino)
                           : 'Sem treino'}
                       </div>
                       {treino && (
