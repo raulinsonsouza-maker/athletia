@@ -33,21 +33,6 @@ export default function StorytellingEvolucao({
     return `Incrível! Você já completou ${totalTreinos} treinos. Você é um exemplo!`
   }
 
-  const getProgressaoForcaTexto = () => {
-    const grupos = Object.keys(progressaoForca)
-    if (grupos.length === 0) return null
-
-    const maiorProgressao = grupos.reduce((max, grupo) => 
-      progressaoForca[grupo] > progressaoForca[max] ? grupo : max
-    )
-
-    const valor = progressaoForca[maiorProgressao]
-    if (valor > 0) {
-      return `+${valor.toFixed(0)}% em ${maiorProgressao}`
-    }
-    return null
-  }
-
   return (
     <div className="mb-8">
       <div className="flex items-center gap-3 mb-6">
