@@ -104,3 +104,14 @@ export const buscarTreinoDoDia = async (): Promise<TreinoCompleto | null> => {
   }
 }
 
+/**
+ * Gerar treino do dia ou semana completa
+ */
+export const gerarTreino = async (data?: string, gerarSemana: boolean = false): Promise<any> => {
+  const response = await api.post('/treino/gerar', {
+    data,
+    gerarSemana
+  })
+  return response.data
+}
+
