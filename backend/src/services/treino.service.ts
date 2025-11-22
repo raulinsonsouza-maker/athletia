@@ -2363,22 +2363,30 @@ export async function concluirExercicio(
       // Priorizar feedback simples (novo sistema)
       if (feedbackSimples) {
         dadosAtualizacao.feedbackSimples = feedbackSimples;
-        // Se tem feedback simples, não precisa de RPE
-        dadosAtualizacao.rpe = undefined;
+        // Se tem feedback simples, não precisa de RPE - usar null ao invés de undefined
+        dadosAtualizacao.rpe = null;
       } else if (rpeRealizado) {
         // Fallback para RPE (sistema antigo)
         dadosAtualizacao.rpe = rpeRealizado;
+        // Limpar feedback simples se estiver usando RPE
+        dadosAtualizacao.feedbackSimples = null;
+      } else {
+        // Se não tem feedback nem RPE, limpar ambos
+        dadosAtualizacao.rpe = null;
+        dadosAtualizacao.feedbackSimples = null;
       }
       
       // Salvar se usuário aceitou ajuste
       if (aceitouAjuste !== undefined) {
         dadosAtualizacao.aceitouAjuste = aceitouAjuste;
+      } else {
+        dadosAtualizacao.aceitouAjuste = null;
       }
     } else {
-      // Se está desmarcando, limpar feedback
-      dadosAtualizacao.rpe = undefined;
-      dadosAtualizacao.feedbackSimples = undefined;
-      dadosAtualizacao.aceitouAjuste = undefined;
+      // Se está desmarcando, limpar feedback - usar null ao invés de undefined
+      dadosAtualizacao.rpe = null;
+      dadosAtualizacao.feedbackSimples = null;
+      dadosAtualizacao.aceitouAjuste = null;
     }
     
     console.log(`[concluirExercicio] Atualizando exercício com dados:`, dadosAtualizacao);
@@ -2388,10 +2396,20 @@ export async function concluirExercicio(
       exercicioTreino = await prisma.exercicioTreino.update({
         where: { id: exercicioTreinoId },
         data: dadosAtualizacao,
-        include: { exercicio: true, treino: { include: { user: true } } }
+        include: { 
+          exercicio: true, 
+          treino: {
+            select: {
+              id: true,
+              userId: true,
+              concluido: true
+            }
+          }
+        }
       });
     } catch (error: any) {
       console.error('[concluirExercicio] Erro ao atualizar exercício:', error);
+      console.error('[concluirExercicio] Stack trace:', error.stack);
       throw new Error(`Erro ao atualizar exercício: ${error.message}`);
     }
 
