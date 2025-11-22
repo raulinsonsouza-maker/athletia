@@ -13,6 +13,9 @@ export interface ResumoDashboard {
   progressoSemanal: {
     concluidos: number
     meta: number
+    metaOriginal?: number
+    metaAjustada?: boolean
+    diasRestantes?: number
     porcentagem: number
     faltam: number
   }

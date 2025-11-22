@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { formatarTituloTreino, extrairLetraTreino } from '../utils/treino.utils'
 
 interface HeaderInteligenteProps {
   nome: string
@@ -49,14 +50,14 @@ export default function HeaderInteligente({ nome, treinoHoje }: HeaderInteligent
             <div>
               <p className="text-sm text-light-muted mb-2">Hoje é dia de treino:</p>
               <div className="flex items-center gap-3 mb-4">
-                {treinoHoje.letraTreino && (
+                {extrairLetraTreino(treinoHoje) && (
                   <div className="w-14 h-14 rounded-xl bg-primary text-dark flex items-center justify-center font-bold text-2xl shadow-lg">
-                    {treinoHoje.letraTreino}
+                    {extrairLetraTreino(treinoHoje)}
                   </div>
                 )}
                 <div className="flex-1">
                   <h2 className="text-xl md:text-2xl font-display font-bold text-light mb-1">
-                    {treinoHoje.nome || 'Treino do Dia'}
+                    {formatarTituloTreino(treinoHoje)}
                   </h2>
                   {getGruposMusculares() && (
                     <p className="text-sm text-light-muted">

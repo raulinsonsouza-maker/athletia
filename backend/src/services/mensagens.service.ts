@@ -22,62 +22,60 @@ export async function gerarMensagemMotivacional(userId: string): Promise<string>
   const conquistasService = await import('./conquistas.service');
   const nivel = await conquistasService.calcularNivelUsuario(userId);
 
-  const hora = new Date().getHours();
-  const saudacao = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
   const nome = user?.nome || 'atleta';
 
   // Mensagens baseadas em sequência
   if (sequenciaAtual >= 7) {
-    return `${saudacao}, ${nome}! Você está em uma sequência incrível de ${sequenciaAtual} dias seguidos. Continue assim!`;
+    return `Você está em uma sequência incrível de ${sequenciaAtual} dias seguidos. Continue assim!`;
   }
 
   if (sequenciaAtual >= 3) {
-    return `${saudacao}, ${nome}! Você está mantendo uma boa sequência de ${sequenciaAtual} dias. Cada treino te aproxima do seu objetivo!`;
+    return `Você está mantendo uma boa sequência de ${sequenciaAtual} dias. Cada treino te aproxima do seu objetivo!`;
   }
 
   // Mensagens baseadas em evolução de peso
   if (evolucaoPeso.diferenca && evolucaoPeso.diferenca < 0 && Math.abs(evolucaoPeso.diferenca) >= 2) {
-    return `${saudacao}, ${nome}! Você já perdeu ${Math.abs(evolucaoPeso.diferenca).toFixed(1)}kg desde que começou. Resultados reais!`;
+    return `Você já perdeu ${Math.abs(evolucaoPeso.diferenca).toFixed(1)}kg desde que começou. Resultados reais!`;
   }
 
   if (evolucaoPeso.diferenca && evolucaoPeso.diferenca > 0 && evolucaoPeso.diferenca >= 2) {
-    return `${saudacao}, ${nome}! Você ganhou ${evolucaoPeso.diferenca.toFixed(1)}kg de massa. Continue focado!`;
+    return `Você ganhou ${evolucaoPeso.diferenca.toFixed(1)}kg de massa. Continue focado!`;
   }
 
   // Mensagens baseadas em treinos do mês
   if (treinosMes >= 20) {
-    return `${saudacao}, ${nome}! Você já fez ${treinosMes} treinos este mês. Dedicação exemplar!`;
+    return `Você já fez ${treinosMes} treinos este mês. Dedicação exemplar!`;
   }
 
   if (treinosMes >= 10) {
-    return `${saudacao}, ${nome}! Você já completou ${treinosMes} treinos este mês. Continue assim!`;
+    return `Você já completou ${treinosMes} treinos este mês. Continue assim!`;
   }
 
   // Mensagens baseadas em objetivo
   if (perfil?.objetivo) {
     const objetivo = perfil.objetivo.toLowerCase();
     if (objetivo.includes('hipertrofia') || objetivo.includes('ganho')) {
-      return `${saudacao}, ${nome}! Seu objetivo é ganho de massa. Foco da semana: Intensidade e consistência.`;
+      return `Seu objetivo é ganho de massa. Foco da semana: Intensidade e consistência.`;
     }
     if (objetivo.includes('emagrecimento') || objetivo.includes('perda')) {
-      return `${saudacao}, ${nome}! Seu objetivo é emagrecimento. Cada treino te aproxima da sua melhor versão!`;
+      return `Seu objetivo é emagrecimento. Cada treino te aproxima da sua melhor versão!`;
     }
     if (objetivo.includes('força')) {
-      return `${saudacao}, ${nome}! Seu objetivo é força. Continue progredindo nas cargas!`;
+      return `Seu objetivo é força. Continue progredindo nas cargas!`;
     }
   }
 
   // Mensagens baseadas em nível
   if (nivel.nivel >= 4) {
-    return `${saudacao}, ${nome}! Você está no nível ${nivel.nome}. Continue evoluindo!`;
+    return `Você está no nível ${nivel.nome}. Continue evoluindo!`;
   }
 
   // Mensagem padrão motivacional
   const mensagensPadrao = [
-    `${saudacao}, ${nome}! Cada treino concluído é mais perto da sua melhor versão.`,
-    `${saudacao}, ${nome}! A consistência é a chave do sucesso. Continue treinando!`,
-    `${saudacao}, ${nome}! Seu progresso é resultado da sua dedicação. Parabéns!`,
-    `${saudacao}, ${nome}! Hoje é um novo dia para evoluir. Vamos treinar!`
+    `Cada treino concluído é mais perto da sua melhor versão.`,
+    `A consistência é a chave do sucesso. Continue treinando!`,
+    `Seu progresso é resultado da sua dedicação. Parabéns!`,
+    `Hoje é um novo dia para evoluir. Vamos treinar!`
   ];
 
   return mensagensPadrao[Math.floor(Math.random() * mensagensPadrao.length)];

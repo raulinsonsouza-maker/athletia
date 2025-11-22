@@ -72,7 +72,28 @@ export const obterResumoDashboard = async (req: AuthRequest, res: Response) => {
     });
 
     const treinosConcluidosSemana = treinosEstaSemana.filter(t => t.concluido).length;
-    const metaSemanal = perfil?.frequenciaSemanal || 3;
+    const metaSemanalOriginal = perfil?.frequenciaSemanal || 3;
+
+    // Calcular meta ajustada baseada em dias restantes da semana
+    // Se hoje é sábado (dia 6), dias restantes = 0
+    // Se hoje é sexta (dia 5), dias restantes = 1, etc.
+    const diasRestantes = 6 - diaSemana; // 0 (sábado) até 6 (domingo)
+    
+    let metaSemanal: number;
+    let metaAjustada: boolean = false;
+    
+    if (diasRestantes === 0) {
+      // Se é sábado, não há mais dias para treinar esta semana
+      // Meta ajustada = treinos já concluídos (não pode aumentar mais)
+      metaSemanal = treinosConcluidosSemana;
+      metaAjustada = true;
+    } else {
+      // Meta ajustada = mínimo entre meta original e (treinos concluídos + dias restantes)
+      // Isso garante que a meta seja realista baseada nos dias que ainda restam
+      metaSemanal = Math.min(metaSemanalOriginal, treinosConcluidosSemana + diasRestantes);
+      // Se a meta foi ajustada para menos que a original, marcar como ajustada
+      metaAjustada = metaSemanal < metaSemanalOriginal;
+    }
 
     // Buscar treinos recentes (últimos 3 concluídos)
     const treinosRecent = await prisma.treino.findMany({
@@ -126,6 +147,9 @@ export const obterResumoDashboard = async (req: AuthRequest, res: Response) => {
       progressoSemanal: {
         concluidos: treinosConcluidosSemana,
         meta: metaSemanal,
+        metaOriginal: metaSemanalOriginal,
+        metaAjustada: metaAjustada,
+        diasRestantes: diasRestantes,
         porcentagem: metaSemanal > 0 ? Math.round((treinosConcluidosSemana / metaSemanal) * 100) : 0,
         faltam: Math.max(0, metaSemanal - treinosConcluidosSemana)
       },
