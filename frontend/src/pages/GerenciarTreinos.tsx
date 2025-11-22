@@ -57,47 +57,112 @@ export default function GerenciarTreinos() {
         templatesRes,
         recorrentesRes
       ] = await Promise.all([
-        buscarTreinoDoDia().catch(() => null),
-        buscarTreinosSemanais().catch(() => ({ treinos: [] })),
-        listarTreinosPersonalizados().catch(() => ({ treinos: [] })),
-        listarTemplatesPersonalizados().catch(() => ({ templates: [] })),
-        listarTreinosRecorrentes().catch(() => ({ treinos: [] }))
+        buscarTreinoDoDia().catch((err) => {
+          console.error('Erro ao buscar treino do dia:', err)
+          return null
+        }),
+        buscarTreinosSemanais().catch((err) => {
+          console.error('Erro ao buscar treinos semanais:', err)
+          return { treinos: [] }
+        }),
+        listarTreinosPersonalizados().catch((err) => {
+          console.error('Erro ao listar treinos personalizados:', err)
+          return { treinos: [] }
+        }),
+        listarTemplatesPersonalizados().catch((err) => {
+          console.error('Erro ao listar templates:', err)
+          return { templates: [] }
+        }),
+        listarTreinosRecorrentes().catch((err) => {
+          console.error('Erro ao listar treinos recorrentes:', err)
+          return { treinos: [] }
+        })
       ])
 
+      // Validar e processar respostas
       setTreinoHoje(treinoHojeRes)
-      setTreinosSemanais(treinosSemanaRes.treinos || [])
-      setTreinosPersonalizados(treinosPersRes.treinos || [])
-      setTemplates(templatesRes.templates || [])
-      setTreinosRecorrentes(recorrentesRes.treinos || [])
+      setTreinosSemanais(Array.isArray(treinosSemanaRes?.treinos) ? treinosSemanaRes.treinos : [])
+      
+      // Validar formato de treinos personalizados
+      const treinosPers = treinosPersRes?.treinos || treinosPersRes || []
+      setTreinosPersonalizados(Array.isArray(treinosPers) ? treinosPers : [])
+      
+      // Validar formato de templates
+      const templatesData = templatesRes?.templates || templatesRes || []
+      setTemplates(Array.isArray(templatesData) ? templatesData : [])
+      
+      // Filtrar nulls de treinos recorrentes (array pode ter nulls para letras sem treino)
+      const recorrentes = recorrentesRes?.treinos || recorrentesRes || []
+      setTreinosRecorrentes(Array.isArray(recorrentes) ? recorrentes.filter((t: any) => t !== null && t !== undefined) : [])
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error)
-      showToast('Erro ao carregar dados', 'error')
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        showToast('Erro ao carregar dados. Tente recarregar a página.', 'error')
+      }
     } finally {
       setLoading(false)
     }
   }
 
   const gerarSemanaCompleta = async () => {
+    if (gerandoSemana) {
+      return // Prevenir múltiplas requisições
+    }
+
     try {
       setGerandoSemana(true)
-      await gerarTreino(undefined, true)
+      const response = await gerarTreino(undefined, true)
       showToast('Semana gerada com sucesso!', 'success')
       await carregarDados()
     } catch (error: any) {
       console.error('Erro ao gerar semana:', error)
-      showToast(error.response?.data?.message || 'Erro ao gerar semana', 'error')
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao gerar semana. Tente novamente.'
+        showToast(errorMessage, 'error')
+      }
     } finally {
       setGerandoSemana(false)
     }
   }
 
   const handleTrocarTreino = (data: Date) => {
+    // Fechar outros modais antes de abrir
+    if (mostrarModalAplicarTreino) {
+      setMostrarModalAplicarTreino(false)
+      setTreinoParaAplicar(null)
+    }
+    if (mostrarModalDuplicar) {
+      setMostrarModalDuplicar(false)
+      setTreinoParaDuplicar(null)
+    }
+    
     setDiaSelecionado(data)
     setMostrarModalTrocarTreino(true)
   }
 
   const handleDeletarTreino = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja deletar este treino?')) {
+    if (!id) {
+      showToast('ID do treino inválido', 'error')
+      return
+    }
+
+    if (!window.confirm('Tem certeza que deseja deletar este treino? Esta ação não pode ser desfeita.')) {
       return
     }
 
@@ -108,14 +173,30 @@ export default function GerenciarTreinos() {
       await carregarDados()
     } catch (error: any) {
       console.error('Erro ao deletar treino:', error)
-      showToast(error.response?.data?.message || 'Erro ao deletar treino', 'error')
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 404) {
+        showToast('Treino não encontrado', 'error')
+      } else if (error.response?.status === 403) {
+        showToast('Você não tem permissão para deletar este treino', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao deletar treino'
+        showToast(errorMessage, 'error')
+      }
     } finally {
       setDeletando(null)
     }
   }
 
   const handleDeletarTemplate = async (id: string) => {
-    if (!window.confirm('Tem certeza que deseja deletar este template?')) {
+    if (!id) {
+      showToast('ID do template inválido', 'error')
+      return
+    }
+
+    if (!window.confirm('Tem certeza que deseja deletar este template? Esta ação não pode ser desfeita.')) {
       return
     }
 
@@ -126,19 +207,49 @@ export default function GerenciarTreinos() {
       await carregarDados()
     } catch (error: any) {
       console.error('Erro ao deletar template:', error)
-      showToast(error.response?.data?.message || 'Erro ao deletar template', 'error')
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 404) {
+        showToast('Template não encontrado', 'error')
+      } else if (error.response?.status === 403) {
+        showToast('Você não tem permissão para deletar este template', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao deletar template'
+        showToast(errorMessage, 'error')
+      }
     } finally {
       setDeletando(null)
     }
   }
 
   const handleDuplicarTreino = (id: string, nome: string) => {
+    if (!id || !nome) {
+      showToast('Dados do treino inválidos', 'error')
+      return
+    }
     setTreinoParaDuplicar({ id, nome })
     setMostrarModalDuplicar(true)
   }
 
   const handleConfirmarDuplicar = async (data: string) => {
-    if (!treinoParaDuplicar) return
+    if (!treinoParaDuplicar) {
+      showToast('Erro: treino não selecionado', 'error')
+      return
+    }
+
+    if (!data) {
+      showToast('Selecione uma data', 'error')
+      return
+    }
+
+    // Validar formato de data
+    const dataRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dataRegex.test(data)) {
+      showToast('Formato de data inválido', 'error')
+      return
+    }
 
     try {
       await duplicarTreinoPersonalizado(treinoParaDuplicar.id, data)
@@ -148,7 +259,18 @@ export default function GerenciarTreinos() {
       await carregarDados()
     } catch (error: any) {
       console.error('Erro ao duplicar treino:', error)
-      showToast(error.response?.data?.message || 'Erro ao duplicar treino', 'error')
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 404) {
+        showToast('Treino não encontrado', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao duplicar treino'
+        showToast(errorMessage, 'error')
+      }
     }
   }
 
@@ -204,14 +326,22 @@ export default function GerenciarTreinos() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               onClick={gerarSemanaCompleta}
-              disabled={gerandoSemana}
-              className="btn-primary p-6 text-center flex flex-col items-center gap-2"
+              disabled={gerandoSemana || loading}
+              className="btn-primary p-6 text-center flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span className="font-bold">Gerar Semana com IA</span>
-              {gerandoSemana && <span className="text-sm">Gerando...</span>}
+              {gerandoSemana ? (
+                <>
+                  <div className="spinner w-8 h-8"></div>
+                  <span className="font-bold">Gerando...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="font-bold">Gerar Semana com IA</span>
+                </>
+              )}
             </button>
             <button
               onClick={() => navigate('/meus-treinos')}
@@ -286,18 +416,38 @@ export default function GerenciarTreinos() {
                   <p className="text-light-muted text-center py-8">Nenhum treino personalizado criado</p>
                 ) : (
                   <div className="space-y-3">
-                    {treinosPersonalizados.map((treino: any) => (
+                    {treinosPersonalizados.map((treino: any) => {
+                      if (!treino || !treino.id) {
+                        return null
+                      }
+                      
+                      return (
                       <div key={treino.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="font-bold text-light">{treino.nome}</h4>
+                            <h4 className="font-bold text-light">{treino.nome || 'Treino sem nome'}</h4>
                             <p className="text-sm text-light-muted">
-                              {new Date(treino.data).toLocaleDateString('pt-BR')}
+                              {treino.data ? new Date(treino.data).toLocaleDateString('pt-BR') : 'Data não disponível'}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => {
+                                // Fechar outros modais
+                                if (mostrarModalTrocarTreino) {
+                                  setMostrarModalTrocarTreino(false)
+                                  setDiaSelecionado(null)
+                                }
+                                if (mostrarModalDuplicar) {
+                                  setMostrarModalDuplicar(false)
+                                  setTreinoParaDuplicar(null)
+                                }
+                                
+                                if (!treino.id || !treino.nome) {
+                                  showToast('Dados do treino inválidos', 'error')
+                                  return
+                                }
+                                
                                 setTreinoParaAplicar({
                                   tipo: 'personalizado',
                                   id: treino.id,
@@ -311,7 +461,19 @@ export default function GerenciarTreinos() {
                               Aplicar
                             </button>
                             <button
-                              onClick={() => handleDuplicarTreino(treino.id, treino.nome)}
+                              onClick={() => {
+                                // Fechar outros modais
+                                if (mostrarModalTrocarTreino) {
+                                  setMostrarModalTrocarTreino(false)
+                                  setDiaSelecionado(null)
+                                }
+                                if (mostrarModalAplicarTreino) {
+                                  setMostrarModalAplicarTreino(false)
+                                  setTreinoParaAplicar(null)
+                                }
+                                
+                                handleDuplicarTreino(treino.id, treino.nome)
+                              }}
                               className="btn-secondary text-sm"
                               title="Duplicar treino"
                             >
@@ -320,7 +482,13 @@ export default function GerenciarTreinos() {
                               </svg>
                             </button>
                             <button
-                              onClick={() => navigate(`/meus-treinos?edit=${treino.id}`)}
+                              onClick={() => {
+                                if (!treino.id) {
+                                  showToast('ID do treino inválido', 'error')
+                                  return
+                                }
+                                navigate(`/meus-treinos?edit=${treino.id}`)
+                              }}
                               className="btn-secondary text-sm"
                               title="Editar treino"
                             >
@@ -330,8 +498,8 @@ export default function GerenciarTreinos() {
                             </button>
                             <button
                               onClick={() => handleDeletarTreino(treino.id)}
-                              disabled={deletando === treino.id}
-                              className="btn-secondary text-sm text-red-400 hover:text-red-300"
+                              disabled={deletando === treino.id || deletando !== null}
+                              className="btn-secondary text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
                               title="Deletar treino"
                             >
                               {deletando === treino.id ? (
@@ -357,18 +525,38 @@ export default function GerenciarTreinos() {
                   <p className="text-light-muted text-center py-8">Nenhum template criado</p>
                 ) : (
                   <div className="space-y-3">
-                    {templates.map((template: any) => (
+                    {templates.map((template: any) => {
+                      if (!template || !template.id) {
+                        return null
+                      }
+                      
+                      return (
                       <div key={template.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
-                            <h4 className="font-bold text-light">{template.nome}</h4>
+                            <h4 className="font-bold text-light">{template.nome || 'Template sem nome'}</h4>
                             <p className="text-sm text-light-muted">
-                              {template.exercicios?.length || 0} exercícios
+                              {Array.isArray(template.exercicios) ? template.exercicios.length : 0} exercícios
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => {
+                                // Fechar outros modais
+                                if (mostrarModalTrocarTreino) {
+                                  setMostrarModalTrocarTreino(false)
+                                  setDiaSelecionado(null)
+                                }
+                                if (mostrarModalDuplicar) {
+                                  setMostrarModalDuplicar(false)
+                                  setTreinoParaDuplicar(null)
+                                }
+                                
+                                if (!template.id || !template.nome) {
+                                  showToast('Dados do template inválidos', 'error')
+                                  return
+                                }
+                                
                                 setTreinoParaAplicar({
                                   tipo: 'template',
                                   id: template.id,
@@ -382,7 +570,13 @@ export default function GerenciarTreinos() {
                               Aplicar
                             </button>
                             <button
-                              onClick={() => navigate(`/meus-treinos?editTemplate=${template.id}`)}
+                              onClick={() => {
+                                if (!template.id) {
+                                  showToast('ID do template inválido', 'error')
+                                  return
+                                }
+                                navigate(`/meus-treinos?editTemplate=${template.id}`)
+                              }}
                               className="btn-secondary text-sm"
                               title="Editar template"
                             >
@@ -392,8 +586,8 @@ export default function GerenciarTreinos() {
                             </button>
                             <button
                               onClick={() => handleDeletarTemplate(template.id)}
-                              disabled={deletando === template.id}
-                              className="btn-secondary text-sm text-red-400 hover:text-red-300"
+                              disabled={deletando === template.id || deletando !== null}
+                              className="btn-secondary text-sm text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
                               title="Deletar template"
                             >
                               {deletando === template.id ? (
@@ -407,7 +601,8 @@ export default function GerenciarTreinos() {
                           </div>
                         </div>
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -419,7 +614,12 @@ export default function GerenciarTreinos() {
                   <p className="text-light-muted text-center py-8">Nenhum treino recorrente configurado</p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {treinosRecorrentes.map((treino: any) => (
+                    {treinosRecorrentes.map((treino: any) => {
+                      if (!treino || !treino.letraTreino) {
+                        return null
+                      }
+                      
+                      return (
                       <div key={treino.letraTreino} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
                         <div className="flex items-center justify-between mb-2">
                           <div className="w-12 h-12 rounded-lg bg-primary text-dark flex items-center justify-center font-bold text-2xl">
@@ -428,6 +628,21 @@ export default function GerenciarTreinos() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => {
+                                // Fechar outros modais
+                                if (mostrarModalTrocarTreino) {
+                                  setMostrarModalTrocarTreino(false)
+                                  setDiaSelecionado(null)
+                                }
+                                if (mostrarModalDuplicar) {
+                                  setMostrarModalDuplicar(false)
+                                  setTreinoParaDuplicar(null)
+                                }
+                                
+                                if (!treino.letraTreino || !treino.nome) {
+                                  showToast('Dados do treino inválidos', 'error')
+                                  return
+                                }
+                                
                                 setTreinoParaAplicar({
                                   tipo: 'recorrente',
                                   id: treino.letraTreino,
@@ -441,7 +656,13 @@ export default function GerenciarTreinos() {
                               Aplicar
                             </button>
                             <button
-                              onClick={() => navigate(`/treinos-recorrentes?edit=${treino.letraTreino}`)}
+                              onClick={() => {
+                                if (!treino.letraTreino) {
+                                  showToast('Letra do treino inválida', 'error')
+                                  return
+                                }
+                                navigate(`/treinos-recorrentes?edit=${treino.letraTreino}`)
+                              }}
                               className="btn-secondary text-sm"
                               title="Editar treino recorrente"
                             >
@@ -451,12 +672,13 @@ export default function GerenciarTreinos() {
                             </button>
                           </div>
                         </div>
-                        <h4 className="font-bold text-light mb-1">{treino.nome}</h4>
+                        <h4 className="font-bold text-light mb-1">{treino.nome || 'Treino sem nome'}</h4>
                         <p className="text-sm text-light-muted">
-                          {treino.exercicios?.length || 0} exercícios
+                          {Array.isArray(treino.exercicios) ? treino.exercicios.length : 0} exercícios
                         </p>
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -464,8 +686,8 @@ export default function GerenciarTreinos() {
           </div>
         </div>
 
-        {/* Modais */}
-        {mostrarModalTrocarTreino && diaSelecionado && (
+        {/* Modais - Apenas um modal aberto por vez */}
+        {mostrarModalTrocarTreino && diaSelecionado && !mostrarModalAplicarTreino && !mostrarModalDuplicar && (
           <ModalTrocarTreino
             data={diaSelecionado}
             onClose={() => {
@@ -473,12 +695,14 @@ export default function GerenciarTreinos() {
               setDiaSelecionado(null)
             }}
             onSuccess={() => {
+              setMostrarModalTrocarTreino(false)
+              setDiaSelecionado(null)
               carregarDados()
             }}
           />
         )}
 
-        {mostrarModalAplicarTreino && treinoParaAplicar && (
+        {mostrarModalAplicarTreino && treinoParaAplicar && treinoParaAplicar.id && treinoParaAplicar.nome && !mostrarModalTrocarTreino && !mostrarModalDuplicar && (
           <ModalAplicarTreino
             tipo={treinoParaAplicar.tipo}
             treinoId={treinoParaAplicar.id}
@@ -488,12 +712,14 @@ export default function GerenciarTreinos() {
               setTreinoParaAplicar(null)
             }}
             onSuccess={() => {
+              setMostrarModalAplicarTreino(false)
+              setTreinoParaAplicar(null)
               carregarDados()
             }}
           />
         )}
 
-        {mostrarModalDuplicar && treinoParaDuplicar && (
+        {mostrarModalDuplicar && treinoParaDuplicar && treinoParaDuplicar.id && treinoParaDuplicar.nome && !mostrarModalTrocarTreino && !mostrarModalAplicarTreino && (
           <ModalDuplicarTreino
             treinoId={treinoParaDuplicar.id}
             treinoNome={treinoParaDuplicar.nome}
@@ -501,7 +727,10 @@ export default function GerenciarTreinos() {
               setMostrarModalDuplicar(false)
               setTreinoParaDuplicar(null)
             }}
-            onConfirm={handleConfirmarDuplicar}
+            onConfirm={async (data: string) => {
+              await handleConfirmarDuplicar(data)
+              // handleConfirmarDuplicar já fecha o modal e recarrega dados
+            }}
           />
         )}
       </main>

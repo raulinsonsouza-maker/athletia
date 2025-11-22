@@ -26,8 +26,34 @@ export default function ModalAplicarTreino({
   const { showToast, ToastContainer } = useToast()
 
   const handleAplicar = async () => {
+    if (aplicando) {
+      return // Prevenir múltiplas requisições
+    }
+
+    // Validações
     if (!data) {
       showToast('Selecione uma data', 'error')
+      return
+    }
+
+    if (!treinoId) {
+      showToast('ID do treino inválido', 'error')
+      return
+    }
+
+    // Validar formato de data
+    const dataRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dataRegex.test(data)) {
+      showToast('Formato de data inválido', 'error')
+      return
+    }
+
+    // Validar que data não é no passado
+    const dataSelecionada = new Date(data)
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    if (dataSelecionada < hoje) {
+      showToast('Não é possível aplicar treino em data passada', 'error')
       return
     }
 
@@ -43,13 +69,29 @@ export default function ModalAplicarTreino({
       } else if (tipo === 'personalizado') {
         await duplicarTreinoPersonalizado(treinoId, data)
         showToast('Treino duplicado com sucesso!', 'success')
+      } else {
+        showToast('Tipo de treino inválido', 'error')
+        return
       }
 
       onSuccess()
       onClose()
     } catch (error: any) {
       console.error('Erro ao aplicar treino:', error)
-      showToast(error.response?.data?.message || 'Erro ao aplicar treino', 'error')
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status === 404) {
+        showToast('Treino não encontrado', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao aplicar treino. Tente novamente.'
+        showToast(errorMessage, 'error')
+      }
     } finally {
       setAplicando(false)
     }
@@ -97,9 +139,16 @@ export default function ModalAplicarTreino({
           <button
             onClick={handleAplicar}
             className="btn-primary flex-1"
-            disabled={aplicando}
+            disabled={aplicando || !data}
           >
-            {aplicando ? 'Aplicando...' : 'Aplicar'}
+            {aplicando ? (
+              <span className="flex items-center gap-2">
+                <div className="spinner w-4 h-4"></div>
+                Aplicando...
+              </span>
+            ) : (
+              'Aplicar'
+            )}
           </button>
         </div>
       </div>

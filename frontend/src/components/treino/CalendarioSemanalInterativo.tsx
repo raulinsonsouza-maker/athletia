@@ -91,7 +91,11 @@ export default function CalendarioSemanalInterativo({
                 ${treino && onTreinoClick ? 'cursor-pointer hover:border-primary/70 active:scale-95' : ''}
                 ${ehTreinoAtual ? 'ring-2 ring-primary ring-offset-2 ring-offset-dark' : ''}
               `}
-              onClick={() => {
+              onClick={(e) => {
+                // Não navegar se clicar no botão de trocar
+                if ((e.target as HTMLElement).closest('button')) {
+                  return
+                }
                 if (treino && onTreinoClick) {
                   onTreinoClick(treino)
                 }

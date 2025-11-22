@@ -17,8 +17,25 @@ export default function ModalDuplicarTreino({
   const { showToast, ToastContainer } = useToast()
 
   const handleConfirmar = () => {
+    // Validações
     if (!data) {
       showToast('Selecione uma data', 'error')
+      return
+    }
+
+    // Validar formato de data
+    const dataRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dataRegex.test(data)) {
+      showToast('Formato de data inválido', 'error')
+      return
+    }
+
+    // Validar que data não é no passado
+    const dataSelecionada = new Date(data)
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    if (dataSelecionada < hoje) {
+      showToast('Não é possível duplicar treino em data passada', 'error')
       return
     }
 
@@ -66,6 +83,7 @@ export default function ModalDuplicarTreino({
           <button
             onClick={handleConfirmar}
             className="btn-primary flex-1"
+            disabled={!data}
           >
             Duplicar
           </button>

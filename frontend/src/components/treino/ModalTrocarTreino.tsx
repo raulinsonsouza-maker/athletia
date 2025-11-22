@@ -38,11 +38,22 @@ export default function ModalTrocarTreino({
     try {
       setLoading(true)
       const [recorrentesRes, templatesRes] = await Promise.all([
-        listarTreinosRecorrentes().catch(() => ({ treinos: [] })),
-        listarTemplatesPersonalizados().catch(() => ({ templates: [] }))
+        listarTreinosRecorrentes().catch((err) => {
+          console.error('Erro ao listar treinos recorrentes:', err)
+          return { treinos: [] }
+        }),
+        listarTemplatesPersonalizados().catch((err) => {
+          console.error('Erro ao listar templates:', err)
+          return { templates: [] }
+        })
       ])
-      setTreinosRecorrentes(recorrentesRes.treinos || [])
-      setTemplates(templatesRes.templates || [])
+      
+      // Filtrar nulls e validar formato
+      const recorrentes = recorrentesRes?.treinos || recorrentesRes || []
+      setTreinosRecorrentes(Array.isArray(recorrentes) ? recorrentes.filter((t: any) => t !== null && t !== undefined) : [])
+      
+      const templates = templatesRes?.templates || templatesRes || []
+      setTemplates(Array.isArray(templates) ? templates : [])
     } catch (error) {
       console.error('Erro ao carregar opções:', error)
     } finally {
@@ -51,67 +62,148 @@ export default function ModalTrocarTreino({
   }
 
   const handleAplicar = async () => {
+    if (gerando) {
+      return // Prevenir múltiplas requisições
+    }
+
     try {
       const dataStr = data.toISOString().split('T')[0]
 
       if (opcaoSelecionada === 'remover') {
+        setGerando(true)
         // Buscar treino pela data e remover
         const hoje = new Date(data)
         hoje.setHours(0, 0, 0, 0)
         const amanha = new Date(hoje)
         amanha.setDate(hoje.getDate() + 1)
         
-        const response = await api.get(`/treino?dataInicio=${hoje.toISOString()}&dataFim=${amanha.toISOString()}`)
-        const treinos = response.data || []
-        
-        if (treinos.length === 0) {
-          showToast('Nenhum treino encontrado para esta data', 'warning')
-          return
+        try {
+          const response = await api.get(`/treino/personalizado?dataInicio=${hoje.toISOString()}&dataFim=${amanha.toISOString()}`)
+          // A resposta vem como { treinos: [...], total: ... }
+          const treinos = Array.isArray(response.data?.treinos) ? response.data.treinos : (Array.isArray(response.data) ? response.data : [])
+          
+          if (treinos.length === 0) {
+            showToast('Nenhum treino encontrado para esta data', 'warning')
+            setGerando(false)
+            return
+          }
+          
+          // Verificar se o treino é personalizado antes de deletar
+          const treino = treinos[0]
+          if (!treino || !treino.id) {
+            showToast('Treino inválido', 'error')
+            setGerando(false)
+            return
+          }
+
+          if (treino.criadoPor !== 'USUARIO') {
+            showToast('Apenas treinos personalizados podem ser removidos', 'error')
+            setGerando(false)
+            return
+          }
+          
+          // Deletar o primeiro treino encontrado (deve haver apenas um por data)
+          await api.delete(`/treino/personalizado/${treino.id}`)
+          showToast('Treino removido com sucesso!', 'success')
+          onSuccess()
+          onClose()
+        } catch (err: any) {
+          console.error('Erro ao remover treino:', err)
+          
+          // Tratar diferentes tipos de erro
+          if ((err as any).isNetworkError || !err.response) {
+            showToast('Erro de conexão. Verifique sua internet.', 'error')
+          } else if (err.response?.status === 404) {
+            showToast('Treino não encontrado', 'error')
+          } else if (err.response?.status === 403) {
+            showToast('Você não tem permissão para remover este treino', 'error')
+          } else {
+            const errorMessage = err.response?.data?.message || err.message || 'Erro ao remover treino'
+            showToast(errorMessage, 'error')
+          }
+        } finally {
+          setGerando(false)
         }
-        
-        // Verificar se o treino é personalizado antes de deletar
-        const treino = treinos[0]
-        if (treino.criadoPor !== 'USUARIO') {
-          showToast('Apenas treinos personalizados podem ser removidos', 'error')
-          return
-        }
-        
-        // Deletar o primeiro treino encontrado (deve haver apenas um por data)
-        await api.delete(`/treino/personalizado/${treino.id}`)
-        showToast('Treino removido com sucesso!', 'success')
-        onSuccess()
-        onClose()
         return
       }
 
       if (opcaoSelecionada === 'ia') {
         setGerando(true)
-        await gerarTreino(dataStr, false)
-        showToast('Treino gerado com sucesso!', 'success')
-        onSuccess()
-        onClose()
+        try {
+          await gerarTreino(dataStr, false)
+          showToast('Treino gerado com sucesso!', 'success')
+          onSuccess()
+          onClose()
+        } catch (err: any) {
+          console.error('Erro ao gerar treino:', err)
+          
+          // Tratar diferentes tipos de erro
+          if ((err as any).isNetworkError || !err.response) {
+            showToast('Erro de conexão. Verifique sua internet.', 'error')
+          } else if (err.response?.status === 401) {
+            showToast('Sessão expirada. Faça login novamente.', 'error')
+          } else if (err.response?.status >= 500) {
+            showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+          } else {
+            const errorMessage = err.response?.data?.message || err.message || 'Erro ao gerar treino'
+            showToast(errorMessage, 'error')
+          }
+        } finally {
+          setGerando(false)
+        }
         return
       }
 
       if (!treinoSelecionado) {
         showToast('Selecione um treino', 'warning')
+        setGerando(false)
         return
       }
 
-      if (opcaoSelecionada === 'recorrente') {
-        await aplicarTreinoRecorrente(treinoSelecionado, dataStr)
-        showToast('Treino recorrente aplicado com sucesso!', 'success')
-      } else if (opcaoSelecionada === 'template') {
-        await aplicarTemplatePersonalizado(treinoSelecionado, dataStr)
-        showToast('Template aplicado com sucesso!', 'success')
-      }
+      setGerando(true)
+      try {
+        if (opcaoSelecionada === 'recorrente') {
+          await aplicarTreinoRecorrente(treinoSelecionado, dataStr)
+          showToast('Treino recorrente aplicado com sucesso!', 'success')
+        } else if (opcaoSelecionada === 'template') {
+          await aplicarTemplatePersonalizado(treinoSelecionado, dataStr)
+          showToast('Template aplicado com sucesso!', 'success')
+        }
 
-      onSuccess()
-      onClose()
+        onSuccess()
+        onClose()
+      } catch (err: any) {
+        console.error('Erro ao aplicar treino:', err)
+        
+        // Tratar diferentes tipos de erro
+        if ((err as any).isNetworkError || !err.response) {
+          showToast('Erro de conexão. Verifique sua internet.', 'error')
+        } else if (err.response?.status === 401) {
+          showToast('Sessão expirada. Faça login novamente.', 'error')
+        } else if (err.response?.status === 404) {
+          showToast('Treino não encontrado', 'error')
+        } else if (err.response?.status >= 500) {
+          showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+        } else {
+          const errorMessage = err.response?.data?.message || err.message || 'Erro ao aplicar treino'
+          showToast(errorMessage, 'error')
+        }
+      } finally {
+        setGerando(false)
+      }
     } catch (error: any) {
-      console.error('Erro ao aplicar treino:', error)
-      showToast(error.response?.data?.message || 'Erro ao aplicar treino', 'error')
-    } finally {
+      console.error('Erro inesperado:', error)
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        showToast('Erro inesperado. Tente novamente.', 'error')
+      }
       setGerando(false)
     }
   }
@@ -193,34 +285,49 @@ export default function ModalTrocarTreino({
               <p className="text-light-muted text-center py-4">Carregando...</p>
             ) : (
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {(opcaoSelecionada === 'recorrente' ? treinosRecorrentes : templates).map((item: any) => (
-                  <label
-                    key={item.id || item.letraTreino}
-                    className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter"
-                  >
-                    <input
-                      type="radio"
-                      name="treino"
-                      value={item.id || item.letraTreino}
-                      checked={treinoSelecionado === (item.id || item.letraTreino)}
-                      onChange={() => setTreinoSelecionado(item.id || item.letraTreino)}
-                      className="w-4 h-4 text-primary"
-                    />
-                    <div className="flex-1">
-                      {item.letraTreino && (
-                        <div className="w-8 h-8 rounded bg-primary text-dark flex items-center justify-center font-bold text-sm mb-1">
-                          {item.letraTreino}
+                {(opcaoSelecionada === 'recorrente' ? treinosRecorrentes : templates).length === 0 ? (
+                  <p className="text-light-muted text-center py-4">
+                    {opcaoSelecionada === 'recorrente' 
+                      ? 'Nenhum treino recorrente configurado' 
+                      : 'Nenhum template criado'}
+                  </p>
+                ) : (
+                  (opcaoSelecionada === 'recorrente' ? treinosRecorrentes : templates).map((item: any) => {
+                    const itemId = item.id || item.letraTreino
+                    if (!itemId || !item.nome) {
+                      return null
+                    }
+                    
+                    return (
+                      <label
+                        key={itemId}
+                        className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter"
+                      >
+                        <input
+                          type="radio"
+                          name="treino"
+                          value={itemId}
+                          checked={treinoSelecionado === itemId}
+                          onChange={() => setTreinoSelecionado(itemId)}
+                          className="w-4 h-4 text-primary"
+                        />
+                        <div className="flex-1">
+                          {item.letraTreino && (
+                            <div className="w-8 h-8 rounded bg-primary text-dark flex items-center justify-center font-bold text-sm mb-1">
+                              {item.letraTreino}
+                            </div>
+                          )}
+                          <span className="text-light font-medium">{item.nome || 'Sem nome'}</span>
+                          {item.exercicios && Array.isArray(item.exercicios) && (
+                            <p className="text-xs text-light-muted">
+                              {item.exercicios.length} exercícios
+                            </p>
+                          )}
                         </div>
-                      )}
-                      <span className="text-light font-medium">{item.nome}</span>
-                      {item.exercicios && (
-                        <p className="text-xs text-light-muted">
-                          {item.exercicios.length} exercícios
-                        </p>
-                      )}
-                    </div>
-                  </label>
-                ))}
+                      </label>
+                    )
+                  })
+                )}
               </div>
             )}
           </div>
@@ -238,9 +345,9 @@ export default function ModalTrocarTreino({
           <button
             onClick={handleAplicar}
             className="btn-primary flex-1"
-            disabled={gerando || (opcaoSelecionada !== 'ia' && opcaoSelecionada !== 'remover' && !treinoSelecionado)}
+            disabled={gerando || loading || (opcaoSelecionada !== 'ia' && opcaoSelecionada !== 'remover' && !treinoSelecionado)}
           >
-            {gerando ? 'Processando...' : 'Confirmar'}
+            {gerando ? 'Processando...' : loading ? 'Carregando...' : 'Confirmar'}
           </button>
         </div>
       </div>
