@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { TreinoCompleto } from '../types/treino.types'
 import { extrairLetraTreino, formatarTituloTreino } from '../utils/treino.utils'
 
@@ -8,6 +9,7 @@ interface PreTreinoProps {
 }
 
 export default function PreTreino({ treino, onIniciar, onGerarAlternativa }: PreTreinoProps) {
+  const [mostrarListaCompleta, setMostrarListaCompleta] = useState(false)
 
   const getGruposMusculares = () => {
     if (!treino?.exercicios) return []
@@ -112,13 +114,7 @@ export default function PreTreino({ treino, onIniciar, onGerarAlternativa }: Pre
           )}
 
           <button
-            onClick={() => {
-              // Scroll para lista completa ou mostrar modal
-              const listaElement = document.getElementById('lista-exercicios')
-              if (listaElement) {
-                listaElement.scrollIntoView({ behavior: 'smooth' })
-              }
-            }}
+            onClick={() => setMostrarListaCompleta(true)}
             className="w-full btn-secondary text-lg py-4"
           >
             Ver Lista Completa de Exercícios
@@ -145,6 +141,69 @@ export default function PreTreino({ treino, onIniciar, onGerarAlternativa }: Pre
           )}
         </div>
       </div>
+
+      {/* Modal Lista Completa de Exercícios */}
+      {mostrarListaCompleta && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
+            <div className="flex items-center justify-between mb-6 sticky top-0 bg-dark-card z-10 pb-4 border-b border-grey/20">
+              <h3 className="text-2xl font-display font-bold text-light">Lista Completa de Exercícios</h3>
+              <button
+                onClick={() => setMostrarListaCompleta(false)}
+                className="text-light-muted hover:text-light transition-colors p-2"
+                aria-label="Fechar modal"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {treino.exercicios?.map((exercicio, index) => {
+                const cargaFormatada = exercicio.carga 
+                  ? `${Math.round(exercicio.carga)} kg`
+                  : exercicio.exercicio?.equipamentoNecessario?.some((eq: string) => 
+                      eq.toLowerCase().includes('peso corporal')
+                    ) ? 'Peso Corporal' : null
+
+                return (
+                  <div key={exercicio.id} className="flex items-center gap-4 p-4 bg-dark-lighter rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-light mb-1">{exercicio.exercicio.nome}</div>
+                      <div className="flex flex-wrap gap-3 text-sm text-light-muted">
+                        <span>{exercicio.series} séries</span>
+                        <span>×</span>
+                        <span>{exercicio.repeticoes} repetições</span>
+                        {cargaFormatada && (
+                          <>
+                            <span>•</span>
+                            <span className="text-primary font-medium">{cargaFormatada}</span>
+                          </>
+                        )}
+                        {exercicio.descanso && exercicio.descanso > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>Descanso: {exercicio.descanso}s</span>
+                          </>
+                        )}
+                      </div>
+                      {exercicio.exercicio?.grupoMuscularPrincipal && (
+                        <div className="text-xs text-light-muted mt-1">
+                          {exercicio.exercicio.grupoMuscularPrincipal}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

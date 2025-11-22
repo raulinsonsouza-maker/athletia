@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import api from '../services/auth.service'
+import api from '../services/api'
 import { useToast } from '../hooks/useToast'
 import { useVibration } from '../hooks/useVibration'
 import { useAutoAdvance } from '../hooks/useAutoAdvance'
@@ -263,36 +263,22 @@ export default function TreinoDoDia() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]) // Só executar quando loading mudar (quando carregamento inicial terminar)
 
-  // Atualizar status do exercício (agora com feedback simples)
+  // Atualizar status do exercício (simplificado - sem feedback individual)
   const atualizarStatusExercicio = async (
     exercicioId: string, 
-    concluido: boolean,
-    feedbackSimples?: string,
-    aceitouAjuste?: boolean
+    concluido: boolean
   ) => {
     if (concluindoExercicio || !treino) return
     
     try {
       setConcluindoExercicio(exercicioId)
       
-      const body: any = { concluido }
-      if (feedbackSimples) {
-        body.feedbackSimples = feedbackSimples
-      }
-      if (aceitouAjuste !== undefined) {
-        body.aceitouAjuste = aceitouAjuste
-      }
-      
-      await api.post(`/treino/exercicio/${exercicioId}/concluir`, body)
+      await api.post(`/treino/exercicio/${exercicioId}/concluir`, { concluido })
       
       // Atualizar estado local
       const exerciciosAtualizados = treino.exercicios.map(ex =>
         ex.id === exercicioId 
-          ? { 
-              ...ex, 
-              concluido, 
-              feedbackSimples: (feedbackSimples as 'MUITO_FACIL' | 'NO_PONTO' | 'PESADO_DEMAIS' | null | undefined) || ex.feedbackSimples 
-            } 
+          ? { ...ex, concluido } 
           : ex
       )
       
@@ -541,8 +527,24 @@ export default function TreinoDoDia() {
           treino={treino}
           onIniciar={() => setTreinoIniciado(true)}
           onGerarAlternativa={async () => {
-            // TODO: Implementar geração de versão alternativa
-            showToast('Funcionalidade em desenvolvimento', 'info')
+            try {
+              setLoading(true)
+              const response = await api.post('/treino/versao-alternativa', {
+                treinoId: treino.id
+              })
+              
+              if (response.data?.treino) {
+                setTreino(response.data.treino)
+                showToast('Versão alternativa gerada com sucesso!', 'success')
+                // Recarregar treino para mostrar mudanças
+                carregarTreino()
+              }
+            } catch (error: any) {
+              console.error('Erro ao gerar versão alternativa:', error)
+              showToast(error.response?.data?.message || 'Erro ao gerar versão alternativa', 'error')
+            } finally {
+              setLoading(false)
+            }
           }}
         />
         <ToastContainer />

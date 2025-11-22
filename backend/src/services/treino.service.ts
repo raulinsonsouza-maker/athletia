@@ -2423,3 +2423,110 @@ export async function substituirExercicio(exercicioTreinoId: string, exercicioAl
     include: { exercicio: true }
   });
 }
+
+/**
+ * Gera versão alternativa do treino usando apenas peso corporal
+ */
+export async function gerarVersaoAlternativa(treinoId: string, userId: string): Promise<any> {
+  // Buscar treino atual
+  const treino = await prisma.treino.findUnique({
+    where: { id: treinoId },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  });
+
+  if (!treino) {
+    throw new Error('Treino não encontrado');
+  }
+
+  if (treino.userId !== userId) {
+    throw new Error('Você não tem permissão para modificar este treino');
+  }
+
+  // Buscar perfil do usuário para calcular cargas
+  const perfil = await prisma.perfil.findUnique({
+    where: { userId }
+  });
+
+  if (!perfil) {
+    throw new Error('Perfil não encontrado');
+  }
+
+  // Para cada exercício, verificar se precisa de equipamento
+  const substituicoes: Array<{ exercicioTreinoId: string; novoExercicioId: string }> = [];
+
+  for (const exercicioTreino of treino.exercicios) {
+    const exercicio = exercicioTreino.exercicio;
+    const equipamentos = exercicio.equipamentoNecessario || [];
+    
+    // Verificar se tem equipamento além de peso corporal
+    const temEquipamento = equipamentos.some((eq: string) => {
+      const eqLower = eq.toLowerCase();
+      return !eqLower.includes('peso corporal') && 
+             !eqLower.includes('corpo') &&
+             eqLower !== 'peso corporal';
+    });
+
+    // Se tem equipamento, buscar alternativa de peso corporal
+    if (temEquipamento) {
+      const alternativa = await prisma.exercicio.findFirst({
+        where: {
+          grupoMuscularPrincipal: exercicio.grupoMuscularPrincipal,
+          ativo: true,
+          id: { not: exercicio.id },
+          OR: [
+            { equipamentoNecessario: { isEmpty: true } },
+            { 
+              equipamentoNecessario: { 
+                hasSome: ['Peso Corporal', 'peso corporal', 'Corpo'] 
+              } 
+            }
+          ]
+        },
+        orderBy: { nome: 'asc' }
+      });
+
+      if (alternativa) {
+        substituicoes.push({
+          exercicioTreinoId: exercicioTreino.id,
+          novoExercicioId: alternativa.id
+        });
+      }
+    }
+  }
+
+  // Aplicar substituições
+  for (const substituicao of substituicoes) {
+    const exercicioTreino = treino.exercicios.find(ex => ex.id === substituicao.exercicioTreinoId);
+    if (exercicioTreino) {
+      // Calcular nova carga (peso corporal = null ou 0)
+      const novaCarga = null; // Peso corporal não tem carga
+
+      await prisma.exercicioTreino.update({
+        where: { id: substituicao.exercicioTreinoId },
+        data: {
+          exercicioId: substituicao.novoExercicioId,
+          carga: novaCarga,
+          observacoes: `Versão alternativa (peso corporal)`
+        }
+      });
+    }
+  }
+
+  // Buscar treino atualizado
+  const treinoAtualizado = await prisma.treino.findUnique({
+    where: { id: treinoId },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  });
+
+  return treinoAtualizado;
+}

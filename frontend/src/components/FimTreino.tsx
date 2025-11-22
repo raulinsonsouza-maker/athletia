@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { TreinoCompleto } from '../types/treino.types'
+import FeedbackSimples, { FeedbackSimples as FeedbackType } from './FeedbackSimples'
+import api from '../services/api'
 
 interface FimTreinoProps {
   treino: TreinoCompleto
@@ -9,6 +11,9 @@ interface FimTreinoProps {
 export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
   const [feedbackIA, setFeedbackIA] = useState<string>('')
   const [loadingFeedback, setLoadingFeedback] = useState(true)
+  const [mostrarFeedbackTreino, setMostrarFeedbackTreino] = useState(true)
+  const [feedbackTreinoEnviado, setFeedbackTreinoEnviado] = useState(false)
+  const [enviandoFeedback, setEnviandoFeedback] = useState(false)
 
   useEffect(() => {
     gerarFeedbackIA()
@@ -39,17 +44,35 @@ export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
   const totalExercicios = treino.exercicios.length
   const exerciciosConcluidos = treino.exercicios.filter(ex => ex.concluido).length
 
-  // Analisar feedbacks fornecidos
-  const exerciciosComFeedback = treino.exercicios.filter(ex => 
-    ex.concluido && ex.feedbackSimples
-  )
-  
-  const muitoFacil = exerciciosComFeedback.filter(ex => ex.feedbackSimples === 'MUITO_FACIL').length
-  const noPonto = exerciciosComFeedback.filter(ex => ex.feedbackSimples === 'NO_PONTO').length
-  const pesadoDemais = exerciciosComFeedback.filter(ex => ex.feedbackSimples === 'PESADO_DEMAIS').length
-  
-  // Exercícios que terão ajuste automático na próxima vez
-  const ajustesAplicados = muitoFacil + pesadoDemais
+  // Função para enviar feedback do treino completo
+  const enviarFeedbackTreino = async (feedback: FeedbackType) => {
+    try {
+      setEnviandoFeedback(true)
+      
+      // Aplicar feedback como média para todos os exercícios do treino
+      const exerciciosIds = treino.exercicios.map(ex => ex.id)
+      
+      // Enviar feedback para todos os exercícios
+      await Promise.all(
+        exerciciosIds.map(exercicioId =>
+          api.post(`/treino/exercicio/${exercicioId}/concluir`, {
+            concluido: true,
+            feedbackSimples: feedback
+          })
+        )
+      )
+      
+      setFeedbackTreinoEnviado(true)
+      setMostrarFeedbackTreino(false)
+    } catch (error: any) {
+      console.error('Erro ao enviar feedback do treino:', error)
+      // Mesmo com erro, ocultar feedback para não bloquear o usuário
+      setFeedbackTreinoEnviado(true)
+      setMostrarFeedbackTreino(false)
+    } finally {
+      setEnviandoFeedback(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-dark">
@@ -109,38 +132,34 @@ export default function FimTreino({ treino, onVoltarHome }: FimTreinoProps) {
           </div>
         </div>
 
-        {/* Feedback dos Exercícios */}
-        {exerciciosComFeedback.length > 0 && (
-          <div className="card mb-6 text-left">
-            <h3 className="text-lg font-bold text-light mb-4">Seu Feedback</h3>
-            <div className="space-y-2">
-              {muitoFacil > 0 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-2xl">😊</span>
-                  <span className="text-light-muted">
-                    <strong className="text-light">{muitoFacil}</strong> exercício{muitoFacil > 1 ? 's' : ''} muito fácil - 
-                    <span className="text-primary"> aumentaremos na próxima vez</span>
-                  </span>
-                </div>
-              )}
-              {noPonto > 0 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-2xl">👍</span>
-                  <span className="text-light-muted">
-                    <strong className="text-light">{noPonto}</strong> exercício{noPonto > 1 ? 's' : ''} no ponto certo - 
-                    <span className="text-success"> manteremos assim</span>
-                  </span>
-                </div>
-              )}
-              {pesadoDemais > 0 && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-2xl">😓</span>
-                  <span className="text-light-muted">
-                    <strong className="text-light">{pesadoDemais}</strong> exercício{pesadoDemais > 1 ? 's' : ''} pesado demais - 
-                    <span className="text-warning"> reduziremos na próxima vez</span>
-                  </span>
-                </div>
-              )}
+        {/* Feedback do Treino Completo */}
+        {mostrarFeedbackTreino && !feedbackTreinoEnviado && (
+          <div className="card mb-6">
+            <div className="text-center mb-4">
+              <h3 className="text-xl font-display font-bold text-light mb-2">
+                Como foi esse treino?
+              </h3>
+              <p className="text-light-muted text-sm">
+                Seu feedback ajuda o sistema a ajustar automaticamente todos os exercícios para a próxima vez
+              </p>
+            </div>
+            <FeedbackSimples
+              onFeedback={enviarFeedbackTreino}
+              loading={enviandoFeedback}
+            />
+          </div>
+        )}
+
+        {/* Mensagem de Confirmação */}
+        {feedbackTreinoEnviado && (
+          <div className="card bg-success/10 border-success/30 mb-6">
+            <div className="flex items-center gap-3">
+              <svg className="w-6 h-6 text-success flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-light font-medium">
+                Feedback registrado! Os ajustes serão aplicados automaticamente no próximo treino.
+              </p>
             </div>
           </div>
         )}

@@ -144,6 +144,33 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Gerar versão alternativa do treino (peso corporal)
+export const gerarVersaoAlternativa = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { treinoId } = req.body;
+
+    if (!treinoId) {
+      return res.status(400).json({
+        error: 'ID do treino é obrigatório'
+      });
+    }
+
+    const treinoAtualizado = await treinoService.gerarVersaoAlternativa(treinoId, userId);
+
+    res.json({
+      message: 'Versão alternativa gerada com sucesso',
+      treino: treinoAtualizado
+    });
+  } catch (error: any) {
+    console.error('Erro ao gerar versão alternativa:', error);
+    res.status(500).json({
+      error: 'Erro ao gerar versão alternativa',
+      message: error.message
+    });
+  }
+};
+
 // Buscar alternativas de exercício
 export const obterAlternativas = async (req: AuthRequest, res: Response) => {
   try {
