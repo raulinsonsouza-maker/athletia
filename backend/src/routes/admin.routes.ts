@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
 import multer from 'multer';
 import path from 'path';
@@ -189,7 +189,7 @@ router.delete('/exercicios/:id/gif', deletarGifExercicio);
 router.get('/gifs/status', verificarStatusGifs);
 
 // Endpoint para upload em lote de GIFs
-router.post('/gifs/bulk-upload', (req, res, next) => {
+router.post('/gifs/bulk-upload', (req: Request, res: Response, next: NextFunction) => {
   uploadGifsBulk.array('gifs', 50)(req, res, (err: any) => {
     if (err) {
       if (err instanceof multer.MulterError) {

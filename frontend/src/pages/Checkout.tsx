@@ -95,11 +95,6 @@ export default function Checkout() {
   // Calcular valores do plano selecionado
   const planoSelecionadoObj = PLANOS.find(p => p.id === planoSelecionado)
   const totalAPagar = planoSelecionadoObj?.preco || 0
-  const precoMensal = planoSelecionadoObj?.id === 'MENSAL' 
-    ? planoSelecionadoObj.preco 
-    : planoSelecionadoObj?.id === 'TRIMESTRAL' 
-      ? (planoSelecionadoObj?.preco || 0) / 3 
-      : (planoSelecionadoObj?.preco || 0) / 6
 
   const handleAtivarPlano = async () => {
     if (!user?.id) {
