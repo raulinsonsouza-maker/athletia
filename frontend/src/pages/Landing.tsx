@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 interface Depoimento {
@@ -367,6 +367,13 @@ export default function Landing() {
 
   const genderContent = getGenderContent()
 
+  // Scroll automático para o topo quando o step muda (importante para mobile)
+  useEffect(() => {
+    if (step > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [step])
+
   // Função para iniciar o onboarding
   const iniciarOnboarding = () => {
     setStep(1)
@@ -424,7 +431,7 @@ export default function Landing() {
                 >
                   Criar Meu Plano Personalizado Agora
                 </button>
-                <p className="text-sm text-light-muted">Sem cartão de crédito • Leva menos de 2 minutos</p>
+                <p className="text-sm text-light-muted">Leva menos de 2 minutos</p>
               </div>
               
               {/* Ilustração/Background */}
@@ -862,7 +869,7 @@ export default function Landing() {
             >
               Criar Meu Plano Personalizado Agora
             </button>
-            <p className="text-sm text-light-muted mb-8">Sem cartão de crédito • Comece agora mesmo</p>
+            <p className="text-sm text-light-muted mb-8">Comece agora mesmo</p>
           </div>
         </section>
 
