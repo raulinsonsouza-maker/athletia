@@ -119,7 +119,7 @@ export default function GerenciarTreinos() {
 
     try {
       setGerandoSemana(true)
-      const response = await gerarTreino(undefined, true)
+      await gerarTreino(undefined, true)
       showToast('Semana gerada com sucesso!', 'success')
       await carregarDados()
     } catch (error: any) {
