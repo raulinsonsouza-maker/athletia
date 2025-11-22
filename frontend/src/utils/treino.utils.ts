@@ -141,6 +141,71 @@ export function obterNomeTreino(treino: Treino): string {
 }
 
 /**
+ * Extrai a letra individual do treino (A, B, C, etc)
+ * Prioriza letraTreino, depois tenta extrair do tipo ou nome
+ */
+export function extrairLetraTreino(treino: Treino): string | null {
+  // Se tem letraTreino, usar diretamente
+  if (treino.letraTreino) {
+    // Se for "A-B-C", pegar apenas a primeira letra
+    if (treino.letraTreino.includes('-')) {
+      return treino.letraTreino.split('-')[0].trim()
+    }
+    return treino.letraTreino.trim()
+  }
+  
+  // Tentar extrair do tipo (ex: "A-B-C" -> "A")
+  if (treino.tipo) {
+    // Se tipo contém hífen, pegar primeira letra
+    if (treino.tipo.includes('-')) {
+      const primeiraParte = treino.tipo.split('-')[0].trim()
+      // Verificar se é uma letra única (A, B, C, etc)
+      if (/^[A-G]$/i.test(primeiraParte)) {
+        return primeiraParte.toUpperCase()
+      }
+    }
+    // Se tipo é uma letra única
+    if (/^[A-G]$/i.test(treino.tipo.trim())) {
+      return treino.tipo.trim().toUpperCase()
+    }
+  }
+  
+  // Tentar extrair do nome (ex: "Treino do Dia - A-B-C" -> "A")
+  if (treino.nome) {
+    const match = treino.nome.match(/\b([A-G])\b/i)
+    if (match) {
+      return match[1].toUpperCase()
+    }
+    // Se nome contém padrão "A-B-C", pegar primeira letra
+    const matchHifen = treino.nome.match(/\b([A-G])-[A-G]/i)
+    if (matchHifen) {
+      return matchHifen[1].toUpperCase()
+    }
+  }
+  
+  return null
+}
+
+/**
+ * Formata título do treino com letra individual
+ * Ex: "Treino do Dia - A" em vez de "Treino do Dia - A-B-C"
+ */
+export function formatarTituloTreino(treino: Treino): string {
+  const letra = extrairLetraTreino(treino)
+  
+  if (letra) {
+    return `Treino do Dia - ${letra}`
+  }
+  
+  // Fallback para nome ou tipo
+  if (treino.nome && !treino.nome.includes('A-B-C')) {
+    return treino.nome
+  }
+  
+  return 'Treino do Dia'
+}
+
+/**
  * Formata carga de exercício considerando equipamentos
  */
 export function formatarCarga(carga: number | null, equipamentos?: string[]): string {

@@ -1,4 +1,5 @@
 import { TreinoCompleto } from '../types/treino.types'
+import { extrairLetraTreino, formatarTituloTreino } from '../utils/treino.utils'
 
 interface PreTreinoProps {
   treino: TreinoCompleto
@@ -32,14 +33,14 @@ export default function PreTreino({ treino, onIniciar, onGerarAlternativa }: Pre
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="inline-block mb-4">
-            {treino.letraTreino && (
+            {extrairLetraTreino(treino) && (
               <div className="w-20 h-20 rounded-2xl bg-primary text-dark flex items-center justify-center font-bold text-4xl shadow-lg mx-auto">
-                {treino.letraTreino}
+                {extrairLetraTreino(treino)}
               </div>
             )}
           </div>
           <h1 className="text-3xl md:text-4xl font-display font-bold text-light mb-2">
-            {treino.nome || treino.letraTreino ? `Treino ${treino.letraTreino}` : 'Treino de Hoje'}
+            {formatarTituloTreino(treino)}
           </h1>
           {grupos.length > 0 && (
             <p className="text-lg text-light-muted">

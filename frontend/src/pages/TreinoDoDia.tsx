@@ -14,7 +14,7 @@ import PreTreino from '../components/PreTreino'
 import VisaoSemanalTreinos from '../components/VisaoSemanalTreinos'
 import { buscarTreinosSemanais } from '../services/treino.service'
 import { TreinoSemanal, TreinoCompleto } from '../types/treino.types'
-import { formatarCarga as formatarCargaUtil } from '../utils/treino.utils'
+import { formatarCarga as formatarCargaUtil, formatarTituloTreino } from '../utils/treino.utils'
 
 type Treino = TreinoCompleto
 
@@ -577,7 +577,7 @@ export default function TreinoDoDia() {
             
             <div className="flex-1 text-center">
               <h1 className="text-lg font-bold text-light">
-                {treino.nome || treino.letraTreino || 'Treino do Dia'}
+                {formatarTituloTreino(treino)}
               </h1>
               {treino.tempoEstimado && (
                 <p className="text-sm text-light-muted">{treino.tempoEstimado} min</p>

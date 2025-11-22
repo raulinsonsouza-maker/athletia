@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { TreinoSemanal } from '../types/treino.types'
+import { extrairLetraTreino } from '../utils/treino.utils'
 
 interface TreinosRecentProps {
   treinos: TreinoSemanal[]
@@ -92,7 +93,7 @@ export default function TreinosRecent({ treinos }: TreinosRecentProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="text-lg font-bold text-light truncate">
-                      {treino.letraTreino ? `Treino ${treino.letraTreino}` : treino.nome || treino.tipo || 'Treino'}
+                      {extrairLetraTreino(treino) ? `Treino ${extrairLetraTreino(treino)}` : treino.nome || treino.tipo || 'Treino'}
                     </h4>
                     <span className="badge-success text-xs flex items-center gap-1 flex-shrink-0">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

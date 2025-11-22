@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { TreinoSemanal } from '../types/treino.types'
+import { extrairLetraTreino } from '../utils/treino.utils'
 
 interface MinhaSemanaProps {
   treinos: TreinoSemanal[]
@@ -135,7 +136,7 @@ export default function MinhaSemana({
           <div className="space-y-1">
             {/* Tipo/Nome do treino */}
             <div className={`text-xs sm:text-sm font-bold ${textoPorStatus[status]} truncate`}>
-              {treino.letraTreino || treino.nome || treino.tipo || 'Treino'}
+              {extrairLetraTreino(treino) || treino.nome || treino.tipo || 'Treino'}
             </div>
 
             {/* Estatísticas */}

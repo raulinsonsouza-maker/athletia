@@ -36,23 +36,23 @@ export default function ExercicioAtual({
   return (
     <div className="flex flex-col items-center w-full">
       {/* Imagem/GIF do Exercício */}
-      <div className="w-full max-w-md mb-6 rounded-2xl overflow-hidden bg-dark-lighter border-2 border-primary/20">
+      <div className="w-full max-w-md mb-6 rounded-2xl overflow-hidden bg-dark-lighter border-2 border-primary/20 flex items-center justify-center min-h-[200px] max-h-[400px]">
         {exercicio.exercicio.gifUrl && !imagemErro ? (
           <img
             src={exercicio.exercicio.gifUrl}
             alt={exercicio.exercicio.nome}
-            className="w-full h-64 object-cover"
+            className="w-full h-auto max-h-[400px] object-contain"
             onError={() => setImagemErro(true)}
           />
         ) : exercicio.exercicio.imagemUrl && !imagemErro ? (
           <img
             src={exercicio.exercicio.imagemUrl}
             alt={exercicio.exercicio.nome}
-            className="w-full h-64 object-cover"
+            className="w-full h-auto max-h-[400px] object-contain"
             onError={() => setImagemErro(true)}
           />
         ) : (
-          <div className="w-full h-64 flex items-center justify-center bg-dark-lighter">
+          <div className="w-full min-h-[200px] flex items-center justify-center bg-dark-lighter">
             <svg className="w-24 h-24 text-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
