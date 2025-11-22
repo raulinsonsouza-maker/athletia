@@ -6,13 +6,17 @@ import { buscarTreinoDoDia, buscarTreinosSemanais, gerarTreino } from '../servic
 import {
   listarTreinosPersonalizados,
   listarTemplatesPersonalizados,
-  listarTreinosRecorrentes
+  listarTreinosRecorrentes,
+  deletarTreinoPersonalizado,
+  deletarTemplatePersonalizado,
+  duplicarTreinoPersonalizado
 } from '../services/treino-personalizado.service'
 import { TreinoCompleto, TreinoSemanal } from '../types/treino.types'
 import CardTreinoHoje from '../components/treino/CardTreinoHoje'
 import CalendarioSemanalInterativo from '../components/treino/CalendarioSemanalInterativo'
 import ModalTrocarTreino from '../components/treino/ModalTrocarTreino'
 import ModalAplicarTreino from '../components/treino/ModalAplicarTreino'
+import ModalDuplicarTreino from '../components/treino/ModalDuplicarTreino'
 
 export default function GerenciarTreinos() {
   const navigate = useNavigate()
@@ -32,6 +36,9 @@ export default function GerenciarTreinos() {
   const [diaSelecionado, setDiaSelecionado] = useState<Date | null>(null)
   const [mostrarModalAplicarTreino, setMostrarModalAplicarTreino] = useState(false)
   const [treinoParaAplicar, setTreinoParaAplicar] = useState<{ tipo: 'recorrente' | 'template' | 'personalizado', id: string, nome: string } | null>(null)
+  const [mostrarModalDuplicar, setMostrarModalDuplicar] = useState(false)
+  const [treinoParaDuplicar, setTreinoParaDuplicar] = useState<{ id: string, nome: string } | null>(null)
+  const [deletando, setDeletando] = useState<string | null>(null)
 
   // Aba ativa para "Meus Treinos"
   const [abaAtiva, setAbaAtiva] = useState<'personalizados' | 'templates' | 'recorrentes'>('personalizados')
@@ -89,6 +96,62 @@ export default function GerenciarTreinos() {
     setMostrarModalTrocarTreino(true)
   }
 
+  const handleDeletarTreino = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja deletar este treino?')) {
+      return
+    }
+
+    try {
+      setDeletando(id)
+      await deletarTreinoPersonalizado(id)
+      showToast('Treino deletado com sucesso!', 'success')
+      await carregarDados()
+    } catch (error: any) {
+      console.error('Erro ao deletar treino:', error)
+      showToast(error.response?.data?.message || 'Erro ao deletar treino', 'error')
+    } finally {
+      setDeletando(null)
+    }
+  }
+
+  const handleDeletarTemplate = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja deletar este template?')) {
+      return
+    }
+
+    try {
+      setDeletando(id)
+      await deletarTemplatePersonalizado(id)
+      showToast('Template deletado com sucesso!', 'success')
+      await carregarDados()
+    } catch (error: any) {
+      console.error('Erro ao deletar template:', error)
+      showToast(error.response?.data?.message || 'Erro ao deletar template', 'error')
+    } finally {
+      setDeletando(null)
+    }
+  }
+
+  const handleDuplicarTreino = (id: string, nome: string) => {
+    setTreinoParaDuplicar({ id, nome })
+    setMostrarModalDuplicar(true)
+  }
+
+  const handleConfirmarDuplicar = async (data: string) => {
+    if (!treinoParaDuplicar) return
+
+    try {
+      await duplicarTreinoPersonalizado(treinoParaDuplicar.id, data)
+      showToast('Treino duplicado com sucesso!', 'success')
+      setMostrarModalDuplicar(false)
+      setTreinoParaDuplicar(null)
+      await carregarDados()
+    } catch (error: any) {
+      console.error('Erro ao duplicar treino:', error)
+      showToast(error.response?.data?.message || 'Erro ao duplicar treino', 'error')
+    }
+  }
+
 
   if (loading) {
     return (
@@ -130,7 +193,7 @@ export default function GerenciarTreinos() {
               treinos={treinosSemanais}
               treinoHojeId={treinoHoje?.id}
               onTrocarTreino={handleTrocarTreino}
-              onTreinoClick={(treino) => navigate(`/treino/${treino.id}`)}
+              onTreinoClick={(treino) => navigate('/treino')}
             />
           </div>
         </div>
@@ -226,25 +289,60 @@ export default function GerenciarTreinos() {
                     {treinosPersonalizados.map((treino: any) => (
                       <div key={treino.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-bold text-light">{treino.nome}</h4>
                             <p className="text-sm text-light-muted">
                               {new Date(treino.data).toLocaleDateString('pt-BR')}
                             </p>
                           </div>
-                          <button
-                            onClick={() => {
-                              setTreinoParaAplicar({
-                                tipo: 'personalizado',
-                                id: treino.id,
-                                nome: treino.nome
-                              })
-                              setMostrarModalAplicarTreino(true)
-                            }}
-                            className="btn-secondary text-sm"
-                          >
-                            Aplicar
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setTreinoParaAplicar({
+                                  tipo: 'personalizado',
+                                  id: treino.id,
+                                  nome: treino.nome
+                                })
+                                setMostrarModalAplicarTreino(true)
+                              }}
+                              className="btn-secondary text-sm"
+                              title="Aplicar em outra data"
+                            >
+                              Aplicar
+                            </button>
+                            <button
+                              onClick={() => handleDuplicarTreino(treino.id, treino.nome)}
+                              className="btn-secondary text-sm"
+                              title="Duplicar treino"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => navigate(`/meus-treinos?edit=${treino.id}`)}
+                              className="btn-secondary text-sm"
+                              title="Editar treino"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeletarTreino(treino.id)}
+                              disabled={deletando === treino.id}
+                              className="btn-secondary text-sm text-red-400 hover:text-red-300"
+                              title="Deletar treino"
+                            >
+                              {deletando === treino.id ? (
+                                <div className="spinner w-4 h-4"></div>
+                              ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -262,25 +360,51 @@ export default function GerenciarTreinos() {
                     {templates.map((template: any) => (
                       <div key={template.id} className="p-4 bg-dark-lighter rounded-lg border border-grey/20">
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <h4 className="font-bold text-light">{template.nome}</h4>
                             <p className="text-sm text-light-muted">
                               {template.exercicios?.length || 0} exercícios
                             </p>
                           </div>
-                          <button
-                            onClick={() => {
-                              setTreinoParaAplicar({
-                                tipo: 'template',
-                                id: template.id,
-                                nome: template.nome
-                              })
-                              setMostrarModalAplicarTreino(true)
-                            }}
-                            className="btn-secondary text-sm"
-                          >
-                            Aplicar
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setTreinoParaAplicar({
+                                  tipo: 'template',
+                                  id: template.id,
+                                  nome: template.nome
+                                })
+                                setMostrarModalAplicarTreino(true)
+                              }}
+                              className="btn-secondary text-sm"
+                              title="Aplicar template"
+                            >
+                              Aplicar
+                            </button>
+                            <button
+                              onClick={() => navigate(`/meus-treinos?editTemplate=${template.id}`)}
+                              className="btn-secondary text-sm"
+                              title="Editar template"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleDeletarTemplate(template.id)}
+                              disabled={deletando === template.id}
+                              className="btn-secondary text-sm text-red-400 hover:text-red-300"
+                              title="Deletar template"
+                            >
+                              {deletando === template.id ? (
+                                <div className="spinner w-4 h-4"></div>
+                              ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              )}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -301,19 +425,31 @@ export default function GerenciarTreinos() {
                           <div className="w-12 h-12 rounded-lg bg-primary text-dark flex items-center justify-center font-bold text-2xl">
                             {treino.letraTreino}
                           </div>
-                          <button
-                            onClick={() => {
-                              setTreinoParaAplicar({
-                                tipo: 'recorrente',
-                                id: treino.letraTreino,
-                                nome: treino.nome
-                              })
-                              setMostrarModalAplicarTreino(true)
-                            }}
-                            className="btn-secondary text-sm"
-                          >
-                            Aplicar
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setTreinoParaAplicar({
+                                  tipo: 'recorrente',
+                                  id: treino.letraTreino,
+                                  nome: treino.nome
+                                })
+                                setMostrarModalAplicarTreino(true)
+                              }}
+                              className="btn-secondary text-sm"
+                              title="Aplicar treino recorrente"
+                            >
+                              Aplicar
+                            </button>
+                            <button
+                              onClick={() => navigate(`/treinos-recorrentes?edit=${treino.letraTreino}`)}
+                              className="btn-secondary text-sm"
+                              title="Editar treino recorrente"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                         <h4 className="font-bold text-light mb-1">{treino.nome}</h4>
                         <p className="text-sm text-light-muted">
@@ -354,6 +490,18 @@ export default function GerenciarTreinos() {
             onSuccess={() => {
               carregarDados()
             }}
+          />
+        )}
+
+        {mostrarModalDuplicar && treinoParaDuplicar && (
+          <ModalDuplicarTreino
+            treinoId={treinoParaDuplicar.id}
+            treinoNome={treinoParaDuplicar.nome}
+            onClose={() => {
+              setMostrarModalDuplicar(false)
+              setTreinoParaDuplicar(null)
+            }}
+            onConfirm={handleConfirmarDuplicar}
           />
         )}
       </main>

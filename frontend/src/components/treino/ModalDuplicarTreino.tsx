@@ -1,65 +1,36 @@
 import { useState } from 'react'
-import {
-  aplicarTreinoRecorrente,
-  aplicarTemplatePersonalizado,
-  duplicarTreinoPersonalizado
-} from '../../services/treino-personalizado.service'
 import { useToast } from '../../hooks/useToast'
 
-interface ModalAplicarTreinoProps {
-  tipo: 'recorrente' | 'template' | 'personalizado'
+interface ModalDuplicarTreinoProps {
   treinoId: string
   treinoNome: string
   onClose: () => void
-  onSuccess: () => void
+  onConfirm: (data: string) => void
 }
 
-export default function ModalAplicarTreino({
-  tipo,
+export default function ModalDuplicarTreino({
   treinoId,
   treinoNome,
   onClose,
-  onSuccess
-}: ModalAplicarTreinoProps) {
+  onConfirm
+}: ModalDuplicarTreinoProps) {
   const [data, setData] = useState(new Date().toISOString().split('T')[0])
-  const [aplicando, setAplicando] = useState(false)
   const { showToast, ToastContainer } = useToast()
 
-  const handleAplicar = async () => {
+  const handleConfirmar = () => {
     if (!data) {
       showToast('Selecione uma data', 'error')
       return
     }
 
-    try {
-      setAplicando(true)
-      
-      if (tipo === 'recorrente') {
-        await aplicarTreinoRecorrente(treinoId, data)
-        showToast('Treino recorrente aplicado com sucesso!', 'success')
-      } else if (tipo === 'template') {
-        await aplicarTemplatePersonalizado(treinoId, data)
-        showToast('Template aplicado com sucesso!', 'success')
-      } else if (tipo === 'personalizado') {
-        await duplicarTreinoPersonalizado(treinoId, data)
-        showToast('Treino duplicado com sucesso!', 'success')
-      }
-
-      onSuccess()
-      onClose()
-    } catch (error: any) {
-      console.error('Erro ao aplicar treino:', error)
-      showToast(error.response?.data?.message || 'Erro ao aplicar treino', 'error')
-    } finally {
-      setAplicando(false)
-    }
+    onConfirm(data)
   }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="card max-w-md w-full">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-light">Aplicar Treino</h3>
+          <h3 className="text-xl font-bold text-light">Duplicar Treino</h3>
           <button
             onClick={onClose}
             className="text-light-muted hover:text-light"
@@ -76,7 +47,7 @@ export default function ModalAplicarTreino({
         </div>
 
         <div className="mb-6">
-          <label className="block text-light mb-2">Data:</label>
+          <label className="block text-light mb-2">Data para duplicar:</label>
           <input
             type="date"
             value={data}
@@ -90,16 +61,14 @@ export default function ModalAplicarTreino({
           <button
             onClick={onClose}
             className="btn-secondary flex-1"
-            disabled={aplicando}
           >
             Cancelar
           </button>
           <button
-            onClick={handleAplicar}
+            onClick={handleConfirmar}
             className="btn-primary flex-1"
-            disabled={aplicando}
           >
-            {aplicando ? 'Aplicando...' : 'Aplicar'}
+            Duplicar
           </button>
         </div>
       </div>

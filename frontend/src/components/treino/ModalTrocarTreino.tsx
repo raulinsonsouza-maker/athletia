@@ -8,6 +8,7 @@ import {
   aplicarTemplatePersonalizado
 } from '../../services/treino-personalizado.service'
 import { gerarTreino } from '../../services/treino.service'
+import { useToast } from '../../hooks/useToast'
 import api from '../../services/auth.service'
 
 interface ModalTrocarTreinoProps {
@@ -27,6 +28,7 @@ export default function ModalTrocarTreino({
   const [treinoSelecionado, setTreinoSelecionado] = useState<string | null>(null)
   const [gerando, setGerando] = useState(false)
   const [loading, setLoading] = useState(true)
+  const { showToast, ToastContainer } = useToast()
 
   useEffect(() => {
     carregarOpcoes()
@@ -63,12 +65,20 @@ export default function ModalTrocarTreino({
         const treinos = response.data || []
         
         if (treinos.length === 0) {
-          alert('Nenhum treino encontrado para esta data')
+          showToast('Nenhum treino encontrado para esta data', 'warning')
+          return
+        }
+        
+        // Verificar se o treino é personalizado antes de deletar
+        const treino = treinos[0]
+        if (treino.criadoPor !== 'USUARIO') {
+          showToast('Apenas treinos personalizados podem ser removidos', 'error')
           return
         }
         
         // Deletar o primeiro treino encontrado (deve haver apenas um por data)
-        await api.delete(`/treino/personalizado/${treinos[0].id}`)
+        await api.delete(`/treino/personalizado/${treino.id}`)
+        showToast('Treino removido com sucesso!', 'success')
         onSuccess()
         onClose()
         return
@@ -77,27 +87,30 @@ export default function ModalTrocarTreino({
       if (opcaoSelecionada === 'ia') {
         setGerando(true)
         await gerarTreino(dataStr, false)
+        showToast('Treino gerado com sucesso!', 'success')
         onSuccess()
         onClose()
         return
       }
 
       if (!treinoSelecionado) {
-        alert('Selecione um treino')
+        showToast('Selecione um treino', 'warning')
         return
       }
 
       if (opcaoSelecionada === 'recorrente') {
         await aplicarTreinoRecorrente(treinoSelecionado, dataStr)
+        showToast('Treino recorrente aplicado com sucesso!', 'success')
       } else if (opcaoSelecionada === 'template') {
         await aplicarTemplatePersonalizado(treinoSelecionado, dataStr)
+        showToast('Template aplicado com sucesso!', 'success')
       }
 
       onSuccess()
       onClose()
     } catch (error: any) {
       console.error('Erro ao aplicar treino:', error)
-      alert(error.response?.data?.message || 'Erro ao aplicar treino')
+      showToast(error.response?.data?.message || 'Erro ao aplicar treino', 'error')
     } finally {
       setGerando(false)
     }
@@ -231,6 +244,7 @@ export default function ModalTrocarTreino({
           </button>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }
