@@ -32,8 +32,6 @@ export default function GerenciarTreinos() {
   const [diaSelecionado, setDiaSelecionado] = useState<Date | null>(null)
   const [mostrarModalAplicarTreino, setMostrarModalAplicarTreino] = useState(false)
   const [treinoParaAplicar, setTreinoParaAplicar] = useState<{ tipo: 'recorrente' | 'template' | 'personalizado', id: string, nome: string } | null>(null)
-  const [mostrarModalCriarTreino, setMostrarModalCriarTreino] = useState(false)
-  const [mostrarModalGerenciarAG, setMostrarModalGerenciarAG] = useState(false)
 
   // Aba ativa para "Meus Treinos"
   const [abaAtiva, setAbaAtiva] = useState<'personalizados' | 'templates' | 'recorrentes'>('personalizados')
@@ -84,6 +82,11 @@ export default function GerenciarTreinos() {
     } finally {
       setGerandoSemana(false)
     }
+  }
+
+  const handleTrocarTreino = (data: Date) => {
+    setDiaSelecionado(data)
+    setMostrarModalTrocarTreino(true)
   }
 
 
@@ -148,7 +151,7 @@ export default function GerenciarTreinos() {
               {gerandoSemana && <span className="text-sm">Gerando...</span>}
             </button>
             <button
-              onClick={() => setMostrarModalCriarTreino(true)}
+              onClick={() => navigate('/meus-treinos')}
               className="btn-secondary p-6 text-center flex flex-col items-center gap-2"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,7 +160,7 @@ export default function GerenciarTreinos() {
               <span className="font-bold">Criar Treino</span>
             </button>
             <button
-              onClick={() => setMostrarModalGerenciarAG(true)}
+              onClick={() => navigate('/treinos-recorrentes')}
               className="btn-secondary p-6 text-center flex flex-col items-center gap-2"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
