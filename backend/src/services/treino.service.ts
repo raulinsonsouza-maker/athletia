@@ -2316,79 +2316,66 @@ export async function concluirExercicio(
   concluido: boolean = true
 ): Promise<any> {
   try {
-    console.log(`[concluirExercicio] Iniciando - exercicioTreinoId: ${exercicioTreinoId}, userId: ${userId}, concluido: ${concluido}`);
-    
-    // Validar se o exercício existe e pertence ao usuário
-    const exercicioTreinoExistente = await prisma.exercicioTreino.findUnique({
+    // Buscar exercício para obter treinoId - validação mínima
+    const exercicioExistente = await prisma.exercicioTreino.findUnique({
       where: { id: exercicioTreinoId },
       select: {
-        id: true,
-        treinoId: true,
-        treino: {
-          select: {
-            userId: true
-          }
-        }
+        treinoId: true
       }
     });
 
-    if (!exercicioTreinoExistente) {
+    if (!exercicioExistente) {
       throw new Error('Exercício não encontrado');
     }
 
-    if (!exercicioTreinoExistente.treino) {
-      throw new Error('Treino não encontrado para este exercício');
+    const treinoId = exercicioExistente.treinoId;
+
+    // Validar permissão se userId fornecido (busca separada)
+    if (userId) {
+      const treino = await prisma.treino.findUnique({
+        where: { id: treinoId },
+        select: { userId: true }
+      });
+      
+      if (!treino || treino.userId !== userId) {
+        throw new Error('Sem permissão para modificar este exercício');
+      }
     }
 
-    // Validar permissão
-    if (userId && exercicioTreinoExistente.treino.userId !== userId) {
-      throw new Error('Você não tem permissão para modificar este exercício');
-    }
-
-    // Construir dados de atualização de forma simples
-    const dadosAtualizacao: any = {
-      concluido: concluido
-    };
+    // Preparar dados de atualização
+    const updateData: any = { concluido };
     
     if (concluido) {
       if (feedbackSimples) {
-        dadosAtualizacao.feedbackSimples = feedbackSimples;
-        dadosAtualizacao.rpe = null;
+        updateData.feedbackSimples = feedbackSimples;
+        updateData.rpe = null;
       } else if (rpeRealizado) {
-        dadosAtualizacao.rpe = rpeRealizado;
-        dadosAtualizacao.feedbackSimples = null;
+        updateData.rpe = rpeRealizado;
+        updateData.feedbackSimples = null;
       }
-      
       if (aceitouAjuste !== undefined) {
-        dadosAtualizacao.aceitouAjuste = aceitouAjuste;
+        updateData.aceitouAjuste = aceitouAjuste;
       }
     } else {
-      dadosAtualizacao.rpe = null;
-      dadosAtualizacao.feedbackSimples = null;
-      dadosAtualizacao.aceitouAjuste = null;
+      updateData.rpe = null;
+      updateData.feedbackSimples = null;
+      updateData.aceitouAjuste = null;
     }
-    
-    // Atualizar exercício - usar treinoId da validação anterior
-    const treinoId = exercicioTreinoExistente.treinoId;
-    
-    const exercicioTreino = await prisma.exercicioTreino.update({
+
+    // Atualizar exercício
+    await prisma.exercicioTreino.update({
       where: { id: exercicioTreinoId },
-      data: dadosAtualizacao,
-      include: { 
-        exercicio: true
-      }
+      data: updateData
     });
 
-    // Atualizar status do treino se necessário
+    // Atualizar status do treino (não crítico)
     try {
       const treino = await prisma.treino.findUnique({
         where: { id: treinoId },
         select: {
           id: true,
           exercicios: {
-            select: {
-              concluido: true
-            }
+            select: { concluido: true }
           }
         }
       });
@@ -2400,27 +2387,26 @@ export async function concluirExercicio(
           data: { concluido: todosConcluidos }
         });
       }
-    } catch (error: any) {
-      console.error('[concluirExercicio] Erro ao atualizar status do treino (não crítico):', error.message);
+    } catch (err: any) {
+      // Ignorar erro na atualização do treino
+      console.warn('[concluirExercicio] Erro ao atualizar treino (ignorado):', err.message);
     }
 
-    // Retornar exercício com treino incluído para compatibilidade
-    return await prisma.exercicioTreino.findUnique({
+    // Retornar exercício atualizado - apenas com exercicio, sem treino
+    const exercicioAtualizado = await prisma.exercicioTreino.findUnique({
       where: { id: exercicioTreinoId },
       include: {
-        exercicio: true,
-        treino: {
-          select: {
-            id: true,
-            userId: true,
-            concluido: true
-          }
-        }
+        exercicio: true
       }
     });
+
+    if (!exercicioAtualizado) {
+      throw new Error('Exercício não encontrado após atualização');
+    }
+
+    return exercicioAtualizado;
   } catch (error: any) {
-    console.error('[concluirExercicio] Erro:', error.message);
-    console.error('[concluirExercicio] Stack:', error.stack);
+    console.error('[concluirExercicio] Erro:', error);
     throw error;
   }
 }
