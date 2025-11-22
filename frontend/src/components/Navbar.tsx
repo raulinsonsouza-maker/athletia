@@ -47,6 +47,7 @@ export default function Navbar({ title, showBack = false, backPath, onBack }: Na
     const titles: Record<string, string> = {
       '/dashboard': 'Dashboard',
       '/treino': 'Meus Treinos',
+      '/gerenciar-treinos': 'Gerenciar Treinos',
       '/historico': 'Histórico',
       '/estatisticas': 'Estatísticas',
       '/evolucao-peso': 'Evolução de Peso',

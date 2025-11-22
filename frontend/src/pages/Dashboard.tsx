@@ -142,6 +142,26 @@ export default function Dashboard() {
           treinoHoje={resumo.treinoHoje}
         />
 
+        {/* 1.5. Card de Acesso Rápido - Gerenciar Treinos */}
+        <div className="mb-8">
+          <div className="card bg-gradient-to-br from-primary/10 to-dark-lighter border border-primary/20 p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-light mb-2">Gerenciar Treinos</h3>
+                <p className="text-light-muted text-sm">
+                  Configure seus treinos, crie novos e organize sua semana
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/gerenciar-treinos')}
+                className="btn-primary px-6 py-3 whitespace-nowrap"
+              >
+                Gerenciar
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* 2. Mensagem Motivacional */}
         <MensagemMotivacional mensagem={resumo.mensagemMotivacional} />
 
