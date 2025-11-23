@@ -130,15 +130,18 @@ export default function ModalTrocarTreino({
       if (opcaoSelecionada === 'ia') {
         setGerando(true)
         try {
-          console.log('Gerando treino para data:', dataStr)
-          const resultado = await gerarTreino(dataStr, false)
+          // Garantir que a data está no formato correto (YYYY-MM-DD)
+          const dataFormatada = data.toISOString().split('T')[0]
+          console.log('Gerando treino para data:', dataFormatada)
+          
+          const resultado = await gerarTreino(dataFormatada, false)
           console.log('Treino gerado com sucesso:', resultado)
           showToast('Treino gerado com sucesso!', 'success')
           // Aguardar um pouco antes de fechar para garantir que o treino foi salvo
           setTimeout(() => {
             onSuccess()
             onClose()
-          }, 500)
+          }, 1000)
         } catch (err: any) {
           console.error('Erro ao gerar treino:', err)
           console.error('Detalhes do erro:', {

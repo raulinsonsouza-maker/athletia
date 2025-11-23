@@ -93,9 +93,14 @@ export default function GerenciarTreinos() {
       setTreinoHoje(treinoHojeRes)
       setTreinosSemanais(Array.isArray(treinosSemanaRes?.treinos) ? treinosSemanaRes.treinos : [])
       
-      // Validar formato de treinos personalizados
+      // Validar formato de treinos personalizados e remover duplicatas
       const treinosPers = treinosPersRes?.treinos || treinosPersRes || []
-      setTreinosPersonalizados(Array.isArray(treinosPers) ? treinosPers : [])
+      const treinosArray = Array.isArray(treinosPers) ? treinosPers : []
+      // Remover duplicatas baseado no ID
+      const treinosUnicos = treinosArray.filter((treino: any, index: number, self: any[]) => 
+        treino && treino.id && index === self.findIndex((t: any) => t && t.id === treino.id)
+      )
+      setTreinosPersonalizados(treinosUnicos)
       
       // Validar formato de templates
       const templatesData = templatesRes?.templates || templatesRes || []

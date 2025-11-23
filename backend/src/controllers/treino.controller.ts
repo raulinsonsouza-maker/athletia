@@ -34,7 +34,23 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const dataTreino = data ? new Date(data) : new Date();
+    // Garantir que a data está no formato correto
+    let dataTreino: Date;
+    if (data) {
+      // Se a data vem como string YYYY-MM-DD, criar Date corretamente
+      if (typeof data === 'string') {
+        dataTreino = new Date(data + 'T00:00:00.000Z');
+      } else {
+        dataTreino = new Date(data);
+      }
+      // Garantir que a data está no início do dia
+      dataTreino.setUTCHours(0, 0, 0, 0);
+    } else {
+      dataTreino = new Date();
+      dataTreino.setUTCHours(0, 0, 0, 0);
+    }
+    
+    console.log('📅 Gerando treino para data:', dataTreino.toISOString());
     const treino = await treinoService.gerarTreinoDoDia(userId, dataTreino);
 
     res.status(201).json({
