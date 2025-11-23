@@ -37,7 +37,6 @@ export default function Estatisticas() {
   const [historico, setHistorico] = useState<TreinoHistorico[]>([])
   const [loading, setLoading] = useState(true)
   const [periodo, setPeriodo] = useState(30)
-  const [usuarioNome, setUsuarioNome] = useState('')
 
   useEffect(() => {
     carregarDados()
@@ -46,10 +45,6 @@ export default function Estatisticas() {
   const carregarDados = async () => {
     try {
       setLoading(true)
-      
-      // Buscar nome do usuário
-      const userResponse = await api.get('/user')
-      setUsuarioNome(userResponse.data?.nome || '')
       
       // Buscar estatísticas e histórico
       const [statsResponse, historicoResponse] = await Promise.all([
@@ -421,7 +416,6 @@ export default function Estatisticas() {
                       data: volumePorSemana.map(([_, volume]) => Math.round(volume)),
                       borderColor: 'rgba(255, 152, 0, 1)',
                       backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                      fill: true,
                     }]
                   }}
                 />

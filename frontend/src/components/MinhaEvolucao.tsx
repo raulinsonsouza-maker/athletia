@@ -50,7 +50,7 @@ export default function MinhaEvolucao({ evolucao, sequencia, totalTreinos = 0 }:
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Peso Corporal - Só mostrar se houver mudança significativa */}
-        {temPeso && (
+        {temPeso && evolucao.peso.atual && (
           <div className="card bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30">
             <div className="text-xs text-light-muted uppercase tracking-wider mb-2">Peso Corporal</div>
             <div className="text-2xl font-bold text-primary mb-1">

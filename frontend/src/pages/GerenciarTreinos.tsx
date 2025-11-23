@@ -248,37 +248,6 @@ export default function GerenciarTreinos() {
     }
   }
 
-  const gerarTreinoHoje = async () => {
-    if (gerandoTreinoHoje) {
-      return // Prevenir múltiplas requisições
-    }
-
-    try {
-      setGerandoTreinoHoje(true)
-      const hoje = new Date().toISOString().split('T')[0]
-      await gerarTreino(hoje, false)
-      showToast('Treino do dia gerado com sucesso!', 'success')
-      await carregarDados()
-      await carregarTreinosPorPeriodo()
-    } catch (error: any) {
-      console.error('Erro ao gerar treino do dia:', error)
-      
-      // Tratar diferentes tipos de erro
-      if ((error as any).isNetworkError || !error.response) {
-        showToast('Erro de conexão. Verifique sua internet.', 'error')
-      } else if (error.response?.status === 401) {
-        showToast('Sessão expirada. Faça login novamente.', 'error')
-      } else if (error.response?.status >= 500) {
-        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
-      } else {
-        const errorMessage = error.response?.data?.message || error.message || 'Erro ao gerar treino. Tente novamente.'
-        showToast(errorMessage, 'error')
-      }
-    } finally {
-      setGerandoTreinoHoje(false)
-    }
-  }
-
   const gerarSemanaCompleta = async () => {
     if (gerandoSemana) {
       return // Prevenir múltiplas requisições

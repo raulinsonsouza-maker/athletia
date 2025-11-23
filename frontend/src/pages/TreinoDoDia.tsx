@@ -275,11 +275,6 @@ export default function TreinoDoDia() {
       }
       
       setTreino(treinoAtualizado)
-      
-      // Atualizar treinos semanais quando treino for concluído
-      if (todosConcluidos) {
-        carregarTreinosSemanais()
-      }
 
       if (concluido) {
         // Vibração de feedback
