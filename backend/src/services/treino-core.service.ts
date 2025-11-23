@@ -274,14 +274,14 @@ async function gerarTreinoDiaComIA(userId: string, data: Date): Promise<any> {
 
   // 1. Tentar usar template pré-definido primeiro
   try {
-    if (!perfil.objetivo || !perfil.experiencia) {
-      throw new Error('Perfil incompleto. Objetivo e experiência são obrigatórios.');
+    if (!perfil.objetivo || !perfil.experiencia || !perfil.frequenciaSemanal) {
+      throw new Error('Perfil incompleto. Objetivo, experiência e frequência semanal são obrigatórios.');
     }
     
     const template = await buscarTemplateAdequado(
       perfil.objetivo,
       perfil.experiencia,
-      perfil.frequenciaSemanal,
+      perfil.frequenciaSemanal || 3, // Valor padrão se null
       data
     );
 
