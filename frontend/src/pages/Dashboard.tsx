@@ -9,7 +9,6 @@ import MinhaSemana from '../components/MinhaSemana'
 import TreinosRecent from '../components/TreinosRecent'
 import MinhaEvolucao from '../components/MinhaEvolucao'
 import ChamadoAcao from '../components/ChamadoAcao'
-import StorytellingEvolucao from '../components/StorytellingEvolucao'
 import Conquistas from '../components/Conquistas'
 import MensagemMotivacional from '../components/MensagemMotivacional'
 import { useToast } from '../hooks/useToast'
@@ -192,10 +191,14 @@ export default function Dashboard() {
           <TreinosRecent treinos={resumo.treinosRecent} />
         )}
 
-        {/* 5. Minha Evolução - Cards Resumidos */}
+        {/* 5. Minha Evolução - Cards Unificados */}
         <MinhaEvolucao
-          evolucao={resumo.evolucao}
+          evolucao={{
+            ...resumo.evolucao,
+            totalTreinosMes: resumo.evolucao.totalTreinosMes
+          }}
           sequencia={resumo.sequencia}
+          totalTreinos={resumo.estatisticas.totalTreinos}
         />
 
         {/* 6. Chamado para Ação (IA) */}
@@ -203,14 +206,6 @@ export default function Dashboard() {
           mensagem={resumo.mensagemMotivacional}
           progressoSemanal={resumo.progressoSemanal}
           sequencia={resumo.sequencia}
-        />
-
-        {/* 7. Performance - Storytelling de Evolução */}
-        <StorytellingEvolucao
-          evolucaoPeso={resumo.evolucao.peso}
-          totalTreinosMes={resumo.evolucao.totalTreinosMes}
-          semanasSeguidas={resumo.evolucao.semanasSeguidas}
-          totalTreinos={resumo.estatisticas.totalTreinos}
         />
 
         {/* 8. Conquistas - Preview */}

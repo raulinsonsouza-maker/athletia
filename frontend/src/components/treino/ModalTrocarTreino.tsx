@@ -1,12 +1,5 @@
-import { useState, useEffect } from 'react'
-import {
-  listarTreinosRecorrentes,
-  aplicarTreinoRecorrente
-} from '../../services/treino-personalizado.service'
-import {
-  listarTemplatesPersonalizados,
-  aplicarTemplatePersonalizado
-} from '../../services/treino-personalizado.service'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { gerarTreino } from '../../services/treino.service'
 import { useToast } from '../../hooks/useToast'
 import api from '../../services/auth.service'
@@ -22,51 +15,11 @@ export default function ModalTrocarTreino({
   onClose,
   onSuccess
 }: ModalTrocarTreinoProps) {
-  const [opcaoSelecionada, setOpcaoSelecionada] = useState<'recorrente' | 'template' | 'ia' | 'remover'>('recorrente')
-  const [treinosRecorrentes, setTreinosRecorrentes] = useState<any[]>([])
-  const [templates, setTemplates] = useState<any[]>([])
-  const [treinoSelecionado, setTreinoSelecionado] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const [opcaoSelecionada, setOpcaoSelecionada] = useState<'ia' | 'criar' | 'remover'>('ia')
   const [gerando, setGerando] = useState(false)
-  const [loading, setLoading] = useState(true)
   const { showToast, ToastContainer } = useToast()
 
-  // Resetar treino selecionado quando mudar de opção
-  useEffect(() => {
-    if (opcaoSelecionada === 'ia' || opcaoSelecionada === 'remover') {
-      setTreinoSelecionado(null)
-    }
-  }, [opcaoSelecionada])
-
-  useEffect(() => {
-    carregarOpcoes()
-  }, [])
-
-  const carregarOpcoes = async () => {
-    try {
-      setLoading(true)
-      const [recorrentesRes, templatesRes] = await Promise.all([
-        listarTreinosRecorrentes().catch((err) => {
-          console.error('Erro ao listar treinos recorrentes:', err)
-          return { treinos: [] }
-        }),
-        listarTemplatesPersonalizados().catch((err) => {
-          console.error('Erro ao listar templates:', err)
-          return { templates: [] }
-        })
-      ])
-      
-      // Filtrar nulls e validar formato
-      const recorrentes = recorrentesRes?.treinos || recorrentesRes || []
-      setTreinosRecorrentes(Array.isArray(recorrentes) ? recorrentes.filter((t: any) => t !== null && t !== undefined) : [])
-      
-      const templates = templatesRes?.templates || templatesRes || []
-      setTemplates(Array.isArray(templates) ? templates : [])
-    } catch (error) {
-      console.error('Erro ao carregar opções:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleAplicar = async () => {
     if (gerando) {
@@ -75,6 +28,13 @@ export default function ModalTrocarTreino({
 
     try {
       const dataStr = data.toISOString().split('T')[0]
+
+      if (opcaoSelecionada === 'criar') {
+        // Navegar para página de criar treino com a data pré-selecionada
+        onClose()
+        navigate(`/treinos-recorrentes?data=${dataStr}`)
+        return
+      }
 
       if (opcaoSelecionada === 'remover') {
         setGerando(true)
@@ -176,53 +136,6 @@ export default function ModalTrocarTreino({
         return
       }
 
-      // Validar treino selecionado apenas para opções que precisam
-      if ((opcaoSelecionada === 'recorrente' || opcaoSelecionada === 'template') && !treinoSelecionado) {
-        showToast('Selecione um treino', 'warning')
-        return
-      }
-
-      setGerando(true)
-      try {
-        if (opcaoSelecionada === 'recorrente') {
-          if (!treinoSelecionado) {
-            showToast('Selecione um treino recorrente', 'error')
-            setGerando(false)
-            return
-          }
-          await aplicarTreinoRecorrente(treinoSelecionado, dataStr)
-          showToast('Treino recorrente aplicado com sucesso!', 'success')
-        } else if (opcaoSelecionada === 'template') {
-          if (!treinoSelecionado) {
-            showToast('Selecione um template', 'error')
-            setGerando(false)
-            return
-          }
-          await aplicarTemplatePersonalizado(treinoSelecionado, dataStr)
-          showToast('Template aplicado com sucesso!', 'success')
-        }
-
-        await onSuccess()
-        onClose()
-      } catch (err: any) {
-        console.error('Erro ao aplicar treino:', err)
-        
-        // Tratar diferentes tipos de erro
-        if ((err as any).isNetworkError || !err.response) {
-          showToast('Erro de conexão. Verifique sua internet.', 'error')
-        } else if (err.response?.status === 401) {
-          showToast('Sessão expirada. Faça login novamente.', 'error')
-        } else if (err.response?.status === 404) {
-          showToast('Treino não encontrado', 'error')
-        } else if (err.response?.status >= 500) {
-          showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
-        } else {
-          const errorMessage = err.response?.data?.message || err.message || 'Erro ao aplicar treino'
-          showToast(errorMessage, 'error')
-        }
-      } finally {
-        setGerando(false)
-      }
     } catch (error: any) {
       console.error('Erro inesperado:', error)
       
@@ -267,123 +180,104 @@ export default function ModalTrocarTreino({
           Data: {data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
-        {/* Opções */}
+        {/* Opções Simplificadas */}
         <div className="space-y-3 mb-6">
-          <label className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter">
-            <input
-              type="radio"
-              name="opcao"
-              value="recorrente"
-              checked={opcaoSelecionada === 'recorrente'}
-              onChange={() => {
-                setOpcaoSelecionada('recorrente')
-                setTreinoSelecionado(null)
-              }}
-              className="w-4 h-4 text-primary"
-            />
-            <span className="text-light">Aplicar treino recorrente (A, B, C...)</span>
-          </label>
-
-          <label className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter">
-            <input
-              type="radio"
-              name="opcao"
-              value="template"
-              checked={opcaoSelecionada === 'template'}
-              onChange={() => {
-                setOpcaoSelecionada('template')
-                setTreinoSelecionado(null)
-              }}
-              className="w-4 h-4 text-primary"
-            />
-            <span className="text-light">Aplicar template personalizado</span>
-          </label>
-
-          <label className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter">
-            <input
-              type="radio"
-              name="opcao"
-              value="ia"
-              checked={opcaoSelecionada === 'ia'}
-              onChange={() => {
-                setOpcaoSelecionada('ia')
-                setTreinoSelecionado(null)
-              }}
-              className="w-4 h-4 text-primary"
-            />
-            <span className="text-light">Gerar novo treino com IA</span>
-          </label>
-
-          <label className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter">
-            <input
-              type="radio"
-              name="opcao"
-              value="remover"
-              checked={opcaoSelecionada === 'remover'}
-              onChange={() => {
-                setOpcaoSelecionada('remover')
-                setTreinoSelecionado(null)
-              }}
-              className="w-4 h-4 text-primary"
-            />
-            <span className="text-light">Remover treino</span>
-          </label>
-        </div>
-
-        {/* Seleção de treino */}
-        {(opcaoSelecionada === 'recorrente' || opcaoSelecionada === 'template') && (
-          <div className="mb-6">
-            {loading ? (
-              <p className="text-light-muted text-center py-4">Carregando...</p>
-            ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {(opcaoSelecionada === 'recorrente' ? treinosRecorrentes : templates).length === 0 ? (
-                  <p className="text-light-muted text-center py-4">
-                    {opcaoSelecionada === 'recorrente' 
-                      ? 'Nenhum treino recorrente configurado' 
-                      : 'Nenhum template criado'}
-                  </p>
-                ) : (
-                  (opcaoSelecionada === 'recorrente' ? treinosRecorrentes : templates).map((item: any) => {
-                    const itemId = item.id || item.letraTreino
-                    if (!itemId || !item.nome) {
-                      return null
-                    }
-                    
-                    return (
-                      <label
-                        key={itemId}
-                        className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter"
-                      >
-                        <input
-                          type="radio"
-                          name="treino"
-                          value={itemId}
-                          checked={treinoSelecionado === itemId}
-                          onChange={() => setTreinoSelecionado(itemId)}
-                          className="w-4 h-4 text-primary"
-                        />
-                        <div className="flex-1">
-                          {item.letraTreino && (
-                            <div className="w-8 h-8 rounded bg-primary text-dark flex items-center justify-center font-bold text-sm mb-1">
-                              {item.letraTreino}
-                            </div>
-                          )}
-                          <span className="text-light font-medium">{item.nome || 'Sem nome'}</span>
-                          {item.exercicios && Array.isArray(item.exercicios) && (
-                            <p className="text-xs text-light-muted">
-                              {item.exercicios.length} exercícios
-                            </p>
-                          )}
-                        </div>
-                      </label>
-                    )
-                  })
+          <button
+            onClick={() => setOpcaoSelecionada('ia')}
+            className={`w-full p-4 border-2 rounded-lg text-left transition-all ${
+              opcaoSelecionada === 'ia'
+                ? 'border-primary bg-primary/20 text-primary'
+                : 'border-grey/20 hover:border-primary/50 text-light'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                opcaoSelecionada === 'ia' ? 'border-primary bg-primary' : 'border-grey/50'
+              }`}>
+                {opcaoSelecionada === 'ia' && (
+                  <svg className="w-3 h-3 text-light" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
                 )}
               </div>
-            )}
-          </div>
-        )}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="font-semibold">Gerar treino com IA</span>
+                </div>
+                <p className="text-sm text-light-muted">
+                  Nossa IA criará um treino personalizado para esta data baseado no seu perfil
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setOpcaoSelecionada('criar')}
+            className={`w-full p-4 border-2 rounded-lg text-left transition-all ${
+              opcaoSelecionada === 'criar'
+                ? 'border-primary bg-primary/20 text-primary'
+                : 'border-grey/20 hover:border-primary/50 text-light'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                opcaoSelecionada === 'criar' ? 'border-primary bg-primary' : 'border-grey/50'
+              }`}>
+                {opcaoSelecionada === 'criar' && (
+                  <svg className="w-3 h-3 text-light" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="font-semibold">Criar treino manualmente</span>
+                </div>
+                <p className="text-sm text-light-muted">
+                  Crie um treino personalizado escolhendo exercícios, séries e repetições
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setOpcaoSelecionada('remover')}
+            className={`w-full p-4 border-2 rounded-lg text-left transition-all ${
+              opcaoSelecionada === 'remover'
+                ? 'border-error bg-error/20 text-error'
+                : 'border-grey/20 hover:border-error/50 text-light'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                opcaoSelecionada === 'remover' ? 'border-error bg-error' : 'border-grey/50'
+              }`}>
+                {opcaoSelecionada === 'remover' && (
+                  <svg className="w-3 h-3 text-light" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  <span className="font-semibold">Remover treino</span>
+                </div>
+                <p className="text-sm text-light-muted">
+                  Remove o treino programado para esta data
+                </p>
+              </div>
+            </div>
+          </button>
+        </div>
 
         {/* Botões */}
         <div className="flex gap-3">
@@ -397,19 +291,25 @@ export default function ModalTrocarTreino({
           <button
             onClick={handleAplicar}
             className="btn-primary flex-1"
-            disabled={gerando || loading || (opcaoSelecionada !== 'ia' && opcaoSelecionada !== 'remover' && !treinoSelecionado)}
+            disabled={gerando}
             aria-label={
               gerando ? 'Processando alteração do treino...' : 
-              loading ? 'Carregando opções...' : 
               'Confirmar alteração do treino'
             }
-            title={
-              (opcaoSelecionada !== 'ia' && opcaoSelecionada !== 'remover' && !treinoSelecionado)
-                ? 'Selecione um treino para continuar'
-                : gerando ? 'Processando...' : 'Confirmar'
-            }
+            title={gerando ? 'Processando...' : 'Confirmar'}
           >
-            {gerando ? 'Processando...' : loading ? 'Carregando...' : 'Confirmar'}
+            {gerando ? (
+              <>
+                <div className="spinner w-4 h-4 mr-2"></div>
+                Processando...
+              </>
+            ) : opcaoSelecionada === 'criar' ? (
+              'Abrir Criador de Treino'
+            ) : opcaoSelecionada === 'remover' ? (
+              'Remover Treino'
+            ) : (
+              'Gerar Treino'
+            )}
           </button>
         </div>
       </div>

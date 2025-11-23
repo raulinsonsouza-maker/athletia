@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export type TipoPeriodo = 'semana' | '15dias' | '4semanas' | 'mes' | 'mesSeguinte' | 'customizado'
 
@@ -25,6 +25,7 @@ export default function NavegacaoPeriodos({
   onProximo,
   mostrarNavegacao = true
 }: NavegacaoPeriodosProps) {
+  const [mostrarDropdown, setMostrarDropdown] = useState(false)
   const [mostrarModalCustomizado, setMostrarModalCustomizado] = useState(false)
   const [tempDataInicio, setTempDataInicio] = useState(
     dataInicioCustomizado ? dataInicioCustomizado.toISOString().split('T')[0] : ''
@@ -32,21 +33,43 @@ export default function NavegacaoPeriodos({
   const [tempDataFim, setTempDataFim] = useState(
     dataFimCustomizado ? dataFimCustomizado.toISOString().split('T')[0] : ''
   )
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const periodos: Array<{ valor: TipoPeriodo; label: string; shortLabel: string }> = [
-    { valor: 'semana', label: 'Semana Atual', shortLabel: '7 dias' },
-    { valor: '15dias', label: 'Próximos 15 Dias', shortLabel: '15 dias' },
-    { valor: '4semanas', label: 'Próximas 4 Semanas', shortLabel: '28 dias' },
-    { valor: 'mes', label: 'Mês Atual', shortLabel: 'Mês' },
-    { valor: 'mesSeguinte', label: 'Mês Seguinte', shortLabel: 'Próximo' },
-    { valor: 'customizado', label: 'Período Customizado', shortLabel: 'Custom' }
+  const periodos: Array<{ valor: TipoPeriodo; label: string; shortLabel: string; icon: string }> = [
+    { valor: 'semana', label: 'Semana Atual', shortLabel: '7 dias', icon: '📅' },
+    { valor: '15dias', label: 'Próximos 15 Dias', shortLabel: '15 dias', icon: '📆' },
+    { valor: '4semanas', label: 'Próximas 4 Semanas', shortLabel: '28 dias', icon: '🗓️' },
+    { valor: 'mes', label: 'Mês Atual', shortLabel: 'Mês', icon: '📊' },
+    { valor: 'mesSeguinte', label: 'Mês Seguinte', shortLabel: 'Próximo', icon: '⏭️' },
+    { valor: 'customizado', label: 'Período Customizado', shortLabel: 'Custom', icon: '⚙️' }
   ]
+
+  const periodoAtual = periodos.find(p => p.valor === periodoSelecionado) || periodos[0]
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setMostrarDropdown(false)
+      }
+    }
+
+    if (mostrarDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [mostrarDropdown])
 
   const handlePeriodoClick = (periodo: TipoPeriodo) => {
     if (periodo === 'customizado') {
       setMostrarModalCustomizado(true)
+      setMostrarDropdown(false)
     } else {
       onPeriodoChange(periodo)
+      setMostrarDropdown(false)
     }
   }
 
@@ -70,35 +93,62 @@ export default function NavegacaoPeriodos({
   return (
     <>
       <div className="mb-6">
-        {/* Botões de período */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {periodos.map((periodo) => (
-            <button
-              key={periodo.valor}
-              onClick={() => handlePeriodoClick(periodo.valor)}
-              className={`
-                px-3 py-2 rounded-lg font-medium transition-all text-sm
-                flex items-center gap-2
-                ${
-                  periodoSelecionado === periodo.valor
-                    ? 'bg-primary text-light border-2 border-primary shadow-lg shadow-primary/20'
-                    : 'bg-dark-lighter text-light-muted border-2 border-grey/30 hover:border-primary/50 hover:text-light'
-                }
-              `}
+        {/* Botão Dropdown de Período */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setMostrarDropdown(!mostrarDropdown)}
+            className="w-full sm:w-auto px-4 py-2.5 bg-dark-lighter border-2 border-grey/30 rounded-lg text-light hover:border-primary/50 transition-all flex items-center justify-between gap-3 font-medium"
+            aria-label="Selecionar período"
+            aria-expanded={mostrarDropdown}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="text-sm">{periodoAtual.label}</span>
+            </div>
+            <svg 
+              className={`w-5 h-5 transition-transform ${mostrarDropdown ? 'transform rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              {periodoSelecionado === periodo.valor ? (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              )}
-              <span className="hidden sm:inline">{periodo.label}</span>
-              <span className="sm:hidden">{periodo.shortLabel}</span>
-            </button>
-          ))}
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Dropdown Menu */}
+          {mostrarDropdown && (
+            <div className="absolute top-full left-0 mt-2 w-full sm:w-64 bg-dark-lighter border-2 border-grey/30 rounded-lg shadow-xl z-50 overflow-hidden">
+              <div className="py-2">
+                {periodos.map((periodo) => (
+                  <button
+                    key={periodo.valor}
+                    onClick={() => handlePeriodoClick(periodo.valor)}
+                    className={`
+                      w-full px-4 py-3 text-left transition-all flex items-center gap-3
+                      ${
+                        periodoSelecionado === periodo.valor
+                          ? 'bg-primary/20 text-primary border-l-4 border-primary'
+                          : 'text-light hover:bg-dark/50 hover:text-primary'
+                      }
+                    `}
+                  >
+                    <span className="text-lg">{periodo.icon}</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{periodo.label}</div>
+                      <div className="text-xs text-light-muted mt-0.5">{periodo.shortLabel}</div>
+                    </div>
+                    {periodoSelecionado === periodo.valor && (
+                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Navegação anterior/próximo */}
