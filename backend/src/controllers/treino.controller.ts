@@ -83,10 +83,12 @@ export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
     
     const resultado = await treinoService.buscarTreinoDoDia(userId, dataTreino);
 
+    // Se não encontrou, retornar 200 com null (não 404)
+    // Isso permite que o frontend tente gerar automaticamente
     if (!resultado) {
-      return res.status(404).json({
-        error: 'Treino não encontrado',
-        message: 'Gere um treino para esta data primeiro'
+      return res.status(200).json({
+        treino: null,
+        message: 'Nenhum treino encontrado para esta data'
       });
     }
 

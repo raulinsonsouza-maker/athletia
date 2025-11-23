@@ -147,36 +147,52 @@ export default function TreinoDoDia() {
       // Verificar se retornou múltiplos treinos
       if (response.data.treinos && Array.isArray(response.data.treinos)) {
         treinoData = response.data.treinos[0] // Pegar o primeiro
-      } else if (response.data) {
+      } else if (response.data.treino) {
+        treinoData = response.data.treino
+      } else if (response.data && response.data.id) {
+        // Treino direto (compatibilidade)
         treinoData = response.data
+      } else if (response.data && response.data.treino === null) {
+        // Treino não encontrado mas resposta OK
+        treinoData = null
       }
 
-      if (treinoData && treinoData.exercicios && treinoData.exercicios.length > 0) {
-        setTreino(treinoData)
-        
-        // Encontrar primeiro exercício não concluído
-        const primeiroNaoConcluido = treinoData.exercicios.findIndex(ex => !ex.concluido)
-        if (primeiroNaoConcluido !== -1) {
-          setExercicioAtualIndex(primeiroNaoConcluido)
-        } else {
-          // Todos concluídos, mostrar último exercício
-          // NÃO definir treinoConcluido como true aqui - isso só deve acontecer quando o usuário conclui o treino DENTRO da página
-          setExercicioAtualIndex(treinoData.exercicios.length - 1)
-        }
-      } else {
+      // Se treinoData é null ou não tem exercícios, definir como null
+      if (!treinoData || !treinoData.exercicios || treinoData.exercicios.length === 0) {
         setTreino(null)
+        setError('Nenhum treino encontrado') // Definir erro para que a geração automática possa ser acionada
+        return // Retornar aqui para não continuar o processamento
+      }
+
+      // Treino válido encontrado
+      setTreino(treinoData)
+      
+      // Encontrar primeiro exercício não concluído
+      const primeiroNaoConcluido = treinoData.exercicios.findIndex(ex => !ex.concluido)
+      if (primeiroNaoConcluido !== -1) {
+        setExercicioAtualIndex(primeiroNaoConcluido)
+      } else {
+        // Todos concluídos, mostrar último exercício
+        setExercicioAtualIndex(treinoData.exercicios.length - 1)
       }
       } catch (err: any) {
         console.error('Erro ao carregar treino:', err)
+        
+        // Tratar 404 como "treino não encontrado" (não é erro crítico)
         if (err.response?.status === 404) {
+          setTreino(null)
           setError('Nenhum treino encontrado')
         } else if (err.response?.status === 500) {
           setError('Erro no servidor ao carregar treino')
           console.error('Detalhes do erro 500:', err.response?.data)
+          setTreino(null)
+        } else if (err.response?.status === 402) {
+          // Plano não ativo - não é erro, apenas redirecionar
+          setTreino(null)
         } else {
           setError(err.response?.data?.error || err.response?.data?.message || 'Erro ao carregar treino')
+          setTreino(null)
         }
-        setTreino(null)
     } finally {
       setLoading(false)
     }
@@ -188,29 +204,70 @@ export default function TreinoDoDia() {
 
   // Tentar gerar treino automaticamente se não houver treino e usuário tiver plano ativo
   useEffect(() => {
-    // Só tentar uma vez quando a página carregar e não houver treino
-    if (loading) return // Aguardar carregamento inicial terminar
-    if (tentouGerarAutomaticamente) return // Já tentou uma vez, não tentar novamente
-    if (treino) return // Já tem treino, não precisa gerar
-    if (gerandoTreino) return // Já está gerando
+    // Aguardar carregamento inicial terminar
+    if (loading) return
     
-    // Só tentar se usuário tiver plano ativo e não houver erro específico
-    if (!user?.planoAtivo) return
-    if (error && error !== 'Nenhum treino encontrado') return
+    // Não tentar se já tentou ou já tem treino
+    if (tentouGerarAutomaticamente || treino || gerandoTreino) return
+    
+    // Verificar se usuário tem plano ativo
+    if (!user?.planoAtivo) {
+      console.log('⏭️ Usuário não tem plano ativo, pulando geração automática')
+      return
+    }
+    
+    // Permitir geração apenas se erro for "Nenhum treino encontrado" ou não houver erro
+    if (error && error !== 'Nenhum treino encontrado') {
+      console.log('⏭️ Há erro diferente de "treino não encontrado", pulando geração:', error)
+      return
+    }
+
+    console.log('🔄 Condições atendidas, tentando gerar treino automaticamente...')
+    console.log('📋 Estado atual:', {
+      loading,
+      tentouGerarAutomaticamente,
+      temTreino: !!treino,
+      gerandoTreino,
+      planoAtivo: user?.planoAtivo,
+      error
+    })
 
     const tentarGerarTreinoAutomaticamente = async () => {
       try {
         setTentouGerarAutomaticamente(true)
         setGerandoTreino(true)
-        console.log('🔄 Tentando gerar treino automaticamente...')
+        setError('') // Limpar erro anterior
         
-        const response = await api.post('/treino/gerar')
+        console.log('🔄 Chamando API para gerar treino...')
+        
+        // Chamar endpoint de geração com data atual
+        const hoje = new Date()
+        hoje.setHours(12, 0, 0, 0) // Meio-dia para evitar problemas de timezone
+        const dataFormatada = hoje.toISOString().split('T')[0]
+        
+        console.log('📅 Data para gerar treino:', dataFormatada)
+        
+        const response = await api.post('/treino/gerar', {
+          data: dataFormatada,
+          gerarSemana: false
+        })
+        
         console.log('✅ Treino gerado automaticamente:', response.data)
         
-        // Recarregar treino após gerar
-        setTimeout(async () => {
+        // Se o treino foi gerado, aguardar processamento e recarregar
+        if (response.data?.treino || response.data?.message) {
+          // Aguardar mais tempo para garantir que o backend processou tudo
+          await new Promise(resolve => setTimeout(resolve, 3000))
+          
+          // Recarregar treino após gerar
+          console.log('🔄 Recarregando treino após geração...')
           await carregarTreino()
-        }, 1000)
+        } else {
+          console.warn('⚠️ Resposta inesperada do servidor:', response.data)
+          // Mesmo assim, tentar recarregar
+          await new Promise(resolve => setTimeout(resolve, 2000))
+          await carregarTreino()
+        }
       } catch (err: any) {
         console.error('❌ Erro ao gerar treino automaticamente:', err)
         console.error('📋 Detalhes do erro:', {
@@ -218,34 +275,35 @@ export default function TreinoDoDia() {
           statusText: err.response?.statusText,
           message: err.response?.data?.message || err.message,
           error: err.response?.data?.error,
-          isNetworkError: err.isNetworkError
+          isNetworkError: err.isNetworkError,
+          response: err.response?.data
         })
         
-        // Não definir erro genérico para não mostrar mensagem de erro ao usuário
-        // Apenas logar para debug. O usuário verá a mensagem informativa na tela
-        // Se for erro de perfil incompleto ou similar, pode ser útil mostrar, mas não erro 500 genérico
+        // Tratar erros específicos
         if (err.response?.status === 404 && err.response?.data?.message?.includes('Perfil não encontrado')) {
           setError('Perfil não encontrado. Complete o onboarding primeiro.')
         } else if (err.response?.status === 400) {
-          // Erro de validação - pode ser útil mostrar
           const errorMsg = err.response?.data?.message || err.response?.data?.error || 'Dados do perfil incompletos'
           setError(errorMsg)
+        } else if (err.response?.status === 402) {
+          setError('Plano não está ativo. Ative seu plano para gerar treinos.')
+        } else {
+          // Para outros erros, manter erro genérico mas não bloquear
+          console.error('Erro desconhecido ao gerar treino:', err)
         }
-        // Para erro 500 ou outros erros, não definir mensagem de erro
-        // O usuário verá a mensagem informativa padrão na tela
       } finally {
         setGerandoTreino(false)
       }
     }
 
-    // Aguardar um pouco antes de tentar gerar (para garantir que carregarTreino terminou)
+    // Aguardar um pouco antes de tentar gerar (para garantir que carregarTreino terminou completamente)
     const timer = setTimeout(() => {
       tentarGerarTreinoAutomaticamente()
     }, 2000)
 
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]) // Só executar quando loading mudar (quando carregamento inicial terminar)
+  }, [loading, treino]) // Executar quando loading ou treino mudarem
 
   // Atualizar status do exercício (simplificado - sem feedback individual)
   const atualizarStatusExercicio = async (
