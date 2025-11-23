@@ -30,15 +30,17 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Rate limiting - Proteção contra brute force e DDoS
+// Aumentado para permitir mais requisições legítimas
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 requisições por IP a cada 15 minutos
+  max: 500, // Máximo 500 requisições por IP a cada 15 minutos (aumentado de 100)
   message: {
     error: 'Muitas requisições. Por favor, tente novamente mais tarde.'
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: any) => req.method === 'OPTIONS' // Pular requisições CORS preflight
+  skip: (req: any) => req.method === 'OPTIONS', // Pular requisições CORS preflight
+  skipSuccessfulRequests: false // Manter contagem de todas as requisições para proteção geral
 });
 
 // Middlewares

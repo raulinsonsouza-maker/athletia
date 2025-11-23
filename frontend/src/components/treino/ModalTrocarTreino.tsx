@@ -130,22 +130,34 @@ export default function ModalTrocarTreino({
       if (opcaoSelecionada === 'ia') {
         setGerando(true)
         try {
-          await gerarTreino(dataStr, false)
+          console.log('Gerando treino para data:', dataStr)
+          const resultado = await gerarTreino(dataStr, false)
+          console.log('Treino gerado com sucesso:', resultado)
           showToast('Treino gerado com sucesso!', 'success')
-          onSuccess()
-          onClose()
+          // Aguardar um pouco antes de fechar para garantir que o treino foi salvo
+          setTimeout(() => {
+            onSuccess()
+            onClose()
+          }, 500)
         } catch (err: any) {
           console.error('Erro ao gerar treino:', err)
+          console.error('Detalhes do erro:', {
+            message: err.message,
+            response: err.response?.data,
+            status: err.response?.status
+          })
           
           // Tratar diferentes tipos de erro
           if ((err as any).isNetworkError || !err.response) {
             showToast('Erro de conexão. Verifique sua internet.', 'error')
           } else if (err.response?.status === 401) {
             showToast('Sessão expirada. Faça login novamente.', 'error')
+          } else if (err.response?.status === 429) {
+            showToast('Muitas requisições. Aguarde alguns segundos e tente novamente.', 'error')
           } else if (err.response?.status >= 500) {
             showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
           } else {
-            const errorMessage = err.response?.data?.message || err.message || 'Erro ao gerar treino'
+            const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Erro ao gerar treino'
             showToast(errorMessage, 'error')
           }
         } finally {

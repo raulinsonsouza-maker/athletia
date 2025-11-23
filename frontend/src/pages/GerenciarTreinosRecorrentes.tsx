@@ -322,18 +322,62 @@ export default function GerenciarTreinosRecorrentes() {
 
     try {
       setSaving(true)
+      console.log('Salvando treino recorrente:', { letraTreino, nome, diaSemana, exerciciosCount: exercicios.length })
+      
+      // Validar estrutura dos exercícios antes de enviar
+      const exerciciosValidados = exercicios.map((ex: any, index: number) => {
+        // Tentar obter o exercicioId de diferentes formas
+        const exercicioId = ex.exercicioId || ex.exercicio?.id || ex.id
+        
+        if (!exercicioId) {
+          const nomeExercicio = ex.exercicio?.nome || ex.nome || `Exercício ${index + 1}`
+          throw new Error(`Exercício "${nomeExercicio}" não possui ID válido. Remova e adicione novamente.`)
+        }
+        
+        return {
+          exercicioId: exercicioId,
+          ordem: ex.ordem !== undefined ? ex.ordem : index + 1,
+          series: ex.series !== undefined ? ex.series : 3,
+          repeticoes: ex.repeticoes || '10-12',
+          carga: ex.carga !== undefined && ex.carga !== null ? ex.carga : undefined,
+          descanso: ex.descanso !== undefined && ex.descanso !== null ? ex.descanso : 60,
+          observacoes: ex.observacoes || undefined
+        }
+      })
+      
       await criarOuEditarTreinoRecorrente({
         letraTreino,
         nome,
         diaSemana,
-        exercicios
+        exercicios: exerciciosValidados
       })
       showToast('Treino recorrente salvo com sucesso!', 'success')
       await carregarTreinosRecorrentes()
       handleCancelarEdicao()
     } catch (error: any) {
-      showToast(error.response?.data?.message || 'Erro ao salvar treino', 'error')
       console.error('Erro ao salvar treino:', error)
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      })
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 400) {
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Dados inválidos'
+        showToast(errorMessage, 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status === 429) {
+        showToast('Muitas requisições. Aguarde alguns segundos e tente novamente.', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Erro ao salvar treino'
+        showToast(errorMessage, 'error')
+      }
     } finally {
       setSaving(false)
     }
