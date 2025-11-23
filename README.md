@@ -60,9 +60,28 @@ Acesse `http://localhost:5173` para ver a aplicação.
 
 ## 📚 Documentação
 
-**📖 [Documentação Completa](./DOCUMENTACAO.md)** - Tudo em um único lugar
+**📖 [Documentação Completa](./DOCUMENTACAO_COMPLETA.md)** - Tudo em um único lugar
 
-A documentação completa está centralizada em `DOCUMENTACAO.md` e inclui:
+A documentação está organizada da seguinte forma:
+
+### Documentos Principais
+- **[DOCUMENTACAO_COMPLETA.md](./DOCUMENTACAO_COMPLETA.md)** - Documento mestre com toda a informação
+- **[docs/INDICE.md](./docs/INDICE.md)** - Índice navegável de toda a documentação
+
+### Guias de Instalação e Configuração
+- **[docs/INSTALACAO.md](./docs/INSTALACAO.md)** - Guia completo de instalação
+- **[docs/CONFIGURAR_ENV.md](./docs/CONFIGURAR_ENV.md)** - Configuração de variáveis de ambiente
+
+### Documentação Técnica
+- **[docs/ESPECIFICACAO_TECNICA.md](./docs/ESPECIFICACAO_TECNICA.md)** - Especificações técnicas detalhadas
+- **[docs/DECISOES_TECNICAS.md](./docs/DECISOES_TECNICAS.md)** - Registro de decisões técnicas
+- **[docs/GUIA_RAPIDO.md](./docs/GUIA_RAPIDO.md)** - Referência rápida para desenvolvimento
+
+### Relatórios e Análises
+- **[docs/RELATORIO_VALIDACAO_FLUXO_COMPLETO.md](./docs/RELATORIO_VALIDACAO_FLUXO_COMPLETO.md)** - Validação do fluxo do usuário
+- **[docs/RELATORIO_AUDITORIA_UX_UI.md](./docs/RELATORIO_AUDITORIA_UX_UI.md)** - Auditoria de UX/UI
+
+A documentação completa inclui:
 - Instalação detalhada
 - Arquitetura do sistema
 - API e endpoints
@@ -95,7 +114,7 @@ A documentação completa está centralizada em `DOCUMENTACAO.md` e inclui:
 
 ## 🔗 Links Úteis
 
-- **[Documentação Completa](./DOCUMENTACAO.md)** - Guia completo
+- **[Documentação Completa](./DOCUMENTACAO_COMPLETA.md)** - Guia completo
 - **[Instalação Detalhada](./INSTALACAO.md)** - Passo a passo
 - **[Configuração de Ambiente](./CONFIGURAR_ENV.md)** - Variáveis de ambiente
 - **[Changelog](./CHANGELOG.md)** - Histórico de mudanças

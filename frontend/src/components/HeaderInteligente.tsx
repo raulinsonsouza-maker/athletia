@@ -78,6 +78,8 @@ export default function HeaderInteligente({ nome, treinoHoje }: HeaderInteligent
                 }
               }}
               className="w-full btn-primary text-xl py-6 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transition-all font-bold"
+              aria-label={treinoHoje.concluido ? 'Ver detalhes do treino no histórico' : 'Iniciar treino do dia'}
+              title={treinoHoje.concluido ? 'Treino já concluído - Ver histórico' : 'Clique para começar seu treino'}
             >
               {treinoHoje.concluido ? (
                 <>
@@ -113,6 +115,8 @@ export default function HeaderInteligente({ nome, treinoHoje }: HeaderInteligent
             <button
               onClick={() => navigate('/treino')}
               className="btn-primary px-8 py-3 flex items-center justify-center gap-2 mx-auto text-lg"
+              aria-label="Gerar treino personalizado para hoje"
+              title="Clique para gerar um treino personalizado para hoje"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

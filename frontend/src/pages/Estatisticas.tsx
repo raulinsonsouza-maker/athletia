@@ -63,7 +63,7 @@ export default function Estatisticas() {
 
   return (
     <div className="min-h-screen">
-      <Navbar showBack />
+      <Navbar showBack backPath="/dashboard" />
 
       <main className="container-custom section">
         {/* Filtro de Período */}

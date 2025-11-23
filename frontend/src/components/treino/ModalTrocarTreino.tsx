@@ -241,13 +241,21 @@ export default function ModalTrocarTreino({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      aria-describedby="modal-description"
+    >
       <div className="card max-w-lg w-full max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-light">Trocar Treino</h3>
+          <h3 className="text-xl font-bold text-light" id="modal-title">Trocar Treino</h3>
           <button
             onClick={onClose}
             className="text-light-muted hover:text-light"
+            aria-label="Fechar modal"
+            title="Fechar modal de trocar treino"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -255,7 +263,7 @@ export default function ModalTrocarTreino({
           </button>
         </div>
 
-        <p className="text-light-muted mb-6">
+        <p className="text-light-muted mb-6" id="modal-description">
           Data: {data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
 
@@ -273,7 +281,7 @@ export default function ModalTrocarTreino({
               }}
               className="w-4 h-4 text-primary"
             />
-            <span className="text-light">Aplicar treino A-G</span>
+            <span className="text-light">Aplicar treino recorrente (A, B, C...)</span>
           </label>
 
           <label className="flex items-center gap-3 p-3 border border-grey/20 rounded-lg cursor-pointer hover:bg-dark-lighter">
@@ -390,6 +398,16 @@ export default function ModalTrocarTreino({
             onClick={handleAplicar}
             className="btn-primary flex-1"
             disabled={gerando || loading || (opcaoSelecionada !== 'ia' && opcaoSelecionada !== 'remover' && !treinoSelecionado)}
+            aria-label={
+              gerando ? 'Processando alteração do treino...' : 
+              loading ? 'Carregando opções...' : 
+              'Confirmar alteração do treino'
+            }
+            title={
+              (opcaoSelecionada !== 'ia' && opcaoSelecionada !== 'remover' && !treinoSelecionado)
+                ? 'Selecione um treino para continuar'
+                : gerando ? 'Processando...' : 'Confirmar'
+            }
           >
             {gerando ? 'Processando...' : loading ? 'Carregando...' : 'Confirmar'}
           </button>

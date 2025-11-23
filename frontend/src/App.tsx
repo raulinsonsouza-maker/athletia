@@ -112,7 +112,7 @@ function App() {
             path="/meus-treinos"
             element={
               <ProtectedRoute>
-                <Navigate to="/treinos-recorrentes" replace />
+                <Navigate to="/gerenciar-treinos" replace />
               </ProtectedRoute>
             }
           />

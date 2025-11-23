@@ -187,6 +187,8 @@ export default function Register() {
             type="submit"
             className="btn-primary w-full"
             disabled={loading}
+            aria-label={loading ? 'Criando sua conta...' : 'Criar nova conta'}
+            title={loading ? 'Aguarde, estamos criando sua conta...' : 'Clique para criar sua conta'}
           >
             {loading ? 'Criando conta...' : 'Criar Conta'}
           </button>
@@ -198,6 +200,7 @@ export default function Register() {
             <Link
               to="/login"
               className="text-primary hover:text-primary-400 font-semibold transition-colors"
+              aria-label="Ir para página de login"
             >
               Faça login
             </Link>

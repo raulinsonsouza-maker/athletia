@@ -428,7 +428,7 @@ export default function GerenciarTreinosRecorrentes() {
   if (treinoEditando) {
     return (
       <div className="min-h-screen">
-        <Navbar showBack onBack={handleCancelarEdicao} />
+        <Navbar showBack backPath="/gerenciar-treinos" onBack={handleCancelarEdicao} />
         <main className="container-custom section">
           <div className="mb-6">
             <h1 className="text-xl sm:text-2xl font-bold text-light mb-2">
@@ -684,7 +684,7 @@ export default function GerenciarTreinosRecorrentes() {
 
   return (
     <div className="min-h-screen">
-      <Navbar showBack />
+      <Navbar showBack backPath="/gerenciar-treinos" />
       <main className="container-custom section">
         <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>

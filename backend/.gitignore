@@ -28,6 +28,12 @@ Thumbs.db
 *.db
 *.db-journal
 
+# Arquivos compilados do Prisma (seed scripts)
+prisma/*.js
+prisma/*.d.ts
+prisma/*.js.map
+prisma/*.d.ts.map
+
 # Uploads
 upload/
 !upload/.gitkeep

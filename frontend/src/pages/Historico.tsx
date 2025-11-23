@@ -44,7 +44,7 @@ export default function Historico() {
 
   return (
     <div className="min-h-screen">
-      <Navbar showBack />
+      <Navbar showBack backPath="/dashboard" />
 
       <main className="container-custom section">
         {error && (

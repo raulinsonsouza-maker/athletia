@@ -9,6 +9,22 @@ interface NavbarProps {
   onBack?: () => void
 }
 
+// Mapa de rotas padrão de retorno quando não especificado
+const DEFAULT_BACK_PATHS: Record<string, string> = {
+  '/perfil': '/dashboard',
+  '/historico': '/dashboard',
+  '/estatisticas': '/dashboard',
+  '/evolucao-peso': '/dashboard',
+  '/evolucao': '/dashboard',
+  '/treino': '/dashboard',
+  '/gerenciar-treinos': '/dashboard',
+  '/treinos-recorrentes': '/gerenciar-treinos',
+  '/configurar-treinos': '/gerenciar-treinos',
+  '/minha-semana': '/dashboard',
+  '/conquistas': '/dashboard',
+  '/meus-treinos': '/dashboard'
+}
+
 export default function Navbar({ title, showBack = false, backPath, onBack }: NavbarProps) {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -25,17 +41,10 @@ export default function Navbar({ title, showBack = false, backPath, onBack }: Na
     } else if (backPath !== undefined) {
       navigate(backPath)
     } else {
-      // Navegação inteligente: usar referrer se disponível, senão dashboard
-      const referrer = document.referrer
-      const currentOrigin = window.location.origin
-      
-      // Se veio de uma página do mesmo site, tentar voltar
-      if (referrer && referrer.startsWith(currentOrigin)) {
-        navigate(-1)
-      } else {
-        // Caso contrário, ir para dashboard
-        navigate('/dashboard')
-      }
+      // Usar caminho padrão baseado na rota atual
+      const currentPath = location.pathname
+      const defaultBackPath = DEFAULT_BACK_PATHS[currentPath] || '/dashboard'
+      navigate(defaultBackPath)
     }
   }
 

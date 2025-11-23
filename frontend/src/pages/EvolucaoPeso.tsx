@@ -76,7 +76,7 @@ export default function EvolucaoPeso() {
 
   return (
     <div className="min-h-screen">
-      <Navbar showBack />
+      <Navbar showBack backPath="/dashboard" />
 
       <main className="container-custom section">
         {error && (

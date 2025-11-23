@@ -155,6 +155,8 @@ export default function Dashboard() {
               <button
                 onClick={() => navigate('/gerenciar-treinos')}
                 className="btn-primary px-6 py-3 whitespace-nowrap"
+                aria-label="Ir para página de gerenciar treinos"
+                title="Gerenciar seus treinos, criar novos e organizar sua semana"
               >
                 Gerenciar
               </button>
@@ -275,9 +277,9 @@ export default function Dashboard() {
 
             {/* Meus Treinos */}
             <button
-              onClick={() => navigate('/treinos-recorrentes')}
+              onClick={() => navigate('/gerenciar-treinos')}
               className="group relative overflow-hidden bg-dark-lighter rounded-xl p-5 border border-grey/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1"
-              aria-label="Ver meus treinos"
+              aria-label="Gerenciar treinos"
             >
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-xl bg-primary/20 group-hover:bg-primary/30 flex items-center justify-center mb-4 transition-colors">
@@ -285,8 +287,8 @@ export default function Dashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="text-base font-bold text-light mb-1">Meus Treinos</h3>
-                <p className="text-xs text-light-muted">Personalizados</p>
+                <h3 className="text-base font-bold text-light mb-1">Gerenciar Treinos</h3>
+                <p className="text-xs text-light-muted">Personalizados e templates</p>
               </div>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>

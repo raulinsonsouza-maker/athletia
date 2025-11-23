@@ -413,13 +413,15 @@ export default function TreinoDoDia() {
                 <p className="text-sm">{error}</p>
               </div>
               <div className="flex flex-col gap-3">
-                <button
-                  onClick={carregarTreino}
-                  className="btn-primary w-full"
-                  disabled={loading}
-                >
-                  {loading ? 'Carregando...' : 'Tentar Novamente'}
-                </button>
+              <button
+                onClick={carregarTreino}
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+                aria-label={loading ? 'Carregando treino...' : 'Tentar carregar treino novamente'}
+                title={loading ? 'Aguarde...' : 'Clique para tentar carregar o treino novamente'}
+              >
+                {loading ? 'Carregando...' : 'Tentar Novamente'}
+              </button>
                 <button
                   onClick={() => navigate('/dashboard')}
                   className="btn-secondary w-full"
@@ -434,8 +436,12 @@ export default function TreinoDoDia() {
                 Gerando seu treino personalizado...
               </h2>
               <p className="text-light-muted mb-6">
-                Isso pode levar alguns segundos. Por favor, aguarde.
+                Nossa IA está criando um treino especialmente para você. Isso pode levar alguns segundos. Por favor, aguarde.
               </p>
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <div className="spinner h-6 w-6"></div>
+                <span className="text-sm">Processando...</span>
+              </div>
             </>
           ) : temPlanoAtivo ? (
             <>
@@ -452,8 +458,10 @@ export default function TreinoDoDia() {
               <div className="flex flex-col gap-3">
                 <button
                   onClick={carregarTreino}
-                  className="btn-primary w-full"
+                  className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading}
+                  aria-label={loading ? 'Carregando treino...' : 'Recarregar treino do dia'}
+                  title={loading ? 'Aguarde...' : 'Tentar carregar o treino novamente'}
                 >
                   {loading ? 'Carregando...' : 'Recarregar Treino'}
                 </button>
@@ -477,6 +485,8 @@ export default function TreinoDoDia() {
               <button
                 onClick={() => navigate('/checkout')}
                 className="btn-primary px-8 py-4 text-lg font-semibold w-full"
+                aria-label="Ir para página de checkout para ativar plano"
+                title="Ative seu plano para começar a gerar treinos personalizados"
               >
                 Ativar Plano
               </button>

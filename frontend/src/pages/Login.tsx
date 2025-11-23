@@ -120,6 +120,8 @@ export default function Login() {
             type="submit"
             className="btn-primary w-full"
             disabled={loading}
+            aria-label={loading ? 'Entrando no sistema...' : 'Fazer login'}
+            title={loading ? 'Aguarde, estamos processando seu login...' : 'Clique para fazer login'}
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
@@ -131,6 +133,7 @@ export default function Login() {
             <Link
               to="/register"
               className="text-primary hover:text-primary-400 font-semibold transition-colors"
+              aria-label="Ir para página de cadastro"
             >
               Cadastre-se
             </Link>

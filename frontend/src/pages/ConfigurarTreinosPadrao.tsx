@@ -105,7 +105,7 @@ export default function ConfigurarTreinosPadrao() {
   if (loading) {
     return (
       <div className="min-h-screen">
-        <Navbar showBack />
+        <Navbar showBack backPath="/gerenciar-treinos" />
         <main className="container-custom section">
           <div className="text-center py-12">
             <div className="spinner h-8 w-8 mx-auto"></div>
@@ -118,7 +118,7 @@ export default function ConfigurarTreinosPadrao() {
 
   return (
     <div className="min-h-screen">
-      <Navbar showBack />
+      <Navbar showBack backPath="/gerenciar-treinos" />
       <main className="container-custom section">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-light mb-2">Configurar Treinos Padrão</h1>

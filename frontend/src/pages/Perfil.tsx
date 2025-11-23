@@ -157,7 +157,7 @@ export default function Perfil() {
 
   return (
     <div className="min-h-screen">
-      <Navbar showBack />
+      <Navbar showBack backPath="/dashboard" />
       <ToastContainer />
 
       <main className="container-custom section">

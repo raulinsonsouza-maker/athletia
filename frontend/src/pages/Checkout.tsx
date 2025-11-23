@@ -542,7 +542,9 @@ export default function Checkout() {
             <button
               onClick={handleAtivarPlano}
               disabled={loading}
-              className="btn-primary text-lg md:text-xl px-8 py-5 font-bold w-full shadow-lg shadow-primary/30 hover:scale-105 transition-transform flex items-center justify-center gap-3 mb-3"
+              className="btn-primary text-lg md:text-xl px-8 py-5 font-bold w-full shadow-lg shadow-primary/30 hover:scale-105 transition-transform flex items-center justify-center gap-3 mb-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              aria-label={loading ? 'Processando pagamento e ativação do plano...' : 'Confirmar pagamento e ativar plano'}
+              title={loading ? 'Aguarde, estamos processando seu pagamento...' : 'Clique para confirmar pagamento e ativar seu plano'}
             >
               {loading ? (
                 <>
