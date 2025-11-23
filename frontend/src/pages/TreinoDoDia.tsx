@@ -212,18 +212,18 @@ export default function TreinoDoDia() {
     
     // Verificar se usuário tem plano ativo
     if (!user?.planoAtivo) {
-      console.log('⏭️ Usuário não tem plano ativo, pulando geração automática')
+      console.log('Usuário não tem plano ativo, pulando geração automática')
       return
     }
     
     // Permitir geração apenas se erro for "Nenhum treino encontrado" ou não houver erro
     if (error && error !== 'Nenhum treino encontrado') {
-      console.log('⏭️ Há erro diferente de "treino não encontrado", pulando geração:', error)
+      console.log('Há erro diferente de "treino não encontrado", pulando geração:', error)
       return
     }
 
-    console.log('🔄 Condições atendidas, tentando gerar treino automaticamente...')
-    console.log('📋 Estado atual:', {
+    console.log('Condições atendidas, tentando gerar treino automaticamente...')
+    console.log('Estado atual:', {
       loading,
       tentouGerarAutomaticamente,
       temTreino: !!treino,
@@ -233,26 +233,34 @@ export default function TreinoDoDia() {
     })
 
     const tentarGerarTreinoAutomaticamente = async () => {
+      // Timeout de segurança - se demorar mais de 30 segundos, resetar estado
+      const timeoutId = setTimeout(() => {
+        console.warn('Timeout na geração automática - resetando estado')
+        setGerandoTreino(false)
+        setTentouGerarAutomaticamente(false)
+        setError('A geração está demorando mais que o esperado. Tente recarregar manualmente.')
+      }, 30000)
+
       try {
         setTentouGerarAutomaticamente(true)
         setGerandoTreino(true)
         setError('') // Limpar erro anterior
         
-        console.log('🔄 Chamando API para gerar treino...')
+        console.log('Chamando API para gerar treino...')
         
         // Chamar endpoint de geração com data atual
         const hoje = new Date()
         hoje.setHours(12, 0, 0, 0) // Meio-dia para evitar problemas de timezone
         const dataFormatada = hoje.toISOString().split('T')[0]
         
-        console.log('📅 Data para gerar treino:', dataFormatada)
+        console.log('Data para gerar treino:', dataFormatada)
         
         const response = await api.post('/treino/gerar', {
           data: dataFormatada,
           gerarSemana: false
         })
         
-        console.log('✅ Treino gerado automaticamente:', response.data)
+        console.log('Treino gerado automaticamente:', response.data)
         
         // Se o treino foi gerado, aguardar processamento e recarregar
         if (response.data?.treino || response.data?.message) {
@@ -260,17 +268,20 @@ export default function TreinoDoDia() {
           await new Promise(resolve => setTimeout(resolve, 3000))
           
           // Recarregar treino após gerar
-          console.log('🔄 Recarregando treino após geração...')
+          console.log('Recarregando treino após geração...')
           await carregarTreino()
         } else {
-          console.warn('⚠️ Resposta inesperada do servidor:', response.data)
+          console.warn('Resposta inesperada do servidor:', response.data)
           // Mesmo assim, tentar recarregar
           await new Promise(resolve => setTimeout(resolve, 2000))
           await carregarTreino()
         }
+        
+        clearTimeout(timeoutId)
       } catch (err: any) {
-        console.error('❌ Erro ao gerar treino automaticamente:', err)
-        console.error('📋 Detalhes do erro:', {
+        clearTimeout(timeoutId)
+        console.error('Erro ao gerar treino automaticamente:', err)
+        console.error('Detalhes do erro:', {
           status: err.response?.status,
           statusText: err.response?.statusText,
           message: err.response?.data?.message || err.message,
@@ -290,6 +301,7 @@ export default function TreinoDoDia() {
         } else {
           // Para outros erros, manter erro genérico mas não bloquear
           console.error('Erro desconhecido ao gerar treino:', err)
+          setError('Erro ao gerar treino. Tente novamente.')
         }
       } finally {
         setGerandoTreino(false)
@@ -450,6 +462,24 @@ export default function TreinoDoDia() {
               <div className="flex items-center justify-center gap-2 text-primary">
                 <div className="spinner h-6 w-6"></div>
                 <span className="text-sm">Processando...</span>
+              </div>
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  onClick={async () => {
+                    setGerandoTreino(false)
+                    setTentouGerarAutomaticamente(false)
+                    await carregarTreino()
+                  }}
+                  className="btn-secondary w-full"
+                >
+                  Recarregar Treino
+                </button>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="btn-secondary w-full"
+                >
+                  Voltar ao Dashboard
+                </button>
               </div>
             </>
           ) : temPlanoAtivo ? (

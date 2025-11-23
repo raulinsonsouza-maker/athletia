@@ -255,12 +255,12 @@ export default function GerenciarTreinos() {
 
     try {
       setGerandoSemana(true)
-      console.log('🔄 Iniciando geração da semana completa com IA...')
+      console.log('Iniciando geração da semana completa com IA...')
       showToast('Removendo treinos existentes da semana e gerando novos treinos com IA...', 'info')
       
       const resultado = await gerarTreino(undefined, true)
       
-      console.log('✅ Semana gerada com sucesso:', resultado)
+      console.log('Semana gerada com sucesso:', resultado)
       
       if (resultado && resultado.treinos && resultado.treinos.length > 0) {
         showToast(`${resultado.treinos.length} treino(s) gerado(s) com sucesso para a semana!`, 'success')
@@ -275,8 +275,8 @@ export default function GerenciarTreinos() {
       await carregarDados()
       await carregarTreinosPorPeriodo()
     } catch (error: any) {
-      console.error('❌ Erro ao gerar semana:', error)
-      console.error('📋 Detalhes do erro:', {
+      console.error('Erro ao gerar semana:', error)
+      console.error('Detalhes do erro:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status
