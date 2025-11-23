@@ -185,9 +185,19 @@ export default function ModalTrocarTreino({
       setGerando(true)
       try {
         if (opcaoSelecionada === 'recorrente') {
+          if (!treinoSelecionado) {
+            showToast('Selecione um treino recorrente', 'error')
+            setGerando(false)
+            return
+          }
           await aplicarTreinoRecorrente(treinoSelecionado, dataStr)
           showToast('Treino recorrente aplicado com sucesso!', 'success')
         } else if (opcaoSelecionada === 'template') {
+          if (!treinoSelecionado) {
+            showToast('Selecione um template', 'error')
+            setGerando(false)
+            return
+          }
           await aplicarTemplatePersonalizado(treinoSelecionado, dataStr)
           showToast('Template aplicado com sucesso!', 'success')
         }
