@@ -3,95 +3,49 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
+import * as treinoGeradorService from '../services/treino-gerador.service';
 
-// Gerar treino do dia
+import * as treinoGeradorService from '../services/treino-gerador.service';
+
+// Gerar treino do dia ou semana completa - FUNÇÃO CENTRALIZADA
 export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { data, gerarSemana } = req.body;
 
-    // Se gerarSemana for true, gerar treinos para toda a semana
-    if (gerarSemana) {
-      const hoje = new Date();
-      const inicioSemana = new Date(hoje);
-      inicioSemana.setDate(hoje.getDate() - hoje.getDay()); // Domingo
-      inicioSemana.setHours(0, 0, 0, 0);
-      const fimSemana = new Date(inicioSemana);
-      fimSemana.setDate(inicioSemana.getDate() + 6); // Sábado
-      fimSemana.setHours(23, 59, 59, 999);
-      
-      console.log(`🔄 Removendo treinos existentes da semana (${inicioSemana.toISOString()} até ${fimSemana.toISOString()})...`);
-      
-      // Remover TODOS os treinos da semana atual antes de gerar novos
-      const treinosParaRemover = await prisma.treino.findMany({
-        where: {
-          userId,
-          data: {
-            gte: inicioSemana,
-            lte: fimSemana
-          }
-        },
-        select: { id: true }
-      });
-      
-      if (treinosParaRemover.length > 0) {
-        console.log(`🗑️ Removendo ${treinosParaRemover.length} treino(s) existente(s) da semana...`);
-        await prisma.treino.deleteMany({
-          where: {
-            userId,
-            id: {
-              in: treinosParaRemover.map(t => t.id)
-            }
-          }
-        });
-        console.log(`✅ ${treinosParaRemover.length} treino(s) removido(s) com sucesso.`);
-      } else {
-        console.log(`ℹ️ Nenhum treino existente encontrado para remover nesta semana.`);
-      }
-      
-      // Usar gerarTreinos30Dias que gera treinos para 30 dias (inclui a semana)
-      console.log(`🚀 Gerando novos treinos para a semana...`);
-      const treinos = await treinoService.gerarTreinos30Dias(userId);
-      
-      // Filtrar apenas os treinos da semana atual
-      const treinosSemana = treinos.filter((t: any) => {
-        const dataTreino = new Date(t.data);
-        return dataTreino >= inicioSemana && dataTreino <= fimSemana;
-      });
-      
-      console.log(`✅ ${treinosSemana.length} treino(s) gerado(s) para a semana atual.`);
-      
-      return res.status(201).json({
-        message: 'Treinos da semana gerados com sucesso',
-        treinos: treinosSemana
-      });
-    }
-
-    // Garantir que a data está no formato correto
-    let dataTreino: Date;
-    if (data) {
-      // Se a data vem como string YYYY-MM-DD, criar Date corretamente
-      if (typeof data === 'string') {
-        dataTreino = new Date(data + 'T00:00:00.000Z');
-      } else {
-        dataTreino = new Date(data);
-      }
-      // Garantir que a data está no início do dia
-      dataTreino.setUTCHours(0, 0, 0, 0);
-    } else {
-      dataTreino = new Date();
-      dataTreino.setUTCHours(0, 0, 0, 0);
-    }
-    
-    console.log('📅 Gerando treino para data:', dataTreino.toISOString());
-    const treino = await treinoService.gerarTreinoDoDia(userId, dataTreino);
-
-    res.status(201).json({
-      message: 'Treino gerado com sucesso',
-      treino
+    console.log('📥 [CONTROLLER] Requisição de geração de treino recebida:', {
+      userId,
+      data,
+      gerarSemana
     });
+
+    // Usar função centralizada para gerar treinos
+    const resultado = await treinoGeradorService.gerarTreinoComIA(
+      userId,
+      data,
+      gerarSemana === true
+    );
+
+    const statusCode = resultado.treinos.length > 0 ? 201 : 200;
+
+    if (gerarSemana) {
+      // Retornar array de treinos para semana
+      res.status(statusCode).json({
+        message: resultado.mensagem,
+        treinos: resultado.treinos,
+        removidos: resultado.removidos,
+        quantidadeGerados: resultado.treinos.length
+      });
+    } else {
+      // Retornar único treino para dia
+      res.status(statusCode).json({
+        message: resultado.mensagem,
+        treino: resultado.treinos[0],
+        removidos: resultado.removidos
+      });
+    }
   } catch (error: any) {
-    console.error('❌ Erro ao gerar treino:', error);
+    console.error('❌ [CONTROLLER] Erro ao gerar treino:', error);
     console.error('📋 Detalhes do erro:', {
       message: error.message,
       stack: error.stack,
@@ -101,22 +55,17 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
     
     // Verificar tipo de erro para mensagem mais específica
     let errorMessage = error.message || 'Erro ao gerar treino';
+    let statusCode = 500;
     
     if (error.message?.includes('Perfil não encontrado')) {
-      return res.status(404).json({
-        error: 'Perfil não encontrado',
-        message: 'Complete o onboarding primeiro antes de gerar treinos.'
-      });
+      statusCode = 404;
+      errorMessage = 'Complete o onboarding primeiro antes de gerar treinos.';
+    } else if (error.message?.includes('frequência semanal') || error.message?.includes('experiência')) {
+      statusCode = 400;
+      errorMessage = 'Seu perfil precisa estar completo para gerar treinos. Verifique frequência semanal, experiência e objetivo.';
     }
     
-    if (error.message?.includes('frequência semanal') || error.message?.includes('experiência')) {
-      return res.status(400).json({
-        error: 'Dados do perfil incompletos',
-        message: 'Seu perfil precisa estar completo para gerar treinos. Verifique frequência semanal, experiência e objetivo.'
-      });
-    }
-    
-    res.status(500).json({
+    res.status(statusCode).json({
       error: 'Erro ao gerar treino',
       message: errorMessage
     });

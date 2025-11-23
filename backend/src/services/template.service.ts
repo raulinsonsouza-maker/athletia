@@ -428,27 +428,8 @@ export async function criarTreinoDoTemplate(
 ): Promise<any> {
   console.log(`🏋️ Criando treino do template...`);
 
-  // Verificar se já existe treino para esta data e remover para gerar novo
-  const inicioDia = new Date(data);
-  inicioDia.setHours(0, 0, 0, 0);
-  const fimDia = new Date(data);
-  fimDia.setHours(23, 59, 59, 999);
-
-  const treinoExistente = await prisma.treino.findFirst({
-    where: {
-      userId,
-      data: { gte: inicioDia, lte: fimDia }
-    }
-  });
-
-  // Se existe treino, remover para gerar um novo (quando usuário solicita explicitamente)
-  if (treinoExistente) {
-    console.log(`🔄 Treino já existe para esta data. Removendo para gerar novo treino com IA...`);
-    await prisma.treino.delete({
-      where: { id: treinoExistente.id }
-    });
-    console.log(`✅ Treino anterior removido. Prosseguindo com geração...`);
-  }
+  // NOTA: Remoção de treinos existentes é feita pela função centralizada (treino-gerador.service.ts)
+  // Esta função apenas cria o treino do template, assumindo que o treino anterior já foi removido
 
   // Buscar perfil para calcular cargas
   const perfil = await prisma.perfil.findUnique({
