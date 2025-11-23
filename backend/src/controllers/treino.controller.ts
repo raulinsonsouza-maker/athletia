@@ -12,9 +12,6 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
 
     // Se gerarSemana for true, gerar treinos para toda a semana
     if (gerarSemana) {
-      // Usar gerarTreinos30Dias que gera treinos para 30 dias (inclui a semana)
-      const treinos = await treinoService.gerarTreinos30Dias(userId);
-      // Filtrar apenas os treinos da semana atual
       const hoje = new Date();
       const inicioSemana = new Date(hoje);
       inicioSemana.setDate(hoje.getDate() - hoje.getDay()); // Domingo
@@ -23,10 +20,46 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
       fimSemana.setDate(inicioSemana.getDate() + 6); // Sábado
       fimSemana.setHours(23, 59, 59, 999);
       
+      console.log(`🔄 Removendo treinos existentes da semana (${inicioSemana.toISOString()} até ${fimSemana.toISOString()})...`);
+      
+      // Remover TODOS os treinos da semana atual antes de gerar novos
+      const treinosParaRemover = await prisma.treino.findMany({
+        where: {
+          userId,
+          data: {
+            gte: inicioSemana,
+            lte: fimSemana
+          }
+        },
+        select: { id: true }
+      });
+      
+      if (treinosParaRemover.length > 0) {
+        console.log(`🗑️ Removendo ${treinosParaRemover.length} treino(s) existente(s) da semana...`);
+        await prisma.treino.deleteMany({
+          where: {
+            userId,
+            id: {
+              in: treinosParaRemover.map(t => t.id)
+            }
+          }
+        });
+        console.log(`✅ ${treinosParaRemover.length} treino(s) removido(s) com sucesso.`);
+      } else {
+        console.log(`ℹ️ Nenhum treino existente encontrado para remover nesta semana.`);
+      }
+      
+      // Usar gerarTreinos30Dias que gera treinos para 30 dias (inclui a semana)
+      console.log(`🚀 Gerando novos treinos para a semana...`);
+      const treinos = await treinoService.gerarTreinos30Dias(userId);
+      
+      // Filtrar apenas os treinos da semana atual
       const treinosSemana = treinos.filter((t: any) => {
         const dataTreino = new Date(t.data);
         return dataTreino >= inicioSemana && dataTreino <= fimSemana;
       });
+      
+      console.log(`✅ ${treinosSemana.length} treino(s) gerado(s) para a semana atual.`);
       
       return res.status(201).json({
         message: 'Treinos da semana gerados com sucesso',

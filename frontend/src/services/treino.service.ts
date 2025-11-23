@@ -123,10 +123,32 @@ export const buscarTreinoDoDia = async (): Promise<TreinoCompleto | null> => {
  * Gerar treino do dia ou semana completa
  */
 export const gerarTreino = async (data?: string, gerarSemana: boolean = false): Promise<any> => {
-  const response = await api.post('/treino/gerar', {
-    data,
-    gerarSemana
-  })
-  return response.data
+  try {
+    const body: { data?: string; gerarSemana: boolean } = {
+      gerarSemana
+    }
+    
+    // Se data for fornecida, garantir formato correto
+    if (data) {
+      // Normalizar para YYYY-MM-DD
+      const dataObj = new Date(data)
+      if (isNaN(dataObj.getTime())) {
+        throw new Error('Data inválida')
+      }
+      dataObj.setHours(12, 0, 0, 0) // Evitar problemas de timezone
+      body.data = dataObj.toISOString().split('T')[0]
+    }
+    
+    console.log('📤 Enviando requisição para gerar treino:', body)
+    
+    const response = await api.post('/treino/gerar', body)
+    
+    console.log('📥 Resposta do servidor:', response.data)
+    
+    return response.data
+  } catch (error: any) {
+    console.error('❌ Erro na requisição de gerar treino:', error)
+    throw error
+  }
 }
 

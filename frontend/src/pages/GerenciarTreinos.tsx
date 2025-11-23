@@ -255,22 +255,48 @@ export default function GerenciarTreinos() {
 
     try {
       setGerandoSemana(true)
-      await gerarTreino(undefined, true)
-      showToast('Semana gerada com sucesso!', 'success')
+      console.log('🔄 Iniciando geração da semana completa com IA...')
+      showToast('Removendo treinos existentes da semana e gerando novos treinos com IA...', 'info')
+      
+      const resultado = await gerarTreino(undefined, true)
+      
+      console.log('✅ Semana gerada com sucesso:', resultado)
+      
+      if (resultado && resultado.treinos && resultado.treinos.length > 0) {
+        showToast(`${resultado.treinos.length} treino(s) gerado(s) com sucesso para a semana!`, 'success')
+      } else {
+        showToast('Semana gerada com sucesso!', 'success')
+      }
+      
+      // Aguardar um pouco para garantir que o backend processou tudo
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Recarregar dados
       await carregarDados()
       await carregarTreinosPorPeriodo()
     } catch (error: any) {
-      console.error('Erro ao gerar semana:', error)
+      console.error('❌ Erro ao gerar semana:', error)
+      console.error('📋 Detalhes do erro:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      })
       
       // Tratar diferentes tipos de erro
       if ((error as any).isNetworkError || !error.response) {
         showToast('Erro de conexão. Verifique sua internet.', 'error')
       } else if (error.response?.status === 401) {
         showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status === 404) {
+        const msg = error.response?.data?.message || 'Perfil não encontrado. Complete o onboarding primeiro.'
+        showToast(msg, 'error')
+      } else if (error.response?.status === 400) {
+        const msg = error.response?.data?.message || error.response?.data?.error || 'Dados inválidos. Verifique seu perfil.'
+        showToast(msg, 'error')
       } else if (error.response?.status >= 500) {
         showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
       } else {
-        const errorMessage = error.response?.data?.message || error.message || 'Erro ao gerar semana. Tente novamente.'
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Erro ao gerar semana. Tente novamente.'
         showToast(errorMessage, 'error')
       }
     } finally {

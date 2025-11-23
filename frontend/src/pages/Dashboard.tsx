@@ -5,7 +5,6 @@ import { obterResumoDashboard, ResumoDashboard } from '../services/dashboard.ser
 import { NotificationService } from '../services/notifications.service'
 import Navbar from '../components/Navbar'
 import HeaderInteligente from '../components/HeaderInteligente'
-import MinhaSemana from '../components/MinhaSemana'
 import TreinosRecent from '../components/TreinosRecent'
 import MinhaEvolucao from '../components/MinhaEvolucao'
 import ChamadoAcao from '../components/ChamadoAcao'
@@ -166,22 +165,26 @@ export default function Dashboard() {
         {/* 2. Mensagem Motivacional */}
         <MensagemMotivacional mensagem={resumo.mensagemMotivacional} />
 
-        {/* 3. Minha Semana - Calendário Visual Compacto */}
-        {resumo.treinosSemanais && (
+        {/* 3. Link para Visualizar Semana - Compacto */}
+        {resumo.treinosSemanais && resumo.treinosSemanais.length > 0 && (
           <div className="mb-8">
-            <MinhaSemana
-              treinos={resumo.treinosSemanais}
-              treinoHojeId={resumo.treinoHoje?.id}
-              progressoSemanal={resumo.progressoSemanal}
-              mostrarProgresso={false}
-            />
-            <div className="text-center mt-4">
-              <button
-                onClick={() => navigate('/minha-semana')}
-                className="btn-secondary text-sm"
-              >
-                Ver Semana Completa
-              </button>
+            <div className="card bg-gradient-to-br from-primary/5 to-dark-lighter border border-primary/20 p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-light mb-1">Minha Semana</h3>
+                  <p className="text-sm text-light-muted">
+                    {resumo.progressoSemanal.concluidos} de {resumo.progressoSemanal.meta} treinos concluídos esta semana
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/gerenciar-treinos')}
+                  className="btn-secondary text-sm whitespace-nowrap"
+                  aria-label="Ver semana completa de treinos"
+                  title="Visualizar todos os treinos da semana"
+                >
+                  Ver Semana
+                </button>
+              </div>
             </div>
           </div>
         )}

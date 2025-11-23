@@ -911,7 +911,7 @@ export async function gerarTreinoDoDia(
   // 3. Se não encontrou template ou falhou, usar método antigo (fallback)
   logDebug(`📋 Usando método de geração dinâmica (fallback)...`);
 
-  // Verificar se já existe treino para esta data
+  // Verificar se já existe treino para esta data e removê-lo para gerar novo
   const inicioDia = new Date(data);
   inicioDia.setHours(0, 0, 0, 0);
   const fimDia = new Date(data);
@@ -921,18 +921,16 @@ export async function gerarTreinoDoDia(
     where: {
       userId,
       data: { gte: inicioDia, lte: fimDia }
-    },
-    include: {
-      exercicios: {
-        include: { exercicio: true },
-        orderBy: { ordem: 'asc' }
-      }
     }
   });
 
+  // Se existe treino, remover para gerar novo (quando usuário solicita explicitamente)
   if (treinoExistente) {
-    logDebug('✅ Treino já existe para esta data');
-    return treinoExistente;
+    logDebug(`🔄 Treino existente encontrado (criado por: ${treinoExistente.criadoPor}). Removendo para gerar novo treino com IA...`);
+    await prisma.treino.delete({
+      where: { id: treinoExistente.id }
+    });
+    logDebug('✅ Treino anterior removido. Prosseguindo com geração de novo treino...');
   }
 
   // 3. Determinar grupos musculares do dia (SIMPLIFICADO)
@@ -1713,26 +1711,11 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
         // Determinar tipo de treino (A, B ou C) baseado no ciclo ANTES de verificar existência
         const tipoTreino = determinarTipoTreinoABC(divisao, ciclo);
         
-        if (existe && existe.exercicios && existe.exercicios.length > 0) {
-          // Verificar se o tipo do treino existente está correto
-          console.log(`⏭️ Treino já existe para ${dataTreino.toLocaleDateString('pt-BR')} - Tipo existente: ${existe.tipo}, Tipo esperado: ${tipoTreino} - Ciclo: ${ciclo}`);
-          
-          // Se o tipo está incorreto, deletar e recriar
-          if (existe.tipo !== tipoTreino) {
-            console.log(`⚠️ Tipo incorreto! Deletando treino existente e recriando com tipo ${tipoTreino}...`);
-            await prisma.treino.delete({ where: { id: existe.id } });
-            // Continuar para gerar novo treino com tipo correto
-          } else {
-            // Tipo está correto, apenas incrementar ciclo e continuar
-            ciclo++;
-            treinos.push(existe);
-            continue;
-          }
-        }
-
-        // Se existe mas sem exercícios, deletar
+        // Se existe treino, sempre remover para garantir geração consistente
         if (existe) {
+          console.log(`🔄 Treino existente encontrado para ${dataTreino.toLocaleDateString('pt-BR')}. Removendo para gerar novo...`);
           await prisma.treino.delete({ where: { id: existe.id } });
+          console.log(`✅ Treino anterior removido. Prosseguindo com geração...`);
         }
         console.log(`💪 Dia ${dataTreino.toLocaleDateString('pt-BR')} - Divisão: ${divisao} - Ciclo: ${ciclo} - Tipo calculado: ${tipoTreino}`);
 

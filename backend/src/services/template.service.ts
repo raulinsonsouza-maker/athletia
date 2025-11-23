@@ -428,7 +428,7 @@ export async function criarTreinoDoTemplate(
 ): Promise<any> {
   console.log(`🏋️ Criando treino do template...`);
 
-  // Verificar se já existe treino para esta data
+  // Verificar se já existe treino para esta data e remover para gerar novo
   const inicioDia = new Date(data);
   inicioDia.setHours(0, 0, 0, 0);
   const fimDia = new Date(data);
@@ -441,35 +441,13 @@ export async function criarTreinoDoTemplate(
     }
   });
 
+  // Se existe treino, remover para gerar um novo (quando usuário solicita explicitamente)
   if (treinoExistente) {
-    console.log(`✅ Treino já existe para esta data, verificando cardio e alongamento...`);
-    
-    // Garantir que treino existente tem cardio e alongamento
-    const { garantirCardioEAlongamento } = await import('./treino.service');
-    const resultado = await garantirCardioEAlongamento(treinoExistente.id, data);
-    
-    if (resultado.cardioAdicionado || resultado.alongamentoAdicionado) {
-      console.log(`✅ Cardio/Alongamento adicionados ao treino existente`);
-    }
-    
-    // Definir treino existente como ativo
-    try {
-      const { definirTreinoAtivo } = await import('./treino.service');
-      await definirTreinoAtivo(userId, treinoExistente.id);
-    } catch (error) {
-      console.error('Erro ao definir treino como ativo:', error);
-    }
-
-    // Retornar treino atualizado
-    return await prisma.treino.findUnique({
-      where: { id: treinoExistente.id },
-      include: {
-        exercicios: {
-          include: { exercicio: true },
-          orderBy: { ordem: 'asc' }
-        }
-      }
+    console.log(`🔄 Treino já existe para esta data. Removendo para gerar novo treino com IA...`);
+    await prisma.treino.delete({
+      where: { id: treinoExistente.id }
     });
+    console.log(`✅ Treino anterior removido. Prosseguindo com geração...`);
   }
 
   // Buscar perfil para calcular cargas

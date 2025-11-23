@@ -98,23 +98,44 @@ export default function ModalTrocarTreino({
         setGerando(true)
         try {
           // Garantir que a data está no formato correto (YYYY-MM-DD)
-          const dataFormatada = data.toISOString().split('T')[0]
-          console.log('Gerando treino para data:', dataFormatada)
+          // Normalizar a data para UTC para evitar problemas de timezone
+          const dataNormalizada = new Date(data)
+          dataNormalizada.setHours(12, 0, 0, 0) // Meio-dia para evitar problemas de timezone
+          const dataFormatada = dataNormalizada.toISOString().split('T')[0]
+          
+          console.log('🔄 Gerando treino com IA para data:', {
+            dataOriginal: data,
+            dataFormatada,
+            dataISO: dataNormalizada.toISOString()
+          })
           
           const resultado = await gerarTreino(dataFormatada, false)
-          console.log('Treino gerado com sucesso:', resultado)
-          showToast('Treino gerado com sucesso!', 'success')
-          // Aguardar um pouco antes de fechar para garantir que o treino foi salvo
-          setTimeout(async () => {
+          
+          console.log('✅ Treino gerado com sucesso:', resultado)
+          
+          // Verificar se o treino foi gerado corretamente
+          if (resultado && (resultado.treino || resultado.message || resultado.id)) {
+            showToast('Treino gerado com sucesso!', 'success')
+            // Aguardar um pouco para garantir que o backend processou tudo
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            // Recarregar dados e fechar modal
             await onSuccess()
             onClose()
-          }, 1000)
+          } else {
+            console.warn('⚠️ Resposta inesperada do servidor:', resultado)
+            // Mesmo sem resposta clara, recarregar dados (o backend pode ter gerado)
+            showToast('Treino pode ter sido gerado. Verificando...', 'info')
+            await new Promise(resolve => setTimeout(resolve, 1500))
+            await onSuccess()
+            onClose()
+          }
         } catch (err: any) {
-          console.error('Erro ao gerar treino:', err)
-          console.error('Detalhes do erro:', {
+          console.error('❌ Erro ao gerar treino:', err)
+          console.error('📋 Detalhes do erro:', {
             message: err.message,
             response: err.response?.data,
-            status: err.response?.status
+            status: err.response?.status,
+            dataEnviada: data.toISOString().split('T')[0]
           })
           
           // Tratar diferentes tipos de erro
@@ -122,12 +143,18 @@ export default function ModalTrocarTreino({
             showToast('Erro de conexão. Verifique sua internet.', 'error')
           } else if (err.response?.status === 401) {
             showToast('Sessão expirada. Faça login novamente.', 'error')
+          } else if (err.response?.status === 404) {
+            const msg = err.response?.data?.message || 'Perfil não encontrado. Complete o onboarding primeiro.'
+            showToast(msg, 'error')
+          } else if (err.response?.status === 400) {
+            const msg = err.response?.data?.message || err.response?.data?.error || 'Dados inválidos. Verifique seu perfil.'
+            showToast(msg, 'error')
           } else if (err.response?.status === 429) {
             showToast('Muitas requisições. Aguarde alguns segundos e tente novamente.', 'error')
           } else if (err.response?.status >= 500) {
             showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
           } else {
-            const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Erro ao gerar treino'
+            const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Erro ao gerar treino. Tente novamente.'
             showToast(errorMessage, 'error')
           }
         } finally {
