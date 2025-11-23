@@ -239,7 +239,7 @@ async function criarTreinoCompleto(input: CriarTreinoInput): Promise<any> {
         carga: ex.carga || null,
         rpe: ex.rpe || null,
         descanso: ex.descanso || null,
-        observacoes: ex.observacoes || null,
+        observacoes: ex.observacoes || undefined,
         concluido: false
       }
     });
@@ -274,6 +274,10 @@ async function gerarTreinoDiaComIA(userId: string, data: Date): Promise<any> {
 
   // 1. Tentar usar template pré-definido primeiro
   try {
+    if (!perfil.objetivo || !perfil.experiencia) {
+      throw new Error('Perfil incompleto. Objetivo e experiência são obrigatórios.');
+    }
+    
     const template = await buscarTemplateAdequado(
       perfil.objetivo,
       perfil.experiencia,
@@ -319,9 +323,9 @@ async function gerarTreinoDiaComIA(userId: string, data: Date): Promise<any> {
             ex.exercicioId,
             perfil.pesoAtual || 70,
             ex.exercicio?.grupoMuscularPrincipal || '',
-            perfil.experiencia,
+            perfil.experiencia || 'Iniciante',
             ex.repeticoes || '8-12',
-            perfil.objetivo
+            perfil.objetivo || 'Hipertrofia'
           );
 
           exerciciosTreino.push({
@@ -352,7 +356,7 @@ async function gerarTreinoDiaComIA(userId: string, data: Date): Promise<any> {
         // Ordenar exercícios usando inteligência (antes de validar)
         const exerciciosOrdenados = workoutIntelligence.ordenarExerciciosPorPrioridade(
           exerciciosAdaptados,
-          perfil.objetivo
+          perfil.objetivo || 'Hipertrofia'
         );
 
         // Reorganizar exerciciosTreino conforme ordenação inteligente
@@ -571,7 +575,7 @@ async function gerarTreinoABCComIntelligence(
       carga,
       rpe,
       descanso,
-      observacoes: null
+      observacoes: undefined
     });
   }
 
@@ -905,9 +909,9 @@ export async function criarTreinoPersonalizado(
           ex.exercicioId,
           perfil.pesoAtual || 70,
           exercicioDB.grupoMuscularPrincipal,
-          perfil.experiencia,
+          perfil.experiencia || 'Iniciante',
           ex.repeticoes || '8-12',
-          perfil.objetivo
+          perfil.objetivo || 'Hipertrofia'
         ) || null;
       }
     }
@@ -917,8 +921,8 @@ export async function criarTreinoPersonalizado(
     let descanso = ex.descanso;
     if (!rpe || !descanso) {
       const parametros = workoutIntelligence.calcularParametrosTreino(
-        perfil.objetivo,
-        perfil.experiencia,
+        perfil.objetivo || 'Hipertrofia',
+        perfil.experiencia || 'Iniciante',
         perfil.rpePreferido
       );
       rpe = ex.rpe || parametros.rpe;
@@ -1016,9 +1020,9 @@ export async function aplicarTemplatePersonalizado(
         templateEx.exercicioId,
         perfil.pesoAtual || 70,
         templateEx.exercicio?.grupoMuscularPrincipal || '',
-        perfil.experiencia,
+        perfil.experiencia || 'Iniciante',
         templateEx.repeticoes || '8-12',
-        perfil.objetivo
+        perfil.objetivo || 'Hipertrofia'
       ) || null;
     }
 
@@ -1028,9 +1032,9 @@ export async function aplicarTemplatePersonalizado(
       series: templateEx.series,
       repeticoes: templateEx.repeticoes,
       carga,
-      rpe: templateEx.rpe,
-      descanso: templateEx.descanso,
-      observacoes: templateEx.observacoes || null
+      rpe: (templateEx as any).rpe || undefined,
+      descanso: templateEx.descanso || undefined,
+      observacoes: templateEx.observacoes || undefined
     });
   }
 
@@ -1129,9 +1133,9 @@ export async function aplicarTreinoRecorrente(
         ex.exercicioId,
         perfil.pesoAtual || 70,
         ex.exercicio.grupoMuscularPrincipal,
-        perfil.experiencia,
+        perfil.experiencia || 'Iniciante',
         ex.repeticoes,
-        perfil.objetivo
+        perfil.objetivo || 'Hipertrofia'
       );
       
       // Usar a maior entre a carga original e a calculada (progressão)
@@ -1148,7 +1152,7 @@ export async function aplicarTreinoRecorrente(
       carga,
       rpe: ex.rpe,
       descanso: ex.descanso,
-      observacoes: ex.observacoes || null
+      observacoes: ex.observacoes || undefined
     });
   }
 
@@ -1236,9 +1240,9 @@ export async function duplicarTreino(
         ex.exercicioId,
         perfil.pesoAtual || 70,
         ex.exercicio.grupoMuscularPrincipal,
-        perfil.experiencia,
+        perfil.experiencia || 'Iniciante',
         ex.repeticoes,
-        perfil.objetivo
+        perfil.objetivo || 'Hipertrofia'
       );
       
       // Usar carga calculada se disponível
@@ -1255,7 +1259,7 @@ export async function duplicarTreino(
       carga,
       rpe: ex.rpe,
       descanso: ex.descanso,
-      observacoes: ex.observacoes || null
+      observacoes: ex.observacoes || undefined
     });
   }
 
@@ -1269,8 +1273,8 @@ export async function duplicarTreino(
     nome: treinoOriginal.nome,
     exercicios: exerciciosTreino,
     tipo: treinoOriginal.tipo,
-    letraTreino: treinoOriginal.letraTreino,
-    criadoPor: treinoOriginal.criadoPor
+    letraTreino: treinoOriginal.letraTreino || undefined,
+    criadoPor: (treinoOriginal.criadoPor as 'IA' | 'USUARIO' | 'TEMPLATE' | 'RECORRENTE') || 'USUARIO'
   });
 
   console.log(`✅ [CORE] Treino duplicado com sucesso!`);
