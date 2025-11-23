@@ -30,6 +30,13 @@ export default function ModalTrocarTreino({
   const [loading, setLoading] = useState(true)
   const { showToast, ToastContainer } = useToast()
 
+  // Resetar treino selecionado quando mudar de opção
+  useEffect(() => {
+    if (opcaoSelecionada === 'ia' || opcaoSelecionada === 'remover') {
+      setTreinoSelecionado(null)
+    }
+  }, [opcaoSelecionada])
+
   useEffect(() => {
     carregarOpcoes()
   }, [])
@@ -105,7 +112,7 @@ export default function ModalTrocarTreino({
           // Deletar o primeiro treino encontrado (deve haver apenas um por data)
           await api.delete(`/treino/personalizado/${treino.id}`)
           showToast('Treino removido com sucesso!', 'success')
-          onSuccess()
+          await onSuccess()
           onClose()
         } catch (err: any) {
           console.error('Erro ao remover treino:', err)
@@ -138,8 +145,8 @@ export default function ModalTrocarTreino({
           console.log('Treino gerado com sucesso:', resultado)
           showToast('Treino gerado com sucesso!', 'success')
           // Aguardar um pouco antes de fechar para garantir que o treino foi salvo
-          setTimeout(() => {
-            onSuccess()
+          setTimeout(async () => {
+            await onSuccess()
             onClose()
           }, 1000)
         } catch (err: any) {
@@ -169,9 +176,9 @@ export default function ModalTrocarTreino({
         return
       }
 
-      if (!treinoSelecionado) {
+      // Validar treino selecionado apenas para opções que precisam
+      if ((opcaoSelecionada === 'recorrente' || opcaoSelecionada === 'template') && !treinoSelecionado) {
         showToast('Selecione um treino', 'warning')
-        setGerando(false)
         return
       }
 
@@ -185,7 +192,7 @@ export default function ModalTrocarTreino({
           showToast('Template aplicado com sucesso!', 'success')
         }
 
-        onSuccess()
+        await onSuccess()
         onClose()
       } catch (err: any) {
         console.error('Erro ao aplicar treino:', err)
@@ -250,7 +257,10 @@ export default function ModalTrocarTreino({
               name="opcao"
               value="recorrente"
               checked={opcaoSelecionada === 'recorrente'}
-              onChange={() => setOpcaoSelecionada('recorrente')}
+              onChange={() => {
+                setOpcaoSelecionada('recorrente')
+                setTreinoSelecionado(null)
+              }}
               className="w-4 h-4 text-primary"
             />
             <span className="text-light">Aplicar treino A-G</span>
@@ -262,7 +272,10 @@ export default function ModalTrocarTreino({
               name="opcao"
               value="template"
               checked={opcaoSelecionada === 'template'}
-              onChange={() => setOpcaoSelecionada('template')}
+              onChange={() => {
+                setOpcaoSelecionada('template')
+                setTreinoSelecionado(null)
+              }}
               className="w-4 h-4 text-primary"
             />
             <span className="text-light">Aplicar template personalizado</span>
@@ -274,7 +287,10 @@ export default function ModalTrocarTreino({
               name="opcao"
               value="ia"
               checked={opcaoSelecionada === 'ia'}
-              onChange={() => setOpcaoSelecionada('ia')}
+              onChange={() => {
+                setOpcaoSelecionada('ia')
+                setTreinoSelecionado(null)
+              }}
               className="w-4 h-4 text-primary"
             />
             <span className="text-light">Gerar novo treino com IA</span>
@@ -286,7 +302,10 @@ export default function ModalTrocarTreino({
               name="opcao"
               value="remover"
               checked={opcaoSelecionada === 'remover'}
-              onChange={() => setOpcaoSelecionada('remover')}
+              onChange={() => {
+                setOpcaoSelecionada('remover')
+                setTreinoSelecionado(null)
+              }}
               className="w-4 h-4 text-primary"
             />
             <span className="text-light">Remover treino</span>

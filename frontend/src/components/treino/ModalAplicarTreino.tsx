@@ -74,7 +74,7 @@ export default function ModalAplicarTreino({
         return
       }
 
-      onSuccess()
+      await onSuccess()
       onClose()
     } catch (error: any) {
       console.error('Erro ao aplicar treino:', error)

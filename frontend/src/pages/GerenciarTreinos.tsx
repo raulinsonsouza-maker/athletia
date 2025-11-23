@@ -276,6 +276,7 @@ export default function GerenciarTreinos() {
       await deletarTreinoPersonalizado(id)
       showToast('Treino deletado com sucesso!', 'success')
       await carregarDados()
+      await carregarTreinosPorPeriodo()
     } catch (error: any) {
       console.error('Erro ao deletar treino:', error)
       
@@ -310,6 +311,7 @@ export default function GerenciarTreinos() {
       await deletarTemplatePersonalizado(id)
       showToast('Template deletado com sucesso!', 'success')
       await carregarDados()
+      // Templates não aparecem no calendário, então não precisa recarregar treinos do período
     } catch (error: any) {
       console.error('Erro ao deletar template:', error)
       
@@ -356,26 +358,41 @@ export default function GerenciarTreinos() {
       return
     }
 
+    // Validar que data não é no passado
+    const dataSelecionada = new Date(data)
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    if (dataSelecionada < hoje) {
+      showToast('Não é possível duplicar treino em data passada', 'error')
+      return
+    }
+
     try {
       await duplicarTreinoPersonalizado(treinoParaDuplicar.id, data)
       showToast('Treino duplicado com sucesso!', 'success')
       setMostrarModalDuplicar(false)
       setTreinoParaDuplicar(null)
       await carregarDados()
+      await carregarTreinosPorPeriodo()
     } catch (error: any) {
       console.error('Erro ao duplicar treino:', error)
       
       // Tratar diferentes tipos de erro
       if ((error as any).isNetworkError || !error.response) {
         showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
       } else if (error.response?.status === 404) {
         showToast('Treino não encontrado', 'error')
+      } else if (error.response?.status === 429) {
+        showToast('Muitas requisições. Aguarde alguns segundos e tente novamente.', 'error')
       } else if (error.response?.status >= 500) {
         showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
       } else {
-        const errorMessage = error.response?.data?.message || error.message || 'Erro ao duplicar treino'
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Erro ao duplicar treino'
         showToast(errorMessage, 'error')
       }
+      // Não fechar modal em caso de erro para permitir nova tentativa
     }
   }
 
@@ -432,7 +449,17 @@ export default function GerenciarTreinos() {
               dataInicio={dataInicioCustomizado}
               dataFim={dataFimCustomizado}
               onTrocarTreino={handleTrocarTreino}
-              onTreinoClick={() => navigate('/treino')}
+              onTreinoClick={(treino) => {
+                // Navegar para o treino específico com a data
+                if (treino && treino.data) {
+                  const dataStr = typeof treino.data === 'string' 
+                    ? treino.data.split('T')[0] 
+                    : new Date(treino.data).toISOString().split('T')[0]
+                  navigate(`/treino?data=${dataStr}`)
+                } else {
+                  navigate('/treino')
+                }
+              }}
             />
           </div>
         </div>
@@ -803,10 +830,11 @@ export default function GerenciarTreinos() {
               setMostrarModalTrocarTreino(false)
               setDiaSelecionado(null)
             }}
-            onSuccess={() => {
+            onSuccess={async () => {
               setMostrarModalTrocarTreino(false)
               setDiaSelecionado(null)
-              carregarDados()
+              await carregarDados()
+              await carregarTreinosPorPeriodo()
             }}
           />
         )}
@@ -820,10 +848,11 @@ export default function GerenciarTreinos() {
               setMostrarModalAplicarTreino(false)
               setTreinoParaAplicar(null)
             }}
-            onSuccess={() => {
+            onSuccess={async () => {
               setMostrarModalAplicarTreino(false)
               setTreinoParaAplicar(null)
-              carregarDados()
+              await carregarDados()
+              await carregarTreinosPorPeriodo()
             }}
           />
         )}
