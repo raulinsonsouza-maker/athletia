@@ -4,113 +4,15 @@ import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
 import * as treinoCore from '../services/treino-core.service';
+import * as treinoSimplesController from './treino-simples.controller';
+import * as treinoSimples from '../services/treino-simples.service';
+import * as treinoSimplesController from './treino-simples.controller';
 
-// Gerar treino do dia ou semana completa - USA CORE SERVICE
-export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId!;
-    const { data, gerarSemana } = req.body;
+// Gerar treino do dia ou semana completa - USA SERVIÇO SIMPLES
+export const gerarTreinoDoDia = treinoSimplesController.gerarTreino;
 
-    console.log('📥 [CONTROLLER] Requisição de geração de treino recebida:', {
-      userId,
-      data,
-      gerarSemana
-    });
-
-    // Usar CORE SERVICE para gerar treinos
-    const resultado = await treinoCore.gerarTreinoComIA(
-      userId,
-      data,
-      gerarSemana === true
-    );
-
-    const statusCode = resultado.treinos.length > 0 ? 201 : 200;
-
-    if (gerarSemana) {
-      // Retornar array de treinos para semana
-      res.status(statusCode).json({
-        message: resultado.mensagem,
-        treinos: resultado.treinos,
-        removidos: resultado.removidos,
-        quantidadeGerados: resultado.treinos.length
-      });
-    } else {
-      // Retornar único treino para dia
-      res.status(statusCode).json({
-        message: resultado.mensagem,
-        treino: resultado.treinos[0],
-        removidos: resultado.removidos
-      });
-    }
-  } catch (error: any) {
-    console.error('❌ [CONTROLLER] Erro ao gerar treino:', error);
-    console.error('📋 Detalhes do erro:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-      userId: req.userId
-    });
-    
-    // Verificar tipo de erro para mensagem mais específica
-    let errorMessage = error.message || 'Erro ao gerar treino';
-    let statusCode = 500;
-    
-    if (error.message?.includes('Perfil não encontrado')) {
-      statusCode = 404;
-      errorMessage = 'Complete o onboarding primeiro antes de gerar treinos.';
-    } else if (error.message?.includes('frequência semanal') || error.message?.includes('experiência')) {
-      statusCode = 400;
-      errorMessage = 'Seu perfil precisa estar completo para gerar treinos. Verifique frequência semanal, experiência e objetivo.';
-    }
-    
-    res.status(statusCode).json({
-      error: 'Erro ao gerar treino',
-      message: errorMessage
-    });
-  }
-};
-
-// Buscar treino do dia
-export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
-  try {
-    const userId = req.userId!;
-    const { data } = req.query;
-
-    let dataTreino: Date | undefined;
-    if (data) {
-      dataTreino = new Date(data as string);
-    }
-    
-    const resultado = await treinoService.buscarTreinoDoDia(userId, dataTreino);
-
-    // Se não encontrou, retornar 200 com null (não 404)
-    // Isso permite que o frontend tente gerar automaticamente
-    if (!resultado) {
-      return res.status(200).json({
-        treino: null,
-        message: 'Nenhum treino encontrado para esta data'
-      });
-    }
-
-    // Se for array, significa que há múltiplos treinos
-    if (Array.isArray(resultado)) {
-      return res.json({
-        treinos: resultado,
-        total: resultado.length,
-        multiplos: true
-      });
-    }
-
-    // Se for um único treino, retornar diretamente (compatibilidade)
-    res.json(resultado);
-  } catch (error: any) {
-    console.error('Erro ao buscar treino:', error);
-    res.status(500).json({
-      error: 'Erro ao buscar treino',
-      message: error.message
-    });
-  }
-};
+// Buscar treino do dia - USA SERVIÇO SIMPLES
+export const buscarTreinoDoDia = treinoSimplesController.buscarTreino;
 
 // Concluir ou desmarcar exercício
 export const concluirExercicio = async (req: AuthRequest, res: Response) => {
