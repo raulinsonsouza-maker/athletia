@@ -31,6 +31,7 @@ export default function GerenciarTreinos() {
   const [treinosRecorrentes, setTreinosRecorrentes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [gerandoSemana, setGerandoSemana] = useState(false)
+  const [gerandoTreinoHoje, setGerandoTreinoHoje] = useState(false)
 
   // Estados para navegação de períodos
   const [periodoSelecionado, setPeriodoSelecionado] = useState<TipoPeriodo>('semana')
@@ -213,6 +214,68 @@ export default function GerenciarTreinos() {
     } catch (error: any) {
       console.error('Erro ao carregar treinos por período:', error)
       // Não mostrar toast para não poluir a interface durante mudanças de período
+    }
+  }
+
+  const gerarTreinoHoje = async () => {
+    if (gerandoTreinoHoje) {
+      return // Prevenir múltiplas requisições
+    }
+
+    try {
+      setGerandoTreinoHoje(true)
+      const hoje = new Date().toISOString().split('T')[0]
+      await gerarTreino(hoje, false)
+      showToast('Treino do dia gerado com sucesso!', 'success')
+      await carregarDados()
+      await carregarTreinosPorPeriodo()
+    } catch (error: any) {
+      console.error('Erro ao gerar treino do dia:', error)
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao gerar treino. Tente novamente.'
+        showToast(errorMessage, 'error')
+      }
+    } finally {
+      setGerandoTreinoHoje(false)
+    }
+  }
+
+  const gerarTreinoHoje = async () => {
+    if (gerandoTreinoHoje) {
+      return // Prevenir múltiplas requisições
+    }
+
+    try {
+      setGerandoTreinoHoje(true)
+      const hoje = new Date().toISOString().split('T')[0]
+      await gerarTreino(hoje, false)
+      showToast('Treino do dia gerado com sucesso!', 'success')
+      await carregarDados()
+      await carregarTreinosPorPeriodo()
+    } catch (error: any) {
+      console.error('Erro ao gerar treino do dia:', error)
+      
+      // Tratar diferentes tipos de erro
+      if ((error as any).isNetworkError || !error.response) {
+        showToast('Erro de conexão. Verifique sua internet.', 'error')
+      } else if (error.response?.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+      } else if (error.response?.status >= 500) {
+        showToast('Erro no servidor. Tente novamente mais tarde.', 'error')
+      } else {
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao gerar treino. Tente novamente.'
+        showToast(errorMessage, 'error')
+      }
+    } finally {
+      setGerandoTreinoHoje(false)
     }
   }
 
@@ -469,9 +532,33 @@ export default function GerenciarTreinos() {
           {/* AcoesRapidas será criado como componente separado */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <button
+              onClick={gerarTreinoHoje}
+              disabled={gerandoTreinoHoje || loading}
+              className="btn-primary p-6 text-center flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Gerar treino do dia com IA"
+              title="Gere um treino personalizado para hoje usando nossa IA"
+            >
+              {gerandoTreinoHoje ? (
+                <>
+                  <div className="spinner w-8 h-8"></div>
+                  <span className="font-bold">Gerando...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span className="font-bold">Gerar Treino com IA</span>
+                  <span className="text-xs text-light-muted">Para hoje</span>
+                </>
+              )}
+            </button>
+            <button
               onClick={gerarSemanaCompleta}
               disabled={gerandoSemana || loading}
               className="btn-primary p-6 text-center flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Gerar semana completa com IA"
+              title="Gere treinos personalizados para toda a semana usando nossa IA"
             >
               {gerandoSemana ? (
                 <>
@@ -484,6 +571,7 @@ export default function GerenciarTreinos() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                   <span className="font-bold">Gerar Semana com IA</span>
+                  <span className="text-xs text-light-muted">7 dias</span>
                 </>
               )}
             </button>
