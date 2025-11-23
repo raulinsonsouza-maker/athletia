@@ -77,9 +77,6 @@ A documentação está organizada da seguinte forma:
 - **[docs/DECISOES_TECNICAS.md](./docs/DECISOES_TECNICAS.md)** - Registro de decisões técnicas
 - **[docs/GUIA_RAPIDO.md](./docs/GUIA_RAPIDO.md)** - Referência rápida para desenvolvimento
 
-### Relatórios e Análises
-- **[docs/RELATORIO_VALIDACAO_FLUXO_COMPLETO.md](./docs/RELATORIO_VALIDACAO_FLUXO_COMPLETO.md)** - Validação do fluxo do usuário
-- **[docs/RELATORIO_AUDITORIA_UX_UI.md](./docs/RELATORIO_AUDITORIA_UX_UI.md)** - Auditoria de UX/UI
 
 A documentação completa inclui:
 - Instalação detalhada

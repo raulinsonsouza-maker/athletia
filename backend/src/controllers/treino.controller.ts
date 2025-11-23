@@ -3,11 +3,9 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
-import * as treinoGeradorService from '../services/treino-gerador.service';
+import * as treinoCore from '../services/treino-core.service';
 
-import * as treinoGeradorService from '../services/treino-gerador.service';
-
-// Gerar treino do dia ou semana completa - FUNÇÃO CENTRALIZADA
+// Gerar treino do dia ou semana completa - USA CORE SERVICE
 export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -19,8 +17,8 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
       gerarSemana
     });
 
-    // Usar função centralizada para gerar treinos
-    const resultado = await treinoGeradorService.gerarTreinoComIA(
+    // Usar CORE SERVICE para gerar treinos
+    const resultado = await treinoCore.gerarTreinoComIA(
       userId,
       data,
       gerarSemana === true
@@ -495,38 +493,6 @@ export const buscarTreinosSemanais = async (req: AuthRequest, res: Response) => 
 
     // Filtrar apenas treinos com exercícios
     treinos = treinos.filter(t => t.exercicios && t.exercicios.length > 0);
-
-    // Se não houver treinos com exercícios, gerar automaticamente
-    if (treinos.length === 0) {
-      console.log('📋 Nenhum treino com exercícios encontrado. Gerando treinos semanais automaticamente...');
-      try {
-        // Deletar treinos sem exercícios primeiro
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        const fimSemana = new Date(hoje);
-        fimSemana.setDate(hoje.getDate() + 7);
-        fimSemana.setHours(23, 59, 59, 999);
-
-        await prisma.treino.deleteMany({
-          where: {
-            userId,
-            data: { gte: hoje, lte: fimSemana }
-          }
-        });
-
-        // Gerar novos treinos
-        await treinoService.gerarTreinos30Dias(userId);
-        treinos = await treinoService.buscarTreinosSemanais(userId);
-        
-        // Filtrar novamente apenas treinos com exercícios
-        treinos = treinos.filter(t => t.exercicios && t.exercicios.length > 0);
-        
-        console.log(`✅ ${treinos.length} treinos gerados e carregados`);
-      } catch (error: any) {
-        console.error('⚠️ Erro ao gerar treinos automaticamente:', error);
-        console.error('Stack:', error.stack);
-      }
-    }
 
     res.json({
       treinos,

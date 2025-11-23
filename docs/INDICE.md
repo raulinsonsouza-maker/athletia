@@ -46,49 +46,12 @@
   - Fluxo de trabalho
   - Estrutura de dados rápida
 
-### 📋 Relatórios Recentes
-- **[RELATORIO_VALIDACAO_FLUXO_COMPLETO.md](./RELATORIO_VALIDACAO_FLUXO_COMPLETO.md)**
-  - Validação ponta a ponta do fluxo do usuário
-  - Análise do primeiro contato ao primeiro treino
-  - Problemas encontrados e correções aplicadas
-
-- **[RELATORIO_AUDITORIA_UX_UI.md](./RELATORIO_AUDITORIA_UX_UI.md)**
-  - Auditoria completa de usabilidade e UX/UI
-  - Problemas identificados e soluções
-  - Melhorias implementadas
-
-### 📝 Planos e Melhorias
-- **[melhorias-painel-admin.plan.md](./melhorias-painel-admin.plan.md)**
-  - Plano de melhorias do painel administrativo
-  - Features futuras
-  - Roadmap de desenvolvimento
-
 ### 🔧 Decisões Técnicas
 - **[DECISOES_TECNICAS.md](./DECISOES_TECNICAS.md)**
   - Registro de decisões importantes
   - Justificativas
   - Impactos
   - Decisões pendentes
-
-### 📚 Conhecimento Especializado
-- **[CONHECIMENTO_PDFS.md](./CONHECIMENTO_PDFS.md)** ⭐
-  - Conhecimento extraído dos PDFs
-  - Terminologias e conceitos fundamentais
-  - Princípios de progressão
-  - Técnicas avançadas de treinamento
-  - Modelos de periodização
-  - Recomendações por nível
-
-### 📋 Fases do Projeto
-- **[fases/FASE_01_FUNDACAO.md](./fases/FASE_01_FUNDACAO.md)**
-  - Detalhes da Fase 1 (Concluída)
-  - Tarefas realizadas
-  - Resultados
-  - Lições aprendidas
-
-- **[fases/TEMPLATE_FASE.md](./fases/TEMPLATE_FASE.md)**
-  - Template para documentar novas fases
-  - Estrutura padrão
 
 ---
 
@@ -105,9 +68,8 @@
 3. Revise **[DECISOES_TECNICAS.md](./DECISOES_TECNICAS.md)** para entender decisões
 
 ### Para Documentar
-1. Use **[TEMPLATE_FASE.md](./fases/TEMPLATE_FASE.md)** para novas fases
-2. Atualize **[DOCUMENTACAO_COMPLETA.md](../DOCUMENTACAO_COMPLETA.md)** após mudanças importantes
-3. Registre decisões em **[DECISOES_TECNICAS.md](./DECISOES_TECNICAS.md)**
+1. Atualize **[DOCUMENTACAO_COMPLETA.md](../DOCUMENTACAO_COMPLETA.md)** após mudanças importantes
+2. Registre decisões em **[DECISOES_TECNICAS.md](./DECISOES_TECNICAS.md)**
 
 ---
 
@@ -126,9 +88,6 @@
 | Fluxos do sistema | ESPECIFICACAO_TECNICA.md → Fluxos Principais |
 | Decisões técnicas | DECISOES_TECNICAS.md |
 | Checklist de desenvolvimento | GUIA_RAPIDO.md |
-| Detalhes de uma fase | docs/fases/FASE_XX.md |
-| Relatórios de validação | RELATORIO_VALIDACAO_FLUXO_COMPLETO.md |
-| Auditoria UX/UI | RELATORIO_AUDITORIA_UX_UI.md |
 
 ---
 
@@ -142,4 +101,3 @@
 ---
 
 **Última Atualização:** 2024-12-20
-

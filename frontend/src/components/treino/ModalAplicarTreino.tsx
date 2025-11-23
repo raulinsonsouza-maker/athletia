@@ -105,6 +105,8 @@ export default function ModalAplicarTreino({
           <button
             onClick={onClose}
             className="text-light-muted hover:text-light"
+            aria-label="Fechar modal de aplicar treino"
+            title="Fechar"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -118,13 +120,16 @@ export default function ModalAplicarTreino({
         </div>
 
         <div className="mb-6">
-          <label className="block text-light mb-2">Data:</label>
+          <label htmlFor="data-aplicar-treino" className="block text-light mb-2">Data:</label>
           <input
+            id="data-aplicar-treino"
             type="date"
             value={data}
             onChange={(e) => setData(e.target.value)}
             className="input w-full"
             min={new Date().toISOString().split('T')[0]}
+            aria-label="Selecione a data para aplicar o treino"
+            title="Data para aplicar o treino"
           />
         </div>
 
@@ -140,6 +145,8 @@ export default function ModalAplicarTreino({
             onClick={handleAplicar}
             className="btn-primary flex-1"
             disabled={aplicando || !data}
+            aria-label={aplicando ? 'Aplicando treino...' : 'Aplicar treino na data selecionada'}
+            title={aplicando ? 'Aguarde...' : 'Aplicar treino'}
           >
             {aplicando ? (
               <span className="flex items-center gap-2">

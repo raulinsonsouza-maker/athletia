@@ -1,10 +1,17 @@
+/**
+ * @deprecated Este serviço foi substituído por treino-core.service.ts
+ * Use treino-core.service.ts para todas as operações de treino.
+ * Este arquivo será removido em versões futuras.
+ */
+
 import { prisma } from '../lib/prisma';
 import { gerarTreinoDoDia } from './treino.service';
 import { gerarTreinos30Dias } from './treino.service';
 
 /**
+ * @deprecated Use treinoCore.gerarTreinoComIA() em vez disso
  * Função centralizada para gerenciar remoção e geração de treinos com IA
- * Esta é a única função que deve ser usada para gerar treinos
+ * Esta função foi movida para treino-core.service.ts
  */
 
 /**

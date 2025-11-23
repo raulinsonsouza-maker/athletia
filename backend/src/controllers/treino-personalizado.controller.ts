@@ -1,8 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as treinoPersonalizadoService from '../services/treino-personalizado.service';
+import * as treinoCore from '../services/treino-core.service';
 
-// Criar treino personalizado
+// Criar treino personalizado - USA CORE SERVICE
 export const criarTreinoPersonalizado = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -22,13 +23,15 @@ export const criarTreinoPersonalizado = async (req: AuthRequest, res: Response) 
 
     const { diaSemana, recorrente, letraTreino } = req.body;
 
-    const treino = await treinoPersonalizadoService.criarTreinoPersonalizado(userId, {
+    // Usar CORE SERVICE para criar treino personalizado
+    const treino = await treinoCore.criarTreinoPersonalizado(userId, {
       data: new Date(data),
       nome,
       exercicios,
       diaSemana: diaSemana !== undefined ? parseInt(diaSemana) : undefined,
       recorrente: recorrente || false,
-      letraTreino: letraTreino || undefined
+      letraTreino: letraTreino || undefined,
+      criadoPor: 'USUARIO'
     });
 
     res.status(201).json({
@@ -322,7 +325,7 @@ export const deletarTemplatePersonalizado = async (req: AuthRequest, res: Respon
   }
 };
 
-// Aplicar template personalizado
+// Aplicar template personalizado - USA CORE SERVICE
 export const aplicarTemplatePersonalizado = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -335,15 +338,16 @@ export const aplicarTemplatePersonalizado = async (req: AuthRequest, res: Respon
       });
     }
 
-    const treino = await treinoPersonalizadoService.aplicarTemplatePersonalizado(
+    // Usar CORE SERVICE para aplicar template
+    const resultado = await treinoCore.aplicarTemplatePersonalizado(
       userId,
       id,
       new Date(data)
     );
 
     res.status(201).json({
-      message: 'Template aplicado com sucesso',
-      treino
+      message: resultado.mensagem,
+      treino: resultado.treino
     });
   } catch (error: any) {
     console.error('Erro ao aplicar template personalizado:', error);
@@ -453,7 +457,7 @@ export const criarOuEditarTreinoRecorrente = async (req: AuthRequest, res: Respo
   }
 };
 
-// Aplicar treino recorrente em data específica
+// Aplicar treino recorrente em data específica - USA CORE SERVICE
 export const aplicarTreinoRecorrente = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -466,15 +470,16 @@ export const aplicarTreinoRecorrente = async (req: AuthRequest, res: Response) =
       });
     }
 
-    const treino = await treinoPersonalizadoService.aplicarTreinoRecorrente(
+    // Usar CORE SERVICE para aplicar treino recorrente
+    const resultado = await treinoCore.aplicarTreinoRecorrente(
       userId,
       letra,
       new Date(data)
     );
 
     res.status(201).json({
-      message: 'Treino recorrente aplicado com sucesso',
-      treino
+      message: resultado.mensagem,
+      treino: resultado.treino
     });
   } catch (error: any) {
     console.error('Erro ao aplicar treino recorrente:', error);
