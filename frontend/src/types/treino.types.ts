@@ -135,6 +135,9 @@ export interface TreinoHomeResponse {
   secoes: TreinoHomeSection[]
   planosAtivos: TreinoCardResumo[]
   destaquePlanoAtual?: TreinoCardResumo | null
+  semana: TreinoSemanaDia[]
+  insights: TreinoHomeInsights
+  recomendacoes: string[]
 }
 
 export interface PlanoAtualExercicio {
@@ -163,5 +166,24 @@ export interface PlanoAtualResponse {
     totalTreinos: number
   }
   blocos: PlanoAtualBloco[]
+}
+
+export interface TreinoSemanaDia {
+  label: string
+  data: string
+  status: 'passado' | 'hoje' | 'futuro'
+  hasTreino: boolean
+  concluido: boolean
+  treinoId?: string | null
+}
+
+export interface TreinoHomeInsights {
+  progressoSemana: {
+    realizados: number
+    planejados: number
+  }
+  volumeTotal: number
+  seriesTotais: number
+  diasSemTreino: number
 }
 

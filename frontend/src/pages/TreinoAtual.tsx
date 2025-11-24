@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { obterPlanoAtualResumo } from '../services/treino.service'
 import { PlanoAtualResponse, PlanoAtualBloco } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
+import BottomTabs from '../components/navigation/BottomTabs'
 
 const formatarTempo = (tempo: number) => `${tempo} minutos`
 
@@ -36,7 +37,7 @@ export default function TreinoAtual() {
   const header = plano?.plano
 
   return (
-    <div className="min-h-screen bg-dark text-white">
+    <div className="min-h-screen bg-dark text-white pb-24">
       <div className="relative h-64">
         <img
           src={header?.imagemCapa || 'https://images.unsplash.com/photo-1600180758890-6b94519a8c51?auto=format&fit=crop&w=1000&q=80'}
@@ -96,7 +97,7 @@ export default function TreinoAtual() {
             indice={index + 1}
           />
         ))}
-      </div>
+      <BottomTabs active="meu-plano" />
       <ToastContainer />
     </div>
   )

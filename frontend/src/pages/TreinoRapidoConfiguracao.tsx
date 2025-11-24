@@ -76,7 +76,7 @@ export default function TreinoRapidoConfiguracao() {
             Ajuste a duração, dificuldade e local dos equipamentos para gerar um treino sob medida.
           </p>
           {gruposMusculares.length > 0 && (
-            <p className="text-xs uppercase tracking-[0.3em] text-emerald-400/80">
+            <p className="text-xs uppercase tracking-[0.3em] text-primary">
               {gruposMusculares.join(' • ')}
             </p>
           )}
@@ -91,8 +91,8 @@ export default function TreinoRapidoConfiguracao() {
                 <button
                   key={item}
                   onClick={() => setDuracao(item)}
-                  className={`rounded-2xl py-3 font-semibold border transition ${
-                    ativo ? 'border-emerald-300 bg-emerald-300/10 text-white' : 'border-white/10 text-white/70'
+                className={`rounded-2xl py-3 font-semibold border transition ${
+                  ativo ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-white/70'
                   }`}
                 >
                   {item} min
@@ -102,7 +102,7 @@ export default function TreinoRapidoConfiguracao() {
             <button
               onClick={() => setDuracao(0)}
               className={`rounded-2xl py-3 font-semibold border transition ${
-                duracao === 0 ? 'border-emerald-300 bg-emerald-300/10 text-white' : 'border-white/10 text-white/70'
+                duracao === 0 ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-white/70'
               }`}
             >
               Customizado
@@ -119,8 +119,8 @@ export default function TreinoRapidoConfiguracao() {
                 <button
                   key={nivel}
                   onClick={() => setDificuldade(nivel)}
-                  className={`rounded-2xl py-3 font-semibold border transition ${
-                    ativo ? 'border-emerald-300 bg-emerald-300/10 text-white' : 'border-white/10 text-white/70'
+                className={`rounded-2xl py-3 font-semibold border transition ${
+                  ativo ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-white/70'
                   }`}
                 >
                   {nivel}
@@ -139,8 +139,8 @@ export default function TreinoRapidoConfiguracao() {
                 <button
                   key={local}
                   onClick={() => setLocalTreino(local)}
-                  className={`rounded-2xl py-3 px-4 text-left font-semibold border transition ${
-                    ativo ? 'border-emerald-300 bg-emerald-300/10 text-white' : 'border-white/10 text-white/70'
+                className={`rounded-2xl py-3 px-4 text-left font-semibold border transition ${
+                  ativo ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-white/70'
                   }`}
                 >
                   {local}
@@ -155,16 +155,16 @@ export default function TreinoRapidoConfiguracao() {
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">Foco muscular</p>
             <label className="flex items-center gap-2 text-sm">
               Corpo todo
-              <div
-                className={`w-12 h-6 rounded-full transition-colors duration-200 ${
-                  corpoTodo ? 'bg-emerald-400/70' : 'bg-white/20'
-                }`}
-                onClick={() => {
-                  const novo = !corpoTodo
-                  setCorpoTodo(novo)
-                  if (novo) setFocoMuscular([])
-                }}
-              >
+                <div
+                  className={`w-12 h-6 rounded-full transition-colors duration-200 ${
+                    corpoTodo ? 'bg-primary/70' : 'bg-white/20'
+                  }`}
+                  onClick={() => {
+                    const novo = !corpoTodo
+                    setCorpoTodo(novo)
+                    if (novo) setFocoMuscular([])
+                  }}
+                >
                 <div
                   className={`w-5 h-5 bg-white rounded-full transition-transform duration-200 translate-y-0.5 ${
                     corpoTodo ? 'translate-x-[22px]' : 'translate-x-1'
@@ -181,8 +181,8 @@ export default function TreinoRapidoConfiguracao() {
                   <button
                     key={foco}
                     onClick={() => toggleFoco(foco)}
-                    className={`rounded-2xl py-5 px-3 border text-sm font-semibold transition ${
-                      ativo ? 'border-emerald-300 bg-emerald-300/15 text-white' : 'border-white/10 text-white/70'
+                  className={`rounded-2xl py-5 px-3 border text-sm font-semibold transition ${
+                    ativo ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-white/70'
                     }`}
                   >
                     {foco}
@@ -200,7 +200,7 @@ export default function TreinoRapidoConfiguracao() {
             className={`w-full py-4 rounded-full font-semibold text-lg transition ${
               loading
                 ? 'bg-white/10 text-white/40 cursor-not-allowed'
-                : 'bg-[#a7ff1d] text-dark shadow-[0_20px_40px_rgba(167,255,29,0.25)] hover:bg-[#c6ff5a]'
+                : 'bg-primary text-dark shadow-glow hover:bg-primary/90'
             }`}
           >
             {loading ? 'Gerando treino...' : 'Criar um novo treino rápido'}

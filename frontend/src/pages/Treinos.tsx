@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { obterHomeTreinos } from '../services/treino.service'
 import { TreinoHomeResponse, TreinoCardResumo, RecursoPersonalizado } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
+import BottomTabs from '../components/navigation/BottomTabs'
 
 const formatarDuracao = (minutos: number) => `${minutos} min`
 
@@ -178,6 +179,7 @@ export default function Treinos() {
         )}
       </div>
 
+      <BottomTabs active="treinos" />
       <ToastContainer />
     </div>
   )

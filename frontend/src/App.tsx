@@ -9,6 +9,7 @@ import Confirmacao from './pages/Confirmacao'
 import Dashboard from './pages/Dashboard'
 import Treinos from './pages/Treinos'
 import TreinoAtual from './pages/TreinoAtual'
+import MeuPlano from './pages/MeuPlano'
 import Historico from './pages/Historico'
 import Estatisticas from './pages/Estatisticas'
 import Perfil from './pages/Perfil'
@@ -44,6 +45,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meu-plano"
+            element={
+              <ProtectedRoute>
+                <MeuPlano />
               </ProtectedRoute>
             }
           />

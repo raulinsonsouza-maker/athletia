@@ -21,6 +21,25 @@ function selecionarCapa(grupo?: string | null): string {
   return CAPAS_TREINO[index];
 }
 
+function normalizarData(data: Date): Date {
+  const normalizada = new Date(data);
+  normalizada.setHours(0, 0, 0, 0);
+  return normalizada;
+}
+
+function extrairRepeticoes(valor: string): number {
+  const match = valor?.match(/\d+/);
+  return match ? parseInt(match[0], 10) : 10;
+}
+
+function calcularVolumeTreino(treino: any): number {
+  return treino.exercicios.reduce((total: number, exercicio: any) => {
+    const repeticoes = extrairRepeticoes(exercicio.repeticoes);
+    const carga = exercicio.carga || 0;
+    return total + exercicio.series * repeticoes * carga;
+  }, 0);
+}
+
 export async function obterResumoTreinos(userId: string) {
   const perfil = await prisma.perfil.findUnique({
     where: { userId }
@@ -42,7 +61,7 @@ export async function obterResumoTreinos(userId: string) {
       titulo: 'Meu Plano de Treino Atual',
       descricao: 'Veja os treinos da semana',
       icone: 'list',
-      destino: '/treino/atual'
+      destino: '/meu-plano'
     }
   ];
 
@@ -67,8 +86,7 @@ export async function obterResumoTreinos(userId: string) {
     destaque: template.descricao
   }));
 
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  const hoje = normalizarData(new Date());
 
   const proximosTreinos = await prisma.treino.findMany({
     where: {
@@ -104,6 +122,83 @@ export async function obterResumoTreinos(userId: string) {
     imagem: selecionarCapa(treino.exercicios[0]?.exercicio?.grupoMuscularPrincipal)
   }));
 
+  const inicioSemana = normalizarData(new Date(hoje));
+  const diaSemana = inicioSemana.getDay();
+  const diff = diaSemana === 0 ? -6 : 1 - diaSemana;
+  inicioSemana.setDate(inicioSemana.getDate() + diff);
+  const fimSemana = normalizarData(new Date(inicioSemana));
+  fimSemana.setDate(fimSemana.getDate() + 6);
+
+  const treinosSemana = await prisma.treino.findMany({
+    where: {
+      userId,
+      data: {
+        gte: inicioSemana,
+        lte: fimSemana
+      }
+    },
+    include: {
+      exercicios: true
+    },
+    orderBy: {
+      data: 'asc'
+    }
+  });
+
+  const mapaTreinosSemana = treinosSemana.reduce<Record<string, typeof treinosSemana>>((acc, treino) => {
+    const key = normalizarData(treino.data).toISOString();
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(treino);
+    return acc;
+  }, {});
+
+  const semana = Array.from({ length: 7 }).map((_, index) => {
+    const dataDia = normalizarData(new Date(inicioSemana));
+    dataDia.setDate(inicioSemana.getDate() + index);
+    const key = dataDia.toISOString();
+    const treinosDia = mapaTreinosSemana[key] || [];
+    const concluido = treinosDia.some(treino => treino.concluido);
+    const status = dataDia.getTime() === hoje.getTime()
+      ? 'hoje'
+      : dataDia.getTime() < hoje.getTime()
+        ? 'passado'
+        : 'futuro';
+
+    return {
+      label: `Dia ${index + 1}`,
+      data: dataDia.toISOString(),
+      status,
+      hasTreino: treinosDia.length > 0,
+      concluido,
+      treinoId: treinosDia[0]?.id || null
+    };
+  });
+
+  const realizados = treinosSemana.filter(treino => treino.concluido).length;
+  const planejados = treinosSemana.length;
+  const volumeTotal = treinosSemana.reduce((acc, treino) => acc + calcularVolumeTreino(treino), 0);
+  const seriesTotais = treinosSemana.reduce(
+    (acc, treino) => acc + treino.exercicios.reduce((soma: number, exercicio: any) => soma + exercicio.series, 0),
+    0
+  );
+  const diasSemTreino = semana.filter(dia => !dia.hasTreino).length;
+
+  const recomendacoes: string[] = [];
+  if (planejados > 0 && realizados < Math.ceil(planejados * 0.5)) {
+    recomendacoes.push('Adicione um treino extra nesta semana para manter o ritmo.');
+  }
+  if (diasSemTreino >= 3) {
+    recomendacoes.push('Separe alguns minutos para mobilidade nos dias sem treino.');
+  }
+  if (volumeTotal === 0) {
+    recomendacoes.push('Registre as cargas utilizadas para acompanhar sua evolução.');
+  }
+  if (recomendacoes.length === 0) {
+    recomendacoes.push('Excelente consistência! Continue seguindo seu plano.');
+  }
+
   return {
     recursos: recursosPersonalizados,
     secoes: [
@@ -115,7 +210,18 @@ export async function obterResumoTreinos(userId: string) {
       }
     ],
     planosAtivos,
-    destaquePlanoAtual: planosAtivos[0] || null
+    destaquePlanoAtual: planosAtivos[0] || null,
+    semana,
+    insights: {
+      progressoSemana: {
+        realizados,
+        planejados
+      },
+      volumeTotal,
+      seriesTotais,
+      diasSemTreino
+    },
+    recomendacoes
   };
 }
 
@@ -127,8 +233,7 @@ export async function buscarPlanoAtual(userId: string) {
   const experiencia = perfil?.experiencia || 'Intermediário';
   const local = perfil?.localTreino || 'Academia Comercial';
 
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
+  const hoje = normalizarData(new Date());
 
   const treinos = await prisma.treino.findMany({
     where: {
