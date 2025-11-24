@@ -22,7 +22,6 @@ export default function MeuPlano() {
   const { showToast, ToastContainer } = useToast()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
-  const [loadingHome, setLoadingHome] = useState(true)
   const [loadingPlano, setLoadingPlano] = useState(true)
 
   useEffect(() => {
@@ -33,8 +32,8 @@ export default function MeuPlano() {
       } catch (error) {
         console.error(error)
         showToast('Não foi possível carregar suas informações.', 'error')
-      } finally {
-        setLoadingHome(false)
+      } catch (error) {
+        console.error(error)
       }
     }
 
