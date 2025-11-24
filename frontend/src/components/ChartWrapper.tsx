@@ -32,6 +32,8 @@ interface LineChartProps {
       data: number[]
       borderColor?: string
       backgroundColor?: string
+      tension?: number
+      fill?: boolean | string
     }[]
   }
   title?: string
@@ -85,6 +87,7 @@ interface BarChartProps {
       data: number[]
       backgroundColor?: string | string[]
       borderColor?: string | string[]
+      borderWidth?: number
     }[]
   }
   title?: string
@@ -138,6 +141,7 @@ interface DoughnutChartProps {
       data: number[]
       backgroundColor?: string[]
       borderColor?: string[]
+      borderWidth?: number
     }[]
   }
   title?: string

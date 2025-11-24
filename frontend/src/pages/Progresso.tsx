@@ -194,6 +194,8 @@ export default function Progresso() {
   const grupos = calcularGruposMusculares()
   const volumePorSemana = calcularVolumePorSemana()
   const frequenciaPorSemana = calcularFrequenciaSemanal()
+  const progressLabels = Object.keys(estatisticas.progressaoPorGrupo)
+  const progressValues = Object.values(estatisticas.progressaoPorGrupo) as number[]
   const rangeEnd = new Date(rangeStart)
   rangeEnd.setDate(rangeStart.getDate() + 6)
   const rangeLabel = `${rangeStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')} - ${rangeEnd
@@ -412,7 +414,7 @@ export default function Progresso() {
             </div>
           )}
 
-          {Object.keys(estatisticas.progressaoPorGrupo).length > 0 && (
+          {progressLabels.length > 0 && (
             <div className="bg-white/5 border border-white/10 rounded-3xl p-4">
               <div className="flex items-center justify-between mb-4">
                 <div>
@@ -423,12 +425,12 @@ export default function Progresso() {
               <div className="h-60">
                 <BarChart
                   data={{
-                    labels: Object.keys(estatisticas.progressaoPorGrupo),
+                    labels: progressLabels,
                     datasets: [
                       {
                         label: 'Progressão (%)',
-                        data: Object.values(estatisticas.progressaoPorGrupo),
-                        backgroundColor: Object.values(estatisticas.progressaoPorGrupo).map((v: number) =>
+                        data: progressValues,
+                        backgroundColor: progressValues.map((v) =>
                           v > 0 ? 'rgba(16, 185, 129, 0.8)' : v < 0 ? 'rgba(248, 113, 113, 0.8)' : 'rgba(148, 163, 184, 0.8)'
                         ),
                         borderWidth: 0

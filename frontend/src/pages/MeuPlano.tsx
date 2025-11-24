@@ -4,6 +4,7 @@ import { obterHomeTreinos, obterPlanoAtualResumo } from '../services/treino.serv
 import { PlanoAtualResponse, TreinoHomeResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
+import AppHeader from '../components/navigation/AppHeader'
 
 const formatarDataCurta = (iso: string) => {
   const data = new Date(iso)
