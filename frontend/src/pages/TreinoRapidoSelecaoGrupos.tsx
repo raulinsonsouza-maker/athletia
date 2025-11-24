@@ -2,130 +2,113 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 
-// Grupos musculares específicos com ícones (baseado nas imagens)
-const GRUPOS_MUSCULARES_ESPECIFICOS = [
-  { id: 'Glúteos', nome: 'Glúteos', icon: '🦵' },
-  { id: 'Posteriores', nome: 'Posteriores', icon: '🦵' },
-  { id: 'Abdômen', nome: 'Abdômen', icon: '💪' },
-  { id: 'Adutores', nome: 'Adutores', icon: '🦵' },
-  { id: 'Trapézio', nome: 'Trapézio', icon: '💪' },
-  { id: 'Panturrilhas', nome: 'Panturrilhas', icon: '🦵' },
-  { id: 'Antebraços', nome: 'Antebraços', icon: '💪' },
-  { id: 'Oblíquos', nome: 'Oblíquos', icon: '💪' },
-  { id: 'Lombar', nome: 'Lombar', icon: '💪' },
-  { id: 'Abdutores', nome: 'Abdutores', icon: '🦵' }
+const GRUPOS_MUSCULARES = [
+  'Peito',
+  'Costas',
+  'Ombros',
+  'Bíceps',
+  'Tríceps',
+  'Quadríceps',
+  'Glúteos',
+  'Posteriores',
+  'Abdômen',
+  'Adutores',
+  'Trapézio',
+  'Panturrilhas',
+  'Antebraços',
+  'Oblíquos',
+  'Lombar',
+  'Abdutores'
 ]
+
+const MUSCLE_GRADIENT =
+  'bg-[radial-gradient(circle_at_top,_rgba(32,255,182,0.35),_rgba(32,255,182,0.05)_45%,_transparent)]'
 
 export default function TreinoRapidoSelecaoGrupos() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  const [gruposSelecionados, setGruposSelecionados] = useState<string[]>([])
-  const loading = false
+  const [selecionados, setSelecionados] = useState<string[]>([])
 
-  const toggleGrupo = (grupoId: string) => {
-    setGruposSelecionados(prev => {
-      if (prev.includes(grupoId)) {
-        return prev.filter(id => id !== grupoId)
-      } else {
-        return [...prev, grupoId]
-      }
-    })
+  const toggleGrupo = (grupo: string) => {
+    setSelecionados((prev) =>
+      prev.includes(grupo) ? prev.filter((item) => item !== grupo) : [...prev, grupo]
+    )
   }
 
-  const handleContinuar = () => {
-    if (gruposSelecionados.length === 0) {
-      showToast('Selecione pelo menos um grupo muscular', 'error')
+  const handleAvancar = () => {
+    if (selecionados.length === 0) {
+      showToast('Selecione ao menos um grupo muscular.', 'error')
       return
     }
-
-    // Passar para a próxima etapa com os grupos selecionados
     navigate('/treino-rapido/configuracao', {
-      state: { gruposMusculares: gruposSelecionados }
+      state: { gruposMusculares: selecionados }
     })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-900 via-teal-800 to-teal-900 text-white">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-dark text-white flex items-start justify-center px-4 py-10">
+      <div className="w-full max-w-xl bg-[#03121b] rounded-[32px] border border-white/5 shadow-2xl">
+        <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <div>
-            <h1 className="text-2xl font-bold">Treinos</h1>
-            <p className="text-teal-200">Treino Rápido</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-white/60 mb-1">Selecione</p>
+            <h1 className="text-2xl font-semibold">Treino Rápido</h1>
           </div>
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center hover:bg-teal-700 transition-colors"
+            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-lg hover:bg-white/10 transition"
           >
-            <span className="text-white text-xl">×</span>
+            ×
           </button>
         </div>
 
-        {/* Grid de Grupos Musculares */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {GRUPOS_MUSCULARES_ESPECIFICOS.map((grupo) => {
-            const selecionado = gruposSelecionados.includes(grupo.id)
+        <p className="px-6 text-sm text-white/70">
+          Escolha os grupos musculares que deseja trabalhar hoje. Combinaremos com o seu perfil
+          para montar um treino equilibrado.
+        </p>
+
+        <div className="grid grid-cols-3 gap-4 px-6 py-6 max-h-[60vh] overflow-y-auto">
+          {GRUPOS_MUSCULARES.map((grupo) => {
+            const ativo = selecionados.includes(grupo)
             return (
               <button
-                key={grupo.id}
-                onClick={() => toggleGrupo(grupo.id)}
-                className={`
-                  relative bg-white rounded-2xl p-4 aspect-square
-                  flex flex-col items-center justify-center
-                  transition-all duration-200
-                  ${selecionado 
-                    ? 'ring-4 ring-green-400 shadow-lg scale-105' 
-                    : 'hover:scale-105 hover:shadow-md'
-                  }
-                `}
+                key={grupo}
+                onClick={() => toggleGrupo(grupo)}
+                className={`aspect-square rounded-3xl border  transition-all duration-200 flex flex-col items-center justify-between py-4 px-3 ${
+                  ativo
+                    ? 'border-emerald-300/70 bg-emerald-400/5 shadow-[0_0_30px_rgba(0,255,214,0.25)]'
+                    : 'border-white/10 bg-white/2'
+                }`}
               >
-                {/* Ícone do grupo muscular */}
-                <div className={`
-                  text-6xl mb-2
-                  ${selecionado ? 'opacity-100' : 'opacity-60'}
-                `}>
-                  {grupo.icon}
+                <div
+                  className={`w-full flex-1 rounded-2xl ${MUSCLE_GRADIENT} border border-white/5 flex items-center justify-center`}
+                >
+                  <div
+                    className={`w-10 h-16 rounded-full border border-emerald-400/40 ${
+                      ativo ? 'bg-emerald-400/20' : 'bg-white/5'
+                    }`}
+                  />
                 </div>
-                
-                {/* Nome do grupo */}
-                <span className={`
-                  text-sm font-medium text-center
-                  ${selecionado ? 'text-teal-900' : 'text-gray-600'}
-                `}>
-                  {grupo.nome}
-                </span>
-
-                {/* Indicador de seleção */}
-                {selecionado && (
-                  <div className="absolute top-2 right-2 w-6 h-6 bg-green-400 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                )}
+                <span className="text-sm font-medium text-white mt-3">{grupo}</span>
               </button>
             )
           })}
         </div>
 
-        {/* Botão de ação */}
-        <button
-          onClick={handleContinuar}
-          disabled={gruposSelecionados.length === 0 || loading}
-          className={`
-            w-full py-4 rounded-full font-semibold text-lg
-            transition-all duration-200
-            ${gruposSelecionados.length === 0 || loading
-              ? 'bg-gray-500 cursor-not-allowed'
-              : 'bg-green-400 text-white hover:bg-green-500 active:scale-95'
-            }
-          `}
-        >
-          {loading ? 'Carregando...' : 'CRIAR UM NOVO TREINO RÁPIDO'}
-        </button>
-
-        <ToastContainer />
+        <div className="px-6 pb-6">
+          <button
+            onClick={handleAvancar}
+            className={`w-full py-4 rounded-full font-semibold text-lg ${
+              selecionados.length === 0
+                ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                : 'bg-[#a7ff1d] text-dark shadow-[0_20px_40px_rgba(167,255,29,0.25)] hover:bg-[#c6ff5a]'
+            } transition`}
+            disabled={selecionados.length === 0}
+          >
+            Criar um novo treino rápido
+          </button>
+        </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }
