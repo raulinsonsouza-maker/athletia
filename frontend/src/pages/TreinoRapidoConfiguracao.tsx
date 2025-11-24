@@ -44,7 +44,7 @@ export default function TreinoRapidoConfiguracao() {
 
     setLoading(true)
     try {
-      const treino = await treinoRapidoService.criarTreinoRapido({
+      await treinoRapidoService.criarTreinoRapido({
         gruposMusculares: corpoTodo ? undefined : gruposMusculares,
         duracao,
         dificuldade,
