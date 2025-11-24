@@ -999,7 +999,7 @@ export default function Landing() {
                 Isso afeta ganho de massa muscular, perda de gordura e distribuição de força
               </p>
               
-              <div className="grid grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 max-w-3xl mx-auto">
                 {[
                   { 
                     value: 'Masculino', 
@@ -1008,6 +1008,11 @@ export default function Landing() {
                   { 
                     value: 'Feminino', 
                     image: '/images/onboarding/Mulher.png'
+                  },
+                  {
+                    value: 'Outro',
+                    icon: '🌈',
+                    description: 'Quero recomendações neutras'
                   }
                 ].map((sexo) => {
                   const selected = onboardingData.sexo === sexo.value
@@ -1031,11 +1036,22 @@ export default function Landing() {
                       aria-pressed={selected}
                     >
                       <div className="w-full aspect-[3/4] bg-dark-lighter overflow-hidden">
-                        <img 
-                          src={sexo.image} 
-                          alt={sexo.value}
-                          className="w-full h-full object-cover"
-                        />
+                        {sexo.image ? (
+                          <img 
+                            src={sexo.image} 
+                            alt={sexo.value}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex flex-col items-center justify-center text-white">
+                            <span className="text-5xl mb-2" aria-hidden>
+                              {sexo.icon}
+                            </span>
+                            <p className="text-sm font-medium px-4 text-center">
+                              {sexo.description}
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-4">
                         <div className="text-white font-bold text-xl">{sexo.value}</div>

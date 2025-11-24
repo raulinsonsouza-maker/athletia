@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { treinoRapidoService, GruposMuscularesResponse } from '../services/treino-rapido.service'
 import { useToast } from '../hooks/useToast'
 
 // Grupos musculares específicos com ícones (baseado nas imagens)
@@ -21,7 +20,7 @@ export default function TreinoRapidoSelecaoGrupos() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
   const [gruposSelecionados, setGruposSelecionados] = useState<string[]>([])
-  const [loading, setLoading] = useState(false)
+  const loading = false
 
   const toggleGrupo = (grupoId: string) => {
     setGruposSelecionados(prev => {

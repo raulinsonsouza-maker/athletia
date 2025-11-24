@@ -6,7 +6,6 @@ import * as progressaoService from '../services/progressao.service';
 import * as treinoCore from '../services/treino-core.service';
 import * as treinoSimplesController from './treino-simples.controller';
 import * as treinoSimples from '../services/treino-simples.service';
-import * as treinoSimplesController from './treino-simples.controller';
 
 // Gerar treino do dia ou semana completa - USA SERVIÇO SIMPLES
 export const gerarTreinoDoDia = treinoSimplesController.gerarTreino;

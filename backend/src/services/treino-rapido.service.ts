@@ -30,8 +30,7 @@ const MAPEAMENTO_GRUPOS_ESPECIFICOS: Record<string, string[]> = {
   'Ombros': ['Ombros', 'Tríceps'],
   'Bíceps': ['Bíceps'],
   'Tríceps': ['Tríceps'],
-  'Quadríceps': ['Quadríceps'],
-  'Panturrilhas': ['Panturrilhas']
+  'Quadríceps': ['Quadríceps']
 };
 
 /**
@@ -178,7 +177,9 @@ export async function gerarTreinoRapido(
     if (data.dificuldade === 'Iniciante') {
       exercicios = exercicios.filter(ex => ex.nivelDificuldade !== 'Avançado');
     } else if (data.dificuldade === 'Intermediário') {
-      exercicios = exercicios.filter(ex => ex.nivelDificuldade !== 'Avançado' || ex.nivelDificuldade === 'Intermediário');
+      exercicios = exercicios.filter(ex => {
+        return ex.nivelDificuldade === 'Intermediário' || ex.nivelDificuldade === 'Iniciante';
+      });
     }
 
     // Ordenar por prioridade (compostos primeiro)
