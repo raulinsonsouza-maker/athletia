@@ -33,6 +33,10 @@ import {
   configurarTreinoPadrao,
   removerConfiguracaoTreinoPadrao
 } from '../controllers/treino-personalizado.controller';
+import {
+  criarTreinoRapido,
+  listarGrupos
+} from '../controllers/treino-rapido.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
 import { verificarPlanoAtivo } from '../middleware/plano.middleware';
@@ -97,6 +101,10 @@ router.post('/recorrente/:letra/aplicar', aplicarTreinoRecorrente);
 router.get('/configuracao', buscarConfiguracaoTreinoPadrao);
 router.post('/configuracao', configurarTreinoPadrao);
 router.delete('/configuracao/:diaSemana', removerConfiguracaoTreinoPadrao);
+
+// Rotas de treino rápido
+router.post('/rapido', criarTreinoRapido);
+router.get('/rapido/grupos', listarGrupos);
 
 export default router;
 

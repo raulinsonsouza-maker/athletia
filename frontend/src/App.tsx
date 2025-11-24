@@ -20,6 +20,8 @@ import Conquistas from './pages/Conquistas'
 import Evolucao from './pages/Evolucao'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
+import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
+import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -49,6 +51,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <TreinoDoDia />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/treino/:id"
+            element={
+              <ProtectedRoute>
+                <TreinoDoDia />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/treino-rapido"
+            element={
+              <ProtectedRoute>
+                <TreinoRapidoSelecaoGrupos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/treino-rapido/configuracao"
+            element={
+              <ProtectedRoute>
+                <TreinoRapidoConfiguracao />
               </ProtectedRoute>
             }
           />
