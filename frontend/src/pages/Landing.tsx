@@ -1011,7 +1011,6 @@ export default function Landing() {
                   },
                   {
                     value: 'Outro',
-                    icon: '🌈',
                     description: 'Quero recomendações neutras'
                   }
                 ].map((sexo) => {
@@ -1043,11 +1042,11 @@ export default function Landing() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 flex flex-col items-center justify-center text-white">
-                            <span className="text-5xl mb-2" aria-hidden>
-                              {sexo.icon}
-                            </span>
-                            <p className="text-sm font-medium px-4 text-center">
+                          <div className="w-full h-full flex flex-col items-center justify-center px-6 text-light">
+                            <div className="text-lg font-semibold mb-2 text-center">
+                              {sexo.value}
+                            </div>
+                            <p className="text-sm text-light-muted text-center leading-snug">
                               {sexo.description}
                             </p>
                           </div>
