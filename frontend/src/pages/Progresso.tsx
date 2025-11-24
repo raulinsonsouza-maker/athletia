@@ -194,8 +194,8 @@ export default function Progresso() {
   const grupos = calcularGruposMusculares()
   const volumePorSemana = calcularVolumePorSemana()
   const frequenciaPorSemana = calcularFrequenciaSemanal()
-  const progressLabels = Object.keys(estatisticas.progressaoPorGrupo)
-  const progressValues = Object.values(estatisticas.progressaoPorGrupo) as number[]
+  const progressLabels = estatisticas ? Object.keys(estatisticas.progressaoPorGrupo) : []
+  const progressValues = estatisticas ? (Object.values(estatisticas.progressaoPorGrupo) as number[]) : []
   const rangeEnd = new Date(rangeStart)
   rangeEnd.setDate(rangeStart.getDate() + 6)
   const rangeLabel = `${rangeStart.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')} - ${rangeEnd
