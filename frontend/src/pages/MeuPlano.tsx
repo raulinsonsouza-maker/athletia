@@ -32,8 +32,6 @@ export default function MeuPlano() {
       } catch (error) {
         console.error(error)
         showToast('Não foi possível carregar suas informações.', 'error')
-      } catch (error) {
-        console.error(error)
       }
     }
 
