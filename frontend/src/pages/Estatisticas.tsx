@@ -1,19 +1,3 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import api from '../services/auth.service'
-import Navbar from '../components/Navbar'
-import { useToast } from '../hooks/useToast'
-import { BarChart, DoughnutChart, LineChart } from '../components/ChartWrapper'
-
-interface Estatisticas {
-  periodo: number
-  totalTreinos: number
-  totalExercicios: number
-  volumeTotal: number
-  rpeMedio: number | null
-  progressaoPorGrupo: Record<string, number>
-  frequenciaSemanal: number
-}
 
 interface TreinoHistorico {
   id: string
@@ -30,13 +14,77 @@ interface TreinoHistorico {
   }>
 }
 
+const PERIOD_OPTIONS = [
+  { id: 'ultimo', label: 'Último', dias: 7 },
+  { id: 'semana', label: 'Semana', dias: 7 },
+  { id: 'mes', label: 'Mês', dias: 30 },
+  { id: 'anual', label: 'Anual', dias: 365 }
+] as const
+
+type PeriodKey = typeof PERIOD_OPTIONS[number]['id']
+
+const getWeekStart = (date: Date) => {
+  const start = new Date(date)
+  const day = start.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  start.setDate(start.getDate() + diff)
+  start.setHours(0, 0, 0, 0)
+  return start
+}
+
 export default function Estatisticas() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [historico, setHistorico] = useState<TreinoHistorico[]>([])
   const [loading, setLoading] = useState(true)
-  const [periodo, setPeriodo] = useState(30)
+  const [periodo, setPeriodo] = useState(7)
+  const [periodKey, setPeriodKey] = useState<PeriodKey>('semana')
+  const [rangeStart, setRangeStart] = useState<Date>(() => getWeekStart(new Date()))
+
+  const completedDates = useMemo(() => {
+    const set = new Set<string>()
+    historico.forEach((treino) => {
+      if (treino.concluido && treino.data) {
+        const d = new Date(treino.data)
+        if (!isNaN(d.getTime())) {
+          set.add(d.toDateString())
+        }
+      }
+    })
+    return set
+  }, [historico])
+
+  const calendarDays = useMemo(() => {
+    return Array.from({ length: 7 }).map((_, index) => {
+      const date = new Date(rangeStart)
+      date.setDate(rangeStart.getDate() + index)
+      const isToday = date.toDateString() === new Date().toDateString()
+      const isDone = completedDates.has(date.toDateString())
+      return {
+        date,
+        label: date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+        day: date.getDate(),
+        isToday,
+        isDone
+      }
+    })
+  }, [rangeStart, completedDates])
+
+  const handleShiftRange = (direction: -1 | 1) => {
+    setRangeStart((prev) => {
+      const next = new Date(prev)
+      next.setDate(prev.getDate() + direction * 7)
+      return next
+    })
+  }
+
+  const handlePeriodChange = (key: PeriodKey) => {
+    const option = PERIOD_OPTIONS.find((opt) => opt.id === key) || PERIOD_OPTIONS[0]
+    setPeriodKey(key)
+    setPeriodo(option.dias)
+    setRangeStart(getWeekStart(new Date()))
+  }
 
   useEffect(() => {
     carregarDados()
@@ -168,46 +216,42 @@ export default function Estatisticas() {
 
   if (loading) {
     return (
-      <div className="min-h-screen">
-        <Navbar showBack backPath="/dashboard" />
-        <main className="container-custom section">
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="spinner h-12 w-12 mx-auto"></div>
-              <p className="mt-4 text-light-muted">Carregando estatísticas...</p>
-            </div>
+      <div className="min-h-screen bg-dark text-white pb-24">
+        <AppHeader title="Progresso" backTo="/meu-plano" />
+        <div className="px-5 pt-6">
+          <div className="flex items-center justify-center py-20">
+            <div className="h-10 w-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
           </div>
-        </main>
+        </div>
+        <BottomTabs active="progresso" />
       </div>
     )
   }
 
   if (!estatisticas || estatisticas.totalTreinos === 0) {
     return (
-      <div className="min-h-screen">
-        <Navbar showBack backPath="/dashboard" />
-        <main className="container-custom section">
-          <div className="card text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
-              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen bg-dark text-white pb-24">
+        <AppHeader title="Progresso" backTo="/meu-plano" />
+        <div className="px-5 pt-6">
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+              <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-light mb-4">
-              Ainda não há dados suficientes
-            </h2>
-            <p className="text-light-muted mb-6 max-w-md mx-auto">
-              Complete alguns treinos para ver suas estatísticas e acompanhar sua evolução.
+            <h2 className="text-2xl font-bold mb-2">Sem dados por aqui</h2>
+            <p className="text-white/70 mb-4">
+              Finalize alguns treinos para destravar seus gráficos e acompanhar a evolução.
             </p>
             <button
-              onClick={() => navigate('/dashboard')}
-              className="btn-primary px-6 py-3"
-              aria-label="Voltar ao dashboard"
+              onClick={() => navigate('/meu-plano')}
+              className="py-3 px-4 rounded-full bg-primary text-dark font-semibold"
             >
-              Voltar ao Dashboard
+              Ir para Meu Plano
             </button>
           </div>
-        </main>
+        </div>
+        <BottomTabs active="progresso" />
       </div>
     )
   }

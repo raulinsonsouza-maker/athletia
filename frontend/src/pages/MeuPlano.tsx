@@ -17,6 +17,42 @@ const InfoChip = ({ label, value }: { label: string; value: string }) => (
   </div>
 )
 
+const IconFlash = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" />
+  </svg>
+)
+
+const IconPlan = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+    <path d="M5 5h14v14H5z" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 9h14M9 5v14" strokeLinecap="round" />
+  </svg>
+)
+
+const QuickAction = ({
+  title,
+  description,
+  icon = 'plan',
+  onClick
+}: {
+  title: string
+  description?: string
+  icon?: 'zap' | 'plan'
+  onClick: () => void
+}) => (
+  <button
+    onClick={onClick}
+    className="bg-white/5 border border-white/10 rounded-3xl px-5 py-4 flex flex-col text-left gap-1 hover:bg-white/10 transition"
+  >
+    <div className="w-9 h-9 rounded-full bg-dark flex items-center justify-center text-white/80">
+      {icon === 'zap' ? <IconFlash /> : <IconPlan />}
+    </div>
+    <p className="font-semibold">{title}</p>
+    {description && <p className="text-sm text-white/60">{description}</p>}
+  </button>
+)
+
 export default function MeuPlano() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
@@ -61,21 +97,57 @@ export default function MeuPlano() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
-      <div className="px-5 pt-8 space-y-6">
-        <header className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/60">Plano ativo</p>
-            <h1 className="text-3xl font-bold">AthletIA</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-lg">
-              📅
-            </button>
-            <button className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-lg">
-              ⚙️
-            </button>
-          </div>
-        </header>
+      <AppHeader title="Meu Plano" subtitle="Resumo semanal e próximos passos" />
+      <div className="px-5 space-y-6">
+        {homeData?.destaquePlanoAtual && (
+          <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
+            <div className="h-40 relative">
+              <img
+                src={homeData.destaquePlanoAtual.imagem || 'https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=800&q=80'}
+                alt={homeData.destaquePlanoAtual.titulo}
+                className="w-full h-full object-cover opacity-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/70">
+                  Próximo treino
+                </p>
+                <h2 className="text-2xl font-bold">{homeData.destaquePlanoAtual.titulo}</h2>
+                <p className="text-sm text-white/70">
+                  {homeData.destaquePlanoAtual.duracao} min • {homeData.destaquePlanoAtual.local}
+                </p>
+              </div>
+            </div>
+            <div className="p-4 flex gap-3">
+              <button
+                onClick={() => navigate('/treino/atual')}
+                className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm shadow-glow"
+              >
+                Iniciar agora
+              </button>
+              <button
+                onClick={() => navigate('/treino-rapido')}
+                className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
+              >
+                Ajustar plano
+              </button>
+            </div>
+          </section>
+        )}
+
+        {homeData?.recursos && (
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {homeData.recursos.map((recurso) => (
+              <QuickAction
+                key={recurso.id}
+                title={recurso.titulo}
+                description={recurso.descricao}
+                icon={recurso.icone === 'zap' ? 'zap' : 'plan'}
+                onClick={() => navigate(recurso.destino)}
+              />
+            ))}
+          </section>
+        )}
 
         <section className="bg-white/5 backdrop-blur rounded-3xl border border-white/10 p-4">
           <div className="flex items-center justify-between mb-3">
@@ -105,7 +177,29 @@ export default function MeuPlano() {
                 >
                   <span className="text-[10px] uppercase tracking-[0.3em]">{dia.label}</span>
                   <span className="text-sm font-semibold">{formatarDataCurta(dia.data)}</span>
-                  {concluido ? <span className="text-xs">✔</span> : <span className="text-xs">+</span>}
+                  {concluido ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="w-3 h-3"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 12l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className="w-3 h-3"
+                    >
+                      <path strokeLinecap="round" d="M12 5v14M5 12h14" />
+                    </svg>
+                  )}
                 </button>
               )
             })}

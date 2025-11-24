@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { treinoRapidoService } from '../services/treino-rapido.service'
 import { useToast } from '../hooks/useToast'
+import AppHeader from '../components/navigation/AppHeader'
+import BottomTabs from '../components/navigation/BottomTabs'
 
 const DURACOES = [20, 30, 40, 50, 60]
 const DIFICULDADES = ['Iniciante', 'Intermediário', 'Avançado'] as const
@@ -56,33 +58,18 @@ export default function TreinoRapidoConfiguracao() {
   }
 
   return (
-    <div className="min-h-screen bg-dark text-white flex items-start justify-center px-4 py-10">
-      <div className="w-full max-w-xl bg-[#03121b] rounded-[32px] border border-white/5 shadow-2xl space-y-6">
-        <div className="flex items-center justify-between px-6 pt-6">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/60 mb-1">Configuração</p>
-            <h1 className="text-2xl font-semibold">Treino Rápido</h1>
-          </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-lg hover:bg-white/10 transition"
-          >
-            ×
-          </button>
-        </div>
+    <div className="min-h-screen bg-dark text-white pb-24">
+      <AppHeader title="Configurar treino" backTo="/treino-rapido" />
+      <div className="px-5 space-y-6">
+        <p className="text-sm text-white/70">
+          Ajuste duração, dificuldade e estrutura do treino rápido. Usaremos seus grupos selecionados para
+          montar combinações inteligentes.
+        </p>
+        {gruposMusculares.length > 0 && (
+          <p className="text-xs uppercase tracking-[0.3em] text-primary">{gruposMusculares.join(' • ')}</p>
+        )}
 
-        <div className="space-y-2 px-6">
-          <p className="text-sm text-white/70">
-            Ajuste a duração, dificuldade e local dos equipamentos para gerar um treino sob medida.
-          </p>
-          {gruposMusculares.length > 0 && (
-            <p className="text-xs uppercase tracking-[0.3em] text-primary">
-              {gruposMusculares.join(' • ')}
-            </p>
-          )}
-        </div>
-
-        <section className="px-6 space-y-3">
+        <section className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-white/50">Duração do treino</p>
           <div className="grid grid-cols-3 gap-3">
             {DURACOES.map((item) => {
@@ -110,7 +97,7 @@ export default function TreinoRapidoConfiguracao() {
           </div>
         </section>
 
-        <section className="px-6 space-y-3">
+        <section className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-white/50">Dificuldade</p>
           <div className="grid grid-cols-3 gap-3">
             {DIFICULDADES.map((nivel) => {
@@ -130,7 +117,7 @@ export default function TreinoRapidoConfiguracao() {
           </div>
         </section>
 
-        <section className="px-6 space-y-3">
+        <section className="space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-white/50">Local do treino</p>
           <div className="grid grid-cols-2 gap-3">
             {LOCAIS_TREINO.map((local) => {
@@ -150,7 +137,7 @@ export default function TreinoRapidoConfiguracao() {
           </div>
         </section>
 
-        <section className="px-6 space-y-3">
+        <section className="space-y-3">
           <div className="flex items-center justify-between">
             <p className="text-xs uppercase tracking-[0.3em] text-white/50">Foco muscular</p>
             <label className="flex items-center gap-2 text-sm">
@@ -193,7 +180,7 @@ export default function TreinoRapidoConfiguracao() {
           )}
         </section>
 
-        <div className="px-6 pb-6">
+        <div>
           <button
             onClick={handleCriarTreino}
             disabled={loading}
@@ -207,6 +194,7 @@ export default function TreinoRapidoConfiguracao() {
           </button>
         </div>
       </div>
+      <BottomTabs active="treinos" />
       <ToastContainer />
     </div>
   )

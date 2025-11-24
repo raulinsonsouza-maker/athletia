@@ -147,6 +147,7 @@ export interface PlanoAtualExercicio {
   series: number
   repeticoes: string
   ordem: number
+  concluido?: boolean
 }
 
 export interface PlanoAtualBloco {

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
+import AppHeader from '../components/navigation/AppHeader'
+import BottomTabs from '../components/navigation/BottomTabs'
 
 const GRUPOS_MUSCULARES = [
   'Peito',
@@ -46,27 +48,15 @@ export default function TreinoRapidoSelecaoGrupos() {
   }
 
   return (
-    <div className="min-h-screen bg-dark text-white flex items-start justify-center px-4 py-10">
-      <div className="w-full max-w-xl bg-[#03121b] rounded-[32px] border border-white/5 shadow-2xl">
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/60 mb-1">Selecione</p>
-            <h1 className="text-2xl font-semibold">Treino Rápido</h1>
-          </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-lg hover:bg-white/10 transition"
-          >
-            ×
-          </button>
-        </div>
-
-        <p className="px-6 text-sm text-white/70">
-          Escolha os grupos musculares que deseja trabalhar hoje. Combinaremos com o seu perfil
-          para montar um treino equilibrado.
+    <div className="min-h-screen bg-dark text-white pb-24">
+      <AppHeader title="Treino rápido" backTo="/treinos" />
+      <div className="px-5 space-y-4">
+        <p className="text-sm text-white/70">
+          Escolha os grupos musculares que deseja trabalhar hoje. Vamos ajustar automaticamente o volume e a
+          intensidade para o seu perfil.
         </p>
 
-        <div className="grid grid-cols-3 gap-4 px-6 py-6 max-h-[60vh] overflow-y-auto">
+        <div className="grid grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto pb-2">
           {GRUPOS_MUSCULARES.map((grupo) => {
             const ativo = selecionados.includes(grupo)
             return (
@@ -94,20 +84,19 @@ export default function TreinoRapidoSelecaoGrupos() {
           })}
         </div>
 
-        <div className="px-6 pb-6">
-          <button
-            onClick={handleAvancar}
-            className={`w-full py-4 rounded-full font-semibold text-lg ${
-              selecionados.length === 0
-                ? 'bg-white/10 text-white/50 cursor-not-allowed'
-                : 'bg-primary text-dark shadow-glow hover:bg-primary/90'
-            } transition`}
-            disabled={selecionados.length === 0}
-          >
-            Criar um novo treino rápido
-          </button>
-        </div>
+        <button
+          onClick={handleAvancar}
+          className={`w-full py-4 rounded-full font-semibold text-lg ${
+            selecionados.length === 0
+              ? 'bg-white/10 text-white/50 cursor-not-allowed'
+              : 'bg-primary text-dark shadow-glow hover:bg-primary/90'
+          } transition`}
+          disabled={selecionados.length === 0}
+        >
+          Criar um novo treino rápido
+        </button>
       </div>
+      <BottomTabs active="treinos" />
       <ToastContainer />
     </div>
   )

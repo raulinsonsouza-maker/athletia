@@ -4,8 +4,22 @@ import { obterHomeTreinos } from '../services/treino.service'
 import { TreinoHomeResponse, TreinoCardResumo, RecursoPersonalizado } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
+import AppHeader from '../components/navigation/AppHeader'
 
 const formatarDuracao = (minutos: number) => `${minutos} min`
+
+const IconZap = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" />
+  </svg>
+)
+
+const IconList = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+    <path strokeLinecap="round" d="M8 6h13M8 12h13M8 18h13" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h.01M3 12h.01M3 18h.01" />
+  </svg>
+)
 
 const CardRecurso = ({ recurso, onNavigate }: { recurso: RecursoPersonalizado; onNavigate: (destino: string) => void }) => (
   <button
@@ -13,7 +27,7 @@ const CardRecurso = ({ recurso, onNavigate }: { recurso: RecursoPersonalizado; o
     className="bg-dark-lighter rounded-3xl px-5 py-6 flex flex-col gap-2 text-left hover:bg-dark/80 transition-all"
   >
     <div className="w-10 h-10 rounded-full bg-dark flex items-center justify-center text-white/80">
-      {recurso.icone === 'zap' ? '⚡' : '📋'}
+      {recurso.icone === 'zap' ? <IconZap /> : <IconList />}
     </div>
     <div className="text-light font-semibold">{recurso.titulo}</div>
     {recurso.descricao && <p className="text-light-muted text-sm">{recurso.descricao}</p>}
@@ -57,6 +71,7 @@ export default function Treinos() {
   const { showToast, ToastContainer } = useToast()
   const [dados, setDados] = useState<TreinoHomeResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     const carregar = async () => {
@@ -93,18 +108,41 @@ export default function Treinos() {
     </div>
   )
 
+  const filteredSections =
+    dados?.secoes
+      ?.map((secao) => ({
+        ...secao,
+        itens: secao.itens.filter((item) =>
+          item.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      }))
+      .filter((secao) => secao.itens.length > 0) ?? []
+
   return (
     <div className="min-h-screen bg-dark text-white pb-24">
-      <div className="px-5 pt-10 space-y-8">
-        <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Treinos</h1>
-            <p className="text-light-muted text-sm">Planos personalizados para seu objetivo</p>
+      <AppHeader title="Treinos" subtitle="Planos e treinos recomendados" />
+      <div className="px-5 pt-2 space-y-8">
+        <div className="space-y-3">
+          <div className="bg-white/5 border border-white/10 rounded-3xl px-4 py-3 flex items-center gap-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-5 h-5 text-white/60"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+            </svg>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar treinos ou objetivos"
+              className="flex-1 bg-transparent outline-none text-white placeholder:text-white/40"
+            />
           </div>
-          <button className="w-12 h-12 rounded-full bg-dark-lighter flex items-center justify-center text-lg">
-            ☆
-          </button>
-        </header>
+        </div>
 
         {loading && skeleton}
 
@@ -119,7 +157,7 @@ export default function Treinos() {
               </div>
             </section>
 
-            {dados.secoes.map((secao) => (
+            {filteredSections.map((secao) => (
               <section key={secao.id} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>

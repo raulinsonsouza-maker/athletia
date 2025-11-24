@@ -6,25 +6,20 @@ import Landing from './pages/Landing'
 import Cadastro from './pages/Cadastro'
 import Checkout from './pages/Checkout'
 import Confirmacao from './pages/Confirmacao'
-import Dashboard from './pages/Dashboard'
 import Treinos from './pages/Treinos'
 import TreinoAtual from './pages/TreinoAtual'
 import MeuPlano from './pages/MeuPlano'
 import Historico from './pages/Historico'
-import Estatisticas from './pages/Estatisticas'
 import Perfil from './pages/Perfil'
 import EvolucaoPeso from './pages/EvolucaoPeso'
-import GerenciarTreinosRecorrentes from './pages/GerenciarTreinosRecorrentes'
-import ConfigurarTreinosPadrao from './pages/ConfigurarTreinosPadrao'
-import GerenciarTreinos from './pages/GerenciarTreinos'
-import MinhaSemana from './pages/MinhaSemana'
-import Conquistas from './pages/Conquistas'
 import Evolucao from './pages/Evolucao'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
 import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
+import GerenciarTreinos from './pages/GerenciarTreinos'
+import Progresso from './pages/Progresso'
 
 function App() {
   return (
@@ -40,14 +35,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           
           {/* Rotas protegidas */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/dashboard" element={<Navigate to="/meu-plano" replace />} />
           <Route
             path="/meu-plano"
             element={
@@ -60,7 +48,7 @@ function App() {
             path="/treino"
             element={
               <ProtectedRoute>
-                <Treinos />
+                <Navigate to="/treinos" replace />
               </ProtectedRoute>
             }
           />
@@ -105,13 +93,14 @@ function App() {
             }
           />
           <Route
-            path="/estatisticas"
+            path="/progresso"
             element={
               <ProtectedRoute>
-                <Estatisticas />
+                <Progresso />
               </ProtectedRoute>
             }
           />
+          <Route path="/estatisticas" element={<Navigate to="/progresso" replace />} />
           <Route
             path="/perfil"
             element={
@@ -137,53 +126,14 @@ function App() {
             }
           />
           <Route
-            path="/minha-semana"
-            element={
-              <ProtectedRoute>
-                <MinhaSemana />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/conquistas"
-            element={
-              <ProtectedRoute>
-                <Conquistas />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/meus-treinos"
-            element={
-              <ProtectedRoute>
-                <Navigate to="/gerenciar-treinos" replace />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/treinos-recorrentes"
-            element={
-              <ProtectedRoute>
-                <GerenciarTreinosRecorrentes />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/configurar-treinos"
-            element={
-              <ProtectedRoute>
-                <ConfigurarTreinosPadrao />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/gerenciar-treinos"
+            path="/exercicios"
             element={
               <ProtectedRoute>
                 <GerenciarTreinos />
               </ProtectedRoute>
             }
           />
+          <Route path="/gerenciar-treinos" element={<Navigate to="/exercicios" replace />} />
           <Route
             path="/admin/login"
             element={<AdminLogin />}
