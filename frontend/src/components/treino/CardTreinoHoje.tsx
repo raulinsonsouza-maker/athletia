@@ -63,7 +63,7 @@ export default function CardTreinoHoje({ treino }: CardTreinoHojeProps) {
           </div>
         </div>
         <button
-          onClick={() => navigate('/treino')}
+          onClick={() => navigate('/treino/atual')}
           className="btn-primary px-6 py-3 whitespace-nowrap"
         >
           {treino.concluido ? 'Ver Treino' : 'Começar Treino'}

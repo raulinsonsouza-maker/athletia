@@ -10,7 +10,9 @@ import {
   buscarEstatisticas,
   buscarTreinosSemanais,
   buscarTreinos,
-  gerarVersaoAlternativa
+  gerarVersaoAlternativa,
+  obterHomeTreinos,
+  obterPlanoAtual
 } from '../controllers/treino.controller';
 import {
   criarTreinoPersonalizado,
@@ -67,6 +69,8 @@ const substituirExercicioValidation = [
 router.get('/', buscarTreinos); // Buscar treinos com filtros (dataInicio, dataFim, etc)
 router.get('/dia', buscarTreinoDoDia);
 router.get('/semana', buscarTreinosSemanais);
+router.get('/home', obterHomeTreinos);
+router.get('/plano-atual', obterPlanoAtual);
 router.post('/gerar', gerarTreinoDoDia);
 router.post('/versao-alternativa', gerarVersaoAlternativa);
 router.post('/exercicio/:id/concluir', concluirExercicioValidation, validateRequest, concluirExercicio);

@@ -7,7 +7,8 @@ import Cadastro from './pages/Cadastro'
 import Checkout from './pages/Checkout'
 import Confirmacao from './pages/Confirmacao'
 import Dashboard from './pages/Dashboard'
-import TreinoDoDia from './pages/TreinoDoDia'
+import Treinos from './pages/Treinos'
+import TreinoAtual from './pages/TreinoAtual'
 import Historico from './pages/Historico'
 import Estatisticas from './pages/Estatisticas'
 import Perfil from './pages/Perfil'
@@ -50,15 +51,23 @@ function App() {
             path="/treino"
             element={
               <ProtectedRoute>
-                <TreinoDoDia />
+                <Treinos />
               </ProtectedRoute>
             }
           />
           <Route
-            path="/treino/:id"
+            path="/treinos"
             element={
               <ProtectedRoute>
-                <TreinoDoDia />
+                <Treinos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/treino/atual"
+            element={
+              <ProtectedRoute>
+                <TreinoAtual />
               </ProtectedRoute>
             }
           />

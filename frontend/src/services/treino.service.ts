@@ -1,5 +1,11 @@
 import api from './auth.service'
-import { TreinosSemanaisResponse, FiltrosTreino, TreinoCompleto } from '../types/treino.types'
+import {
+  TreinosSemanaisResponse,
+  FiltrosTreino,
+  TreinoCompleto,
+  TreinoHomeResponse,
+  PlanoAtualResponse
+} from '../types/treino.types'
 
 /**
  * Função genérica para buscar treinos com filtros
@@ -150,5 +156,15 @@ export const gerarTreino = async (data?: string, gerarSemana: boolean = false): 
     console.error('❌ Erro na requisição de gerar treino:', error)
     throw error
   }
+}
+
+export const obterHomeTreinos = async (): Promise<TreinoHomeResponse> => {
+  const response = await api.get('/treino/home')
+  return response.data
+}
+
+export const obterPlanoAtualResumo = async (): Promise<PlanoAtualResponse> => {
+  const response = await api.get('/treino/plano-atual')
+  return response.data
 }
 

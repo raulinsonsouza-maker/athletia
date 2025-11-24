@@ -54,7 +54,7 @@ export default function TreinoRapidoConfiguracao() {
       })
 
       showToast('Treino criado com sucesso!', 'success')
-      navigate(`/treino/${treino.id}`)
+      navigate('/treino/atual')
     } catch (error: any) {
       console.error('Erro ao criar treino:', error)
       showToast(

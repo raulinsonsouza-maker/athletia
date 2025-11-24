@@ -6,6 +6,7 @@ import * as progressaoService from '../services/progressao.service';
 import * as treinoCore from '../services/treino-core.service';
 import * as treinoSimplesController from './treino-simples.controller';
 import * as treinoSimples from '../services/treino-simples.service';
+import { obterResumoTreinos, buscarPlanoAtual } from '../services/treino-dashboard.service';
 
 // Gerar treino do dia ou semana completa - USA SERVIÇO SIMPLES
 export const gerarTreinoDoDia = treinoSimplesController.gerarTreino;
@@ -302,6 +303,34 @@ export const obterAlternativas = async (req: AuthRequest, res: Response) => {
     console.error('Erro ao buscar alternativas:', error);
     res.status(500).json({
       error: 'Erro ao buscar alternativas',
+      message: error.message
+    });
+  }
+};
+
+export const obterHomeTreinos = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const resumo = await obterResumoTreinos(userId);
+    res.json(resumo);
+  } catch (error: any) {
+    console.error('Erro ao obter resumo de treinos:', error);
+    res.status(500).json({
+      error: 'Erro ao buscar dados da home de treinos',
+      message: error.message
+    });
+  }
+};
+
+export const obterPlanoAtual = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const plano = await buscarPlanoAtual(userId);
+    res.json(plano);
+  } catch (error: any) {
+    console.error('Erro ao obter plano atual:', error);
+    res.status(500).json({
+      error: 'Erro ao buscar plano atual',
       message: error.message
     });
   }

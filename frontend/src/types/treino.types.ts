@@ -101,3 +101,67 @@ export type StatusTreino = 'pendente' | 'em-andamento' | 'concluido' | 'perdido'
 // Variante de exibição do card
 export type VarianteCard = 'compacto' | 'completo' | 'resumo'
 
+// --- NOVOS TIPOS PARA HOME DE TREINOS ---
+
+export interface RecursoPersonalizado {
+  id: string
+  titulo: string
+  descricao?: string
+  icone: string
+  destino: string
+}
+
+export interface TreinoCardResumo {
+  id: string
+  titulo: string
+  nivel: string
+  duracao: number
+  local: string
+  imagem?: string | null
+  destaque?: string | null
+  data?: string | Date
+  totalExercicios?: number
+}
+
+export interface TreinoHomeSection {
+  id: string
+  titulo: string
+  subtitulo?: string
+  itens: TreinoCardResumo[]
+}
+
+export interface TreinoHomeResponse {
+  recursos: RecursoPersonalizado[]
+  secoes: TreinoHomeSection[]
+  planosAtivos: TreinoCardResumo[]
+  destaquePlanoAtual?: TreinoCardResumo | null
+}
+
+export interface PlanoAtualExercicio {
+  id: string
+  nome: string
+  grupo: string
+  series: number
+  repeticoes: string
+  ordem: number
+}
+
+export interface PlanoAtualBloco {
+  id: string
+  titulo: string
+  data: string | Date
+  totalExercicios: number
+  exercicios: PlanoAtualExercicio[]
+}
+
+export interface PlanoAtualResponse {
+  plano: {
+    nivel: string
+    tempoMedio: number
+    local: string
+    imagemCapa: string
+    totalTreinos: number
+  }
+  blocos: PlanoAtualBloco[]
+}
+
