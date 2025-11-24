@@ -97,6 +97,17 @@ export default function TreinoAtual() {
             indice={index + 1}
           />
         ))}
+        {!loading && plano && (
+          <div className="pb-6">
+            <button
+              onClick={() => navigate('/treino-rapido')}
+              className="w-full py-3 rounded-full border border-white/20 text-white text-sm font-semibold mb-3"
+            >
+              Criar treino rápido
+            </button>
+          </div>
+        )}
+      </div>
       <BottomTabs active="meu-plano" />
       <ToastContainer />
     </div>
