@@ -74,6 +74,15 @@ const SPLITS_PADRAO: Record<number, string[][]> = {
 
 const DEFAULT_DURACAO = 45
 
+function gerarHashTexto(texto: string, seed: number = 0) {
+  let hash = seed
+  for (let i = 0; i < texto.length; i++) {
+    hash = (hash << 5) - hash + texto.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
+
 interface TreinoExercicioInput {
   exercicioId: string
   ordem: number
@@ -188,23 +197,33 @@ async function selecionarExerciciosParaContexto(params: {
   maxExercicios: number
   dificuldade: NivelDificuldade
   objetivo: string
+  seed?: number
 }) {
-  const { perfil, grupos, maxExercicios, dificuldade, objetivo } = params
+  const { perfil, grupos, maxExercicios, dificuldade, objetivo, seed } = params
 
   const exerciciosSelecionados: any[] = []
   const perfilContextualizado = perfil
 
-  for (let i = 0; i < grupos.length; i++) {
+  const gruposProcessados =
+    seed !== undefined
+      ? [...grupos].sort(
+          (a, b) =>
+            gerarHashTexto(`${a}-${seed}`) - gerarHashTexto(`${b}-${seed}`)
+        )
+      : grupos
+
+  for (let i = 0; i < gruposProcessados.length; i++) {
     if (exerciciosSelecionados.length >= maxExercicios) break
 
-    const grupo = grupos[i]
+    const grupo = gruposProcessados[i]
     const principal = await selecionarExercicioPrincipal(
       grupo,
       perfilContextualizado,
       objetivo,
       dificuldade,
       i,
-      exerciciosSelecionados
+      exerciciosSelecionados,
+      seed
     )
 
     if (principal) {
@@ -214,7 +233,13 @@ async function selecionarExerciciosParaContexto(params: {
     if (exerciciosSelecionados.length >= maxExercicios) break
 
     const acessorio = principal
-      ? await selecionarExercicioAcessorio(grupo, principal, perfilContextualizado, exerciciosSelecionados)
+      ? await selecionarExercicioAcessorio(
+          grupo,
+          principal,
+          perfilContextualizado,
+          exerciciosSelecionados,
+          seed
+        )
       : null
 
     if (acessorio) {
@@ -331,6 +356,11 @@ export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
   const limites = calcularNumeroExercicios(duracaoAlvo, frequenciaAlvo)
   const maxExercicios = limites.max
 
+  const seedVaria =
+    options.data instanceof Date
+      ? Math.floor(options.data.getTime() / (1000 * 60 * 60 * 24))
+      : Math.floor(Date.now() / (1000 * 60 * 60 * 24))
+
   const exerciciosSelecionados = await selecionarExerciciosParaContexto({
     perfil: {
       ...perfil,
@@ -339,7 +369,8 @@ export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
     grupos: gruposFiltrados,
     maxExercicios,
     dificuldade,
-    objetivo
+    objetivo,
+    seed: seedVaria
   })
 
   if (exerciciosSelecionados.length === 0) {

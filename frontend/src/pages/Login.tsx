@@ -54,7 +54,7 @@ export default function Login() {
         <section className="rounded-[36px] border border-white/10 bg-white/5 overflow-hidden relative shadow-2xl">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1200&q=80"
+              src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80"
               alt="Atleta treinando"
               className="w-full h-full object-cover opacity-40"
             />

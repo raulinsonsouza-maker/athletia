@@ -20,6 +20,12 @@ import {
   verificarStatusGifs,
   bulkUploadGifs
 } from '../controllers/admin.controller';
+import {
+  listarGruposAdmin,
+  criarGrupoAdmin,
+  atualizarGrupoAdmin,
+  removerGrupoAdmin
+} from '../controllers/grupo-muscular.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
@@ -157,6 +163,53 @@ const atualizarExercicioValidation = [
     .withMessage('Ativo deve ser um booleano')
 ];
 
+const criarGrupoMuscularValidation = [
+  body('nome')
+    .notEmpty()
+    .withMessage('Nome é obrigatório')
+    .isString()
+    .withMessage('Nome deve ser uma string'),
+  body('descricao')
+    .optional()
+    .isString()
+    .withMessage('Descrição deve ser uma string'),
+  body('imagemUrl')
+    .optional()
+    .isString()
+    .withMessage('Imagem deve ser uma URL'),
+  body('ativo')
+    .optional()
+    .isBoolean()
+    .withMessage('Ativo deve ser booleano'),
+  body('ordem')
+    .optional()
+    .isInt()
+    .withMessage('Ordem deve ser um número inteiro')
+];
+
+const atualizarGrupoMuscularValidation = [
+  body('nome')
+    .optional()
+    .isString()
+    .withMessage('Nome deve ser uma string'),
+  body('descricao')
+    .optional()
+    .isString()
+    .withMessage('Descrição deve ser uma string'),
+  body('imagemUrl')
+    .optional()
+    .isString()
+    .withMessage('Imagem deve ser uma URL'),
+  body('ativo')
+    .optional()
+    .isBoolean()
+    .withMessage('Ativo deve ser booleano'),
+  body('ordem')
+    .optional()
+    .isInt()
+    .withMessage('Ordem deve ser um número inteiro')
+];
+
 // Rotas
 router.get('/usuarios', listarUsuarios);
 router.get('/usuarios/:id', obterDetalhesUsuario); // Deve estar antes da rota PUT
@@ -185,6 +238,17 @@ router.post('/exercicios/:id/gif', (req, res, next) => {
   });
 }, uploadGifExercicio);
 router.delete('/exercicios/:id/gif', deletarGifExercicio);
+
+// Grupos musculares (visuais)
+router.get('/grupos-musculares', listarGruposAdmin);
+router.post('/grupos-musculares', criarGrupoMuscularValidation, validateRequest, criarGrupoAdmin);
+router.put(
+  '/grupos-musculares/:id',
+  atualizarGrupoMuscularValidation,
+  validateRequest,
+  atualizarGrupoAdmin
+);
+router.delete('/grupos-musculares/:id', removerGrupoAdmin);
 
 // Endpoint para verificar status de todos os GIFs
 router.get('/gifs/status', verificarStatusGifs);

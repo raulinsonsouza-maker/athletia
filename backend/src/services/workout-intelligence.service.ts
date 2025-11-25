@@ -1,5 +1,14 @@
 import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
+
+const hashTexto = (texto: string): number => {
+  let hash = 0;
+  for (let i = 0; i < texto.length; i++) {
+    hash = (hash << 5) - hash + texto.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash;
+};
 import { getObjectiveParameters } from './treino-knowledge.service';
 
 /**
@@ -225,7 +234,8 @@ export async function selecionarExercicioPrincipal(
   objetivo: string,
   experiencia: string,
   ciclo: number = 0,
-  exerciciosJaSelecionados: any[] = []
+  exerciciosJaSelecionados: any[] = [],
+  seed?: number
 ): Promise<any | null> {
   console.log(`🔍 [Intelligence] Selecionando exercício principal para ${grupoMuscular}...`);
 
@@ -283,7 +293,11 @@ export async function selecionarExercicioPrincipal(
     // Por enquanto, mantemos a ordem já estabelecida
   }
 
-  const selecionado = exercicios[0];
+  const indiceBase =
+    seed !== undefined
+      ? Math.abs(hashTexto(`${grupoMuscular}-${seed}-${ciclo}`)) % exercicios.length
+      : 0;
+  const selecionado = exercicios[indiceBase];
   if (selecionado) {
     console.log(`✅ [Intelligence] Exercício principal selecionado: ${selecionado.nome} (${isExercicioComposto(selecionado) ? 'Composto' : 'Isolado'})`);
   }
@@ -298,7 +312,8 @@ export async function selecionarExercicioAcessorio(
   grupoMuscular: string,
   exercicioPrincipal: any,
   perfil: any,
-  exerciciosJaSelecionados: any[] = []
+  exerciciosJaSelecionados: any[] = [],
+  seed?: number
 ): Promise<any | null> {
   console.log(`🔍 [Intelligence] Selecionando exercício acessório para ${grupoMuscular}...`);
 
@@ -355,7 +370,12 @@ export async function selecionarExercicioAcessorio(
     exercicios = ordenarExerciciosPorPrioridade(exercicios, perfil.objetivo || 'Hipertrofia');
   }
 
-  const selecionado = exercicios[0];
+  const indiceBase =
+    seed !== undefined
+      ? Math.abs(hashTexto(`acc-${grupoMuscular}-${seed}-${exercicioPrincipal.id}`)) %
+        exercicios.length
+      : 0;
+  const selecionado = exercicios[indiceBase];
   if (selecionado) {
     console.log(`✅ [Intelligence] Exercício acessório selecionado: ${selecionado.nome} (${isExercicioComposto(selecionado) ? 'Composto' : 'Isolado'})`);
   }

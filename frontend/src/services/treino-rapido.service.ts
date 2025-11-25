@@ -1,7 +1,14 @@
 import api from './auth.service'
 
+export interface GrupoMuscularCard {
+  nome: string
+  slug: string
+  imagemUrl: string | null
+  descricao?: string | null
+}
+
 export interface GruposMuscularesResponse {
-  gruposPrincipais: string[]
+  gruposPrincipais: GrupoMuscularCard[]
   gruposEspecificos: string[]
 }
 

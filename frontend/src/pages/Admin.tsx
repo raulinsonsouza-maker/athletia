@@ -633,6 +633,23 @@ export default function Admin() {
           </div>
         </div>
 
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => navigate('/admin/grupos')}
+            className="btn-primary flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16.5 10.5V6a4.5 4.5 0 10-9 0v4.5m12 0H4.5m12 0l1.5 10.5h-15L6 10.5"
+              />
+            </svg>
+            Gerenciar grupos musculares
+          </button>
+        </div>
+
         {/* Conteúdo das Tabs */}
         {activeTab === 'usuarios' && (
           <div className="card">

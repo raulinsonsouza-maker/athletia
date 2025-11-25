@@ -140,6 +140,20 @@ model Exercicio {
   @@map("exercicios")
 }
 
+model GrupoMuscularVisual {
+  id         String   @id @default(uuid())
+  nome       String
+  slug       String   @unique
+  descricao  String?
+  imagemUrl  String?
+  ordem      Int?     @default(0)
+  ativo      Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("grupos_musculares_visuais")
+}
+
 model ExercicioTreino {
   id              String   @id @default(uuid())
   treinoId        String   @map("treino_id")

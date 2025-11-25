@@ -15,6 +15,7 @@ import EvolucaoPeso from './pages/EvolucaoPeso'
 import Evolucao from './pages/Evolucao'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
+import AdminGrupos from './pages/AdminGrupos'
 import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -134,14 +135,9 @@ function App() {
             }
           />
           <Route path="/gerenciar-treinos" element={<Navigate to="/exercicios" replace />} />
-          <Route
-            path="/admin/login"
-            element={<AdminLogin />}
-          />
-          <Route
-            path="/admin"
-            element={<Admin />}
-          />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/grupos" element={<AdminGrupos />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </Router>
     </AuthProvider>

@@ -46,12 +46,23 @@ export default function MeuPlano() {
 
   const insights = homeData?.insights
   const progressoSemana = insights?.progressoSemana
+  const semanaStats = (homeData?.semana || []).reduce(
+    (acc, dia) => {
+      if (!dia) return acc
+      if (dia.hasTreino) acc.planejados += 1
+      if (dia.concluido) acc.realizados += 1
+      if (dia.status === 'passado' && !dia.concluido) acc.diasSemTreino += 1
+      return acc
+    },
+    { planejados: 0, realizados: 0, diasSemTreino: 0 }
+  )
+
   const resumoSemana = [
     {
       label: 'Treinos concluídos',
       value: progressoSemana
         ? `${progressoSemana.realizados}/${progressoSemana.planejados}`
-        : '0/0'
+        : `${semanaStats.realizados}/${semanaStats.planejados || planoAtual?.plano.totalTreinos || 0}`
     },
     {
       label: 'Volume total',
@@ -63,7 +74,7 @@ export default function MeuPlano() {
     },
     {
       label: 'Dias sem treino',
-      value: `${insights?.diasSemTreino ?? 0}`
+      value: `${insights?.diasSemTreino ?? semanaStats.diasSemTreino}`
     }
   ]
 
@@ -119,6 +130,7 @@ export default function MeuPlano() {
                 return <div key={index} className="w-14 h-14 rounded-full bg-white/5 animate-pulse" />
               }
               const fezTreino = dia.concluido
+              const diaPassadoSemTreino = dia.status === 'passado' && !dia.concluido
               const dataObj = new Date(dia.data)
               const diaSemana = dataObj.toLocaleDateString('pt-BR', { weekday: 'short' })
               const diaNumero = dataObj.getDate()
@@ -128,7 +140,9 @@ export default function MeuPlano() {
                     className={`w-14 h-14 rounded-full border-2 flex items-center justify-center text-base font-semibold ${
                       fezTreino
                         ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
-                        : 'border-amber-300 bg-amber-400/10 text-amber-200'
+                        : diaPassadoSemTreino
+                          ? 'border-rose-400 bg-rose-500/10 text-rose-200'
+                          : 'border-amber-300 bg-amber-400/10 text-amber-200'
                     }`}
                   >
                     {diaNumero}
@@ -138,7 +152,6 @@ export default function MeuPlano() {
               )
             })}
           </div>
-          <p className="text-[11px] text-white/60">Verde = dia treinado • Âmbar = dia livre até agora.</p>
         </section>
 
         <section className="space-y-3">

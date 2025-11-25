@@ -52,6 +52,71 @@ const saveRefreshToken = async (userId: string, token: string) => {
   });
 };
 
+type OnboardingPayload = {
+  idade?: number | string | null;
+  sexo?: string | null;
+  tipoCorpo?: string | null;
+  altura?: number | string | null;
+  pesoAtual?: number | string | null;
+  percentualGordura?: number | string | null;
+  aguaDiaria?: number | string | null;
+  experiencia?: string | null;
+  objetivo?: string | null;
+  frequenciaSemanal?: number | string | null;
+  tempoDisponivel?: number | string | null;
+  localTreino?: string | null;
+  problemasAnteriores?: string[] | null;
+  objetivosAdicionais?: string[] | null;
+  lesoes?: string[] | null;
+  preferencias?: string[] | null;
+  rpePreferido?: number | string | null;
+};
+
+const parseNumber = (value: any): number | null => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+  const numero = Number(value);
+  return Number.isFinite(numero) ? numero : null;
+};
+
+const normalizeArray = (value: any): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (item !== null && item !== undefined ? String(item).trim() : ''))
+      .filter(Boolean);
+  }
+  const unico = String(value).trim();
+  return unico ? [unico] : [];
+};
+
+const normalizeOnboardingData = (data: OnboardingPayload | undefined) => {
+  if (!data) return null;
+  return {
+    idade: parseNumber(data.idade),
+    sexo: data.sexo ? String(data.sexo).trim() : null,
+    tipoCorpo: data.tipoCorpo ? String(data.tipoCorpo).trim() : null,
+    altura: parseNumber(data.altura),
+    pesoAtual: parseNumber(data.pesoAtual),
+    percentualGordura: parseNumber(data.percentualGordura),
+    aguaDiaria:
+      data.aguaDiaria !== undefined && data.aguaDiaria !== null && data.aguaDiaria !== ''
+        ? String(data.aguaDiaria).trim()
+        : null,
+    experiencia: data.experiencia ? String(data.experiencia).trim() : null,
+    objetivo: data.objetivo ? String(data.objetivo).trim() : null,
+    frequenciaSemanal: parseNumber(data.frequenciaSemanal),
+    tempoDisponivel: parseNumber(data.tempoDisponivel),
+    localTreino: data.localTreino ? String(data.localTreino).trim() : null,
+    problemasAnteriores: normalizeArray(data.problemasAnteriores),
+    objetivosAdicionais: normalizeArray(data.objetivosAdicionais),
+    lesoes: normalizeArray(data.lesoes),
+    preferencias: normalizeArray(data.preferencias),
+    rpePreferido: parseNumber(data.rpePreferido)
+  };
+};
+
 // Registrar novo usuário
 export const register = async (req: Request, res: Response) => {
   try {
@@ -288,40 +353,44 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
     });
 
     // Criar perfil com dados do onboarding
-    const perfil = await prisma.perfil.create({
+    const onboardingData = normalizeOnboardingData(onboarding);
+    if (!onboardingData) {
+      return res.status(400).json({
+        error: 'Dados do onboarding são inválidos'
+      });
+    }
+
+    await prisma.perfil.create({
       data: {
         userId: user.id,
-        idade: onboarding.idade || null,
-        sexo: onboarding.sexo || null,
-        tipoCorpo: onboarding.tipoCorpo || null,
-        altura: onboarding.altura || null,
-        pesoAtual: onboarding.pesoAtual || null,
-        percentualGordura: onboarding.percentualGordura || null,
-        aguaDiaria: onboarding.aguaDiaria || null,
-        experiencia: onboarding.experiencia || null,
-        objetivo: onboarding.objetivo || null,
-        frequenciaSemanal: onboarding.frequenciaSemanal || null,
-        tempoDisponivel: onboarding.tempoDisponivel || null,
-        localTreino: onboarding.localTreino || null,
-        problemasAnteriores: onboarding.problemasAnteriores || [],
-        objetivosAdicionais: onboarding.objetivosAdicionais || [],
-        lesoes: onboarding.lesoes || [],
-        preferencias: onboarding.preferencias || [],
-        rpePreferido: onboarding.rpePreferido || null,
+        idade: onboardingData?.idade ?? null,
+        sexo: onboardingData?.sexo ?? null,
+        tipoCorpo: onboardingData?.tipoCorpo ?? null,
+        altura: onboardingData?.altura ?? null,
+        pesoAtual: onboardingData?.pesoAtual ?? null,
+        percentualGordura: onboardingData?.percentualGordura ?? null,
+        aguaDiaria: onboardingData?.aguaDiaria ?? null,
+        experiencia: onboardingData?.experiencia ?? null,
+        objetivo: onboardingData?.objetivo ?? null,
+        frequenciaSemanal: onboardingData?.frequenciaSemanal ?? null,
+        tempoDisponivel: onboardingData?.tempoDisponivel ?? null,
+        localTreino: onboardingData?.localTreino ?? null,
+        problemasAnteriores: onboardingData?.problemasAnteriores ?? [],
+        objetivosAdicionais: onboardingData?.objetivosAdicionais ?? [],
+        lesoes: onboardingData?.lesoes ?? [],
+        preferencias: onboardingData?.preferencias ?? [],
+        rpePreferido: onboardingData?.rpePreferido ?? null
       }
     });
 
     // Se peso foi informado, criar registro no histórico
-    if (onboarding.pesoAtual !== undefined && onboarding.pesoAtual !== null && onboarding.pesoAtual !== '') {
-      const pesoNum = typeof onboarding.pesoAtual === 'string' ? parseFloat(onboarding.pesoAtual) : onboarding.pesoAtual;
-      if (!isNaN(pesoNum)) {
-        await prisma.historicoPeso.create({
-          data: {
-            userId: user.id,
-            peso: pesoNum
-          }
-        });
-      }
+    if (onboardingData.pesoAtual !== null) {
+      await prisma.historicoPeso.create({
+        data: {
+          userId: user.id,
+          peso: onboardingData.pesoAtual
+        }
+      });
     }
 
     // Gerar tokens para login automático
@@ -395,28 +464,44 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
     });
 
     // Criar perfil com dados do onboarding
-    const perfil = await prisma.perfil.create({
+    const onboardingData = normalizeOnboardingData(onboarding);
+    if (!onboardingData) {
+      return res.status(400).json({
+        error: 'Dados do onboarding são inválidos'
+      });
+    }
+
+    await prisma.perfil.create({
       data: {
         userId: user.id,
-        idade: onboarding.idade || null,
-        sexo: onboarding.sexo || null,
-        tipoCorpo: onboarding.tipoCorpo || null,
-        altura: onboarding.altura || null,
-        pesoAtual: onboarding.pesoAtual || null,
-        percentualGordura: onboarding.percentualGordura || null,
-        aguaDiaria: onboarding.aguaDiaria || null,
-        experiencia: onboarding.experiencia || null,
-        objetivo: onboarding.objetivo || null,
-        frequenciaSemanal: onboarding.frequenciaSemanal || null,
-        tempoDisponivel: onboarding.tempoDisponivel || null,
-        localTreino: onboarding.localTreino || null,
-        problemasAnteriores: onboarding.problemasAnteriores || [],
-        objetivosAdicionais: onboarding.objetivosAdicionais || [],
-        lesoes: onboarding.lesoes || [],
-        preferencias: onboarding.preferencias || [],
-        rpePreferido: onboarding.rpePreferido || null,
+        idade: onboardingData?.idade ?? null,
+        sexo: onboardingData?.sexo ?? null,
+        tipoCorpo: onboardingData?.tipoCorpo ?? null,
+        altura: onboardingData?.altura ?? null,
+        pesoAtual: onboardingData?.pesoAtual ?? null,
+        percentualGordura: onboardingData?.percentualGordura ?? null,
+        aguaDiaria: onboardingData?.aguaDiaria ?? null,
+        experiencia: onboardingData?.experiencia ?? null,
+        objetivo: onboardingData?.objetivo ?? null,
+        frequenciaSemanal: onboardingData?.frequenciaSemanal ?? null,
+        tempoDisponivel: onboardingData?.tempoDisponivel ?? null,
+        localTreino: onboardingData?.localTreino ?? null,
+        problemasAnteriores: onboardingData?.problemasAnteriores ?? [],
+        objetivosAdicionais: onboardingData?.objetivosAdicionais ?? [],
+        lesoes: onboardingData?.lesoes ?? [],
+        preferencias: onboardingData?.preferencias ?? [],
+        rpePreferido: onboardingData?.rpePreferido ?? null
       }
     });
+
+    if (onboardingData.pesoAtual !== null) {
+      await prisma.historicoPeso.create({
+        data: {
+          userId: user.id,
+          peso: onboardingData.pesoAtual
+        }
+      });
+    }
 
     // Gerar treinos para 30 dias
     try {

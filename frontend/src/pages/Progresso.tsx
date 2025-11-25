@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -61,35 +61,49 @@ export default function Progresso() {
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [historico, setHistorico] = useState<TreinoHistorico[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [periodKey, setPeriodKey] = useState<PeriodKey>('semana')
   const [periodo, setPeriodo] = useState(7)
   const [rangeStart, setRangeStart] = useState<Date>(() => getWeekStart(new Date()))
+  const cacheRef = useRef<Record<number, { estatisticas: Estatisticas; historico: TreinoHistorico[] }>>({})
+  const primeiraCarga = useRef(true)
 
   useEffect(() => {
     carregarDados()
   }, [periodo])
 
   const carregarDados = async () => {
-    try {
+    const cacheExistente = cacheRef.current[periodo]
+    if (cacheExistente) {
+      setEstatisticas(cacheExistente.estatisticas)
+      setHistorico(cacheExistente.historico)
+      setRefreshing(true)
+    } else {
       setLoading(true)
+    }
+    try {
       const limiteHistorico = Math.min(120, periodo * 2)
       const [statsResponse, historicoResponse] = await Promise.all([
         api.get(`/treino/estatisticas?dias=${periodo}`),
         api.get(`/treino/historico?limite=${limiteHistorico}`)
       ])
-      setEstatisticas(statsResponse.data)
+      const statsData: Estatisticas = statsResponse.data
       const historicoData = historicoResponse.data || []
       const treinosConcluidos = Array.isArray(historicoData)
         ? historicoData
             .filter((t: any) => t.concluido && t.data)
             .sort((a: any, b: any) => new Date(b.data).getTime() - new Date(a.data).getTime())
         : []
+      setEstatisticas(statsData)
       setHistorico(treinosConcluidos)
+      cacheRef.current[periodo] = { estatisticas: statsData, historico: treinosConcluidos }
     } catch (error) {
       console.error('Erro ao carregar estatísticas', error)
       showToast('Não foi possível carregar o progresso agora.', 'error')
     } finally {
       setLoading(false)
+      setRefreshing(false)
+      primeiraCarga.current = false
     }
   }
 
@@ -214,7 +228,7 @@ export default function Progresso() {
       ]
     : []
 
-  if (loading) {
+  if (loading && primeiraCarga.current) {
     return (
       <div className="min-h-screen bg-dark text-white pb-24">
         <AppHeader title="Progresso" backTo="/meu-plano" />
@@ -260,6 +274,12 @@ export default function Progresso() {
     <div className="min-h-screen bg-dark text-white pb-24">
       <AppHeader title="Progresso" backTo="/meu-plano" />
       <div className="px-5 pt-2 space-y-6">
+        {refreshing && (
+          <div className="flex items-center gap-2 text-xs text-white/60">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            Atualizando dados...
+          </div>
+        )}
         <div className="grid grid-cols-4 gap-2 bg-white/5 border border-white/10 rounded-full p-1">
           {PERIOD_OPTIONS.map((option) => (
             <button
