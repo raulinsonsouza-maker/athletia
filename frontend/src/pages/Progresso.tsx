@@ -72,9 +72,10 @@ export default function Progresso() {
   const carregarDados = async () => {
     try {
       setLoading(true)
+      const limiteHistorico = Math.min(120, periodo * 2)
       const [statsResponse, historicoResponse] = await Promise.all([
         api.get(`/treino/estatisticas?dias=${periodo}`),
-        api.get(`/treino/historico?limite=${periodo * 2}`)
+        api.get(`/treino/historico?limite=${limiteHistorico}`)
       ])
       setEstatisticas(statsResponse.data)
       const historicoData = historicoResponse.data || []
@@ -132,7 +133,7 @@ export default function Progresso() {
     })
   }
 
-  const calcularGruposMusculares = () => {
+  const grupos = useMemo(() => {
     const gruposCount: Record<string, number> = {}
     historico.forEach((treino) => {
       treino.exercicios?.forEach((ex) => {
@@ -146,10 +147,10 @@ export default function Progresso() {
       .filter(([_, count]) => count > 0)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 6)
-  }
+  }, [historico])
 
-  const calcularVolumePorSemana = () => {
-    const volumePorSemana: Record<string, number> = {}
+  const volumePorSemana = useMemo(() => {
+    const mapa: Record<string, number> = {}
     historico.forEach((treino) => {
       if (!treino.data) return
       const data = new Date(treino.data)
@@ -169,31 +170,27 @@ export default function Progresso() {
         }
       })
       if (volumeSemana > 0) {
-        volumePorSemana[semanaKey] = (volumePorSemana[semanaKey] || 0) + volumeSemana
+        mapa[semanaKey] = (mapa[semanaKey] || 0) + volumeSemana
       }
     })
-    return Object.entries(volumePorSemana)
+    return Object.entries(mapa)
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-8)
-  }
+  }, [historico])
 
-  const calcularFrequenciaSemanal = () => {
-    const treinosPorSemana: Record<string, number> = {}
+  const frequenciaPorSemana = useMemo(() => {
+    const mapa: Record<string, number> = {}
     historico.forEach((treino) => {
       if (!treino.data) return
       const data = new Date(treino.data)
       if (isNaN(data.getTime())) return
       const semanaKey = getWeekStart(data).toISOString().split('T')[0]
-      treinosPorSemana[semanaKey] = (treinosPorSemana[semanaKey] || 0) + 1
+      mapa[semanaKey] = (mapa[semanaKey] || 0) + 1
     })
-    return Object.entries(treinosPorSemana)
+    return Object.entries(mapa)
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-8)
-  }
-
-  const grupos = calcularGruposMusculares()
-  const volumePorSemana = calcularVolumePorSemana()
-  const frequenciaPorSemana = calcularFrequenciaSemanal()
+  }, [historico])
   const progressLabels = estatisticas ? Object.keys(estatisticas.progressaoPorGrupo) : []
   const progressValues = estatisticas ? (Object.values(estatisticas.progressaoPorGrupo) as number[]) : []
   const rangeEnd = new Date(rangeStart)

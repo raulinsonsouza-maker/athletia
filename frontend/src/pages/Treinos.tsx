@@ -1,39 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { obterHomeTreinos, obterPlanoAtualResumo } from '../services/treino.service'
-import { TreinoHomeResponse, TreinoCardResumo, RecursoPersonalizado } from '../types/treino.types'
+import { TreinoHomeResponse, TreinoCardResumo } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
 const formatarDuracao = (minutos: number) => `${minutos} min`
-
-const IconZap = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13 3L4 14h7l-1 7 9-11h-7l1-7z" />
-  </svg>
-)
-
-const IconList = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-    <path strokeLinecap="round" d="M8 6h13M8 12h13M8 18h13" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h.01M3 12h.01M3 18h.01" />
-  </svg>
-)
-
-const CardRecurso = ({ recurso, onNavigate }: { recurso: RecursoPersonalizado; onNavigate: (destino: string) => void }) => (
-  <button
-    onClick={() => onNavigate(recurso.destino)}
-    className="bg-dark-lighter rounded-3xl px-5 py-6 flex flex-col gap-2 text-left hover:bg-dark/80 transition-all"
-  >
-    <div className="w-10 h-10 rounded-full bg-dark flex items-center justify-center text-white/80">
-      {recurso.icone === 'zap' ? <IconZap /> : <IconList />}
-    </div>
-    <div className="text-light font-semibold">{recurso.titulo}</div>
-    {recurso.descricao && <p className="text-light-muted text-sm">{recurso.descricao}</p>}
-  </button>
-)
 
 const CardTreino = ({ item, onNavigate }: { item: TreinoCardResumo; onNavigate?: (id: string) => void }) => (
   <button
@@ -93,10 +67,6 @@ export default function Treinos() {
     carregar()
   }, [showToast])
 
-  const handleNavigate = (destino: string) => {
-    navigate(destino)
-  }
-
   const skeleton = (
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-3">
@@ -126,56 +96,32 @@ export default function Treinos() {
     <div className="min-h-screen bg-dark text-white pb-24">
       <AppHeader title="Treinos" subtitle="Planos e treinos recomendados" />
       <div className="px-5 pt-2 space-y-8">
-        {dados?.destaquePlanoAtual && (
-          <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-            <div className="h-44 relative">
-              <img
-                src={dados.destaquePlanoAtual.imagem || obterImagemPorGenero(genero, 'treinos')}
-                alt={dados.destaquePlanoAtual.titulo}
-                className="w-full h-full object-cover opacity-70"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 space-y-1">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/70">Plano em destaque</p>
-                <h2 className="text-2xl font-semibold">{dados.destaquePlanoAtual.titulo}</h2>
-                <p className="text-sm text-white/70">
-                  {dados.destaquePlanoAtual.duracao} min • {dados.destaquePlanoAtual.local}
-                </p>
-              </div>
+        <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
+          <div className="h-44 relative">
+            <img
+              src={obterImagemPorGenero(genero, 'treinos')}
+              alt="Central de treinos"
+              className="w-full h-full object-cover opacity-70"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4 space-y-1">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/70">Central inteligente</p>
+              <h2 className="text-2xl font-semibold">Crie sessões rápidas ou ajuste o plano ativo</h2>
+              <p className="text-sm text-white/70">Tudo o que envolve treinos está concentrado aqui.</p>
             </div>
-            <div className="p-4 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => navigate('/treino/atual')}
-                className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm"
-              >
-                Iniciar plano
-              </button>
-              <button
-                onClick={() => navigate('/meu-plano')}
-                className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
-              >
-                Ajustar metas
-              </button>
-            </div>
-          </section>
-        )}
-
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3">
-          <p className="text-xs uppercase tracking-[0.3em] text-white/50">Central de ajustes</p>
-          <div className="flex flex-col sm:flex-row gap-3">
+          </div>
+          <div className="p-4 flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => navigate('/treino-rapido')}
-              className="flex-1 rounded-2xl border border-primary/40 text-left px-4 py-3 hover:bg-primary/10 transition"
+              className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm"
             >
-              <p className="text-sm text-primary/80">Nova sessão</p>
-              <p className="text-lg font-semibold">Criar treino rápido</p>
+              Criar treino rápido
             </button>
             <button
               onClick={() => navigate('/treino/atual')}
-              className="flex-1 rounded-2xl border border-white/20 text-left px-4 py-3 hover:bg-white/10 transition"
+              className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
             >
-              <p className="text-sm text-white/70">Plano ativo</p>
-              <p className="text-lg font-semibold">Visualizar/editar</p>
+              Ver plano atual
             </button>
           </div>
         </section>
@@ -206,15 +152,6 @@ export default function Treinos() {
 
         {!loading && dados && (
           <>
-            <section className="space-y-3">
-              <h2 className="text-sm uppercase tracking-[0.2em] text-light-muted">Recursos personalizados</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {dados.recursos.map((recurso) => (
-                  <CardRecurso key={recurso.id} recurso={recurso} onNavigate={handleNavigate} />
-                ))}
-              </div>
-            </section>
-
             {filteredSections.map((secao) => (
               <section key={secao.id} className="space-y-3">
                 <div className="flex items-center justify-between">

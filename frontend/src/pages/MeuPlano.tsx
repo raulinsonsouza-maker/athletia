@@ -45,15 +45,27 @@ export default function MeuPlano() {
   }, [showToast])
 
   const insights = homeData?.insights
-  const progressoSemana = insights?.progressoSemana
+  const progressoSemanaBackend = insights?.progressoSemana
+  const blocos = planoAtual?.blocos ?? []
+  const realizadosTreinos = blocos.filter((bloco) =>
+    bloco.exercicios.every((exercicio) => exercicio.concluido)
+  ).length
+  const planejadosTreinos =
+    blocos.length || (homeData?.semana?.filter((dia) => dia?.hasTreino).length ?? 0)
+  const diasSemTreino =
+    homeData?.semana?.filter((dia) => dia && !dia.concluido).length ??
+    Math.max(0, 7 - realizadosTreinos)
+
   const resumoSemana = [
     {
       label: 'Treinos concluídos',
-      value: `${progressoSemana?.realizados ?? 0}/${progressoSemana?.planejados ?? 0}`
+      value: `${realizadosTreinos || progressoSemanaBackend?.realizados || 0}/${
+        planejadosTreinos || progressoSemanaBackend?.planejados || 0
+      }`
     },
     {
       label: 'Volume total',
-      value: `${(insights?.volumeTotal ?? 0).toLocaleString('pt-BR')} kg`
+      value: insights ? `${(insights.volumeTotal ?? 0).toLocaleString('pt-BR')} kg` : '—'
     },
     {
       label: 'Séries totais',
@@ -61,10 +73,9 @@ export default function MeuPlano() {
     },
     {
       label: 'Dias sem treino',
-      value: `${insights?.diasSemTreino ?? 0}`
+      value: `${diasSemTreino}`
     }
   ]
-
 
   const generoNormalizado = normalizarGenero(planoAtual?.genero)
 
@@ -160,19 +171,20 @@ export default function MeuPlano() {
             ))}
           </div>
         </section>
-
-        {homeData?.recomendacoes && (
-          <section className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50">Recomendações</p>
-            <div className="space-y-2">
-              {homeData.recomendacoes.map((rec, index) => (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl px-4 py-3 text-sm text-white/80">
-                  {rec}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        <section className="bg-primary/10 border border-primary/30 rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-primary/80 mb-1">Dica</p>
+            <p className="text-white font-semibold">
+              Adicione um treino extra nesta semana para manter o ritmo.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/treinos')}
+            className="px-5 py-2 rounded-full bg-primary text-dark font-semibold"
+          >
+            Ajustar plano
+          </button>
+        </section>
 
       </div>
       <BottomTabs active="meu-plano" />
