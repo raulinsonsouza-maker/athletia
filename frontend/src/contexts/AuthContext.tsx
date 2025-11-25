@@ -82,6 +82,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('user')
     setUser(null)
+
+    // Garantir retorno imediato para tela de login
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login'
+    }
   }
 
   const setUserFromResponse = (userData: User, accessToken: string, refreshToken: string) => {

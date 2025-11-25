@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
-import Navbar from '../components/Navbar'
 import { useToast } from '../hooks/useToast'
 import { validatePerfil, validatePeso } from '../utils/validation'
+import AppHeader from '../components/navigation/AppHeader'
+import BottomTabs from '../components/navigation/BottomTabs'
 
 interface Perfil {
   id: string
@@ -39,6 +40,10 @@ export default function Perfil() {
   const [registrandoPeso, setRegistrandoPeso] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [pesoError, setPesoError] = useState('')
+
+  const inputBaseClass =
+    'w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none transition'
+  const inputErrorClass = 'border-error/60 focus:border-error focus:ring-error/30'
 
   useEffect(() => {
     carregarPerfil()
@@ -142,12 +147,19 @@ export default function Perfil() {
     }
   }
 
+  const InfoField = ({ label, value }: { label: string; value: string }) => (
+    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 space-y-1">
+      <p className="text-xs uppercase tracking-[0.3em] text-white/40">{label}</p>
+      <p className="text-lg font-semibold text-white">{value}</p>
+    </div>
+  )
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="spinner h-12 w-12 mx-auto"></div>
-          <p className="mt-4 text-light-muted">Carregando perfil...</p>
+      <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark flex items-center justify-center">
+        <div className="text-center space-y-4 text-white">
+          <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-primary animate-spin mx-auto" />
+          <p className="text-white/60">Carregando seu perfil...</p>
         </div>
       </div>
     )
@@ -155,92 +167,153 @@ export default function Perfil() {
 
   if (!perfil) return null
 
-  return (
-    <div className="min-h-screen">
-      <Navbar showBack backPath="/dashboard" />
-      <ToastContainer />
+  const heroImage =
+    perfil.sexo === 'Feminino'
+      ? 'https://images.unsplash.com/photo-1469460340994-25b0127eea38?auto=format&fit=crop&w=1200&q=80'
+      : 'https://images.unsplash.com/photo-1483721310020-03333e577078?auto=format&fit=crop&w=1200&q=80'
 
-      <main className="container-custom section">
-        {/* Card de Registro de Peso Semanal */}
-        <div className="card mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-32">
+      <AppHeader title="Meu Perfil" subtitle="Atualize seus dados e preferências" backTo="/meu-plano" />
+      <ToastContainer />
+      <div className="px-5 space-y-6 pb-28">
+        <section className="relative rounded-[32px] border border-white/10 overflow-hidden">
+          <img src={heroImage} alt="Banner do perfil" className="absolute inset-0 w-full h-full object-cover opacity-50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
+          <div className="relative px-6 py-8 space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <span className="px-4 py-1 rounded-full border border-white/20 text-xs uppercase tracking-[0.4em] text-white/70">
+                Perfil
+              </span>
+              <span className="text-sm text-white/70">
+                {perfil.frequenciaSemanal ? `${perfil.frequenciaSemanal}x/semana` : 'Frequência indefinida'} ·{' '}
+                {perfil.objetivo || 'Objetivo indefinido'}
+              </span>
             </div>
-            <h2 className="text-2xl font-display font-bold text-light">
-              Registro Semanal de Peso
-            </h2>
+            <h1 className="text-3xl font-semibold">
+              {perfil.user?.nome ? `${perfil.user.nome}` : 'Atleta AthletIA'}
+            </h1>
+            <p className="text-white/70 max-w-2xl">
+              Mantemos seu plano atualizado com base no seu objetivo, disponibilidade e histórico. Revise os dados abaixo sempre que suas metas mudarem.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => {
+                  setEditando(true)
+                  scrollToSection('dados-pessoais')
+                }}
+                className="px-5 py-3 rounded-full bg-primary text-dark font-semibold"
+              >
+                Editar dados
+              </button>
+              <button
+                onClick={() => {
+                  setEditandoTreino(true)
+                  scrollToSection('preferencias-treino')
+                }}
+                className="px-5 py-3 rounded-full border border-white/30 text-white/80"
+              >
+                Ajustar preferências
+              </button>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row items-end gap-4">
-            <div className="flex-1 w-full">
-              <label className="label-field">
-                Peso Atual (kg)
-              </label>
-                  <input
-                    type="number"
-                    min="30"
-                    max="300"
-                    step="0.1"
-                    value={pesoInput}
-                    onChange={(e) => {
-                      setPesoInput(e.target.value)
-                      if (pesoError) setPesoError('')
-                    }}
-                    placeholder={perfil.pesoAtual?.toString() || 'Ex: 75.5'}
-                    className={`input-field ${pesoError ? 'border-error' : ''}`}
-                  />
-                  {pesoError && (
-                    <p className="text-error text-sm mt-1">{pesoError}</p>
-                  )}
+        </section>
+
+        <section id="metricas-peso" className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-5 backdrop-blur">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Peso e progresso</p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-4xl font-bold">{perfil.pesoAtual ? `${perfil.pesoAtual} kg` : '-- kg'}</p>
+                <p className="text-white/60 text-sm">Último registro atualizado</p>
+              </div>
+              <div className="text-sm text-white/60 text-right space-y-1">
+                <p>{perfil.objetivo || 'Objetivo não definido'}</p>
+                <span>{perfil.frequenciaSemanal ? `${perfil.frequenciaSemanal}x semana` : 'Frequência não definida'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <label className="text-sm text-white/60 mb-2 block">Atualizar peso (kg)</label>
+              <input
+                type="number"
+                min="30"
+                max="300"
+                step="0.1"
+                value={pesoInput}
+                onChange={(e) => {
+                  setPesoInput(e.target.value)
+                  if (pesoError) setPesoError('')
+                }}
+                placeholder={perfil.pesoAtual?.toString() || 'Ex: 75.5'}
+                className={`${inputBaseClass} ${pesoError ? inputErrorClass : ''}`}
+              />
+              {pesoError && <p className="text-error text-sm mt-1">{pesoError}</p>}
             </div>
             <button
               onClick={handleRegistrarPeso}
               disabled={registrandoPeso || !pesoInput}
-              className="btn-primary min-w-[150px] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="min-w-[160px] rounded-2xl bg-primary text-dark font-semibold py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {registrandoPeso ? (
-                <>
-                  <div className="spinner h-4 w-4 mr-2"></div>
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-dark/30 border-t-dark rounded-full animate-spin" />
                   Registrando...
-                </>
+                </span>
               ) : (
-                'Registrar Peso'
+                'Registrar peso'
               )}
             </button>
           </div>
           {perfil.pesoAtual && (
-            <p className="text-sm text-light-muted mt-3">
-              Último peso registrado: <strong className="text-primary">{perfil.pesoAtual} kg</strong>
-            </p>
+            <p className="text-xs uppercase tracking-[0.4em] text-white/40">Último: {perfil.pesoAtual} kg</p>
           )}
-        </div>
+        </section>
 
-        {/* Informações do Perfil */}
-        <div className="card mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-display font-bold text-light">Informações Pessoais</h2>
-            {!editando && (
-              <button
-                onClick={() => setEditando(true)}
-                className="btn-secondary flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Editar
-              </button>
-            )}
+        <section id="dados-pessoais" className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-5 backdrop-blur">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/40">Dados pessoais</p>
+              <h2 className="text-2xl font-semibold">Informações básicas</h2>
+            </div>
+            <div className="flex gap-3">
+              {editando ? (
+                <button
+                  onClick={() => {
+                    setEditando(false)
+                    setFormData(perfil)
+                    setErrors({})
+                  }}
+                  className="px-4 py-2 rounded-full border border-white/20 text-sm text-white/70 hover:border-white/60 transition"
+                  disabled={salvando}
+                >
+                  Cancelar
+                </button>
+              ) : (
+                <button
+                  onClick={() => setEditando(true)}
+                  className="px-4 py-2 rounded-full border border-primary/40 text-sm text-primary hover:bg-primary/10 transition"
+                >
+                  Editar
+                </button>
+              )}
+            </div>
           </div>
 
           {editando ? (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="label-field">
-                    Nome
-                  </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Nome</span>
                   <input
                     type="text"
                     value={formData.user?.nome || ''}
@@ -248,27 +321,16 @@ export default function Perfil() {
                       setFormData({ ...formData, user: { ...formData.user, nome: e.target.value } })
                       if (errors.nome) setErrors({ ...errors, nome: '' })
                     }}
-                    className={`input-field ${errors.nome ? 'border-error' : ''}`}
+                    className={`${inputBaseClass} ${errors.nome ? inputErrorClass : ''}`}
                   />
-                  {errors.nome && (
-                    <p className="text-error text-sm mt-1">{errors.nome}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="label-field">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={formData.user?.email || ''}
-                    disabled
-                    className="input-field bg-dark-lighter opacity-60 cursor-not-allowed"
-                  />
-                </div>
-                <div>
-                  <label className="label-field">
-                    Idade
-                  </label>
+                  {errors.nome && <p className="text-error text-sm">{errors.nome}</p>}
+                </label>
+                <label className="space-y-2 opacity-60">
+                  <span className="text-sm text-white/60">Email</span>
+                  <input type="email" value={formData.user?.email || ''} disabled className={`${inputBaseClass} bg-white/5`} />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Idade</span>
                   <input
                     type="number"
                     min="13"
@@ -278,31 +340,25 @@ export default function Perfil() {
                       setFormData({ ...formData, idade: e.target.value })
                       if (errors.idade) setErrors({ ...errors, idade: '' })
                     }}
-                    className={`input-field ${errors.idade ? 'border-error' : ''}`}
+                    className={`${inputBaseClass} ${errors.idade ? inputErrorClass : ''}`}
                   />
-                  {errors.idade && (
-                    <p className="text-error text-sm mt-1">{errors.idade}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="label-field">
-                    Sexo
-                  </label>
+                  {errors.idade && <p className="text-error text-sm">{errors.idade}</p>}
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Sexo</span>
                   <select
                     value={formData.sexo || ''}
                     onChange={(e) => setFormData({ ...formData, sexo: e.target.value })}
-                    className="input-field"
+                    className={`${inputBaseClass} bg-dark`}
                   >
                     <option value="">Selecione</option>
                     <option value="Masculino">Masculino</option>
                     <option value="Feminino">Feminino</option>
                     <option value="Outro">Outro</option>
                   </select>
-                </div>
-                <div>
-                  <label className="label-field">
-                    Altura (cm)
-                  </label>
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Altura (cm)</span>
                   <input
                     type="number"
                     min="100"
@@ -312,16 +368,12 @@ export default function Perfil() {
                       setFormData({ ...formData, altura: e.target.value })
                       if (errors.altura) setErrors({ ...errors, altura: '' })
                     }}
-                    className={`input-field ${errors.altura ? 'border-error' : ''}`}
+                    className={`${inputBaseClass} ${errors.altura ? inputErrorClass : ''}`}
                   />
-                  {errors.altura && (
-                    <p className="text-error text-sm mt-1">{errors.altura}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="label-field">
-                    Percentual de Gordura (%)
-                  </label>
+                  {errors.altura && <p className="text-error text-sm">{errors.altura}</p>}
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Percentual de gordura (%)</span>
                   <input
                     type="number"
                     min="5"
@@ -332,126 +384,96 @@ export default function Perfil() {
                       setFormData({ ...formData, percentualGordura: e.target.value })
                       if (errors.percentualGordura) setErrors({ ...errors, percentualGordura: '' })
                     }}
-                    className={`input-field ${errors.percentualGordura ? 'border-error' : ''}`}
+                    className={`${inputBaseClass} ${errors.percentualGordura ? inputErrorClass : ''}`}
                   />
-                  {errors.percentualGordura && (
-                    <p className="text-error text-sm mt-1">{errors.percentualGordura}</p>
-                  )}
-                </div>
+                  {errors.percentualGordura && <p className="text-error text-sm">{errors.percentualGordura}</p>}
+                </label>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleSalvar}
                   disabled={salvando}
-                  className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-2xl bg-primary text-dark font-semibold py-3 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {salvando ? (
-                    <>
-                      <div className="spinner h-4 w-4 mr-2"></div>
-                      Salvando...
-                    </>
-                  ) : (
-                    'Salvar Alterações'
-                  )}
+                  {salvando ? 'Salvando...' : 'Salvar alterações'}
                 </button>
                 <button
                   onClick={() => {
                     setEditando(false)
                     setFormData(perfil)
+                    setErrors({})
                   }}
-                  className="btn-secondary"
+                  className="rounded-2xl border border-white/20 text-white/80 py-3 px-4"
                   disabled={salvando}
                 >
-                  Cancelar
+                  Voltar
                 </button>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-light-muted">Nome</p>
-                <p className="text-lg font-semibold text-light">
-                  {perfil.user?.nome || 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-light-muted">Email</p>
-                <p className="text-lg font-semibold text-light">
-                  {perfil.user?.email}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-light-muted">Idade</p>
-                <p className="text-lg font-semibold text-light">
-                  {perfil.idade ? `${perfil.idade} anos` : 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-light-muted">Sexo</p>
-                <p className="text-lg font-semibold text-light">
-                  {perfil.sexo || 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-light-muted">Altura</p>
-                <p className="text-lg font-semibold text-light">
-                  {perfil.altura ? `${perfil.altura} cm` : 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-light-muted">Peso Atual</p>
-                <p className="text-lg font-semibold text-light">
-                  {perfil.pesoAtual ? `${perfil.pesoAtual} kg` : 'Não informado'}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InfoField label="Nome" value={perfil.user?.nome || 'Não informado'} />
+              <InfoField label="Email" value={perfil.user?.email || 'Não informado'} />
+              <InfoField label="Idade" value={perfil.idade ? `${perfil.idade} anos` : 'Não informado'} />
+              <InfoField label="Sexo" value={perfil.sexo || 'Não informado'} />
+              <InfoField label="Altura" value={perfil.altura ? `${perfil.altura} cm` : 'Não informado'} />
+              <InfoField label="Peso atual" value={perfil.pesoAtual ? `${perfil.pesoAtual} kg` : 'Não informado'} />
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Informações de Treino */}
-        <div className="card">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-display font-bold text-light">Configurações de Treino</h2>
-            {!editandoTreino && (
-              <button
-                onClick={() => setEditandoTreino(true)}
-                className="btn-secondary flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Editar
-              </button>
-            )}
+        <section id="preferencias-treino" className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-5 backdrop-blur">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/40">Configuração de treino</p>
+              <h2 className="text-2xl font-semibold">Preferências e disponibilidade</h2>
+            </div>
+            <div className="flex gap-3">
+              {editandoTreino ? (
+                <button
+                  onClick={() => {
+                    setEditandoTreino(false)
+                    setFormData(perfil)
+                  }}
+                  className="px-4 py-2 rounded-full border border-white/20 text-sm text-white/70 hover:border-white/60 transition"
+                  disabled={salvando}
+                >
+                  Cancelar
+                </button>
+              ) : (
+                <button
+                  onClick={() => setEditandoTreino(true)}
+                  className="px-4 py-2 rounded-full border border-primary/40 text-sm text-primary hover:bg-primary/10 transition"
+                >
+                  Ajustar
+                </button>
+              )}
+            </div>
           </div>
 
           {editandoTreino ? (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="label-field">
-                    Experiência
-                  </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Experiência</span>
                   <select
                     value={formData.experiencia || ''}
                     onChange={(e) => setFormData({ ...formData, experiencia: e.target.value })}
-                    className="input-field"
+                    className={`${inputBaseClass} bg-dark`}
                   >
                     <option value="">Selecione</option>
                     <option value="Iniciante">Iniciante</option>
                     <option value="Intermediário">Intermediário</option>
                     <option value="Avançado">Avançado</option>
                   </select>
-                </div>
-                <div>
-                  <label className="label-field">
-                    Objetivo
-                  </label>
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Objetivo</span>
                   <select
                     value={formData.objetivo || ''}
                     onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-                    className="input-field"
+                    className={`${inputBaseClass} bg-dark`}
                   >
                     <option value="">Selecione</option>
                     <option value="Hipertrofia">Hipertrofia</option>
@@ -460,190 +482,165 @@ export default function Perfil() {
                     <option value="Emagrecimento">Emagrecimento</option>
                     <option value="Condicionamento">Condicionamento</option>
                   </select>
-                </div>
-                <div>
-                  <label className="label-field">
-                    Frequência Semanal (dias)
-                  </label>
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Frequência semanal</span>
                   <select
                     value={formData.frequenciaSemanal || ''}
-                    onChange={(e) => setFormData({ ...formData, frequenciaSemanal: e.target.value ? Number(e.target.value) : null })}
-                    className="input-field"
+                    onChange={(e) =>
+                      setFormData({ ...formData, frequenciaSemanal: e.target.value ? Number(e.target.value) : null })
+                    }
+                    className={`${inputBaseClass} bg-dark`}
                   >
                     <option value="">Selecione</option>
-                    <option value="2">2 dias/semana</option>
-                    <option value="3">3 dias/semana</option>
-                    <option value="4">4 dias/semana</option>
-                    <option value="5">5 dias/semana</option>
-                    <option value="6">6 dias/semana</option>
+                    {[2, 3, 4, 5, 6].map((dia) => (
+                      <option key={dia} value={dia}>{`${dia}x semana`}</option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label className="label-field">
-                    Tempo Disponível (minutos)
-                  </label>
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">Tempo disponível</span>
                   <select
                     value={formData.tempoDisponivel || ''}
-                    onChange={(e) => setFormData({ ...formData, tempoDisponivel: e.target.value ? Number(e.target.value) : null })}
-                    className="input-field"
+                    onChange={(e) =>
+                      setFormData({ ...formData, tempoDisponivel: e.target.value ? Number(e.target.value) : null })
+                    }
+                    className={`${inputBaseClass} bg-dark`}
                   >
                     <option value="">Selecione</option>
-                    <option value="30">30 minutos</option>
-                    <option value="45">45 minutos</option>
-                    <option value="60">60 minutos</option>
-                    <option value="75">75 minutos</option>
-                    <option value="90">90 minutos</option>
+                    {[30, 45, 60, 75, 90].map((min) => (
+                      <option key={min} value={min}>{`${min} minutos`}</option>
+                    ))}
                   </select>
-                </div>
-                <div>
-                  <label className="label-field">
-                    RPE Preferido (1-10)
-                  </label>
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm text-white/60">RPE preferido</span>
                   <input
                     type="number"
                     min="1"
                     max="10"
                     value={formData.rpePreferido || ''}
                     onChange={(e) => setFormData({ ...formData, rpePreferido: e.target.value ? Number(e.target.value) : null })}
-                    className="input-field"
-                    placeholder="Ex: 7"
+                    className={inputBaseClass}
                   />
-                </div>
+                </label>
               </div>
 
-              {/* Lesões */}
-              <div>
-                <label className="label-field mb-3">Lesões/Limitações Físicas</label>
-                <div className="space-y-2">
-                  {['Joelho', 'Ombro', 'Coluna', 'Pulso', 'Tornozelo', 'Outras'].map(lesao => (
-                    <label key={lesao} className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg hover:bg-dark-lighter transition-colors">
+              <div className="space-y-3">
+                <p className="text-sm text-white/60">Lesões / limitações</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {['Joelho', 'Ombro', 'Coluna', 'Pulso', 'Tornozelo', 'Outras'].map((lesao) => (
+                    <label
+                      key={lesao}
+                      className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         checked={(formData.lesoes || []).includes(lesao)}
                         onChange={() => handleToggleLesao(lesao)}
-                        className="w-5 h-5 text-primary border-grey rounded focus:ring-primary focus:ring-2 bg-dark-lighter cursor-pointer"
+                        className="h-5 w-5 rounded border-white/30 bg-dark accent-primary"
                       />
-                      <span className="text-light">{lesao}</span>
+                      <span className="text-sm">{lesao}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Equipamentos */}
-              <div>
-                <label className="label-field mb-3">Equipamentos Disponíveis</label>
-                <div className="space-y-2">
-                  {['Barra', 'Halteres', 'Anilhas', 'Máquinas', 'Cabo', 'Peso Corporal', 'Elásticos', 'Kettlebell'].map(equipamento => (
-                    <label key={equipamento} className="flex items-center space-x-3 cursor-pointer p-3 rounded-lg hover:bg-dark-lighter transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={(formData.equipamentos || []).includes(equipamento)}
-                        onChange={() => handleToggleEquipamento(equipamento)}
-                        className="w-5 h-5 text-primary border-grey rounded focus:ring-primary focus:ring-2 bg-dark-lighter cursor-pointer"
-                      />
-                      <span className="text-light">{equipamento}</span>
-                    </label>
-                  ))}
+              <div className="space-y-3">
+                <p className="text-sm text-white/60">Equipamentos disponíveis</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {['Barra', 'Halteres', 'Anilhas', 'Máquinas', 'Cabo', 'Peso Corporal', 'Elásticos', 'Kettlebell'].map(
+                    (equipamento) => (
+                      <label
+                        key={equipamento}
+                        className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(formData.equipamentos || []).includes(equipamento)}
+                          onChange={() => handleToggleEquipamento(equipamento)}
+                          className="h-5 w-5 rounded border-white/30 bg-dark accent-primary"
+                        />
+                        <span className="text-sm">{equipamento}</span>
+                      </label>
+                    )
+                  )}
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleSalvar}
                   disabled={salvando}
-                  className="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 rounded-2xl bg-primary text-dark font-semibold py-3 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {salvando ? (
-                    <>
-                      <div className="spinner h-4 w-4 mr-2"></div>
-                      Salvando...
-                    </>
-                  ) : (
-                    'Salvar Alterações'
-                  )}
+                  {salvando ? 'Salvando...' : 'Salvar preferências'}
                 </button>
                 <button
                   onClick={() => {
                     setEditandoTreino(false)
                     setFormData(perfil)
                   }}
-                  className="btn-secondary"
+                  className="rounded-2xl border border-white/20 text-white/80 py-3 px-4"
                   disabled={salvando}
                 >
-                  Cancelar
+                  Voltar
                 </button>
               </div>
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-light-muted">Experiência</p>
-                  <p className="text-lg font-semibold text-light">
-                    {perfil.experiencia || 'Não informado'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-light-muted">Objetivo</p>
-                  <p className="text-lg font-semibold text-light">
-                    {perfil.objetivo || 'Não informado'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-light-muted">Frequência Semanal</p>
-                  <p className="text-lg font-semibold text-light">
-                    {perfil.frequenciaSemanal ? `${perfil.frequenciaSemanal} dias/semana` : 'Não informado'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-light-muted">Tempo Disponível</p>
-                  <p className="text-lg font-semibold text-light">
-                    {perfil.tempoDisponivel ? `${perfil.tempoDisponivel} minutos` : 'Não informado'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-light-muted">RPE Preferido</p>
-                  <p className="text-lg font-semibold text-light">
-                    {perfil.rpePreferido ? `${perfil.rpePreferido}/10` : 'Não informado'}
-                  </p>
-                </div>
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InfoField label="Experiência" value={perfil.experiencia || 'Não informado'} />
+                <InfoField label="Objetivo" value={perfil.objetivo || 'Não informado'} />
+                <InfoField
+                  label="Frequência semanal"
+                  value={perfil.frequenciaSemanal ? `${perfil.frequenciaSemanal}x semana` : 'Não informado'}
+                />
+                <InfoField
+                  label="Tempo disponível"
+                  value={perfil.tempoDisponivel ? `${perfil.tempoDisponivel} minutos` : 'Não informado'}
+                />
+                <InfoField label="RPE preferido" value={perfil.rpePreferido ? `${perfil.rpePreferido}/10` : 'Não informado'} />
               </div>
 
-              {perfil.lesoes && perfil.lesoes.length > 0 && (
-                <div className="mt-6">
-                  <p className="text-sm text-light-muted mb-2">Lesões/Limitações</p>
+              <div className="space-y-2">
+                <p className="text-sm text-white/60">Lesões</p>
+                {perfil.lesoes && perfil.lesoes.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {perfil.lesoes.map((lesao, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-warning/20 text-warning border border-warning/30 rounded-full text-sm"
-                      >
+                    {perfil.lesoes.map((lesao) => (
+                      <span key={lesao} className="px-3 py-1 rounded-full border border-warning/40 bg-warning/10 text-warning/80 text-sm">
                         {lesao}
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-white/40 text-sm">Nenhuma restrição cadastrada</p>
+                )}
+              </div>
 
-              {perfil.equipamentos && perfil.equipamentos.length > 0 && (
-                <div className="mt-6">
-                  <p className="text-sm text-light-muted mb-2">Equipamentos Disponíveis</p>
+              <div className="space-y-2">
+                <p className="text-sm text-white/60">Equipamentos</p>
+                {perfil.equipamentos && perfil.equipamentos.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {perfil.equipamentos.map((equipamento, index) => (
+                    {perfil.equipamentos.map((equipamento) => (
                       <span
-                        key={index}
-                        className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-sm"
+                        key={equipamento}
+                        className="px-3 py-1 rounded-full border border-primary/40 bg-primary/10 text-primary text-sm"
                       >
                         {equipamento}
                       </span>
                     ))}
                   </div>
-                </div>
-              )}
-            </>
+                ) : (
+                  <p className="text-white/40 text-sm">Nenhum equipamento informado</p>
+                )}
+              </div>
+            </div>
           )}
-        </div>
-      </main>
+        </section>
+      </div>
+      <BottomTabs active="perfil" />
     </div>
   )
 }

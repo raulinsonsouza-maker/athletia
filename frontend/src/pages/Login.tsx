@@ -18,19 +18,18 @@ export default function Login() {
 
     try {
       await login(email, senha)
-      navigate('/dashboard')
+      navigate('/meu-plano')
     } catch (err: any) {
       console.error('Erro no login:', err)
-      
-      // Tratamento específico para diferentes tipos de erro
+
       if (err.response?.status === 502) {
-        setError('Servidor temporariamente indisponível. O backend pode estar offline ou reiniciando. Tente novamente em alguns instantes.')
+        setError('Servidor temporariamente indisponível. Tente novamente em instantes.')
       } else if (err.response?.status === 503) {
-        setError('Serviço temporariamente indisponível. Tente novamente em alguns instantes.')
+        setError('Serviço temporariamente indisponível. Tente novamente em instantes.')
       } else if (err.response?.status === 401) {
         setError('Email ou senha incorretos. Verifique suas credenciais.')
       } else if (err.isNetworkError || !err.response) {
-        setError('Não foi possível conectar ao servidor. Verifique sua conexão com a internet.')
+        setError('Não foi possível conectar ao servidor. Verifique sua conexão.')
       } else if (err.response?.status >= 500) {
         setError('Erro no servidor. Tente novamente em alguns instantes.')
       } else {
@@ -42,103 +41,136 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="max-w-md w-full card animate-scale-in">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-display font-bold text-gradient mb-2 flex items-center justify-center gap-3">
-            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-            </svg>
-            AthletIA
-          </h1>
-          <p className="text-light-muted">
-            Sistema Inteligente de Treinos Personalizados
+    <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white flex flex-col">
+      <div className="px-6 pt-12 pb-10 flex flex-col gap-8 flex-1">
+        <header className="space-y-3">
+          <p className="text-xs uppercase tracking-[0.6em] text-white/50">AthletIA</p>
+          <h1 className="text-4xl font-semibold leading-tight">Sua jornada inteligente começa aqui</h1>
+          <p className="text-white/70 text-sm max-w-sm">
+            Entre e continue o plano criado pela nossa inteligência exclusiva para o seu objetivo.
           </p>
-        </div>
+        </header>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-error/20 border border-error/50 text-error px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="email" className="label-field">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              placeholder="seu@email.com"
-              required
-              disabled={loading}
+        <section className="rounded-[36px] border border-white/10 bg-white/5 overflow-hidden relative shadow-2xl">
+          <div className="absolute inset-0">
+            <img
+              src="https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1200&q=80"
+              alt="Atleta treinando"
+              className="w-full h-full object-cover opacity-40"
             />
           </div>
-
-          <div>
-            <label htmlFor="senha" className="label-field">
-              Senha
-            </label>
-            <div className="relative">
-              <input
-                id="senha"
-                type={showPassword ? 'text' : 'password'}
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                className="input-field pr-10"
-                placeholder="••••••••"
-                required
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary hover:text-primary-400 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-dark rounded p-1 z-10"
-                disabled={loading}
-                aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                tabIndex={0}
-              >
-                {showPassword ? (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.29 3.29m13.42 13.42L21 21M12 12l.01.01" />
-                  </svg>
-                ) : (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
-              </button>
+          <div className="relative px-6 py-8 space-y-6">
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-full text-xs uppercase tracking-[0.3em] bg-white/10 border border-white/20">
+                Em tempo real
+              </span>
+              <span className="text-white/70 text-sm">Planos atualizados diariamente</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-white/40">Atletas ativos hoje</p>
+                <p className="text-3xl font-bold text-white">12.480+</p>
+              </div>
+              <div className="flex flex-col text-right text-white/70 text-sm">
+                <span>Tempo médio de treino</span>
+                <strong className="text-2xl text-white">42 min</strong>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center text-xs text-white/70">
+              <div className="rounded-2xl border border-white/10 bg-dark/30 p-3">
+                <p className="text-lg font-semibold text-white">+3x</p>
+                <span>mais consistência</span>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-dark/30 p-3">
+                <p className="text-lg font-semibold text-white">24/7</p>
+                <span>planos dinâmicos</span>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-dark/30 p-3">
+                <p className="text-lg font-semibold text-white">100%</p>
+                <span>mobile first</span>
+              </div>
             </div>
           </div>
+        </section>
 
-          <button
-            type="submit"
-            className="btn-primary w-full"
-            disabled={loading}
-            aria-label={loading ? 'Entrando no sistema...' : 'Fazer login'}
-            title={loading ? 'Aguarde, estamos processando seu login...' : 'Clique para fazer login'}
-          >
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
+        <main className="bg-dark-lighter/80 border border-white/10 rounded-[36px] p-6 backdrop-blur space-y-6 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-white/40">Acesso</p>
+              <h2 className="text-2xl font-semibold">Entre com seus dados</h2>
+            </div>
+            <span className="text-xs text-white/60">Seguro e criptografado</span>
+          </div>
 
-        <div className="mt-6 text-center">
-          <p className="text-light-muted">
-            Não tem uma conta?{' '}
-            <Link
-              to="/register"
-              className="text-primary hover:text-primary-400 font-semibold transition-colors"
-              aria-label="Ir para página de cadastro"
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <label className="space-y-2 block">
+              <span className="text-sm text-white/60">Email</span>
+              <div className="rounded-2xl bg-white/5 border border-white/10 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40 transition">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-transparent px-4 py-3 text-base text-white placeholder-white/40 focus:outline-none"
+                  placeholder="seu@email.com"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </label>
+
+            <label className="space-y-2 block">
+              <span className="text-sm text-white/60">Senha</span>
+              <div className="relative rounded-2xl bg-white/5 border border-white/10 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40 transition">
+                <input
+                  id="senha"
+                  type={showPassword ? 'text' : 'password'}
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  className="w-full bg-transparent px-4 py-3 pr-12 text-base text-white placeholder-white/40 focus:outline-none"
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-primary transition"
+                  disabled={loading}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l3.612 3.612M21 21l-3.612-3.612M7.5 7.5C5.093 8.758 3.375 10.82 2.25 12c1.852 2.045 5.795 5.25 9.75 5.25 1.098 0 2.164-.174 3.177-.488M15 12a3 3 0 00-3-3m0 0c-.414 0-.81.084-1.172.238m1.172-.238a3 3 0 013 3c0 .414-.084.81-.238 1.172" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12c1.852-2.045 5.795-5.25 9.75-5.25s7.898 3.205 9.75 5.25c-1.852 2.045-5.795 5.25-9.75 5.25S4.102 14.045 2.25 12z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </label>
+
+            <button
+              type="submit"
+              className="w-full rounded-2xl bg-primary text-dark font-semibold py-3 shadow-lg shadow-primary/30 disabled:opacity-60 disabled:cursor-not-allowed transition"
+              disabled={loading}
             >
-              Cadastre-se
-            </Link>
-          </p>
-        </div>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+
+          <div className="text-center text-white/60 text-sm">
+            <p>
+              Não tem uma conta?{' '}
+              <Link to="/register" className="text-primary font-semibold hover:underline">
+                Cadastre-se
+              </Link>
+            </p>
+          </div>
+        </main>
       </div>
     </div>
   )

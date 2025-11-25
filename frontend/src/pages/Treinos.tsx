@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { obterHomeTreinos } from '../services/treino.service'
+import { obterHomeTreinos, obterPlanoAtualResumo } from '../services/treino.service'
 import { TreinoHomeResponse, TreinoCardResumo, RecursoPersonalizado } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
+import { obterImagemPorGenero } from '../utils/imagemGenero'
 
 const formatarDuracao = (minutos: number) => `${minutos} min`
 
@@ -72,12 +73,15 @@ export default function Treinos() {
   const [dados, setDados] = useState<TreinoHomeResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [genero, setGenero] = useState<string | null>(null)
 
   useEffect(() => {
     const carregar = async () => {
       try {
         const response = await obterHomeTreinos()
         setDados(response)
+        const plano = await obterPlanoAtualResumo()
+        setGenero(plano.genero || null)
       } catch (error: any) {
         console.error('Erro ao carregar home de treinos:', error)
         showToast('Não foi possível carregar seus treinos agora.', 'error')
@@ -122,6 +126,60 @@ export default function Treinos() {
     <div className="min-h-screen bg-dark text-white pb-24">
       <AppHeader title="Treinos" subtitle="Planos e treinos recomendados" />
       <div className="px-5 pt-2 space-y-8">
+        {dados?.destaquePlanoAtual && (
+          <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
+            <div className="h-44 relative">
+              <img
+                src={dados.destaquePlanoAtual.imagem || obterImagemPorGenero(genero, 'treinos')}
+                alt={dados.destaquePlanoAtual.titulo}
+                className="w-full h-full object-cover opacity-70"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 space-y-1">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/70">Plano em destaque</p>
+                <h2 className="text-2xl font-semibold">{dados.destaquePlanoAtual.titulo}</h2>
+                <p className="text-sm text-white/70">
+                  {dados.destaquePlanoAtual.duracao} min • {dados.destaquePlanoAtual.local}
+                </p>
+              </div>
+            </div>
+            <div className="p-4 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => navigate('/treino/atual')}
+                className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm"
+              >
+                Iniciar plano
+              </button>
+              <button
+                onClick={() => navigate('/meu-plano')}
+                className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
+              >
+                Ajustar metas
+              </button>
+            </div>
+          </section>
+        )}
+
+        <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3">
+          <p className="text-xs uppercase tracking-[0.3em] text-white/50">Central de ajustes</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => navigate('/treino-rapido')}
+              className="flex-1 rounded-2xl border border-primary/40 text-left px-4 py-3 hover:bg-primary/10 transition"
+            >
+              <p className="text-sm text-primary/80">Nova sessão</p>
+              <p className="text-lg font-semibold">Criar treino rápido</p>
+            </button>
+            <button
+              onClick={() => navigate('/treino/atual')}
+              className="flex-1 rounded-2xl border border-white/20 text-left px-4 py-3 hover:bg-white/10 transition"
+            >
+              <p className="text-sm text-white/70">Plano ativo</p>
+              <p className="text-lg font-semibold">Visualizar/editar</p>
+            </button>
+          </div>
+        </section>
+
         <div className="space-y-3">
           <div className="bg-white/5 border border-white/10 rounded-3xl px-4 py-3 flex items-center gap-3">
             <svg

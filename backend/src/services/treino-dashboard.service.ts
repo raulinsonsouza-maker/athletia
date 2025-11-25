@@ -305,7 +305,8 @@ export async function buscarPlanoAtual(userId: string) {
       imagemCapa: selecionarCapa(treinos[0].exercicios[0]?.exercicio?.grupoMuscularPrincipal),
       totalTreinos: blocos.length
     },
-    blocos
+    blocos,
+    genero: perfil?.sexo || null
   };
 }
 

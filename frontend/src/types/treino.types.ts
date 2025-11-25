@@ -172,6 +172,7 @@ export interface PlanoAtualResponse {
     totalTreinos: number
   }
   blocos: PlanoAtualBloco[]
+  genero?: string | null
 }
 
 export interface TreinoSemanaDia {

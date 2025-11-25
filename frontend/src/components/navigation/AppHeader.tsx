@@ -1,5 +1,6 @@
 import { ReactNode, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
 
 interface AppHeaderProps {
   title: string
@@ -29,6 +30,13 @@ const IconButton = ({
 export default function AppHeader({ title, subtitle, backTo, actions }: AppHeaderProps) {
   const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    setMenuAberto(false)
+    navigate('/login')
+  }
 
   const linksRapidos = [
     { label: 'Meu Plano', path: '/meu-plano' },
@@ -94,7 +102,7 @@ export default function AppHeader({ title, subtitle, backTo, actions }: AppHeade
             </svg>
           </IconButton>
           {actions ?? (
-            <button onClick={() => navigate('/logout')} className="text-sm text-white/70 hover:text-white transition">
+            <button onClick={handleLogout} className="text-sm text-white/70 hover:text-white transition">
               Sair
             </button>
           )}
