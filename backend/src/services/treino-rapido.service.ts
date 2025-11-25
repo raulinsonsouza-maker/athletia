@@ -30,6 +30,8 @@ export async function gerarTreinoRapido(
   })
 }
 
+type VisualItem = Awaited<ReturnType<typeof buscarVisuaisAtivos>>[number]
+
 export async function listarGruposMuscularesDisponiveis(): Promise<{
   gruposPrincipais: Array<{ nome: string; slug: string; imagemUrl: string | null; descricao?: string | null }>
   gruposEspecificos: string[]
@@ -43,18 +45,19 @@ export async function listarGruposMuscularesDisponiveis(): Promise<{
     buscarVisuaisAtivos()
   ])
 
-  const visuaisPorSlug = new Map(visuais.map((visual) => [visual.slug, visual]))
+  const visuaisPorSlug = new Map<string, VisualItem>()
+  visuais.forEach((visual) => visuaisPorSlug.set(visual.slug, visual))
 
   const gruposPrincipaisList = gruposPrincipais
     .map((g) => g.grupoMuscularPrincipal)
-    .filter((g) => g && g !== 'Cardio')
+    .filter((g): g is string => Boolean(g && g !== 'Cardio'))
     .sort()
 
   const gruposPrincipaisDetalhados = gruposPrincipaisList.map((nome) => {
-    const slug = gerarSlugGrupo(nome!)
+    const slug = gerarSlugGrupo(nome)
     const visual = visuaisPorSlug.get(slug)
     return {
-      nome: nome!,
+      nome,
       slug,
       imagemUrl: visual?.imagemUrl || null,
       descricao: visual?.descricao ?? null
