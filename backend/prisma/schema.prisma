@@ -145,7 +145,7 @@ model GrupoMuscularVisual {
   nome       String
   slug       String   @unique
   descricao  String?
-  imagemUrl  String?
+  imagemUrl  String?  @map("imagem_url")
   ordem      Int?     @default(0)
   ativo      Boolean  @default(true)
   createdAt  DateTime @default(now()) @map("created_at")
