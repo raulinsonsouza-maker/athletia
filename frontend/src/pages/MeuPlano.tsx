@@ -37,8 +37,6 @@ export default function MeuPlano() {
         setPlanoAtual(response)
       } catch (error) {
         console.error(error)
-      } catch (error) {
-        console.error(error)
       }
     }
 
