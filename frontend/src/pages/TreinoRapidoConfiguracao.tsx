@@ -101,7 +101,7 @@ export default function TreinoRapidoConfiguracao() {
           </div>
           {gruposSelecionadosChips.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {gruposSelecionadosChips.map((grupo) => (
+              {gruposSelecionadosChips.map((grupo: string) => (
                 <span key={grupo} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
                   {grupo}
                 </span>
