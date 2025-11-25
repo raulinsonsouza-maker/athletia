@@ -4,7 +4,7 @@ import { concluirTreino, marcarExercicioTreino, obterPlanoAtualResumo } from '..
 import { PlanoAtualResponse, PlanoAtualBloco, PlanoAtualExercicio } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
-import { obterImagemPorGenero } from '../utils/imagemGenero'
+import { normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
 const formatarTempo = (tempo: number) => `${tempo} minutos`
 const formatarCronometro = (totalSegundos: number) => {
@@ -153,7 +153,7 @@ export default function TreinoAtual() {
   }
 
   const header = plano?.plano
-  const generoUsuario = plano?.genero
+  const generoUsuario = normalizarGenero(plano?.genero)
   const progressoAtual = blocoAtivo
     ? Math.round(
         (blocoAtivo.exercicios.filter((ex) => statusExercicios[ex.id]).length / blocoAtivo.totalExercicios) * 100

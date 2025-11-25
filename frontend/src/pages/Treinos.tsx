@@ -5,7 +5,7 @@ import { TreinoHomeResponse, TreinoCardResumo, RecursoPersonalizado } from '../t
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
-import { obterImagemPorGenero } from '../utils/imagemGenero'
+import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
 const formatarDuracao = (minutos: number) => `${minutos} min`
 
@@ -73,7 +73,7 @@ export default function Treinos() {
   const [dados, setDados] = useState<TreinoHomeResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [genero, setGenero] = useState<string | null>(null)
+  const [genero, setGenero] = useState<Genero>(null)
 
   useEffect(() => {
     const carregar = async () => {
@@ -81,7 +81,7 @@ export default function Treinos() {
         const response = await obterHomeTreinos()
         setDados(response)
         const plano = await obterPlanoAtualResumo()
-        setGenero(plano.genero || null)
+        setGenero(normalizarGenero(plano.genero))
       } catch (error: any) {
         console.error('Erro ao carregar home de treinos:', error)
         showToast('Não foi possível carregar seus treinos agora.', 'error')

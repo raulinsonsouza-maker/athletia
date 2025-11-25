@@ -1,4 +1,4 @@
-type Genero = 'Masculino' | 'Feminino' | 'Outro' | null | undefined
+export type Genero = 'Masculino' | 'Feminino' | 'Outro' | null | undefined
 
 const IMAGENS: Record<string, Record<'Masculino' | 'Feminino' | 'Outro', string>> = {
   plano: {
@@ -23,5 +23,12 @@ export function obterImagemPorGenero(genero: Genero, contexto: 'plano' | 'treino
     genero === 'Feminino' ? 'Feminino' : genero === 'Masculino' ? 'Masculino' : 'Outro'
   const mapa = IMAGENS[contexto]
   return mapa?.[chave] || IMAGENS.plano.Masculino
+}
+
+export function normalizarGenero(valor?: string | null): Genero {
+  if (!valor) return null
+  if (valor === 'Feminino') return 'Feminino'
+  if (valor === 'Masculino') return 'Masculino'
+  return 'Outro'
 }
 

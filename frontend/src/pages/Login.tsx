@@ -103,6 +103,11 @@ export default function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="rounded-2xl border border-error/40 bg-error/10 px-4 py-3 text-sm text-error">
+                {error}
+              </div>
+            )}
             <label className="space-y-2 block">
               <span className="text-sm text-white/60">Email</span>
               <div className="rounded-2xl bg-white/5 border border-white/10 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40 transition">

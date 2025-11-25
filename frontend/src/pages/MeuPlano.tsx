@@ -5,7 +5,7 @@ import { PlanoAtualResponse, TreinoHomeResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
-import { obterImagemPorGenero } from '../utils/imagemGenero'
+import { normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
@@ -19,7 +19,6 @@ export default function MeuPlano() {
   const { showToast, ToastContainer } = useToast()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
-  const [loadingPlano, setLoadingPlano] = useState(true)
 
   useEffect(() => {
     const carregarHome = async () => {
@@ -38,8 +37,8 @@ export default function MeuPlano() {
         setPlanoAtual(response)
       } catch (error) {
         console.error(error)
-      } finally {
-        setLoadingPlano(false)
+      } catch (error) {
+        console.error(error)
       }
     }
 
@@ -69,6 +68,8 @@ export default function MeuPlano() {
   ]
 
 
+  const generoNormalizado = normalizarGenero(planoAtual?.genero)
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
       <AppHeader title="Meu Plano" subtitle="Resumo semanal e próximos passos" />
@@ -78,8 +79,7 @@ export default function MeuPlano() {
             <div className="h-40 relative">
               <img
                 src={
-                  homeData.destaquePlanoAtual.imagem ||
-                  obterImagemPorGenero(planoAtual?.genero, 'plano')
+                  homeData.destaquePlanoAtual.imagem || obterImagemPorGenero(generoNormalizado, 'plano')
                 }
                 alt={homeData.destaquePlanoAtual.titulo}
                 className="w-full h-full object-cover opacity-80"
