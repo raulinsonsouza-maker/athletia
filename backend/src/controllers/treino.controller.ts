@@ -228,6 +228,32 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const concluirTreino = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!
+    const { id } = req.params
+
+    if (!id) {
+      return res.status(400).json({
+        error: 'ID do treino é obrigatório'
+      })
+    }
+
+    const treinoAtualizado = await treinoService.concluirTreino(id, userId)
+
+    res.json({
+      message: 'Treino concluído com sucesso',
+      treino: treinoAtualizado
+    })
+  } catch (error: any) {
+    console.error('Erro ao concluir treino:', error)
+    res.status(500).json({
+      error: 'Erro ao concluir treino',
+      message: error.message
+    })
+  }
+}
+
 // Gerar versão alternativa do treino (peso corporal)
 export const gerarVersaoAlternativa = async (req: AuthRequest, res: Response) => {
   try {

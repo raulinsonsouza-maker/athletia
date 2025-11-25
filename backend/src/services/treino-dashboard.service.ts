@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma';
+import { garantirPlanoSemanalInteligente } from './inteligencia-treinos.service';
 
 const CAPAS_TREINO = [
   'https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=1000&q=80',
@@ -44,6 +45,8 @@ export async function obterResumoTreinos(userId: string) {
   const perfil = await prisma.perfil.findUnique({
     where: { userId }
   });
+
+  await garantirPlanoSemanalInteligente(userId);
 
   const experiencia = perfil?.experiencia || 'Intermediário';
   const localPreferencial = perfil?.localTreino || 'Academia Comercial';
@@ -230,6 +233,8 @@ export async function buscarPlanoAtual(userId: string) {
     where: { userId }
   });
 
+  await garantirPlanoSemanalInteligente(userId);
+
   const experiencia = perfil?.experiencia || 'Intermediário';
   const local = perfil?.localTreino || 'Academia Comercial';
 
@@ -278,7 +283,13 @@ export async function buscarPlanoAtual(userId: string) {
       grupo: ex.exercicio.grupoMuscularPrincipal,
       series: ex.series,
       repeticoes: ex.repeticoes,
-      ordem: ex.ordem
+      ordem: ex.ordem,
+      concluido: ex.concluido,
+      descricao: ex.exercicio.descricao,
+      execucao: ex.exercicio.execucaoTecnica,
+      errosComuns: ex.exercicio.errosComuns,
+      gifUrl: ex.exercicio.gifUrl,
+      equipamentos: ex.exercicio.equipamentoNecessario
     }))
   }));
 

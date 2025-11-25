@@ -4,6 +4,7 @@ import {
   gerarTreinoDoDia,
   buscarTreinoDoDia,
   concluirExercicio,
+  concluirTreino,
   obterAlternativas,
   substituirExercicio,
   buscarHistorico,
@@ -72,6 +73,7 @@ router.get('/semana', buscarTreinosSemanais);
 router.get('/home', obterHomeTreinos);
 router.get('/plano-atual', obterPlanoAtual);
 router.post('/gerar', gerarTreinoDoDia);
+router.post('/:id/concluir', concluirTreino);
 router.post('/versao-alternativa', gerarVersaoAlternativa);
 router.post('/exercicio/:id/concluir', concluirExercicioValidation, validateRequest, concluirExercicio);
 router.get('/exercicio/:id/alternativas', obterAlternativas);

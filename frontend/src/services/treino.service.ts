@@ -168,12 +168,8 @@ export const obterPlanoAtualResumo = async (): Promise<PlanoAtualResponse> => {
   return response.data
 }
 
-export const marcarExercicioTreino = async (
-  treinoId: string,
-  exercicioId: string,
-  concluido: boolean
-) => {
-  await api.post(`/treino/${treinoId}/exercicios/${exercicioId}/concluir`, { concluido })
+export const marcarExercicioTreino = async (exercicioId: string, concluido: boolean) => {
+  await api.post(`/treino/exercicio/${exercicioId}/concluir`, { concluido })
 }
 
 export const concluirTreino = async (treinoId: string) => {

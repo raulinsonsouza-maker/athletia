@@ -148,6 +148,11 @@ export interface PlanoAtualExercicio {
   repeticoes: string
   ordem: number
   concluido?: boolean
+  descricao?: string | null
+  execucao?: string | null
+  errosComuns?: string[]
+  gifUrl?: string | null
+  equipamentos?: string[]
 }
 
 export interface PlanoAtualBloco {

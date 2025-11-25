@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
+import { getObjectiveParameters } from './treino-knowledge.service';
 
 /**
  * Mapeamento de lesões para grupos musculares afetados
@@ -370,34 +371,7 @@ export function calcularParametrosTreino(
   experiencia: string,
   rpePreferido?: number | null
 ): { series: number; repeticoes: string; rpe: number; descanso: number } {
-  let series = 3;
-  let repeticoes = '10-12';
-  let rpe = 7;
-  let descanso = 90;
-
-  if (objetivo === 'Força') {
-    series = experiencia === 'Avançado' ? 5 : 4;
-    repeticoes = '3-5';
-    rpe = 8;
-    descanso = 180; // 3 minutos
-  } else if (objetivo === 'Hipertrofia') {
-    series = experiencia === 'Iniciante' ? 3 : 4;
-    repeticoes = experiencia === 'Iniciante' ? '10-12' : '8-12';
-    rpe = rpePreferido || 7;
-    descanso = 90; // 1.5 minutos
-  } else if (objetivo === 'Emagrecimento') {
-    series = 3;
-    repeticoes = '12-15';
-    rpe = rpePreferido || 6;
-    descanso = 60; // 1 minuto
-  } else if (objetivo === 'Condicionamento') {
-    series = experiencia === 'Iniciante' ? 2 : 3;
-    repeticoes = '15-20';
-    rpe = rpePreferido || 6;
-    descanso = 60;
-  }
-
-  return { series, repeticoes, rpe, descanso };
+  return getObjectiveParameters(objetivo, experiencia, rpePreferido);
 }
 
 /**

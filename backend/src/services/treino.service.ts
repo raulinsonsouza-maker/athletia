@@ -2482,6 +2482,62 @@ export async function concluirExercicio(
 }
 
 /**
+ * Conclui um treino inteiro garantindo que todos os exercícios estejam marcados
+ */
+export async function concluirTreino(treinoId: string, userId: string) {
+  if (!treinoId) {
+    throw new Error('ID do treino é obrigatório')
+  }
+
+  const treino = await prisma.treino.findFirst({
+    where: {
+      id: treinoId,
+      userId
+    },
+    include: {
+      exercicios: true
+    }
+  })
+
+  if (!treino) {
+    throw new Error('Treino não encontrado')
+  }
+
+  await prisma.$transaction(async (tx) => {
+    if (treino.exercicios.some((ex) => !ex.concluido)) {
+      await tx.exercicioTreino.updateMany({
+        where: {
+          treinoId,
+          concluido: false
+        },
+        data: {
+          concluido: true
+        }
+      })
+    }
+
+    await tx.treino.update({
+      where: { id: treinoId },
+      data: {
+        concluido: true
+      }
+    })
+  })
+
+  return prisma.treino.findUnique({
+    where: { id: treinoId },
+    include: {
+      exercicios: {
+        include: {
+          exercicio: true
+        },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  })
+}
+
+/**
  * Busca alternativas para um exercício
  */
 export async function obterAlternativas(exercicioTreinoId: string, equipamentosDisponiveis?: string[]): Promise<any> {
