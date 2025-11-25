@@ -45,23 +45,13 @@ export default function MeuPlano() {
   }, [showToast])
 
   const insights = homeData?.insights
-  const progressoSemanaBackend = insights?.progressoSemana
-  const blocos = planoAtual?.blocos ?? []
-  const realizadosTreinos = blocos.filter((bloco) =>
-    bloco.exercicios.every((exercicio) => exercicio.concluido)
-  ).length
-  const planejadosTreinos =
-    blocos.length || (homeData?.semana?.filter((dia) => dia?.hasTreino).length ?? 0)
-  const diasSemTreino =
-    homeData?.semana?.filter((dia) => dia && !dia.concluido).length ??
-    Math.max(0, 7 - realizadosTreinos)
-
+  const progressoSemana = insights?.progressoSemana
   const resumoSemana = [
     {
       label: 'Treinos concluídos',
-      value: `${realizadosTreinos || progressoSemanaBackend?.realizados || 0}/${
-        planejadosTreinos || progressoSemanaBackend?.planejados || 0
-      }`
+      value: progressoSemana
+        ? `${progressoSemana.realizados}/${progressoSemana.planejados}`
+        : '0/0'
     },
     {
       label: 'Volume total',
@@ -73,7 +63,7 @@ export default function MeuPlano() {
     },
     {
       label: 'Dias sem treino',
-      value: `${diasSemTreino}`
+      value: `${insights?.diasSemTreino ?? 0}`
     }
   ]
 
@@ -148,7 +138,7 @@ export default function MeuPlano() {
               )
             })}
           </div>
-          <p className="text-[11px] text-white/60">Verde indica dias concluídos, amarelo são dias ainda livres.</p>
+          <p className="text-[11px] text-white/60">Verde = dia treinado • Âmbar = dia livre até agora.</p>
         </section>
 
         <section className="space-y-3">
@@ -171,21 +161,6 @@ export default function MeuPlano() {
             ))}
           </div>
         </section>
-        <section className="bg-primary/10 border border-primary/30 rounded-3xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-primary/80 mb-1">Dica</p>
-            <p className="text-white font-semibold">
-              Adicione um treino extra nesta semana para manter o ritmo.
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/treinos')}
-            className="px-5 py-2 rounded-full bg-primary text-dark font-semibold"
-          >
-            Ajustar plano
-          </button>
-        </section>
-
       </div>
       <BottomTabs active="meu-plano" />
       <ToastContainer />
