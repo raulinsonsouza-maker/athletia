@@ -89,7 +89,7 @@ export async function obterResumoTreinos(userId: string) {
 
   const hoje = normalizarData(new Date());
 
-  const proximosTreinos = await prisma.treino.findMany({
+  const proximosTreinosBrutos = await prisma.treino.findMany({
     where: {
       userId,
       data: {
@@ -111,6 +111,24 @@ export async function obterResumoTreinos(userId: string) {
     },
     take: 6
   });
+
+  // Evitar treinos duplicados (ex.: mesmos nome/data/letra gerados em execuções antigas)
+  const mapaProximosTreinos = new Map<string, typeof proximosTreinosBrutos[number]>();
+
+  for (const treino of proximosTreinosBrutos) {
+    const chaveData = normalizarData(treino.data).toISOString();
+    const chave = `${chaveData}-${treino.letraTreino || treino.nome}`;
+
+    // Se já existe um treino para a mesma chave, manter o mais recente
+    const existente = mapaProximosTreinos.get(chave);
+    if (!existente || existente.createdAt < treino.createdAt) {
+      mapaProximosTreinos.set(chave, treino);
+    }
+  }
+
+  const proximosTreinos = Array.from(mapaProximosTreinos.values())
+    .sort((a, b) => a.data.getTime() - b.data.getTime())
+    .slice(0, 6);
 
   // Gerar planosAtivos com imagens inteligentes
   const planosAtivos = proximosTreinos.map((treino) => {
