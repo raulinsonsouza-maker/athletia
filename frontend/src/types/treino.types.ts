@@ -146,6 +146,7 @@ export interface PlanoAtualExercicio {
   grupo: string
   series: number
   repeticoes: string
+  carga?: number | null
   ordem: number
   concluido?: boolean
   descricao?: string | null

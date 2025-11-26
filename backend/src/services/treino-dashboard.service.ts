@@ -1,27 +1,11 @@
 import { prisma } from '../lib/prisma';
-import { garantirPlanoSemanalInteligente } from './inteligencia-treinos.service';
+import { garantirPlanoSemanal } from './treino-engine.service';
 import { garantirPerfilParaInteligencia, obterPerfilBasico } from './perfil.service';
+import { obterImagemTreino, obterImagemGrupo } from '../utils/imagens-treino';
 
-const CAPAS_TREINO = [
-  'https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1549476464-37392f717541?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1600180758890-6b94519a8c51?auto=format&fit=crop&w=1000&q=80'
-];
-
-function selecionarCapa(grupo?: string | null): string {
-  if (!grupo) {
-    return CAPAS_TREINO[0];
-  }
-
-  const index = Math.abs(
-    grupo
-      .split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  ) % CAPAS_TREINO.length;
-
-  return CAPAS_TREINO[index];
-}
+// ============================================================================
+// FUNÇÕES AUXILIARES
+// ============================================================================
 
 function normalizarData(data: Date): Date {
   const normalizada = new Date(data);
@@ -42,10 +26,25 @@ function calcularVolumeTreino(treino: any): number {
   }, 0);
 }
 
+function extrairGruposPrincipais(exercicios: any[]): string[] {
+  const grupos = new Set<string>();
+  exercicios.forEach(ex => {
+    const grupo = ex.exercicio?.grupoMuscularPrincipal || ex.grupoMuscularPrincipal;
+    if (grupo) grupos.add(grupo);
+  });
+  return Array.from(grupos).slice(0, 3);
+}
+
+// ============================================================================
+// FUNÇÕES PRINCIPAIS
+// ============================================================================
+
 export async function obterResumoTreinos(userId: string) {
   const perfil = await obterPerfilBasico(userId);
+  const genero = perfil?.sexo || null;
 
-  await garantirPlanoSemanalInteligente(userId);
+  // Garantir plano semanal usando novo engine
+  await garantirPlanoSemanal({ userId });
 
   const experiencia = perfil?.experiencia || 'Intermediário';
   const localPreferencial = perfil?.localTreino || 'Academia Comercial';
@@ -84,7 +83,7 @@ export async function obterResumoTreinos(userId: string) {
     nivel: template.nivelExperiencia,
     duracao: template.tempoEstimado,
     local: localPreferencial,
-    imagem: selecionarCapa(template.gruposMusculares?.[0]),
+    imagem: obterImagemTreino(template.gruposMusculares || [], genero),
     destaque: template.descricao
   }));
 
@@ -113,17 +112,24 @@ export async function obterResumoTreinos(userId: string) {
     take: 6
   });
 
-  const planosAtivos = proximosTreinos.map((treino, index) => ({
-    id: treino.id,
-    titulo: treino.nome || `Treino ${index + 1}`,
-    nivel: experiencia,
-    duracao: treino.tempoEstimado || 60,
-    local: localPreferencial,
-    data: treino.data,
-    totalExercicios: treino.exercicios.length,
-    imagem: selecionarCapa(treino.exercicios[0]?.exercicio?.grupoMuscularPrincipal)
-  }));
+  // Gerar planosAtivos com imagens inteligentes
+  const planosAtivos = proximosTreinos.map((treino) => {
+    const gruposPrincipais = extrairGruposPrincipais(treino.exercicios);
+    
+    return {
+      id: treino.id,
+      titulo: treino.nome || 'Treino',
+      nivel: experiencia,
+      duracao: treino.tempoEstimado || 60,
+      local: localPreferencial,
+      data: treino.data,
+      totalExercicios: treino.exercicios.length,
+      gruposPrincipais,
+      imagem: obterImagemTreino(gruposPrincipais, genero)
+    };
+  });
 
+  // Calcular período da semana
   const inicioSemana = normalizarData(new Date(hoje));
   const diaSemana = inicioSemana.getDay();
   const diff = diaSemana === 0 ? -6 : 1 - diaSemana;
@@ -156,6 +162,8 @@ export async function obterResumoTreinos(userId: string) {
     return acc;
   }, {});
 
+  const diasSemanaLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  
   const semana = Array.from({ length: 7 }).map((_, index) => {
     const dataDia = normalizarData(new Date(inicioSemana));
     dataDia.setDate(inicioSemana.getDate() + index);
@@ -169,7 +177,7 @@ export async function obterResumoTreinos(userId: string) {
         : 'futuro';
 
     return {
-      label: `Dia ${index + 1}`,
+      label: diasSemanaLabels[(index + 1) % 7], // Segunda = índice 0
       data: dataDia.toISOString(),
       status,
       hasTreino: treinosDia.length > 0,
@@ -223,14 +231,17 @@ export async function obterResumoTreinos(userId: string) {
       seriesTotais,
       diasSemTreino
     },
-    recomendacoes
+    recomendacoes,
+    genero
   };
 }
 
 export async function buscarPlanoAtual(userId: string) {
   const perfil = await garantirPerfilParaInteligencia(userId);
+  const genero = perfil?.sexo || null;
 
-  await garantirPlanoSemanalInteligente(userId);
+  // Garantir plano semanal usando novo engine
+  await garantirPlanoSemanal({ userId });
 
   const experiencia = perfil?.experiencia || 'Intermediário';
   const local = perfil?.localTreino || 'Academia Comercial';
@@ -262,48 +273,59 @@ export async function buscarPlanoAtual(userId: string) {
         nivel: experiencia,
         tempoMedio: 0,
         local,
-        imagemCapa: CAPAS_TREINO[0],
+        imagemCapa: obterImagemTreino([], genero),
         totalTreinos: 0
       },
-      blocos: []
+      blocos: [],
+      genero
     };
   }
 
-  const blocos = treinos.map((treino, index) => ({
-    id: treino.id,
-    titulo: `Treino ${index + 1}`,
-    data: treino.data,
-    totalExercicios: treino.exercicios.length,
-    exercicios: treino.exercicios.map(ex => ({
-      id: ex.id,
-      nome: ex.exercicio.nome,
-      grupo: ex.exercicio.grupoMuscularPrincipal,
-      series: ex.series,
-      repeticoes: ex.repeticoes,
-      ordem: ex.ordem,
-      concluido: ex.concluido,
-      descricao: ex.exercicio.descricao,
-      execucao: ex.exercicio.execucaoTecnica,
-      errosComuns: ex.exercicio.errosComuns,
-      gifUrl: ex.exercicio.gifUrl,
-      equipamentos: ex.exercicio.equipamentoNecessario
-    }))
-  }));
+  const blocos = treinos.map((treino) => {
+    const gruposPrincipais = extrairGruposPrincipais(treino.exercicios);
+    
+    return {
+      id: treino.id,
+      titulo: treino.nome || 'Treino',
+      data: treino.data,
+      letraTreino: treino.letraTreino,
+      gruposPrincipais,
+      totalExercicios: treino.exercicios.length,
+      imagem: obterImagemTreino(gruposPrincipais, genero),
+      exercicios: treino.exercicios.map(ex => ({
+        id: ex.id,
+        nome: ex.exercicio.nome,
+        grupo: ex.exercicio.grupoMuscularPrincipal,
+        series: ex.series,
+        repeticoes: ex.repeticoes,
+        carga: ex.carga,
+        ordem: ex.ordem,
+        concluido: ex.concluido,
+        descricao: ex.exercicio.descricao,
+        execucao: ex.exercicio.execucaoTecnica,
+        errosComuns: ex.exercicio.errosComuns,
+        gifUrl: ex.exercicio.gifUrl,
+        equipamentos: ex.exercicio.equipamentoNecessario
+      }))
+    };
+  });
 
   const tempoMedio = Math.round(
     treinos.reduce((acc, treino) => acc + (treino.tempoEstimado || 60), 0) / treinos.length
   );
+
+  // Grupos principais do primeiro treino para a capa
+  const gruposPrimeiro = extrairGruposPrincipais(treinos[0].exercicios);
 
   return {
     plano: {
       nivel: experiencia,
       tempoMedio,
       local,
-      imagemCapa: selecionarCapa(treinos[0].exercicios[0]?.exercicio?.grupoMuscularPrincipal),
+      imagemCapa: obterImagemTreino(gruposPrimeiro, genero),
       totalTreinos: blocos.length
     },
     blocos,
-    genero: perfil?.sexo || null
+    genero
   };
 }
-

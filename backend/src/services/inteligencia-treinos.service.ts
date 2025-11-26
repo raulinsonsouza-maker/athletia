@@ -404,68 +404,8 @@ export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
   })
 }
 
-export async function garantirPlanoSemanalInteligente(userId: string, referencia: Date = new Date()): Promise<any[]> {
-  const perfil = await garantirPerfilParaInteligencia(userId)
-  const split = calcularSplitSemana(perfil.frequenciaSemanal || 3)
-  const inicioSemana = normalizarData(referencia)
-  const diaSemana = inicioSemana.getDay()
-  const diff = diaSemana === 0 ? -6 : 1 - diaSemana
-  inicioSemana.setDate(inicioSemana.getDate() + diff)
-  const fimSemana = new Date(inicioSemana)
-  fimSemana.setDate(inicioSemana.getDate() + 6)
-  fimSemana.setHours(23, 59, 59, 999)
-
-  const treinosExistentes = await prisma.treino.findMany({
-    where: {
-      userId,
-      data: {
-        gte: inicioSemana,
-        lte: fimSemana
-      },
-      criadoPor: 'IA'
-    },
-    include: {
-      exercicios: {
-        include: { exercicio: true },
-        orderBy: { ordem: 'asc' }
-      }
-    }
-  })
-
-  if (treinosExistentes.length >= split.length) {
-    return treinosExistentes
-  }
-
-  await prisma.treino.deleteMany({
-    where: {
-      userId,
-      data: {
-        gte: inicioSemana,
-        lte: fimSemana
-      },
-      criadoPor: 'IA'
-    }
-  })
-
-  const treinos: any[] = []
-  for (let i = 0; i < split.length; i++) {
-    const dataTreino = new Date(inicioSemana)
-    dataTreino.setDate(inicioSemana.getDate() + i)
-
-    const treino = await gerarTreinoPersonalizado({
-      userId,
-      data: dataTreino,
-      nome: `Treino Inteligente ${String.fromCharCode(65 + i)}`,
-      origem: 'IA',
-      splitGrupos: split[i],
-      incluirCardio: true,
-      incluirAlongamento: true
-    })
-    treinos.push(treino)
-  }
-  
-  return treinos
-}
+// Re-exportar do treino-engine para compatibilidade
+export { garantirPlanoSemanal as garantirPlanoSemanalInteligente } from './treino-engine.service'
 
 export const GRUPOS_ESPECIFICOS_LISTA = Object.keys(MAPEAMENTO_GRUPOS_ESPECIFICOS)
 

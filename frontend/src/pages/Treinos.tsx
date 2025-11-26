@@ -7,58 +7,118 @@ import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
+// ============================================================================
+// COMPONENTES
+// ============================================================================
+
 const formatarDuracao = (minutos: number) => `${minutos} min`
 
-const CardTreino = ({ item, onNavigate }: { item: TreinoCardResumo; onNavigate?: (id: string) => void }) => (
+const formatarData = (data: string | Date) => {
+  const d = new Date(data)
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+  const dataD = new Date(d)
+  dataD.setHours(0, 0, 0, 0)
+  
+  if (dataD.getTime() === hoje.getTime()) return 'Hoje'
+  
+  const amanha = new Date(hoje)
+  amanha.setDate(hoje.getDate() + 1)
+  if (dataD.getTime() === amanha.getTime()) return 'Amanhã'
+  
+  return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })
+}
+
+interface CardTreinoProps {
+  item: TreinoCardResumo & { gruposPrincipais?: string[] }
+  onNavigate?: (id: string) => void
+}
+
+const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
+  const grupos = item.gruposPrincipais?.slice(0, 2).join(' • ') || item.nivel
+  
+  return (
+    <button
+      onClick={() => onNavigate && onNavigate(item.id)}
+      className="bg-[#111] rounded-2xl overflow-hidden text-left w-full hover:bg-[#161616] transition-all border border-white/5"
+    >
+      <div className="flex">
+        <div className="w-28 h-28 bg-black/50 flex-shrink-0">
+          <img
+            src={item.imagem || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'}
+            alt={item.titulo}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div className="flex-1 p-4 flex flex-col justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-primary mb-1">{grupos}</p>
+            <h3 className="text-white font-semibold text-base line-clamp-1">{item.titulo}</h3>
+          </div>
+          <div className="flex items-center gap-3 text-xs text-white/50">
+            <span>{formatarDuracao(item.duracao)}</span>
+            <span>•</span>
+            <span>{item.totalExercicios} exercícios</span>
+            {item.data && (
+              <>
+                <span>•</span>
+                <span className="text-primary">{formatarData(item.data)}</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </button>
+  )
+}
+
+const CardTreinoCompacto = ({ item, onNavigate }: CardTreinoProps) => (
   <button
     onClick={() => onNavigate && onNavigate(item.id)}
-    className="bg-dark-lighter rounded-3xl overflow-hidden text-left w-[260px] flex-shrink-0 hover:scale-[1.01] transition-all"
+    className="bg-[#111] rounded-xl overflow-hidden text-left w-[200px] flex-shrink-0 hover:scale-[1.02] transition-all border border-white/5"
   >
-    <div className="h-40 bg-dark relative">
+    <div className="h-28 bg-black relative">
       <img
-        src={item.imagem || 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1000&q=80'}
+        src={item.imagem || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'}
         alt={item.titulo}
         className="w-full h-full object-cover opacity-80"
       />
-      <span className="absolute top-3 left-3 text-xs uppercase tracking-wide px-3 py-1 rounded-full bg-dark/80 text-white">
+      <span className="absolute top-2 left-2 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-black/60 text-white">
         {item.nivel}
       </span>
-      {item.totalExercicios !== undefined && (
-        <span className="absolute top-3 right-3 text-xs px-3 py-1 rounded-full bg-dark/70 text-white/90">
-          {item.totalExercicios} exercícios
-        </span>
-      )}
     </div>
-    <div className="p-5 flex flex-col gap-2">
-      <h3 className="text-light font-semibold text-lg">{item.titulo}</h3>
-      <p className="text-light-muted text-sm">
-        {formatarDuracao(item.duracao)} • {item.local}
+    <div className="p-3">
+      <h3 className="text-white font-medium text-sm line-clamp-1">{item.titulo}</h3>
+      <p className="text-white/40 text-xs mt-1">
+        {formatarDuracao(item.duracao)} • {item.totalExercicios} ex.
       </p>
-      {item.destaque && (
-        <p className="text-light-muted text-xs leading-relaxed line-clamp-2">{item.destaque}</p>
-      )}
     </div>
   </button>
 )
+
+// ============================================================================
+// PÁGINA PRINCIPAL
+// ============================================================================
 
 export default function Treinos() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
   const [dados, setDados] = useState<TreinoHomeResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
   const [genero, setGenero] = useState<Genero>(null)
 
   useEffect(() => {
     const carregar = async () => {
       try {
-        const response = await obterHomeTreinos()
+        const [response, plano] = await Promise.all([
+          obterHomeTreinos(),
+          obterPlanoAtualResumo()
+        ])
         setDados(response)
-        const plano = await obterPlanoAtualResumo()
         setGenero(normalizarGenero(plano.genero))
       } catch (error: any) {
-        console.error('Erro ao carregar home de treinos:', error)
-        showToast('Não foi possível carregar seus treinos agora.', 'error')
+        console.error('Erro ao carregar treinos:', error)
+        showToast('Não foi possível carregar seus treinos.', 'error')
       } finally {
         setLoading(false)
       }
@@ -67,148 +127,145 @@ export default function Treinos() {
     carregar()
   }, [showToast])
 
-  const skeleton = (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-3">
-        {Array.from({ length: 2 }).map((_, idx) => (
-          <div key={idx} className="bg-dark-lighter rounded-3xl h-32 animate-pulse" />
-        ))}
-      </div>
-      <div className="space-y-3">
-        {Array.from({ length: 2 }).map((_, idx) => (
-          <div key={idx} className="bg-dark-lighter rounded-3xl h-48 animate-pulse" />
-        ))}
-      </div>
-    </div>
-  )
+  const handleNavegar = (treinoId: string) => {
+    navigate(`/treino/atual?treino=${treinoId}`)
+  }
 
-  const filteredSections =
-    dados?.secoes
-      ?.map((secao) => ({
-        ...secao,
-        itens: secao.itens.filter((item) =>
-          item.titulo.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      }))
-      .filter((secao) => secao.itens.length > 0) ?? []
+  const handleIniciarTreino = () => {
+    if (dados?.planosAtivos?.[0]) {
+      navigate(`/treino/atual?treino=${dados.planosAtivos[0].id}`)
+    } else {
+      navigate('/treino/atual')
+    }
+  }
+
+  // Skeleton loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
+        <AppHeader title="Treinos" subtitle="Carregando..." />
+        <div className="px-4 pt-4 space-y-4">
+          <div className="h-40 bg-[#111] rounded-2xl animate-pulse" />
+          <div className="h-28 bg-[#111] rounded-2xl animate-pulse" />
+          <div className="h-28 bg-[#111] rounded-2xl animate-pulse" />
+        </div>
+        <BottomTabs active="treinos" />
+      </div>
+    )
+  }
+
+  const treinoHoje = dados?.planosAtivos?.[0]
+  const outrosTreinos = dados?.planosAtivos?.slice(1) || []
 
   return (
-    <div className="min-h-screen bg-dark text-white pb-24">
-      <AppHeader title="Treinos" subtitle="Planos e treinos recomendados" />
-      <div className="px-5 pt-2 space-y-8">
-        <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-          <div className="h-44 relative">
-            <img
-              src={obterImagemPorGenero(genero, 'treinos')}
-              alt="Central de treinos"
-              className="w-full h-full object-cover opacity-70"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 space-y-1">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/70">Central inteligente</p>
-              <h2 className="text-2xl font-semibold">Crie sessões rápidas ou ajuste o plano ativo</h2>
-              <p className="text-sm text-white/70">Tudo o que envolve treinos está concentrado aqui.</p>
+    <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
+      <AppHeader title="Treinos" subtitle="Seu plano de treinos" />
+      
+      <div className="px-4 pt-2 space-y-6">
+        {/* CARD DESTAQUE - TREINO DE HOJE */}
+        {treinoHoje && (
+          <section className="relative rounded-2xl overflow-hidden">
+            <div className="h-48 relative">
+              <img
+                src={treinoHoje.imagem || obterImagemPorGenero(genero, 'treinos')}
+                alt="Treino de hoje"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+              
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-primary mb-1">
+                      {(treinoHoje as any).gruposPrincipais?.join(' • ') || 'Treino do dia'}
+                    </p>
+                    <h2 className="text-xl font-bold">{treinoHoje.titulo}</h2>
+                    <p className="text-sm text-white/60 mt-1">
+                      {formatarDuracao(treinoHoje.duracao)} • {treinoHoje.totalExercicios} exercícios
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleIniciarTreino}
+                    className="bg-primary text-black font-bold px-5 py-2.5 rounded-full text-sm"
+                  >
+                    Iniciar
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="p-4 flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => navigate('/treino-rapido')}
-              className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm"
-            >
-              Criar treino rápido
-            </button>
-            <button
-              onClick={() => navigate('/treino/atual')}
-              className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
-            >
-              Ver plano atual
-            </button>
-          </div>
-        </section>
+          </section>
+        )}
 
-        <div className="space-y-3">
-          <div className="bg-white/5 border border-white/10 rounded-3xl px-4 py-3 flex items-center gap-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="w-5 h-5 text-white/60"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
-            </svg>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar treinos ou objetivos"
-              className="flex-1 bg-transparent outline-none text-white placeholder:text-white/40"
-            />
-          </div>
+        {/* AÇÕES RÁPIDAS */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate('/treino-rapido')}
+            className="flex-1 bg-[#111] border border-white/10 rounded-xl py-4 px-4 text-left hover:bg-[#161616] transition"
+          >
+            <span className="text-2xl mb-2 block">⚡</span>
+            <p className="font-semibold text-sm">Treino Rápido</p>
+            <p className="text-xs text-white/50">Personalizado em segundos</p>
+          </button>
+          <button
+            onClick={() => navigate('/meu-plano')}
+            className="flex-1 bg-[#111] border border-white/10 rounded-xl py-4 px-4 text-left hover:bg-[#161616] transition"
+          >
+            <span className="text-2xl mb-2 block">📊</span>
+            <p className="font-semibold text-sm">Meu Progresso</p>
+            <p className="text-xs text-white/50">Acompanhe sua evolução</p>
+          </button>
         </div>
 
-        {loading && skeleton}
+        {/* PRÓXIMOS TREINOS */}
+        {outrosTreinos.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm uppercase tracking-[0.15em] text-white/50">Próximos Treinos</h2>
+              <span className="text-xs text-white/30">{outrosTreinos.length} programados</span>
+            </div>
+            <div className="space-y-2">
+              {outrosTreinos.map((treino) => (
+                <CardTreino 
+                  key={treino.id} 
+                  item={treino as any} 
+                  onNavigate={handleNavegar} 
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {!loading && dados && (
-          <>
-            {filteredSections.map((secao) => (
-              <section key={secao.id} className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-sm uppercase tracking-[0.2em] text-light-muted">{secao.titulo}</h2>
-                    {secao.subtitulo && (
-                      <p className="text-light text-base font-semibold">{secao.subtitulo}</p>
-                    )}
-                  </div>
-                  <button className="text-light-muted text-sm">Ver todos</button>
-                </div>
-                <div className="flex gap-4 overflow-x-auto pb-2">
-                  {secao.itens.map((item) => (
-                    <CardTreino key={item.id} item={item} onNavigate={() => navigate('/treino/atual')} />
-                  ))}
-                </div>
-              </section>
-            ))}
+        {/* TEMPLATES/SUGESTÕES */}
+        {dados?.secoes?.map((secao) => (
+          <section key={secao.id}>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm uppercase tracking-[0.15em] text-white/50">{secao.titulo}</h2>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+              {secao.itens.map((item) => (
+                <CardTreinoCompacto 
+                  key={item.id} 
+                  item={item}
+                  onNavigate={() => navigate('/treino-rapido')} 
+                />
+              ))}
+            </div>
+          </section>
+        ))}
 
-            {dados.planosAtivos.length > 0 && (
-              <section className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm uppercase tracking-[0.2em] text-light-muted">Planos de treino</h2>
-                  <button className="text-light-muted text-sm">Ver todos</button>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {dados.planosAtivos.map((plano) => (
-                    <button
-                      key={plano.id}
-                      onClick={() => navigate('/treino/atual')}
-                      className="bg-dark-lighter rounded-3xl overflow-hidden flex"
-                    >
-                      <div className="w-32 h-28 bg-dark">
-                        <img
-                          src={plano.imagem || 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&q=80'}
-                          alt={plano.titulo}
-                          className="w-full h-full object-cover opacity-80"
-                        />
-                      </div>
-                      <div className="flex-1 p-4 text-left">
-                        <p className="text-xs uppercase text-light-muted">{plano.nivel}</p>
-                        <p className="text-light font-semibold text-lg">{plano.titulo}</p>
-                        <p className="text-light-muted text-sm">
-                          {formatarDuracao(plano.duracao)} • {plano.local}
-                        </p>
-                        {plano.totalExercicios !== undefined && (
-                          <p className="text-light-muted text-xs mt-1">
-                            {plano.totalExercicios} exercícios
-                          </p>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+        {/* ESTADO VAZIO */}
+        {!treinoHoje && outrosTreinos.length === 0 && (
+          <div className="text-center py-12">
+            <span className="text-5xl mb-4 block">🏋️</span>
+            <h2 className="text-xl font-semibold mb-2">Nenhum treino programado</h2>
+            <p className="text-white/50 mb-6">Crie um treino rápido para começar agora!</p>
+            <button
+              onClick={() => navigate('/treino-rapido')}
+              className="bg-primary text-black font-bold px-6 py-3 rounded-full"
+            >
+              Criar Treino Rápido
+            </button>
+          </div>
         )}
       </div>
 
@@ -217,4 +274,3 @@ export default function Treinos() {
     </div>
   )
 }
-

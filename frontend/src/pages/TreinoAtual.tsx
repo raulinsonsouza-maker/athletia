@@ -1,63 +1,93 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { concluirTreino, marcarExercicioTreino, obterPlanoAtualResumo } from '../services/treino.service'
-import { PlanoAtualResponse, PlanoAtualBloco, PlanoAtualExercicio } from '../types/treino.types'
+import { PlanoAtualResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
-import AppHeader from '../components/navigation/AppHeader'
-import { normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
-const formatarTempo = (tempo: number) => `${tempo} minutos`
+// ============================================================================
+// COMPONENTES AUXILIARES
+// ============================================================================
+
 const formatarCronometro = (totalSegundos: number) => {
   const minutos = Math.floor(totalSegundos / 60)
   const segundos = totalSegundos % 60
   return `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`
 }
 
-const InfoChip = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-2 min-w-[90px]">
-    <span className="text-[10px] uppercase tracking-[0.2em] text-white/40">{label}</span>
-    <strong className="text-white text-base">{value}</strong>
-  </div>
+const IconeVoltar = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+  </svg>
 )
+
+const IconeCheck = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-8 h-8">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+)
+
+const IconeSeta = ({ direcao }: { direcao: 'esquerda' | 'direita' }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    className={`w-5 h-5 ${direcao === 'esquerda' ? 'rotate-180' : ''}`}
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+  </svg>
+)
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
 
 export default function TreinoAtual() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { showToast, ToastContainer } = useToast()
+  
+  // Estados
   const [plano, setPlano] = useState<PlanoAtualResponse | null>(null)
   const [loading, setLoading] = useState(true)
-  const [aberto, setAberto] = useState<string | null>(null)
+  const [blocoAtivoId, setBlocoAtivoId] = useState<string | null>(null)
+  const [exercicioAtivoIndex, setExercicioAtivoIndex] = useState(0)
   const [statusExercicios, setStatusExercicios] = useState<Record<string, boolean>>({})
-  const [concluindoTreino, setConcluindoTreino] = useState(false)
-  const [exercicioAtivo, setExercicioAtivo] = useState<PlanoAtualExercicio | null>(null)
-  const [abaInstrucao, setAbaInstrucao] = useState<'execucao' | 'erros' | 'equipamentos'>('execucao')
   const [cronometro, setCronometro] = useState(0)
   const [timerAtivo, setTimerAtivo] = useState(false)
+  const [concluindoTreino, setConcluindoTreino] = useState(false)
+  const [mostrarChecklist, setMostrarChecklist] = useState(false)
 
+  // Timer
   useEffect(() => {
     if (!timerAtivo) return
     const intervalo = setInterval(() => setCronometro((prev) => prev + 1), 1000)
     return () => clearInterval(intervalo)
   }, [timerAtivo])
 
+  // Iniciar timer automaticamente
   useEffect(() => {
     setTimerAtivo(true)
     return () => setTimerAtivo(false)
   }, [])
 
-  const localizarExercicio = (blocos: PlanoAtualBloco[], exercicioId: string) => {
-    for (const bloco of blocos) {
-      const encontrado = bloco.exercicios.find((ex) => ex.id === exercicioId)
-      if (encontrado) return encontrado
-    }
-    return null
-  }
-
-  const carregarPlanoAtual = useCallback(async () => {
+  // Carregar plano
+  const carregarPlano = useCallback(async () => {
     try {
       setLoading(true)
       const response = await obterPlanoAtualResumo()
       setPlano(response)
-      setAberto((prev) => prev ?? response.blocos[0]?.id ?? null)
+      
+      // Definir bloco ativo (do param ou primeiro)
+      const treinoIdParam = searchParams.get('treino')
+      if (treinoIdParam && response.blocos.find(b => b.id === treinoIdParam)) {
+        setBlocoAtivoId(treinoIdParam)
+      } else {
+        setBlocoAtivoId(response.blocos[0]?.id ?? null)
+      }
+      
+      // Mapear status dos exercícios
       const mapa = response.blocos.reduce<Record<string, boolean>>((acc, bloco) => {
         bloco.exercicios.forEach((ex) => {
           acc[ex.id] = Boolean(ex.concluido)
@@ -65,67 +95,81 @@ export default function TreinoAtual() {
         return acc
       }, {})
       setStatusExercicios(mapa)
-      setExercicioAtivo((prev) => {
-        if (prev) {
-          const existente = localizarExercicio(response.blocos, prev.id)
-          if (existente) return existente
-        }
-        const blocoComPendencia = response.blocos.find((bloco) =>
-          bloco.exercicios.some((ex) => !mapa[ex.id])
-        )
-        if (blocoComPendencia) {
-          return blocoComPendencia.exercicios.find((ex) => !mapa[ex.id]) || null
-        }
-        return response.blocos[0]?.exercicios[0] || null
-      })
+      
+      // Encontrar primeiro exercício não concluído
+      const blocoInicial = response.blocos.find(b => 
+        b.id === (treinoIdParam || response.blocos[0]?.id)
+      )
+      if (blocoInicial) {
+        const indexNaoConcluido = blocoInicial.exercicios.findIndex(ex => !mapa[ex.id])
+        setExercicioAtivoIndex(indexNaoConcluido >= 0 ? indexNaoConcluido : 0)
+      }
     } catch (error) {
       console.error(error)
-      showToast('Não foi possível carregar seu plano atual.', 'error')
+      showToast('Não foi possível carregar seu treino.', 'error')
     } finally {
       setLoading(false)
     }
-  }, [showToast])
+  }, [showToast, searchParams])
 
   useEffect(() => {
-    carregarPlanoAtual()
-  }, [carregarPlanoAtual])
+    carregarPlano()
+  }, [carregarPlano])
 
+  // Bloco ativo
   const blocoAtivo = useMemo(() => {
     if (!plano) return null
-    return plano.blocos.find((b) => b.id === aberto) || plano.blocos[0] || null
-  }, [aberto, plano])
+    return plano.blocos.find((b) => b.id === blocoAtivoId) || plano.blocos[0] || null
+  }, [blocoAtivoId, plano])
 
-  const encontrarProximoExercicio = useCallback(
-    (treinoId: string, mapa: Record<string, boolean>, atualId?: string) => {
-      const bloco = plano?.blocos.find((b) => b.id === treinoId)
-      if (!bloco) return null
-      const pendente = bloco.exercicios.find((ex) => !mapa[ex.id])
-      if (pendente) return pendente
-      if (atualId) {
-        const atual = bloco.exercicios.find((ex) => ex.id === atualId)
-        if (atual) return atual
-      }
-      return bloco.exercicios[0] || null
-    },
-    [plano]
-  )
+  // Exercício em foco
+  const exercicioEmFoco = useMemo(() => {
+    if (!blocoAtivo || !blocoAtivo.exercicios.length) return null
+    return blocoAtivo.exercicios[exercicioAtivoIndex] || blocoAtivo.exercicios[0]
+  }, [blocoAtivo, exercicioAtivoIndex])
 
-  const handleToggleExercicio = async (treinoId: string, exercicio: PlanoAtualExercicio, marcado: boolean) => {
-    const valorAnterior = statusExercicios[exercicio.id]
-    const mapaAtualizado = { ...statusExercicios, [exercicio.id]: marcado }
-    setStatusExercicios(mapaAtualizado)
+  // Próximo exercício
+  const proximoExercicio = useMemo(() => {
+    if (!blocoAtivo) return null
+    return blocoAtivo.exercicios[exercicioAtivoIndex + 1] || null
+  }, [blocoAtivo, exercicioAtivoIndex])
+
+  // Progresso
+  const progresso = useMemo(() => {
+    if (!blocoAtivo) return { concluidos: 0, total: 0, percentual: 0 }
+    const concluidos = blocoAtivo.exercicios.filter(ex => statusExercicios[ex.id]).length
+    const total = blocoAtivo.exercicios.length
+    return { concluidos, total, percentual: Math.round((concluidos / total) * 100) }
+  }, [blocoAtivo, statusExercicios])
+
+  // Handlers
+  const handleVoltar = () => navigate('/treinos')
+
+  const handleNavegar = (direcao: 'anterior' | 'proximo') => {
+    if (!blocoAtivo) return
+    const novoIndex = direcao === 'proximo' 
+      ? Math.min(exercicioAtivoIndex + 1, blocoAtivo.exercicios.length - 1)
+      : Math.max(exercicioAtivoIndex - 1, 0)
+    setExercicioAtivoIndex(novoIndex)
+  }
+
+  const handleMarcarConcluido = async () => {
+    if (!exercicioEmFoco || !blocoAtivo) return
+    
+    const novoStatus = !statusExercicios[exercicioEmFoco.id]
+    setStatusExercicios(prev => ({ ...prev, [exercicioEmFoco.id]: novoStatus }))
+    
     try {
-      await marcarExercicioTreino(exercicio.id, marcado)
-      if (marcado) {
-        const proximo = encontrarProximoExercicio(treinoId, mapaAtualizado, exercicio.id)
-        setExercicioAtivo(proximo)
-      } else {
-        setExercicioAtivo(exercicio)
+      await marcarExercicioTreino(exercicioEmFoco.id, novoStatus)
+      
+      // Se marcou como concluído, ir para próximo automaticamente
+      if (novoStatus && exercicioAtivoIndex < blocoAtivo.exercicios.length - 1) {
+        setTimeout(() => setExercicioAtivoIndex(prev => prev + 1), 300)
       }
     } catch (error) {
       console.error(error)
-      setStatusExercicios((prev) => ({ ...prev, [exercicio.id]: valorAnterior }))
-      showToast('Não conseguimos atualizar o exercício. Tente novamente.', 'error')
+      setStatusExercicios(prev => ({ ...prev, [exercicioEmFoco.id]: !novoStatus }))
+      showToast('Erro ao atualizar exercício', 'error')
     }
   }
 
@@ -134,281 +178,274 @@ export default function TreinoAtual() {
     setConcluindoTreino(true)
     try {
       await concluirTreino(blocoAtivo.id)
-      showToast('Treino concluído com sucesso!', 'success')
+      showToast('Treino concluído! 💪', 'success')
       setTimerAtivo(false)
-      navigate('/meu-plano')
+      setTimeout(() => navigate('/meu-plano'), 1000)
     } catch (error) {
       console.error(error)
-      showToast('Não foi possível concluir o treino agora.', 'error')
+      showToast('Erro ao finalizar treino', 'error')
     } finally {
       setConcluindoTreino(false)
     }
   }
 
-  const handleAbandonarTreino = () => {
-    const confirmar = window.confirm('Tem certeza de que deseja abandonar este treino?')
-    if (!confirmar) return
-    setTimerAtivo(false)
-    navigate('/meu-plano')
+  const handleAbandonar = () => {
+    if (window.confirm('Deseja abandonar este treino?')) {
+      setTimerAtivo(false)
+      navigate('/treinos')
+    }
   }
 
-  const header = plano?.plano
-  const generoUsuario = normalizarGenero(plano?.genero)
-  const progressoAtual = blocoAtivo
-    ? Math.round(
-        (blocoAtivo.exercicios.filter((ex) => statusExercicios[ex.id]).length / blocoAtivo.totalExercicios) * 100
-      )
-    : 0
-
-  const exercicioEmFoco =
-    exercicioAtivo && plano
-      ? localizarExercicio(plano.blocos, exercicioAtivo.id) || exercicioAtivo
-      : null
-
-  const resetarTimer = () => {
-    setCronometro(0)
-    setTimerAtivo(false)
+  const handleSelecionarExercicio = (index: number) => {
+    setExercicioAtivoIndex(index)
+    setMostrarChecklist(false)
   }
 
-  const abasInstrucoes: { id: 'execucao' | 'erros' | 'equipamentos'; label: string }[] = [
-    { id: 'execucao', label: 'Execução' },
-    { id: 'erros', label: 'Erros comuns' },
-    { id: 'equipamentos', label: 'Equipamentos' }
-  ]
+  // Loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+        <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    )
+  }
+
+  // Sem treino
+  if (!blocoAtivo || !exercicioEmFoco) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6">
+        <p className="text-xl font-semibold mb-2">Nenhum treino encontrado</p>
+        <p className="text-white/60 mb-6 text-center">Crie um treino rápido ou aguarde a geração do seu plano.</p>
+        <button
+          onClick={() => navigate('/treinos')}
+          className="bg-primary text-black font-bold px-6 py-3 rounded-full"
+        >
+          Ir para Treinos
+        </button>
+      </div>
+    )
+  }
+
+  const exercicioConcluido = statusExercicios[exercicioEmFoco.id]
 
   return (
-    <div className="min-h-screen bg-dark text-white pb-28">
-      <AppHeader title="Treino Atual" backTo="/meu-plano" />
-      <div className="relative h-64">
-        <img
-          src={header?.imagemCapa || obterImagemPorGenero(generoUsuario, 'treino')}
-          alt="Plano atual"
-          className="w-full h-full object-cover opacity-80"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/30 to-transparent" />
-        <div className="absolute bottom-6 left-5 right-5 space-y-2">
-          <p className="text-sm uppercase tracking-[0.2em] text-white/70">Treino Atual</p>
-          <h1 className="text-3xl font-bold">Seu plano</h1>
-          {header && (
-            <div className="flex gap-4 text-sm text-white/80 flex-wrap">
-              <span>
-                <strong className="text-white/60 text-xs uppercase mr-1">Nível:</strong> {header.nivel}
-              </span>
-              <span>
-                <strong className="text-white/60 text-xs uppercase mr-1">Duração:</strong> {formatarTempo(header.tempoMedio)}
-              </span>
-              <span>
-                <strong className="text-white/60 text-xs uppercase mr-1">Local:</strong> {header.local}
-              </span>
-            </div>
-          )}
+    <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
+      {/* HEADER MINIMAL */}
+      <header className="flex items-center justify-between px-4 py-3 bg-black/50 backdrop-blur-sm fixed top-0 left-0 right-0 z-50">
+        <button onClick={handleVoltar} className="p-2 -ml-2 text-white/80 hover:text-white">
+          <IconeVoltar />
+        </button>
+        
+        <div className="flex items-center gap-3">
+          <div className="text-center">
+            <p className="text-xs text-white/50 uppercase tracking-wider">Timer</p>
+            <p className="text-2xl font-mono font-bold text-primary">{formatarCronometro(cronometro)}</p>
+          </div>
+          <button 
+            onClick={() => setTimerAtivo(!timerAtivo)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${timerAtivo ? 'bg-white/10 text-white/70' : 'bg-primary text-black'}`}
+          >
+            {timerAtivo ? 'Pausar' : 'Iniciar'}
+          </button>
         </div>
-      </div>
+        
+        <button 
+          onClick={() => setMostrarChecklist(!mostrarChecklist)}
+          className="p-2 -mr-2 text-white/80 hover:text-white relative"
+        >
+          <span className="text-lg">☰</span>
+          {progresso.concluidos > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-xs rounded-full flex items-center justify-center font-bold">
+              {progresso.concluidos}
+            </span>
+          )}
+        </button>
+      </header>
 
-      <div className="p-5 space-y-5 pb-32">
-        {exercicioEmFoco && (
-          <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 backdrop-blur">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">{exercicioEmFoco.grupo}</p>
-                <h2 className="text-2xl font-semibold">{exercicioEmFoco.nome}</h2>
-              </div>
-              <span
-                className={`text-xs px-3 py-1 rounded-full ${
-                  statusExercicios[exercicioEmFoco.id] ? 'bg-primary/20 text-primary' : 'bg-white/10 text-white'
-                }`}
-              >
-                {statusExercicios[exercicioEmFoco.id] ? 'Concluído' : 'Em andamento'}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-white/50 mb-1">Timer</p>
-                <p className="text-4xl font-mono">{formatarCronometro(cronometro)}</p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setTimerAtivo((prev) => !prev)}
-                  className="px-4 py-2 rounded-full border border-white/20 text-sm font-semibold"
-                >
-                  {timerAtivo ? 'Pausar' : 'Iniciar'}
-                </button>
-                <button onClick={resetarTimer} className="px-4 py-2 rounded-full border border-white/10 text-sm text-white/70">
-                  Zerar
-                </button>
-              </div>
-            </div>
-
-            <div className="flex gap-3 flex-wrap">
-              <InfoChip label="Séries" value={`${exercicioEmFoco.series}x`} />
-              <InfoChip label="Repetições" value={exercicioEmFoco.repeticoes} />
-              <InfoChip
-                label="Equipamentos"
-                value={
-                  exercicioEmFoco.equipamentos && exercicioEmFoco.equipamentos.length > 0
-                    ? exercicioEmFoco.equipamentos[0]
-                    : 'Livre'
-                }
+      {/* CONTEÚDO PRINCIPAL */}
+      <main className="flex-1 pt-20 pb-32 px-4 flex flex-col">
+        {/* GIF DO EXERCÍCIO */}
+        <div className="flex-1 flex items-center justify-center mb-4">
+          <div className="w-full max-w-md aspect-square bg-black/40 rounded-3xl overflow-hidden border border-white/10">
+            {exercicioEmFoco.gifUrl ? (
+              <img
+                src={exercicioEmFoco.gifUrl}
+                alt={exercicioEmFoco.nome}
+                className="w-full h-full object-contain"
               />
-            </div>
-
-            <div className="rounded-3xl overflow-hidden bg-dark-lighter border border-white/5 p-3">
-              {exercicioEmFoco.gifUrl ? (
-                <img
-                  src={exercicioEmFoco.gifUrl}
-                  alt={`Execução de ${exercicioEmFoco.nome}`}
-                  className="w-full h-60 object-contain"
-                />
-              ) : (
-                <div className="h-52 flex items-center justify-center text-white/40 text-sm">
-                  Vídeo demonstrativo não disponível
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 text-sm">
-              {abasInstrucoes.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setAbaInstrucao(tab.id)}
-                  className={`flex-1 py-2 rounded-full border text-xs font-semibold ${
-                    abaInstrucao === tab.id ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 text-white/70'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="text-sm leading-relaxed text-white/80">
-              {abaInstrucao === 'execucao' && (
-                <p>{exercicioEmFoco.execucao || exercicioEmFoco.descricao || 'Siga a orientação do seu treinador para executar este exercício.'}</p>
-              )}
-              {abaInstrucao === 'erros' && (
-                <div className="space-y-1">
-                  {exercicioEmFoco.errosComuns && exercicioEmFoco.errosComuns.length > 0 ? (
-                    exercicioEmFoco.errosComuns.map((erro) => (
-                      <p key={erro} className="flex gap-2">
-                        <span className="text-primary">•</span> {erro}
-                      </p>
-                    ))
-                  ) : (
-                    <p>Sem erros comuns cadastrados para este exercício.</p>
-                  )}
-                </div>
-              )}
-              {abaInstrucao === 'equipamentos' && (
-                <p>
-                  {exercicioEmFoco.equipamentos && exercicioEmFoco.equipamentos.length > 0
-                    ? exercicioEmFoco.equipamentos.join(', ')
-                    : 'Este exercício pode ser executado sem equipamentos específicos.'}
-                </p>
-              )}
-            </div>
-          </section>
-        )}
-
-        {loading && (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, idx) => (
-              <div key={idx} className="h-20 rounded-2xl bg-dark-lighter animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {!loading && plano && plano.blocos.length === 0 && (
-          <div className="bg-dark-lighter rounded-3xl p-6 text-center">
-            <p className="text-light font-semibold mb-2">Você ainda não possui treinos programados</p>
-            <p className="text-light-muted text-sm mb-3">Crie um treino rápido ou solicite um plano para começar agora mesmo.</p>
-            <button onClick={() => navigate('/treinos')} className="bg-primary text-dark font-semibold px-4 py-2 rounded-full">
-              Ajustar plano
-            </button>
-          </div>
-        )}
-
-        {blocoAtivo && (
-          <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4 backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-white/50">Checklist do treino</p>
-                <h2 className="text-xl font-semibold">Sequência do dia</h2>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-white/30">
+                <span className="text-6xl">🏋️</span>
               </div>
-              <span className="text-sm text-white/60">
-                {blocoAtivo.exercicios.filter((ex) => statusExercicios[ex.id]).length}/{blocoAtivo.totalExercicios} concluídos
-              </span>
-            </div>
+            )}
+          </div>
+        </div>
 
-            <div className="space-y-3">
-              {blocoAtivo.exercicios.map((exercicio) => (
-                <div
-                  key={exercicio.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setExercicioAtivo(exercicio)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      setExercicioAtivo(exercicio)
-                    }
-                  }}
-                  className={`w-full flex items-center gap-4 p-3 rounded-2xl border text-left transition ${
-                    statusExercicios[exercicio.id]
-                      ? 'border-primary/40 bg-primary/10'
-                      : exercicioEmFoco?.id === exercicio.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-white/5 bg-dark'
+        {/* INFO DO EXERCÍCIO */}
+        <div className="text-center mb-4">
+          <p className="text-xs uppercase tracking-[0.3em] text-primary mb-1">{exercicioEmFoco.grupo}</p>
+          <h1 className="text-2xl font-bold mb-2">{exercicioEmFoco.nome}</h1>
+          <div className="flex items-center justify-center gap-3 text-white/70">
+            <span className="bg-white/10 px-3 py-1 rounded-full text-sm">{exercicioEmFoco.series} séries</span>
+            <span className="bg-white/10 px-3 py-1 rounded-full text-sm">{exercicioEmFoco.repeticoes} reps</span>
+            {exercicioEmFoco.carga && (
+              <span className="bg-white/10 px-3 py-1 rounded-full text-sm">{exercicioEmFoco.carga}kg</span>
+            )}
+          </div>
+        </div>
+
+        {/* NAVEGAÇÃO ENTRE EXERCÍCIOS */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <button
+            onClick={() => handleNavegar('anterior')}
+            disabled={exercicioAtivoIndex === 0}
+            className="p-3 rounded-full bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <IconeSeta direcao="esquerda" />
+          </button>
+          <span className="text-sm text-white/50">
+            {exercicioAtivoIndex + 1} / {blocoAtivo.exercicios.length}
+          </span>
+          <button
+            onClick={() => handleNavegar('proximo')}
+            disabled={exercicioAtivoIndex === blocoAtivo.exercicios.length - 1}
+            className="p-3 rounded-full bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <IconeSeta direcao="direita" />
+          </button>
+        </div>
+
+        {/* PRÓXIMO EXERCÍCIO */}
+        {proximoExercicio && (
+          <button
+            onClick={() => handleNavegar('proximo')}
+            className="mx-auto mb-2 text-center text-white/40 text-sm hover:text-white/60 transition"
+          >
+            Próximo: <span className="text-white/60">{proximoExercicio.nome}</span>
+          </button>
+        )}
+      </main>
+
+      {/* FOOTER FIXO */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a] to-transparent pt-8 pb-6 px-4">
+        {/* BARRA DE PROGRESSO */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-xs text-white/50 mb-2">
+            <span>{progresso.concluidos} de {progresso.total} exercícios</span>
+            <span>{progresso.percentual}%</span>
+          </div>
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${progresso.percentual}%` }}
+            />
+          </div>
+        </div>
+
+        {/* BOTÃO PRINCIPAL */}
+        <button
+          onClick={handleMarcarConcluido}
+          className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all ${
+            exercicioConcluido 
+              ? 'bg-white/10 text-white/70' 
+              : 'bg-primary text-black'
+          }`}
+        >
+          {exercicioConcluido ? (
+            <>
+              <span className="text-primary">✓</span>
+              <span>Desmarcar exercício</span>
+            </>
+          ) : (
+            <>
+              <IconeCheck />
+              <span>Concluir exercício</span>
+            </>
+          )}
+        </button>
+
+        {/* BOTÕES SECUNDÁRIOS */}
+        {progresso.percentual === 100 && (
+          <button
+            onClick={handleConcluirTreino}
+            disabled={concluindoTreino}
+            className="w-full mt-3 py-4 rounded-2xl bg-green-600 text-white font-bold text-lg disabled:opacity-60"
+          >
+            {concluindoTreino ? 'Finalizando...' : '🎉 Finalizar Treino'}
+          </button>
+        )}
+      </footer>
+
+      {/* MODAL CHECKLIST */}
+      {mostrarChecklist && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-end"
+          onClick={() => setMostrarChecklist(false)}
+        >
+          <div 
+            className="w-full max-h-[70vh] bg-[#111] rounded-t-3xl p-5 overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold">{blocoAtivo.titulo}</h2>
+                <p className="text-sm text-white/50">{progresso.concluidos}/{progresso.total} exercícios</p>
+              </div>
+              <button 
+                onClick={() => setMostrarChecklist(false)}
+                className="text-white/50 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {blocoAtivo.exercicios.map((ex, idx) => (
+                <button
+                  key={ex.id}
+                  onClick={() => handleSelecionarExercicio(idx)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition ${
+                    statusExercicios[ex.id]
+                      ? 'bg-primary/10 border border-primary/30'
+                      : idx === exercicioAtivoIndex
+                        ? 'bg-white/10 border border-white/20'
+                        : 'bg-white/5 border border-transparent'
                   }`}
                 >
-                  <button
-                    onClick={(event) => {
-                      event.stopPropagation()
-                      handleToggleExercicio(blocoAtivo.id, exercicio, !statusExercicios[exercicio.id])
-                    }}
-                    className={`w-7 h-7 rounded-full border flex items-center justify-center ${
-                      statusExercicios[exercicio.id] ? 'bg-primary border-primary text-dark' : 'border-white/30 text-white/40'
-                    }`}
-                  >
-                    {statusExercicios[exercicio.id] && (
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </button>
-                  <div className="w-12 h-12 rounded-2xl bg-dark flex items-center justify-center text-sm font-semibold text-light">
-                    {exercicio.grupo.slice(0, 3).toUpperCase()}
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    statusExercicios[ex.id] ? 'bg-primary text-black' : 'bg-white/10 text-white/50'
+                  }`}>
+                    {statusExercicios[ex.id] ? '✓' : idx + 1}
                   </div>
                   <div className="flex-1">
-                    <p className="text-light font-semibold">{exercicio.nome}</p>
-                    <p className="text-light-muted text-sm">
-                      {exercicio.series} sets • {exercicio.repeticoes}
+                    <p className={`font-medium ${statusExercicios[ex.id] ? 'text-primary' : 'text-white'}`}>
+                      {ex.nome}
                     </p>
+                    <p className="text-xs text-white/50">{ex.grupo} • {ex.series}x{ex.repeticoes}</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
 
-            <div className="space-y-3">
-              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary rounded-full transition-all"
-                  style={{ width: `${isNaN(progressoAtual) ? 0 : progressoAtual}%` }}
-                />
-              </div>
+            <div className="mt-6 space-y-2">
               <button
                 onClick={handleConcluirTreino}
-                disabled={concluindoTreino}
-                className="w-full py-3 rounded-full bg-primary text-dark font-semibold disabled:opacity-60"
+                disabled={concluindoTreino || progresso.percentual < 100}
+                className="w-full py-4 rounded-xl bg-primary text-black font-bold disabled:opacity-40"
               >
-                {concluindoTreino ? 'Concluindo...' : 'Finalizar treino'}
+                Finalizar Treino
               </button>
-              <button onClick={handleAbandonarTreino} className="w-full py-3 rounded-full border border-white/20 text-white/70">
+              <button
+                onClick={handleAbandonar}
+                className="w-full py-3 rounded-xl text-red-400 font-medium"
+              >
                 Abandonar treino
               </button>
             </div>
-          </section>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
+
       <ToastContainer />
     </div>
   )

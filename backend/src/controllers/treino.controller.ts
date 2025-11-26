@@ -4,7 +4,8 @@ import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
 import { obterResumoTreinos, buscarPlanoAtual } from '../services/treino-dashboard.service';
-import { gerarTreinoPersonalizado, garantirPlanoSemanalInteligente } from '../services/inteligencia-treinos.service';
+import { gerarTreinoPersonalizado } from '../services/inteligencia-treinos.service';
+import { garantirPlanoSemanal as garantirPlanoSemanalInteligente } from '../services/treino-engine.service';
 
 // Gerar treino do dia ou semana completa
 export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
@@ -16,7 +17,10 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
 
     if (gerarSemana === true) {
       // Gerar semana completa usando inteligencia
-      const treinos = await garantirPlanoSemanalInteligente(userId, data ? new Date(data) : new Date());
+      const treinos = await garantirPlanoSemanalInteligente({ 
+        userId, 
+        dataReferencia: data ? new Date(data) : new Date() 
+      });
       return res.status(201).json({
         message: `${treinos.length} treino(s) gerado(s) com sucesso`,
         treinos,
