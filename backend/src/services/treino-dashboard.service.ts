@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { garantirPlanoSemanalInteligente } from './inteligencia-treinos.service';
+import { garantirPerfilParaInteligencia, obterPerfilBasico } from './perfil.service';
 
 const CAPAS_TREINO = [
   'https://images.unsplash.com/photo-1517964603305-11c0f6f66012?auto=format&fit=crop&w=1000&q=80',
@@ -42,9 +43,7 @@ function calcularVolumeTreino(treino: any): number {
 }
 
 export async function obterResumoTreinos(userId: string) {
-  const perfil = await prisma.perfil.findUnique({
-    where: { userId }
-  });
+  const perfil = await obterPerfilBasico(userId);
 
   await garantirPlanoSemanalInteligente(userId);
 
@@ -229,9 +228,7 @@ export async function obterResumoTreinos(userId: string) {
 }
 
 export async function buscarPlanoAtual(userId: string) {
-  const perfil = await prisma.perfil.findUnique({
-    where: { userId }
-  });
+  const perfil = await garantirPerfilParaInteligencia(userId);
 
   await garantirPlanoSemanalInteligente(userId);
 

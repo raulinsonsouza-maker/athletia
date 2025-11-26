@@ -132,6 +132,7 @@ model Exercicio {
   exerciciosTreino                ExercicioTreino[]
   templateExercicios              TreinoTemplateExercicio[]
   templatePersonalizadoExercicios TreinoPersonalizadoTemplateExercicio[]
+  gruposMusculares                ExercicioGrupoMuscular[]
 
   @@index([grupoMuscularPrincipal])
   @@index([nivelDificuldade])
@@ -151,7 +152,26 @@ model GrupoMuscularVisual {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
+  exercicios ExercicioGrupoMuscular[]
+
   @@map("grupos_musculares_visuais")
+}
+
+model ExercicioGrupoMuscular {
+  id            String                @id @default(uuid())
+  exercicioId   String                @map("exercicio_id")
+  grupoVisualId String                @map("grupo_visual_id")
+  papel         PapelGrupoMuscular    @default(PRINCIPAL)
+  ordem         Int?                  @default(0)
+  createdAt     DateTime              @default(now()) @map("created_at")
+
+  exercicio Exercicio            @relation(fields: [exercicioId], references: [id], onDelete: Cascade)
+  grupo     GrupoMuscularVisual  @relation(fields: [grupoVisualId], references: [id], onDelete: Cascade)
+
+  @@unique([exercicioId, grupoVisualId, papel])
+  @@index([grupoVisualId])
+  @@index([exercicioId])
+  @@map("exercicios_grupos_musculares")
 }
 
 model ExercicioTreino {
@@ -290,4 +310,9 @@ model ConfiguracaoTreinoUsuario {
 enum Role {
   USER
   ADMIN
+}
+
+enum PapelGrupoMuscular {
+  PRINCIPAL
+  SINERGISTA
 }

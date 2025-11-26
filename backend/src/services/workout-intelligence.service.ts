@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
+import { slugify } from '../utils/slugify';
 
 const hashTexto = (texto: string): number => {
   let hash = 0;
@@ -20,6 +21,31 @@ const LESOES_PARA_GRUPOS: Record<string, string[]> = {
   'Coluna': ['Costas', 'Posteriores', 'Abdômen'],
   'Pulso': ['Bíceps', 'Tríceps', 'Ombros'],
   'Tornozelo': ['Panturrilhas', 'Quadríceps', 'Posteriores']
+};
+
+const obterNomeGrupoDeReferencia = (fonte: any): string => {
+  if (!fonte) return 'Outros';
+
+  if (fonte.grupoMuscularPrincipal) {
+    return fonte.grupoMuscularPrincipal;
+  }
+
+  const gruposRelacionados = fonte.gruposMusculares || fonte.exercicio?.gruposMusculares;
+  if (Array.isArray(gruposRelacionados) && gruposRelacionados.length > 0) {
+    const principal = gruposRelacionados.find(
+      (rel: any) => rel.papel === 'PRINCIPAL' && rel.grupo?.nome
+    );
+    if (principal?.grupo?.nome) return principal.grupo.nome;
+
+    const qualquer = gruposRelacionados.find((rel: any) => rel.grupo?.nome);
+    if (qualquer?.grupo?.nome) return qualquer.grupo.nome;
+  }
+
+  if (fonte.exercicio?.grupoMuscularPrincipal) {
+    return fonte.exercicio.grupoMuscularPrincipal;
+  }
+
+  return 'Outros';
 };
 
 /**
@@ -118,8 +144,9 @@ export function evitarRedundancia(
   for (const exercicio of exercicios) {
     const isRedundante = filtrados.some(ex => {
       const similaridade = calcularSimilaridadeExercicios(exercicio, ex);
-      return similaridade >= threshold && 
-             exercicio.grupoMuscularPrincipal === ex.grupoMuscularPrincipal;
+      const grupoAtual = obterNomeGrupoDeReferencia(exercicio);
+      const grupoComparado = obterNomeGrupoDeReferencia(ex);
+      return similaridade >= threshold && grupoAtual === grupoComparado;
     });
     
     if (!isRedundante) {
@@ -240,13 +267,43 @@ export async function selecionarExercicioPrincipal(
   console.log(`🔍 [Intelligence] Selecionando exercício principal para ${grupoMuscular}...`);
 
   // 1. Buscar exercícios do grupo
+  const slugGrupo = slugify(grupoMuscular, 'grupo');
+
   let exercicios = await prisma.exercicio.findMany({
     where: {
-      grupoMuscularPrincipal: grupoMuscular,
-      ativo: true
+      ativo: true,
+      gruposMusculares: {
+        some: {
+          grupo: {
+            slug: slugGrupo
+          },
+          papel: 'PRINCIPAL'
+        }
+      }
+    },
+    include: {
+      gruposMusculares: {
+        include: { grupo: true }
+      }
     },
     take: 50
   });
+
+  if (exercicios.length === 0) {
+    console.warn(`⚠️ Nenhum exercício relacionado ao slug ${slugGrupo}. Aplicando fallback por nome.`);
+    exercicios = await prisma.exercicio.findMany({
+      where: {
+        grupoMuscularPrincipal: grupoMuscular,
+        ativo: true
+      },
+      include: {
+        gruposMusculares: {
+          include: { grupo: true }
+        }
+      },
+      take: 50
+    });
+  }
 
   if (exercicios.length === 0) {
     console.error(`❌ Nenhum exercício encontrado para ${grupoMuscular}`);
@@ -275,6 +332,11 @@ export async function selecionarExercicioPrincipal(
       where: {
         grupoMuscularPrincipal: grupoMuscular,
         ativo: true
+      },
+      include: {
+        gruposMusculares: {
+          include: { grupo: true }
+        }
       },
       take: 20
     });
@@ -318,14 +380,43 @@ export async function selecionarExercicioAcessorio(
   console.log(`🔍 [Intelligence] Selecionando exercício acessório para ${grupoMuscular}...`);
 
   // 1. Buscar exercícios do grupo
+  const slugGrupo = slugify(grupoMuscular, 'grupo');
+
   let exercicios = await prisma.exercicio.findMany({
     where: {
-      grupoMuscularPrincipal: grupoMuscular,
       ativo: true,
-      id: { not: exercicioPrincipal.id }
+      id: { not: exercicioPrincipal.id },
+      gruposMusculares: {
+        some: {
+          grupo: {
+            slug: slugGrupo
+          }
+        }
+      }
+    },
+    include: {
+      gruposMusculares: {
+        include: { grupo: true }
+      }
     },
     take: 50
   });
+
+  if (exercicios.length === 0) {
+    exercicios = await prisma.exercicio.findMany({
+      where: {
+        grupoMuscularPrincipal: grupoMuscular,
+        ativo: true,
+        id: { not: exercicioPrincipal.id }
+      },
+      include: {
+        gruposMusculares: {
+          include: { grupo: true }
+        }
+      },
+      take: 50
+    });
+  }
 
   if (exercicios.length === 0) {
     console.warn(`⚠️ Nenhum exercício acessório disponível para ${grupoMuscular}`);

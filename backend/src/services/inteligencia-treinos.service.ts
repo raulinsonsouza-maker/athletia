@@ -7,6 +7,9 @@ import {
 } from './workout-intelligence.service'
 import { getVolumeGuideline } from './treino-knowledge.service'
 import { buscarOuCriarExercicioAerobico, buscarOuCriarExercicioAlongamento } from './treino.service'
+import { garantirPerfilParaInteligencia } from './perfil.service'
+
+type PerfilTreino = Awaited<ReturnType<typeof garantirPerfilParaInteligencia>>
 
 type NivelDificuldade = 'Iniciante' | 'Intermediário' | 'Avançado'
 
@@ -116,22 +119,6 @@ function normalizarData(data: Date): Date {
   return dt
 }
 
-async function carregarPerfil(userId: string) {
-  const perfil = await prisma.perfil.findUnique({
-    where: { userId }
-  })
-
-  if (!perfil) {
-    throw new Error('Perfil não encontrado. Complete o onboarding para gerar treinos.')
-  }
-
-  if (!perfil.objetivo || !perfil.experiencia || !perfil.frequenciaSemanal) {
-    throw new Error('Perfil incompleto. Objetivo, experiência e frequência semanal são obrigatórios.')
-  }
-
-  return perfil
-}
-
 function calcularSplitSemana(frequencia?: number): string[][] {
   const freq = Math.min(Math.max(frequencia || 3, 1), 6)
   return SPLITS_PADRAO[freq] || SPLITS_PADRAO[3]
@@ -160,7 +147,7 @@ function filtrarGruposPorLesoes(grupos: string[], lesoes: string[] | null | unde
   return grupos.filter((grupo) => !gruposEvitar.has(grupo))
 }
 
-function determinarGruposParaTreino(options: GerarTreinoOptions, perfil: Awaited<ReturnType<typeof carregarPerfil>>): string[] {
+function determinarGruposParaTreino(options: GerarTreinoOptions, perfil: PerfilTreino): string[] {
   if (options.splitGrupos && options.splitGrupos.length > 0) {
     return options.splitGrupos
   }
@@ -192,7 +179,7 @@ function calcularNumeroExercicios(duracao?: number, frequencia?: number): { min:
 }
 
 async function selecionarExerciciosParaContexto(params: {
-  perfil: Awaited<ReturnType<typeof carregarPerfil>>
+  perfil: PerfilTreino
   grupos: string[]
   maxExercicios: number
   dificuldade: NivelDificuldade
@@ -336,7 +323,7 @@ async function adicionarCardioEAlongamento(exercicios: TreinoExercicioInput[]) {
 }
 
 export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
-  const perfil = await carregarPerfil(options.userId)
+  const perfil = await garantirPerfilParaInteligencia(options.userId)
   const gruposBase = determinarGruposParaTreino(options, perfil)
   const gruposFiltrados = filtrarGruposPorLesoes(gruposBase, perfil.lesoes)
 
@@ -418,7 +405,7 @@ export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
 }
 
 export async function garantirPlanoSemanalInteligente(userId: string, referencia: Date = new Date()) {
-  const perfil = await carregarPerfil(userId)
+  const perfil = await garantirPerfilParaInteligencia(userId)
   const split = calcularSplitSemana(perfil.frequenciaSemanal || 3)
   const inicioSemana = normalizarData(referencia)
   const diaSemana = inicioSemana.getDay()

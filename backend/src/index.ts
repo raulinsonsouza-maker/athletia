@@ -18,6 +18,7 @@ import adminRoutes from './routes/admin.routes';
 import exercicioRoutes from './routes/exercicio.routes';
 import userRoutes from './routes/user.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -217,5 +218,9 @@ app.listen(PORT, () => {
     console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🔗 Frontend URL: ${FRONTEND_URL}`);
   }
+
+  sincronizarTodosExerciciosComGrupos()
+    .then(() => console.log('🧠 Grupos musculares sincronizados com exercícios.'))
+    .catch((error) => console.error('⚠️ Falha ao sincronizar grupos musculares:', error));
 });
 

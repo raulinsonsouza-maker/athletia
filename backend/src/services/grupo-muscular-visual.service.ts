@@ -1,12 +1,5 @@
 import { prisma } from '../lib/prisma'
-
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'grupo'
+import { slugify } from '../utils/slugify'
 
 export async function listarGruposVisuaisAdmin() {
   return prisma.grupoMuscularVisual.findMany({

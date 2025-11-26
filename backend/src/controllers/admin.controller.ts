@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../lib/prisma';
+import { sincronizarGruposDoExercicio } from '../services/grupo-muscular.service';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
@@ -530,7 +531,12 @@ export const listarExercicios = async (req: AuthRequest, res: Response) => {
         descricao: true,
         execucaoTecnica: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        gruposMusculares: {
+          include: {
+            grupo: true
+          }
+        }
       },
       orderBy: {
         nome: 'asc'
@@ -538,17 +544,15 @@ export const listarExercicios = async (req: AuthRequest, res: Response) => {
     });
 
     // Buscar grupos musculares únicos para o filtro
-    const gruposMusculares = await prisma.exercicio.findMany({
+    const gruposMusculares = await prisma.grupoMuscularVisual.findMany({
       where: { ativo: true },
-      select: {
-        grupoMuscularPrincipal: true
-      },
-      distinct: ['grupoMuscularPrincipal']
+      select: { nome: true, slug: true },
+      orderBy: [{ ordem: 'asc' }, { nome: 'asc' }]
     });
 
     res.json({
       exercicios,
-      gruposMusculares: gruposMusculares.map(g => g.grupoMuscularPrincipal).sort(),
+      gruposMusculares: gruposMusculares.map((g) => g.nome),
       total: exercicios.length
     });
   } catch (error: any) {
@@ -1001,7 +1005,12 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
         alternativas: true,
         ativo: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        gruposMusculares: {
+          include: {
+            grupo: true
+          }
+        }
       }
     });
 
@@ -1086,6 +1095,12 @@ export const criarExercicio = async (req: AuthRequest, res: Response) => {
       }
     });
 
+    await sincronizarGruposDoExercicio(
+      exercicio.id,
+      exercicio.grupoMuscularPrincipal,
+      exercicio.sinergistas
+    );
+
     res.status(201).json({
       message: 'Exercício criado com sucesso',
       exercicio
@@ -1167,6 +1182,12 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
         updatedAt: true
       }
     });
+
+    await sincronizarGruposDoExercicio(
+      exercicio.id,
+      exercicio.grupoMuscularPrincipal,
+      exercicio.sinergistas
+    );
 
     res.json({
       message: 'Exercício atualizado com sucesso',

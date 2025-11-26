@@ -45,7 +45,12 @@ export const listarExercicios = async (req: AuthRequest, res: Response) => {
         alternativas: true,
         ativo: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        gruposMusculares: {
+          include: {
+            grupo: true
+          }
+        }
       },
       orderBy: {
         nome: 'asc'
@@ -53,12 +58,13 @@ export const listarExercicios = async (req: AuthRequest, res: Response) => {
     });
 
     // Buscar grupos musculares únicos para filtros
-    const gruposMusculares = await prisma.exercicio.findMany({
+    const gruposMusculares = await prisma.grupoMuscularVisual.findMany({
       where: { ativo: true },
       select: {
-        grupoMuscularPrincipal: true
+        nome: true,
+        slug: true
       },
-      distinct: ['grupoMuscularPrincipal']
+      orderBy: [{ ordem: 'asc' }, { nome: 'asc' }]
     });
 
     // Buscar níveis de dificuldade únicos
@@ -72,7 +78,7 @@ export const listarExercicios = async (req: AuthRequest, res: Response) => {
 
     res.json({
       exercicios,
-      gruposMusculares: gruposMusculares.map(g => g.grupoMuscularPrincipal).sort(),
+      gruposMusculares: gruposMusculares.map(g => g.nome),
       niveisDificuldade: niveisDificuldade.map(n => n.nivelDificuldade).sort(),
       total: exercicios.length
     });
@@ -94,6 +100,13 @@ export const buscarExercicio = async (req: AuthRequest, res: Response) => {
       where: {
         id,
         ativo: true
+      },
+      include: {
+        gruposMusculares: {
+          include: {
+            grupo: true
+          }
+        }
       }
     });
 
