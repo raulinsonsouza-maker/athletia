@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as treinoPersonalizadoService from '../services/treino-personalizado.service';
-import * as treinoCore from '../services/treino-core.service';
+import { criarTreinoPersonalizadoManual, aplicarTemplatePersonalizado as aplicarTemplateService, aplicarTreinoRecorrente as aplicarRecorrenteService } from '../services/inteligencia-treinos.service';
 
 // Criar treino personalizado - USA CORE SERVICE
 export const criarTreinoPersonalizado = async (req: AuthRequest, res: Response) => {
@@ -23,8 +23,8 @@ export const criarTreinoPersonalizado = async (req: AuthRequest, res: Response) 
 
     const { diaSemana, recorrente, letraTreino } = req.body;
 
-    // Usar CORE SERVICE para criar treino personalizado
-    const treino = await treinoCore.criarTreinoPersonalizado(userId, {
+    // Criar treino personalizado
+    const treino = await criarTreinoPersonalizadoManual(userId, {
       data: new Date(data),
       nome,
       exercicios,
@@ -338,12 +338,8 @@ export const aplicarTemplatePersonalizado = async (req: AuthRequest, res: Respon
       });
     }
 
-    // Usar CORE SERVICE para aplicar template
-    const resultado = await treinoCore.aplicarTemplatePersonalizado(
-      userId,
-      id,
-      new Date(data)
-    );
+    // Aplicar template
+    const resultado = await aplicarTemplateService(userId, id, new Date(data));
 
     res.status(201).json({
       message: resultado.mensagem,
@@ -470,12 +466,8 @@ export const aplicarTreinoRecorrente = async (req: AuthRequest, res: Response) =
       });
     }
 
-    // Usar CORE SERVICE para aplicar treino recorrente
-    const resultado = await treinoCore.aplicarTreinoRecorrente(
-      userId,
-      letra,
-      new Date(data)
-    );
+    // Aplicar treino recorrente
+    const resultado = await aplicarRecorrenteService(userId, letra, new Date(data));
 
     res.status(201).json({
       message: resultado.mensagem,

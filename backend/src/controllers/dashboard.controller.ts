@@ -2,9 +2,39 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { buscarTreinoDoDia, buscarTreinosSemanais } from '../services/treino.service';
 import { calcularEvolucaoPeso, calcularSequenciaAtual, calcularMelhorSequencia, calcularProgressaoForca, calcularEstatisticasProgresso } from '../services/progressao.service';
-import { calcularNivelUsuario, obterConquistas } from '../services/conquistas.service';
-import { gerarMensagemMotivacional } from '../services/mensagens.service';
 import { prisma } from '../lib/prisma';
+
+// Funcoes inline substituindo servicos removidos
+async function calcularNivelUsuario(userId: string) {
+  const treinosConcluidos = await prisma.treino.count({
+    where: { userId, concluido: true }
+  });
+  const nivel = Math.floor(treinosConcluidos / 10) + 1;
+  const xpAtual = (treinosConcluidos % 10) * 100;
+  const xpProximoNivel = 1000;
+  return { nivel, xpAtual, xpProximoNivel, totalTreinos: treinosConcluidos };
+}
+
+async function obterConquistas(userId: string) {
+  const treinosConcluidos = await prisma.treino.count({
+    where: { userId, concluido: true }
+  });
+  const conquistas = [];
+  if (treinosConcluidos >= 1) conquistas.push({ id: 'primeiro-treino', nome: 'Primeiro Treino', descricao: 'Completou seu primeiro treino' });
+  if (treinosConcluidos >= 10) conquistas.push({ id: 'dedicado', nome: 'Dedicado', descricao: 'Completou 10 treinos' });
+  if (treinosConcluidos >= 50) conquistas.push({ id: 'persistente', nome: 'Persistente', descricao: 'Completou 50 treinos' });
+  return conquistas;
+}
+
+function gerarMensagemMotivacional(_userId: string) {
+  const mensagens = [
+    'Continue assim! Cada treino conta.',
+    'Voce esta no caminho certo!',
+    'Consistencia e a chave do sucesso.',
+    'Seu esforco vai valer a pena!'
+  ];
+  return mensagens[Math.floor(Math.random() * mensagens.length)];
+}
 
 /**
  * Obter resumo completo do dashboard

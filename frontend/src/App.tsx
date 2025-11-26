@@ -11,15 +11,12 @@ import TreinoAtual from './pages/TreinoAtual'
 import MeuPlano from './pages/MeuPlano'
 import Historico from './pages/Historico'
 import Perfil from './pages/Perfil'
-import EvolucaoPeso from './pages/EvolucaoPeso'
-import Evolucao from './pages/Evolucao'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
 import AdminGrupos from './pages/AdminGrupos'
 import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
-import GerenciarTreinos from './pages/GerenciarTreinos'
 import Progresso from './pages/Progresso'
 
 function App() {
@@ -110,31 +107,11 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/evolucao-peso"
-            element={
-              <ProtectedRoute>
-                <EvolucaoPeso />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/evolucao"
-            element={
-              <ProtectedRoute>
-                <Evolucao />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/exercicios"
-            element={
-              <ProtectedRoute>
-                <GerenciarTreinos />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/gerenciar-treinos" element={<Navigate to="/exercicios" replace />} />
+          {/* Redirecionamentos de rotas antigas */}
+          <Route path="/evolucao-peso" element={<Navigate to="/progresso" replace />} />
+          <Route path="/evolucao" element={<Navigate to="/progresso" replace />} />
+          <Route path="/exercicios" element={<Navigate to="/treinos" replace />} />
+          <Route path="/gerenciar-treinos" element={<Navigate to="/treinos" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/grupos" element={<AdminGrupos />} />
           <Route path="/admin" element={<Admin />} />

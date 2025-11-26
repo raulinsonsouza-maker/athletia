@@ -1,11 +1,89 @@
 import { prisma } from '../lib/prisma';
 import { nearestAllowedWeight, getEquipmentStep } from './progression.service';
-import { 
-  interpretarFeedback, 
-  FeedbackSimples, 
-  aplicarAjusteAutomatico,
-  podeAplicarAjuste 
-} from './feedback-profissional.service';
+
+// Tipos inline (anteriormente de feedback-profissional.service)
+type FeedbackSimples = 'MUITO_FACIL' | 'NO_PONTO' | 'PESADO_DEMAIS';
+
+interface AjusteFeedback {
+  tipo: 'CARGA' | 'REPETICOES' | 'SERIES' | 'NENHUM';
+  valor: number | string | null;
+  aplicavel: boolean;
+  justificativa?: string;
+}
+
+interface InterpretacaoFeedback {
+  tipo: string;
+  mensagem: string;
+  ajuste: AjusteFeedback;
+}
+
+function interpretarFeedback(
+  feedback: FeedbackSimples,
+  cargaAtual: number | null,
+  _repeticoesAtuais: string | null,
+  _series: number,
+  _exercicioId: string,
+  _objetivo?: string
+): InterpretacaoFeedback {
+  const carga = cargaAtual || 0;
+  
+  switch (feedback) {
+    case 'MUITO_FACIL':
+      return {
+        tipo: 'aumento',
+        mensagem: 'Exercicio muito facil - aumentando carga',
+        ajuste: {
+          tipo: 'CARGA',
+          valor: Math.round((carga * 1.1) / 2.5) * 2.5,
+          aplicavel: true,
+          justificativa: 'Aumento de 10% baseado no feedback'
+        }
+      };
+    case 'PESADO_DEMAIS':
+      return {
+        tipo: 'reducao',
+        mensagem: 'Exercicio muito pesado - reduzindo carga',
+        ajuste: {
+          tipo: 'CARGA',
+          valor: Math.round((carga * 0.9) / 2.5) * 2.5,
+          aplicavel: true,
+          justificativa: 'Reducao de 10% baseado no feedback'
+        }
+      };
+    case 'NO_PONTO':
+    default:
+      return {
+        tipo: 'manter',
+        mensagem: 'Carga adequada - mantendo parametros',
+        ajuste: { tipo: 'NENHUM', valor: null, aplicavel: false }
+      };
+  }
+}
+
+function podeAplicarAjuste(
+  concluido: boolean,
+  temFeedback: boolean,
+  aceitouAjuste: boolean | null,
+  _proximoTreinoJaGerado: boolean,
+  _modoManual?: boolean
+): boolean {
+  return concluido && temFeedback && aceitouAjuste !== false;
+}
+
+function aplicarAjusteAutomatico(
+  ajuste: AjusteFeedback,
+  exercicio: { carga: number | null; repeticoes: string; series: number }
+): { novaCarga?: number; novasRepeticoes?: string } | null {
+  if (!ajuste.aplicavel) return null;
+  
+  if (ajuste.tipo === 'CARGA') {
+    return { novaCarga: ajuste.valor as number, novasRepeticoes: exercicio.repeticoes };
+  }
+  if (ajuste.tipo === 'REPETICOES') {
+    return { novaCarga: exercicio.carga || undefined, novasRepeticoes: ajuste.valor as string };
+  }
+  return null;
+}
 
 /**
  * Arredonda carga para múltiplo de 2.5kg e depois para inteiro

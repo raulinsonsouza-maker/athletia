@@ -3,16 +3,92 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
-import * as treinoCore from '../services/treino-core.service';
-import * as treinoSimplesController from './treino-simples.controller';
-import * as treinoSimples from '../services/treino-simples.service';
 import { obterResumoTreinos, buscarPlanoAtual } from '../services/treino-dashboard.service';
+import { gerarTreinoPersonalizado, garantirPlanoSemanalInteligente } from '../services/inteligencia-treinos.service';
 
-// Gerar treino do dia ou semana completa - USA SERVIÇO SIMPLES
-export const gerarTreinoDoDia = treinoSimplesController.gerarTreino;
+// Gerar treino do dia ou semana completa
+export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { data, gerarSemana } = req.body;
 
-// Buscar treino do dia - USA SERVIÇO SIMPLES
-export const buscarTreinoDoDia = treinoSimplesController.buscarTreino;
+    console.log('[CONTROLLER] Gerando treino...', { userId, data, gerarSemana });
+
+    if (gerarSemana === true) {
+      // Gerar semana completa usando inteligencia
+      const treinos = await garantirPlanoSemanalInteligente(userId, data ? new Date(data) : new Date());
+      return res.status(201).json({
+        message: `${treinos.length} treino(s) gerado(s) com sucesso`,
+        treinos,
+        quantidadeGerados: treinos.length
+      });
+    } else {
+      // Gerar treino do dia
+      const treino = await gerarTreinoPersonalizado({
+        userId,
+        data: data ? new Date(data) : new Date()
+      });
+
+      return res.status(201).json({
+        message: 'Treino gerado com sucesso',
+        treino
+      });
+    }
+  } catch (error: any) {
+    console.error('[CONTROLLER] Erro:', error);
+    
+    let statusCode = 500;
+    if (error.message?.includes('Perfil não encontrado')) statusCode = 404;
+    else if (error.message?.includes('incompleto')) statusCode = 400;
+
+    return res.status(statusCode).json({
+      error: 'Erro ao gerar treino',
+      message: error.message || 'Erro ao gerar treino'
+    });
+  }
+};
+
+// Buscar treino do dia
+export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { data } = req.query;
+
+    const dataTreino = data ? new Date(data as string) : new Date();
+    dataTreino.setHours(0, 0, 0, 0);
+    const fimDia = new Date(dataTreino);
+    fimDia.setHours(23, 59, 59, 999);
+
+    const treino = await prisma.treino.findFirst({
+      where: {
+        userId,
+        data: { gte: dataTreino, lte: fimDia }
+      },
+      include: {
+        exercicios: {
+          include: { exercicio: true },
+          orderBy: { ordem: 'asc' }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!treino) {
+      return res.status(200).json({
+        treino: null,
+        message: 'Nenhum treino encontrado para esta data'
+      });
+    }
+
+    return res.json(treino);
+  } catch (error: any) {
+    console.error('[CONTROLLER] Erro ao buscar treino:', error);
+    return res.status(500).json({
+      error: 'Erro ao buscar treino',
+      message: error.message
+    });
+  }
+};
 
 // Concluir ou desmarcar exercício
 export const concluirExercicio = async (req: AuthRequest, res: Response) => {

@@ -404,7 +404,7 @@ export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
   })
 }
 
-export async function garantirPlanoSemanalInteligente(userId: string, referencia: Date = new Date()) {
+export async function garantirPlanoSemanalInteligente(userId: string, referencia: Date = new Date()): Promise<any[]> {
   const perfil = await garantirPerfilParaInteligencia(userId)
   const split = calcularSplitSemana(perfil.frequenciaSemanal || 3)
   const inicioSemana = normalizarData(referencia)
@@ -415,7 +415,7 @@ export async function garantirPlanoSemanalInteligente(userId: string, referencia
   fimSemana.setDate(inicioSemana.getDate() + 6)
   fimSemana.setHours(23, 59, 59, 999)
 
-  const treinosExistentes = await prisma.treino.count({
+  const treinosExistentes = await prisma.treino.findMany({
     where: {
       userId,
       data: {
@@ -423,11 +423,17 @@ export async function garantirPlanoSemanalInteligente(userId: string, referencia
         lte: fimSemana
       },
       criadoPor: 'IA'
+    },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
     }
   })
 
-  if (treinosExistentes >= split.length) {
-    return
+  if (treinosExistentes.length >= split.length) {
+    return treinosExistentes
   }
 
   await prisma.treino.deleteMany({
@@ -441,11 +447,12 @@ export async function garantirPlanoSemanalInteligente(userId: string, referencia
     }
   })
 
+  const treinos: any[] = []
   for (let i = 0; i < split.length; i++) {
     const dataTreino = new Date(inicioSemana)
     dataTreino.setDate(inicioSemana.getDate() + i)
 
-    await gerarTreinoPersonalizado({
+    const treino = await gerarTreinoPersonalizado({
       userId,
       data: dataTreino,
       nome: `Treino Inteligente ${String.fromCharCode(65 + i)}`,
@@ -454,9 +461,213 @@ export async function garantirPlanoSemanalInteligente(userId: string, referencia
       incluirCardio: true,
       incluirAlongamento: true
     })
+    treinos.push(treino)
   }
+  
+  return treinos
 }
 
 export const GRUPOS_ESPECIFICOS_LISTA = Object.keys(MAPEAMENTO_GRUPOS_ESPECIFICOS)
 
+// ============================================================================
+// FUNCOES PARA TREINOS MANUAIS/PERSONALIZADOS
+// ============================================================================
+
+export interface ExercicioTreinoInput {
+  exercicioId: string
+  ordem: number
+  series: number
+  repeticoes: string
+  carga?: number | null
+  rpe?: number | null
+  descanso?: number | null
+  observacoes?: string | null
+}
+
+export interface CriarTreinoManualInput {
+  data: Date
+  nome: string
+  exercicios: ExercicioTreinoInput[]
+  tipo?: string
+  letraTreino?: string
+  criadoPor?: 'IA' | 'USUARIO' | 'TEMPLATE' | 'RECORRENTE'
+  diaSemana?: number
+  recorrente?: boolean
+}
+
+/**
+ * Cria treino personalizado manual
+ */
+export async function criarTreinoPersonalizadoManual(
+  userId: string,
+  input: CriarTreinoManualInput
+): Promise<any> {
+  if (!input.nome || input.nome.trim() === '') {
+    throw new Error('Nome do treino é obrigatório')
+  }
+
+  if (!input.exercicios || input.exercicios.length === 0) {
+    throw new Error('Treino deve ter pelo menos um exercício')
+  }
+
+  const dataTreino = normalizarData(input.data)
+
+  // Remover treino existente para a data
+  await prisma.treino.deleteMany({
+    where: {
+      userId,
+      data: {
+        gte: dataTreino,
+        lte: new Date(dataTreino.getTime() + 24 * 60 * 60 * 1000 - 1)
+      }
+    }
+  })
+
+  // Criar treino
+  const treino = await prisma.treino.create({
+    data: {
+      userId,
+      data: dataTreino,
+      tipo: input.tipo || 'Treino Personalizado',
+      nome: input.nome,
+      criadoPor: input.criadoPor || 'USUARIO',
+      letraTreino: input.letraTreino,
+      diaSemana: input.diaSemana,
+      recorrente: input.recorrente || false,
+      concluido: false,
+      tempoEstimado: input.exercicios.length * 10
+    }
+  })
+
+  // Criar exercícios
+  for (const ex of input.exercicios) {
+    await prisma.exercicioTreino.create({
+      data: {
+        treinoId: treino.id,
+        exercicioId: ex.exercicioId,
+        ordem: ex.ordem,
+        series: ex.series,
+        repeticoes: ex.repeticoes,
+        carga: ex.carga,
+        rpe: ex.rpe,
+        descanso: ex.descanso,
+        observacoes: ex.observacoes,
+        concluido: false
+      }
+    })
+  }
+
+  return prisma.treino.findUnique({
+    where: { id: treino.id },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  })
+}
+
+/**
+ * Aplica template personalizado em uma data
+ */
+export async function aplicarTemplatePersonalizado(
+  userId: string,
+  templateId: string,
+  data: Date
+): Promise<{ treino: any; mensagem: string }> {
+  const template = await prisma.treinoPersonalizadoTemplate.findFirst({
+    where: { id: templateId, userId },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  })
+
+  if (!template) {
+    throw new Error('Template não encontrado')
+  }
+
+  const exercicios = template.exercicios.map((ex: any) => ({
+    exercicioId: ex.exercicioId,
+    ordem: ex.ordem,
+    series: ex.series,
+    repeticoes: ex.repeticoes,
+    carga: ex.carga,
+    rpe: ex.rpe || null,
+    descanso: ex.descanso,
+    observacoes: ex.observacoes
+  }))
+
+  const treino = await criarTreinoPersonalizadoManual(userId, {
+    data,
+    nome: template.nome,
+    exercicios,
+    criadoPor: 'TEMPLATE'
+  })
+
+  await prisma.treino.update({
+    where: { id: treino.id },
+    data: { templateId: template.id }
+  })
+
+  return { treino, mensagem: 'Template aplicado com sucesso' }
+}
+
+/**
+ * Aplica treino recorrente (A-G) em uma data
+ */
+export async function aplicarTreinoRecorrente(
+  userId: string,
+  letraTreino: string,
+  data: Date
+): Promise<{ treino: any; mensagem: string }> {
+  const letra = letraTreino.toUpperCase()
+  if (!['A', 'B', 'C', 'D', 'E', 'F', 'G'].includes(letra)) {
+    throw new Error('Letra do treino deve ser A, B, C, D, E, F ou G')
+  }
+
+  const treinoRecorrente = await prisma.treino.findFirst({
+    where: {
+      userId,
+      criadoPor: 'USUARIO',
+      recorrente: true,
+      letraTreino: letra
+    },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  })
+
+  if (!treinoRecorrente) {
+    throw new Error(`Treino recorrente ${letra} não encontrado`)
+  }
+
+  const exercicios = treinoRecorrente.exercicios.map((ex: any) => ({
+    exercicioId: ex.exercicioId,
+    ordem: ex.ordem,
+    series: ex.series,
+    repeticoes: ex.repeticoes,
+    carga: ex.carga,
+    rpe: ex.rpe,
+    descanso: ex.descanso,
+    observacoes: ex.observacoes
+  }))
+
+  const treino = await criarTreinoPersonalizadoManual(userId, {
+    data,
+    nome: treinoRecorrente.nome,
+    exercicios,
+    tipo: treinoRecorrente.tipo || undefined,
+    letraTreino: letra,
+    criadoPor: 'RECORRENTE'
+  })
+
+  return { treino, mensagem: `Treino recorrente ${letra} aplicado com sucesso` }
+}
 

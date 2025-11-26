@@ -27,14 +27,7 @@ import {
   buscarTemplatePersonalizado,
   editarTemplatePersonalizado,
   deletarTemplatePersonalizado,
-  aplicarTemplatePersonalizado,
-  listarTreinosRecorrentes,
-  buscarTreinoRecorrente,
-  criarOuEditarTreinoRecorrente,
-  aplicarTreinoRecorrente,
-  buscarConfiguracaoTreinoPadrao,
-  configurarTreinoPadrao,
-  removerConfiguracaoTreinoPadrao
+  aplicarTemplatePersonalizado
 } from '../controllers/treino-personalizado.controller';
 import {
   criarTreinoRapido,
@@ -96,17 +89,6 @@ router.get('/template/:id', buscarTemplatePersonalizado);
 router.put('/template/:id', editarTemplatePersonalizado);
 router.delete('/template/:id', deletarTemplatePersonalizado);
 router.post('/template/:id/aplicar', aplicarTemplatePersonalizado);
-
-// Rotas de treinos recorrentes (A-G)
-router.get('/recorrente', listarTreinosRecorrentes);
-router.get('/recorrente/:letra', buscarTreinoRecorrente);
-router.post('/recorrente', criarOuEditarTreinoRecorrente);
-router.post('/recorrente/:letra/aplicar', aplicarTreinoRecorrente);
-
-// Rotas de configuração de treino padrão
-router.get('/configuracao', buscarConfiguracaoTreinoPadrao);
-router.post('/configuracao', configurarTreinoPadrao);
-router.delete('/configuracao/:diaSemana', removerConfiguracaoTreinoPadrao);
 
 // Rotas de treino rápido
 router.post('/rapido', criarTreinoRapido);
