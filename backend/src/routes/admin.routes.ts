@@ -24,12 +24,13 @@ import {
   listarGruposAdmin,
   criarGrupoAdmin,
   atualizarGrupoAdmin,
-  removerGrupoAdmin
+  removerGrupoAdmin,
+  uploadImagemGrupoAdmin
 } from '../controllers/grupo-muscular.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadGif, uploadGifsBulk } from '../middleware/upload.middleware';
+import { uploadGif, uploadGifsBulk, uploadImagemGrupo } from '../middleware/upload.middleware';
 
 const router = Router();
 
@@ -249,6 +250,26 @@ router.put(
   atualizarGrupoAdmin
 );
 router.delete('/grupos-musculares/:id', removerGrupoAdmin);
+
+// Upload de imagem de grupo muscular
+router.post(
+  '/grupos-musculares/:id/imagem',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    uploadImagemGrupo.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  uploadImagemGrupoAdmin
+);
 
 // Endpoint para verificar status de todos os GIFs
 router.get('/gifs/status', verificarStatusGifs);

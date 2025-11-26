@@ -1,4 +1,5 @@
 import { Response } from 'express'
+import path from 'path'
 import { AuthRequest } from '../middleware/auth.middleware'
 import {
   listarGruposVisuaisAdmin,
@@ -6,6 +7,7 @@ import {
   atualizarGrupoVisual,
   removerGrupoVisual
 } from '../services/grupo-muscular-visual.service'
+import { prisma } from '../lib/prisma'
 
 export const listarGruposAdmin = async (req: AuthRequest, res: Response) => {
   try {
@@ -53,4 +55,57 @@ export const removerGrupoAdmin = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Erro ao remover grupo muscular', message: error.message })
   }
 }
+
+export const uploadImagemGrupoAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+
+    if (!id) {
+      return res.status(400).json({ error: 'ID do grupo é obrigatório' })
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhum arquivo enviado' })
+    }
+
+    // Verificar se grupo existe
+    const grupo = await prisma.grupoMuscularVisual.findUnique({
+      where: { id },
+      select: { id: true, nome: true }
+    })
+
+    if (!grupo) {
+      return res.status(404).json({ error: 'Grupo muscular não encontrado' })
+    }
+
+    const ext = path.extname(req.file.filename).toLowerCase() || '.jpg'
+    const imagemUrl = `/api/uploads/grupos-musculares/${id}/capa${ext}`
+
+    const grupoAtualizado = await prisma.grupoMuscularVisual.update({
+      where: { id },
+      data: { imagemUrl },
+      select: {
+        id: true,
+        nome: true,
+        slug: true,
+        descricao: true,
+        imagemUrl: true,
+        ativo: true,
+        ordem: true
+      }
+    })
+
+    res.json({
+      message: 'Imagem atualizada com sucesso',
+      grupo: grupoAtualizado
+    })
+  } catch (error: any) {
+    console.error('Erro ao fazer upload da imagem do grupo muscular:', error)
+    res.status(500).json({
+      error: 'Erro ao fazer upload da imagem',
+      message: error.message
+    })
+  }
+}
+
 

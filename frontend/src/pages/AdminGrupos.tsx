@@ -20,6 +20,7 @@ export default function AdminGrupos() {
   const [loading, setLoading] = useState(true)
   const [formData, setFormData] = useState(formInicial)
   const [salvando, setSalvando] = useState(false)
+  const [uploadingImagem, setUploadingImagem] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -228,6 +229,72 @@ export default function AdminGrupos() {
                   className="w-full rounded-2xl bg-dark border border-white/10 px-4 py-2 focus:ring-2 focus:ring-primary/40 outline-none"
                   placeholder="https://"
                 />
+                <span className="text-xs text-white/40">
+                  Você pode informar uma URL direta ou enviar um arquivo logo abaixo.
+                </span>
+              </label>
+              
+              <label className="text-sm text-white/70 block space-y-2">
+                <span>Upload da imagem</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={uploadingImagem}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+
+                    if (!editingId) {
+                      showToast('Salve o grupo antes de enviar uma imagem.', 'error')
+                      e.target.value = ''
+                      return
+                    }
+
+                    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+                    if (!validTypes.includes(file.type)) {
+                      showToast('Use JPG, PNG ou WEBP.', 'error')
+                      e.target.value = ''
+                      return
+                    }
+
+                    if (file.size > 5 * 1024 * 1024) {
+                      showToast('Arquivo muito grande. Tamanho máximo: 5MB', 'error')
+                      e.target.value = ''
+                      return
+                    }
+
+                    try {
+                      setUploadingImagem(true)
+                      const form = new FormData()
+                      form.append('imagem', file)
+
+                      const response = await api.post(`/admin/grupos-musculares/${editingId}/imagem`, form)
+                      const grupoAtualizado = response.data.grupo as GrupoMuscularVisual
+                      
+                      setFormData((prev) => ({
+                        ...prev,
+                        imagemUrl: grupoAtualizado.imagemUrl || prev.imagemUrl
+                      }))
+
+                      await carregarGrupos()
+                      showToast('Imagem enviada com sucesso!', 'success')
+                    } catch (error: any) {
+                      console.error('Erro ao fazer upload da imagem do grupo:', error)
+                      const message =
+                        error.response?.data?.error ||
+                        error.response?.data?.message ||
+                        'Erro ao enviar imagem do grupo muscular'
+                      showToast(message, 'error')
+                    } finally {
+                      setUploadingImagem(false)
+                      e.target.value = ''
+                    }
+                  }}
+                  className="w-full rounded-2xl bg-dark border border-dashed border-white/15 px-4 py-2 cursor-pointer file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-primary/90 file:text-dark file:text-xs"
+                />
+                <span className="text-xs text-white/40">
+                  Formatos aceitos: JPG, PNG, WEBP • Tamanho máximo: 5MB.
+                </span>
               </label>
               <label className="text-sm text-white/70 block space-y-2">
                 <span>Ordem</span>

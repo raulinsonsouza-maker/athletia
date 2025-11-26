@@ -300,7 +300,17 @@ export async function buscarPlanoAtual(userId: string) {
   }
 
   const blocos = treinos.map((treino) => {
-    const gruposPrincipais = extrairGruposPrincipais(treino.exercicios);
+    // Remover exercícios duplicados (mesmo exercicioId) dentro do mesmo treino
+    const vistos = new Set<string>()
+    const exerciciosUnicos = treino.exercicios.filter((ex: any) => {
+      const key = ex.exercicioId || ex.exercicio?.id
+      if (!key) return true
+      if (vistos.has(key)) return false
+      vistos.add(key)
+      return true
+    })
+
+    const gruposPrincipais = extrairGruposPrincipais(exerciciosUnicos)
     
     return {
       id: treino.id,
@@ -308,9 +318,9 @@ export async function buscarPlanoAtual(userId: string) {
       data: treino.data,
       letraTreino: treino.letraTreino,
       gruposPrincipais,
-      totalExercicios: treino.exercicios.length,
+      totalExercicios: exerciciosUnicos.length,
       imagem: obterImagemTreino(gruposPrincipais, genero),
-      exercicios: treino.exercicios.map(ex => ({
+      exercicios: exerciciosUnicos.map(ex => ({
         id: ex.id,
         nome: ex.exercicio.nome,
         grupo: ex.exercicio.grupoMuscularPrincipal,
