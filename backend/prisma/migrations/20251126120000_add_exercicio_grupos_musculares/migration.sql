@@ -3,9 +3,9 @@ CREATE TYPE "PapelGrupoMuscular" AS ENUM ('PRINCIPAL', 'SINERGISTA');
 
 -- CreateTable
 CREATE TABLE "exercicios_grupos_musculares" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "exercicio_id" TEXT NOT NULL,
-    "grupo_visual_id" TEXT NOT NULL,
+    "grupo_visual_id" UUID NOT NULL,
     "papel" "PapelGrupoMuscular" NOT NULL DEFAULT 'PRINCIPAL',
     "ordem" INTEGER DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

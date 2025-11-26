@@ -142,7 +142,7 @@ model Exercicio {
 }
 
 model GrupoMuscularVisual {
-  id         String   @id @default(uuid())
+  id         String   @id @default(uuid()) @db.Uuid
   nome       String
   slug       String   @unique
   descricao  String?
@@ -158,9 +158,9 @@ model GrupoMuscularVisual {
 }
 
 model ExercicioGrupoMuscular {
-  id            String                @id @default(uuid())
+  id            String                @id @default(uuid()) @db.Uuid
   exercicioId   String                @map("exercicio_id")
-  grupoVisualId String                @map("grupo_visual_id")
+  grupoVisualId String                @map("grupo_visual_id") @db.Uuid
   papel         PapelGrupoMuscular    @default(PRINCIPAL)
   ordem         Int?                  @default(0)
   createdAt     DateTime              @default(now()) @map("created_at")
