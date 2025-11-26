@@ -92,7 +92,7 @@ export default function TreinoRapidoSelecaoGrupos() {
                 key={grupo.slug}
                 onClick={() => !carregando && toggleGrupo(grupo.nome)}
                 disabled={carregando}
-                className={`aspect-square rounded-3xl border transition-all duration-200 flex flex-col items-center justify-end overflow-hidden ${
+                className={`relative aspect-square rounded-3xl border transition-all duration-200 flex flex-col items-center justify-end overflow-hidden ${
                   ativo
                     ? 'border-primary/70 bg-primary/10 shadow-[0_0_30px_rgba(249,166,32,0.25)]'
                     : 'border-white/10 bg-white/5'

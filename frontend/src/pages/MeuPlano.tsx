@@ -7,6 +7,12 @@ import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 
+const IconeSeparador = ({ className = 'w-1.5 h-1.5 text-white/40' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
+    <circle cx="4" cy="4" r="4" />
+  </svg>
+)
+
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
     <span className="text-xs uppercase tracking-[0.3em] text-white/50">{label}</span>
@@ -100,9 +106,11 @@ export default function MeuPlano() {
                   Próximo treino
                 </p>
                 <h2 className="text-2xl font-bold">{homeData.destaquePlanoAtual.titulo}</h2>
-                <p className="text-sm text-white/70">
-                  {homeData.destaquePlanoAtual.duracao} min • {homeData.destaquePlanoAtual.local}
-                </p>
+                <div className="text-sm text-white/70 flex items-center gap-2">
+                  <span>{homeData.destaquePlanoAtual.duracao} min</span>
+                  <IconeSeparador />
+                  <span>{homeData.destaquePlanoAtual.local}</span>
+                </div>
               </div>
             </div>
             <div className="p-4 flex gap-3">

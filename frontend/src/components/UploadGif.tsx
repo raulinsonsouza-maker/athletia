@@ -9,6 +9,12 @@ interface UploadGifProps {
   onUploadSuccess: () => void
 }
 
+const IconeSeparador = ({ className = 'w-1.5 h-1.5 text-light-muted' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
+    <circle cx="4" cy="4" r="4" />
+  </svg>
+)
+
 export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUploadSuccess }: UploadGifProps) {
   const { showToast } = useToast()
   const [uploading, setUploading] = useState(false)
@@ -145,9 +151,11 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
           )}
         </label>
         {!gifFullUrl && (
-          <p className="text-xs text-light-muted mt-2 text-center">
-            Formatos aceitos: GIF, Imagem ou Vídeo • Tamanho máximo: 5MB
-          </p>
+          <div className="text-xs text-light-muted mt-2 text-center flex items-center justify-center gap-2">
+            <span>Formatos aceitos: GIF, Imagem ou Vídeo</span>
+            <IconeSeparador className="w-1.5 h-1.5 text-light-muted/60" />
+            <span>Tamanho máximo: 5MB</span>
+          </div>
         )}
       </div>
 

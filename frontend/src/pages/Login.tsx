@@ -133,7 +133,7 @@ export default function Login() {
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   className="w-full bg-transparent px-4 py-3 pr-12 text-base text-white placeholder-white/40 focus:outline-none"
-                  placeholder="••••••••"
+                  placeholder="********"
                   required
                   disabled={loading}
                 />

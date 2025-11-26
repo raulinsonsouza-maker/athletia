@@ -116,7 +116,7 @@ export default function AdminLogin() {
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 className="input-field pr-10"
-                placeholder="••••••••"
+                placeholder="********"
                 required
                 disabled={loading}
               />

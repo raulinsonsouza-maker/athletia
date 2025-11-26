@@ -286,7 +286,7 @@ export async function selecionarExercicioAerobicoDoDia(data: Date): Promise<any>
  * Adiciona os exercícios faltantes se necessário
  */
 export async function garantirCardioEAlongamento(treinoId: string, data: Date): Promise<{ cardioAdicionado: boolean; alongamentoAdicionado: boolean }> {
-  logDebug(`🔍 Verificando cardio e alongamento para treino ${treinoId}...`);
+  logDebug(`[INFO] Verificando cardio e alongamento para treino ${treinoId}...`);
   
   // Buscar treino com exercícios
   const treino = await prisma.treino.findUnique({
@@ -300,7 +300,7 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
   });
 
   if (!treino) {
-    console.error(`❌ Treino ${treinoId} não encontrado`);
+    console.error(`[ERROR] Treino ${treinoId} não encontrado`);
     return { cardioAdicionado: false, alongamentoAdicionado: false };
   }
 
@@ -337,12 +337,12 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
         }
       });
       cardioAdicionado = true;
-      logDebug(`✅ Exercício de cardio adicionado: ${exercicioAerobico.nome}`);
+      logDebug(`[OK] Exercício de cardio adicionado: ${exercicioAerobico.nome}`);
     } catch (error: any) {
-      console.error(`❌ Erro ao adicionar exercício de cardio:`, error.message);
+      console.error(`[ERROR] Erro ao adicionar exercício de cardio:`, error.message);
     }
   } else {
-    logDebug(`✅ Treino já possui exercício de cardio`);
+    logDebug(`[OK] Treino já possui exercício de cardio`);
   }
 
   // Adicionar alongamento se não tiver (sempre último)
@@ -365,12 +365,12 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
         }
       });
       alongamentoAdicionado = true;
-      logDebug(`✅ Exercício de alongamento adicionado`);
+      logDebug(`[OK] Exercício de alongamento adicionado`);
     } catch (error: any) {
-      console.error(`❌ Erro ao adicionar exercício de alongamento:`, error.message);
+      console.error(`[ERROR] Erro ao adicionar exercício de alongamento:`, error.message);
     }
   } else {
-    logDebug(`✅ Treino já possui exercício de alongamento`);
+    logDebug(`[OK] Treino já possui exercício de alongamento`);
   }
 
   // Sempre reordenar exercícios: cardio = 0, força no meio, alongamento = último
@@ -428,7 +428,7 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
  * Gera treino A: Peito + Ombro + Tríceps
  */
 async function gerarTreinoA(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  logDebug(`🏋️ Gerando Treino A (Peito + Ombro + Tríceps)...`);
+  logDebug(`[INFO] Gerando Treino A (Peito + Ombro + Tríceps)...`);
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -460,7 +460,7 @@ async function gerarTreinoA(perfil: any, ciclo: number, userId?: string): Promis
     exercicios.push(triceps);
   }
 
-  logDebug(`✅ Treino A gerado com ${exercicios.length} exercícios`);
+  logDebug(`[OK] Treino A gerado com ${exercicios.length} exercícios`);
   return exercicios;
 }
 
@@ -468,7 +468,7 @@ async function gerarTreinoA(perfil: any, ciclo: number, userId?: string): Promis
  * Gera treino B: Costas + Bíceps
  */
 async function gerarTreinoB(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  logDebug(`🏋️ Gerando Treino B (Costas + Bíceps)...`);
+  logDebug(`[INFO] Gerando Treino B (Costas + Bíceps)...`);
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -490,7 +490,7 @@ async function gerarTreinoB(perfil: any, ciclo: number, userId?: string): Promis
     exercicios.push(biceps);
   }
 
-  console.log(`✅ Treino B gerado com ${exercicios.length} exercícios`);
+  console.log(`[OK] Treino B gerado com ${exercicios.length} exercícios`);
   return exercicios;
 }
 
@@ -498,7 +498,7 @@ async function gerarTreinoB(perfil: any, ciclo: number, userId?: string): Promis
  * Gera treino C: Pernas + Abdômen
  */
 async function gerarTreinoC(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  console.log(`🏋️ Gerando Treino C (Pernas + Abdômen)...`);
+  console.log(`[INFO] Gerando Treino C (Pernas + Abdômen)...`);
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -533,7 +533,7 @@ async function gerarTreinoC(perfil: any, ciclo: number, userId?: string): Promis
     }
   }
 
-  console.log(`✅ Treino C gerado com ${exercicios.length} exercícios`);
+  console.log(`[OK] Treino C gerado com ${exercicios.length} exercícios`);
   return exercicios;
 }
 
@@ -541,7 +541,7 @@ async function gerarTreinoC(perfil: any, ciclo: number, userId?: string): Promis
  * Gera treino D: Inferiores completos (similar ao C, mas com mais volume)
  */
 async function gerarTreinoD(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  console.log(`🏋️ Gerando Treino D (Inferiores Completos)...`);
+  console.log(`[INFO] Gerando Treino D (Inferiores Completos)...`);
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -579,7 +579,7 @@ async function gerarTreinoD(perfil: any, ciclo: number, userId?: string): Promis
     exercicios.push(abdomen);
   }
 
-  console.log(`✅ Treino D gerado com ${exercicios.length} exercícios`);
+  console.log(`[OK] Treino D gerado com ${exercicios.length} exercícios`);
   return exercicios;
 }
 
@@ -587,7 +587,7 @@ async function gerarTreinoD(perfil: any, ciclo: number, userId?: string): Promis
  * Gera treino E: Superiores leves (ombros + braços)
  */
 async function gerarTreinoE(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  console.log(`🏋️ Gerando Treino E (Superiores Leves)...`);
+  console.log(`[INFO] Gerando Treino E (Superiores Leves)...`);
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -617,7 +617,7 @@ async function gerarTreinoE(perfil: any, ciclo: number, userId?: string): Promis
     exercicios.push(abdomen);
   }
 
-  console.log(`✅ Treino E gerado com ${exercicios.length} exercícios`);
+  console.log(`[OK] Treino E gerado com ${exercicios.length} exercícios`);
   return exercicios;
 }
 
@@ -625,7 +625,7 @@ async function gerarTreinoE(perfil: any, ciclo: number, userId?: string): Promis
  * Gera treino F: Full Body leve (todos os grupos com menos volume)
  */
 async function gerarTreinoF(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  console.log(`🏋️ Gerando Treino F (Full Body Leve)...`);
+  console.log(`[INFO] Gerando Treino F (Full Body Leve)...`);
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -655,7 +655,7 @@ async function gerarTreinoF(perfil: any, ciclo: number, userId?: string): Promis
     exercicios.push(abdomen);
   }
 
-  console.log(`✅ Treino F gerado com ${exercicios.length} exercícios`);
+  console.log(`[OK] Treino F gerado com ${exercicios.length} exercícios`);
   return exercicios;
 }
 
@@ -667,7 +667,7 @@ export async function gerarTreinoABC(
   data: Date,
   tipoTreino: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
 ): Promise<any | null> {
-  logDebug(`🔄 Gerando treino ${tipoTreino} para ${data.toLocaleDateString('pt-BR')}...`);
+  logDebug(`[INFO] Gerando treino ${tipoTreino} para ${data.toLocaleDateString('pt-BR')}...`);
 
   // 1. Buscar perfil
   const perfil = await prisma.perfil.findUnique({
@@ -714,7 +714,7 @@ export async function gerarTreinoABC(
   }
 
   if (exerciciosForca.length === 0) {
-    console.error(`❌ Nenhum exercício gerado para treino ${tipoTreino}`);
+    console.error(`[ERROR] Nenhum exercício gerado para treino ${tipoTreino}`);
     return null;
   }
 
@@ -729,7 +729,7 @@ export async function gerarTreinoABC(
   const validacao = validarTreinoCompleto(exerciciosForca, series);
   if (!validacao.valido) {
     console.warn('⚠️ Validação do treino encontrou problemas:');
-    validacao.erros.forEach(erro => console.warn(`  ❌ ${erro}`));
+    validacao.erros.forEach(erro => console.warn(`  [ERROR] ${erro}`));
   }
   if (validacao.avisos.length > 0) {
     validacao.avisos.forEach(aviso => console.warn(`  ⚠️ ${aviso}`));
@@ -840,7 +840,7 @@ export async function gerarTreinoABC(
     }
   });
 
-  logDebug(`✅ Treino ${tipoTreino} criado: ${treinoCompleto?.exercicios.length} exercícios - ${tempoTotal} min`);
+  logDebug(`[OK] Treino ${tipoTreino} criado: ${treinoCompleto?.exercicios.length} exercícios - ${tempoTotal} min`);
   return treinoCompleto;
 }
 
@@ -851,7 +851,7 @@ export async function gerarTreinoDoDia(
   userId: string,
   data: Date = new Date()
 ): Promise<any> {
-  logDebug(`🔄 Gerando treino para ${data.toLocaleDateString('pt-BR')}...`);
+  logDebug(`[INFO] Gerando treino para ${data.toLocaleDateString('pt-BR')}...`);
 
   // 1. Buscar perfil
   const perfil = await prisma.perfil.findUnique({
@@ -864,7 +864,7 @@ export async function gerarTreinoDoDia(
 
   // 2. Tentar usar template primeiro
   if (perfil.objetivo && perfil.experiencia && perfil.frequenciaSemanal) {
-    logDebug(`📋 Tentando usar template pré-estruturado...`);
+    logDebug(`[INFO] Tentando usar template pré-estruturado...`);
     
     try {
       const template = await buscarTemplateAdequado(
@@ -875,7 +875,7 @@ export async function gerarTreinoDoDia(
       );
 
       if (template && template.exercicios.length > 0) {
-        logDebug(`✅ Template encontrado, adaptando...`);
+        logDebug(`[OK] Template encontrado, adaptando...`);
         
         const exerciciosAdaptados = await adaptarTemplate(
           template,
@@ -893,7 +893,7 @@ export async function gerarTreinoDoDia(
             data
           );
           
-          logDebug(`✅ Treino criado a partir do template!`);
+          logDebug(`[OK] Treino criado a partir do template!`);
           // Definir treino gerado como ativo
           try {
             await definirTreinoAtivo(userId, treino.id);
@@ -909,7 +909,7 @@ export async function gerarTreinoDoDia(
   }
 
   // 3. Se não encontrou template ou falhou, usar método antigo (fallback)
-  logDebug(`📋 Usando método de geração dinâmica (fallback)...`);
+  logDebug(`[INFO] Usando método de geração dinâmica (fallback)...`);
 
   // NOTA: Remoção de treinos existentes é feita pela função centralizada (treino-gerador.service.ts)
   // Esta função apenas gera o treino, assumindo que o treino anterior já foi removido
@@ -921,7 +921,7 @@ export async function gerarTreinoDoDia(
     data
   );
   
-  logDebug(`💪 Grupos do dia: ${gruposDoDia.join(', ')}`);
+  logDebug(`[INFO] Grupos do dia: ${gruposDoDia.join(', ')}`);
 
   // 4. Filtrar grupos com base em lesões
   const gruposPermitidos = filtrarGruposPorLesoes(gruposDoDia, perfil.lesoes || []);
@@ -931,8 +931,8 @@ export async function gerarTreinoDoDia(
   }
 
   // 5. Buscar exercícios (SIMPLIFICADO)
-  logDebug(`\n🔍 Iniciando busca de exercícios...`);
-  logDebug(`📋 Grupos permitidos: ${gruposPermitidos.join(', ')}`);
+  logDebug(`\n[INFO] Iniciando busca de exercícios...`);
+  logDebug(`[INFO] Grupos permitidos: ${gruposPermitidos.join(', ')}`);
   
   const exerciciosSelecionados = await buscarExerciciosSimples(
     gruposPermitidos,
@@ -945,12 +945,12 @@ export async function gerarTreinoDoDia(
 
   if (exerciciosSelecionados.length === 0) {
     const totalExercicios = await prisma.exercicio.count({ where: { ativo: true } });
-    console.error(`❌ Nenhum exercício encontrado!`);
-    console.error(`❌ Total de exercícios no sistema: ${totalExercicios}`);
-    console.error(`❌ Grupos buscados: ${gruposPermitidos.join(', ')}`);
-    console.error(`❌ Experiência: ${perfil.experiencia || 'Iniciante'}`);
-    console.error(`❌ Equipamentos: ${perfil.equipamentos?.join(', ') || 'Nenhum'}`);
-    console.error(`❌ Lesões: ${perfil.lesoes?.join(', ') || 'Nenhuma'}`);
+    console.error(`[ERROR] Nenhum exercício encontrado!`);
+    console.error(`[ERROR] Total de exercícios no sistema: ${totalExercicios}`);
+    console.error(`[ERROR] Grupos buscados: ${gruposPermitidos.join(', ')}`);
+    console.error(`[ERROR] Experiência: ${perfil.experiencia || 'Iniciante'}`);
+    console.error(`[ERROR] Equipamentos: ${perfil.equipamentos?.join(', ') || 'Nenhum'}`);
+    console.error(`[ERROR] Lesões: ${perfil.lesoes?.join(', ') || 'Nenhuma'}`);
     
     if (totalExercicios === 0) {
       throw new Error('Nenhum exercício cadastrado no sistema. Contate o administrador.');
@@ -964,7 +964,7 @@ export async function gerarTreinoDoDia(
       },
       take: 5
     });
-    console.error(`❌ Exercícios sem filtro de nível: ${exerciciosSemFiltro.length}`);
+    console.error(`[ERROR] Exercícios sem filtro de nível: ${exerciciosSemFiltro.length}`);
     
     throw new Error(`Nenhum exercício encontrado para os grupos: ${gruposPermitidos.join(', ')}. Verifique suas configurações ou contate o administrador.`);
   }
@@ -981,9 +981,9 @@ export async function gerarTreinoDoDia(
   const maxExercicios = calcularMaxExerciciosPorTempo(tempoDisponivel, series, descanso);
   const exerciciosFinais = exerciciosSelecionados.slice(0, maxExercicios);
   
-  logDebug(`⏱️ Tempo disponível: ${tempoDisponivel}min → Máximo de ${maxExercicios} exercícios`);
+  logDebug(`[INFO] Tempo disponível: ${tempoDisponivel}min -> Máximo de ${maxExercicios} exercícios`);
 
-  logDebug(`✅ ${exerciciosFinais.length} exercícios selecionados`);
+  logDebug(`[OK] ${exerciciosFinais.length} exercícios selecionados`);
 
   // 7. Verificar se é primeira semana (coleta de dados)
   const ehPrimeiraSemana = await verificarPrimeiraSemana(userId);
@@ -1040,9 +1040,9 @@ export async function gerarTreinoDoDia(
       }
     });
     exerciciosTreino.push(exercicioAerobicoTreino);
-    logDebug(`✅ Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
+    logDebug(`[OK] Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
   } catch (error: any) {
-    console.error(`❌ Erro ao adicionar exercício aeróbico:`, error.message);
+    console.error(`[ERROR] Erro ao adicionar exercício aeróbico:`, error.message);
   }
 
   // 10. Adicionar exercícios de força ao treino (ordem 1, 2, 3...)
@@ -1107,13 +1107,13 @@ export async function gerarTreinoDoDia(
       }
     });
     exerciciosTreino.push(exercicioAlongamentoTreino);
-    logDebug(`✅ Exercício de alongamento adicionado ÚLTIMO`);
+    logDebug(`[OK] Exercício de alongamento adicionado ÚLTIMO`);
   } catch (error: any) {
-    console.error(`❌ Erro ao adicionar exercício de alongamento:`, error.message);
+    console.error(`[ERROR] Erro ao adicionar exercício de alongamento:`, error.message);
   }
 
-  logDebug(`✅ Treino criado com sucesso! ID: ${treino.id}`);
-  logDebug(`✅ Total de exercícios no treino: ${exerciciosTreino.length}`);
+  logDebug(`[OK] Treino criado com sucesso! ID: ${treino.id}`);
+  logDebug(`[OK] Total de exercícios no treino: ${exerciciosTreino.length}`);
 
   // Buscar treino completo com exercícios
   const treinoCompleto = await prisma.treino.findUnique({
@@ -1130,7 +1130,7 @@ export async function gerarTreinoDoDia(
     throw new Error('Erro ao buscar treino criado');
   }
 
-  console.log(`✅ Treino completo retornado com ${treinoCompleto.exercicios.length} exercícios`);
+  console.log(`[OK] Treino completo retornado com ${treinoCompleto.exercicios.length} exercícios`);
 
   // Validar treino gerado (volume mínimo, distribuição de grupos)
   try {
@@ -1179,7 +1179,7 @@ function determinarGruposMuscularesSimples(
   // Iniciantes: Full Body ou A-B
   if (experiencia === 'Iniciante') {
     if (frequenciaSemanal <= 2) {
-      console.log(`✅ Full Body selecionado`);
+      console.log(`[OK] Full Body selecionado`);
       return ['Peito', 'Costas', 'Ombros', 'Bíceps', 'Tríceps', 'Quadríceps', 'Posteriores', 'Panturrilhas'];
     }
     // A-B: alterna entre superior e inferior
@@ -1187,7 +1187,7 @@ function determinarGruposMuscularesSimples(
     const grupos = ciclo === 0
       ? ['Peito', 'Costas', 'Ombros', 'Bíceps', 'Tríceps']
       : ['Quadríceps', 'Posteriores', 'Panturrilhas'];
-    console.log(`✅ A-B selecionado: ${ciclo === 0 ? 'Superiores' : 'Inferiores'}`);
+    console.log(`[OK] A-B selecionado: ${ciclo === 0 ? 'Superiores' : 'Inferiores'}`);
     return grupos;
   }
 
@@ -1198,7 +1198,7 @@ function determinarGruposMuscularesSimples(
     if (ciclo === 0) grupos = ['Quadríceps', 'Posteriores', 'Panturrilhas'];
     else if (ciclo === 1) grupos = ['Peito', 'Ombros', 'Tríceps'];
     else grupos = ['Costas', 'Bíceps', 'Abdômen'];
-    console.log(`✅ A-B-C selecionado: Ciclo ${ciclo + 1}`);
+    console.log(`[OK] A-B-C selecionado: Ciclo ${ciclo + 1}`);
     return grupos;
   }
 
@@ -1212,7 +1212,7 @@ function determinarGruposMuscularesSimples(
       else if (ciclo === 2) grupos = ['Quadríceps', 'Posteriores', 'Panturrilhas'];
       else if (ciclo === 3) grupos = ['Ombros'];
       else grupos = ['Bíceps', 'Tríceps'];
-      console.log(`✅ A-B-C-D-E selecionado: Ciclo ${ciclo + 1}`);
+      console.log(`[OK] A-B-C-D-E selecionado: Ciclo ${ciclo + 1}`);
       return grupos;
     } else if (frequenciaSemanal === 4) {
       const ciclo = (diaSemana - 1) % 4;
@@ -1221,7 +1221,7 @@ function determinarGruposMuscularesSimples(
       else if (ciclo === 1) grupos = ['Costas'];
       else if (ciclo === 2) grupos = ['Quadríceps', 'Posteriores', 'Panturrilhas'];
       else grupos = ['Ombros'];
-      console.log(`✅ A-B-C-D selecionado: Ciclo ${ciclo + 1}`);
+      console.log(`[OK] A-B-C-D selecionado: Ciclo ${ciclo + 1}`);
       return grupos;
     } else {
       // Push Pull Legs
@@ -1230,7 +1230,7 @@ function determinarGruposMuscularesSimples(
       if (ciclo === 0) grupos = ['Peito', 'Ombros', 'Tríceps'];
       else if (ciclo === 1) grupos = ['Costas', 'Bíceps'];
       else grupos = ['Quadríceps', 'Posteriores', 'Panturrilhas'];
-      console.log(`✅ Push Pull Legs selecionado: Ciclo ${ciclo + 1}`);
+      console.log(`[OK] Push Pull Legs selecionado: Ciclo ${ciclo + 1}`);
       return grupos;
     }
   }
@@ -1241,7 +1241,7 @@ function determinarGruposMuscularesSimples(
   if (ciclo === 0) grupos = ['Quadríceps', 'Posteriores', 'Panturrilhas'];
   else if (ciclo === 1) grupos = ['Peito', 'Ombros', 'Tríceps'];
   else grupos = ['Costas', 'Bíceps', 'Abdômen'];
-  console.log(`✅ Default A-B-C selecionado: Ciclo ${ciclo + 1}`);
+  console.log(`[OK] Default A-B-C selecionado: Ciclo ${ciclo + 1}`);
   return grupos;
 }
 
@@ -1277,9 +1277,9 @@ async function buscarExerciciosSimples(
   equipamentos: string[],
   lesoes: string[]
 ): Promise<any[]> {
-  logDebug(`🔍 Buscando exercícios para grupos: ${grupos.join(', ')}`);
+  logDebug(`[INFO] Buscando exercícios para grupos: ${grupos.join(', ')}`);
   logDebug(`📊 Experiência: ${experiencia}`);
-  logDebug(`🏋️ Equipamentos: ${equipamentos.join(', ') || 'Nenhum'}`);
+  logDebug(`[INFO] Equipamentos: ${equipamentos.join(', ') || 'Nenhum'}`);
   logDebug(`⚠️ Lesões: ${lesoes.join(', ') || 'Nenhuma'}`);
 
   const niveisPermitidos = experiencia === 'Iniciante' 
@@ -1288,7 +1288,7 @@ async function buscarExerciciosSimples(
     ? ['Iniciante', 'Intermediário']
     : ['Iniciante', 'Intermediário', 'Avançado'];
 
-  logDebug(`📋 Níveis permitidos: ${niveisPermitidos.join(', ')}`);
+  logDebug(`[INFO] Níveis permitidos: ${niveisPermitidos.join(', ')}`);
 
   // Otimização: Buscar todos os exercícios dos grupos de uma vez (evita queries N+1)
   // PRIMEIRA TENTATIVA: Buscar com todos os filtros
@@ -1361,7 +1361,7 @@ async function buscarExerciciosSimples(
                equipamentos.some(eq => ex.equipamentoNecessario.includes(eq));
       });
       
-      logDebug(`  🏋️ Após filtro de equipamentos: ${exerciciosComEquipamento.length} exercícios`);
+      logDebug(`  [INFO] Após filtro de equipamentos: ${exerciciosComEquipamento.length} exercícios`);
       
       // Se encontrou exercícios com equipamentos, usar esses
       if (exerciciosComEquipamento.length > 0) {
@@ -1392,10 +1392,10 @@ async function buscarExerciciosSimples(
     // Adicionar 1-2 exercícios por grupo
     if (exerciciosGrupo.length > 0) {
       const selecionados = exerciciosGrupo.slice(0, 2);
-      logDebug(`  ✅ Selecionados ${selecionados.length} exercícios: ${selecionados.map(e => e.nome).join(', ')}`);
+      logDebug(`  [OK] Selecionados ${selecionados.length} exercícios: ${selecionados.map(e => e.nome).join(', ')}`);
       exercicios.push(...selecionados);
     } else {
-      logDebug(`  ❌ Nenhum exercício disponível para ${grupo} após todos os filtros`);
+      logDebug(`  [ERROR] Nenhum exercício disponível para ${grupo} após todos os filtros`);
     }
   }
 
@@ -1404,7 +1404,7 @@ async function buscarExerciciosSimples(
     index === self.findIndex(e => e.id === ex.id)
   );
 
-  logDebug(`\n✅ Total de exercícios únicos selecionados: ${unicos.length}`);
+  logDebug(`\n[OK] Total de exercícios únicos selecionados: ${unicos.length}`);
   return unicos;
 }
 
@@ -1530,20 +1530,20 @@ function calcularMaxExerciciosPorTempo(tempoDisponivel: number, series: number, 
  * Determina tipo de treino (A, B ou C) baseado na divisão e ciclo
  */
 function determinarTipoTreinoABC(divisao: string, ciclo: number): 'A' | 'B' | 'C' | 'D' | 'E' | 'F' {
-  console.log(`🔍 determinarTipoTreinoABC: divisao="${divisao}", ciclo=${ciclo}`);
+  console.log(`[INFO] determinarTipoTreinoABC: divisao="${divisao}", ciclo=${ciclo}`);
   
   if (divisao === 'A') {
-    console.log(`  → A: sempre tipo A`);
+    console.log(`  -> A: sempre tipo A`);
     return 'A';
   } else if (divisao === 'A-B') {
     const cicloMod = ciclo % 2;
     const tipo = cicloMod === 0 ? 'A' : 'B';
-    console.log(`  → A-B: cicloMod=${cicloMod}, tipo=${tipo}`);
+    console.log(`  -> A-B: cicloMod=${cicloMod}, tipo=${tipo}`);
     return tipo;
   } else if (divisao === 'A-B-C') {
     const cicloMod = ciclo % 3;
     const tipo = cicloMod === 0 ? 'A' : cicloMod === 1 ? 'B' : 'C';
-    console.log(`  → A-B-C: cicloMod=${cicloMod}, tipo=${tipo}`);
+    console.log(`  -> A-B-C: cicloMod=${cicloMod}, tipo=${tipo}`);
     return tipo;
   } else if (divisao === 'A-B-C-D') {
     const cicloMod = ciclo % 4;
@@ -1552,7 +1552,7 @@ function determinarTipoTreinoABC(divisao: string, ciclo: number): 'A' | 'B' | 'C
     else if (cicloMod === 1) tipo = 'B';
     else if (cicloMod === 2) tipo = 'C';
     else tipo = 'D';
-    console.log(`  → A-B-C-D: cicloMod=${cicloMod}, tipo=${tipo}`);
+    console.log(`  -> A-B-C-D: cicloMod=${cicloMod}, tipo=${tipo}`);
     return tipo;
   } else if (divisao === 'A-B-C-D-E') {
     const cicloMod = ciclo % 5;
@@ -1562,7 +1562,7 @@ function determinarTipoTreinoABC(divisao: string, ciclo: number): 'A' | 'B' | 'C
     else if (cicloMod === 2) tipo = 'C';
     else if (cicloMod === 3) tipo = 'D';
     else tipo = 'E';
-    console.log(`  → A-B-C-D-E: cicloMod=${cicloMod}, tipo=${tipo}`);
+    console.log(`  -> A-B-C-D-E: cicloMod=${cicloMod}, tipo=${tipo}`);
     return tipo;
   } else if (divisao === 'A-B-C-D-E-F') {
     const cicloMod = ciclo % 6;
@@ -1573,14 +1573,14 @@ function determinarTipoTreinoABC(divisao: string, ciclo: number): 'A' | 'B' | 'C
     else if (cicloMod === 3) tipo = 'D';
     else if (cicloMod === 4) tipo = 'E';
     else tipo = 'F';
-    console.log(`  → A-B-C-D-E-F: cicloMod=${cicloMod}, tipo=${tipo}`);
+    console.log(`  -> A-B-C-D-E-F: cicloMod=${cicloMod}, tipo=${tipo}`);
     return tipo;
   }
   
   // Default: A-B-C
   const cicloMod = ciclo % 3;
   const tipo = cicloMod === 0 ? 'A' : cicloMod === 1 ? 'B' : 'C';
-  console.log(`  → Padrão (A-B-C): cicloMod=${cicloMod}, tipo=${tipo}`);
+  console.log(`  -> Padrão (A-B-C): cicloMod=${cicloMod}, tipo=${tipo}`);
   return tipo;
 }
 
@@ -1588,7 +1588,7 @@ function determinarTipoTreinoABC(divisao: string, ciclo: number): 'A' | 'B' | 'C
  * Gera treinos para os próximos 30 dias usando lógica ABC determinística
  */
 export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
-  console.log(`🔄 Gerando treinos para 30 dias usando lógica ABC determinística - UserId: ${userId}`);
+  console.log(`[INFO] Gerando treinos para 30 dias usando lógica ABC determinística - UserId: ${userId}`);
   
   const perfil = await prisma.perfil.findUnique({ where: { userId } });
   if (!perfil) {
@@ -1605,7 +1605,7 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
 
   // 3. Determinar divisão de treino
   const divisao = determinarDivisaoTreino(frequenciaSemanal);
-  console.log(`📋 Divisão de treino: ${divisao}`);
+  console.log(`[INFO] Divisão de treino: ${divisao}`);
 
   // 4. Determinar dias de treino na semana
   const diasTreino: number[] = [];
@@ -1651,12 +1651,12 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
   });
 
   let ciclo = treinosPassados.length;
-  console.log(`🔄 Ciclo inicial: ${ciclo} (${treinosPassados.length} treinos passados válidos de ${treinosValidos.length} total)`);
+  console.log(`[INFO] Ciclo inicial: ${ciclo} (${treinosPassados.length} treinos passados válidos de ${treinosValidos.length} total)`);
   
   // Log dos tipos dos treinos passados para debug
   if (treinosPassados.length > 0) {
     const tiposPassados = treinosPassados.map(t => `${t.tipo || 'N/A'}`).join(', ');
-    console.log(`📋 Tipos dos treinos passados: ${tiposPassados}`);
+    console.log(`[INFO] Tipos dos treinos passados: ${tiposPassados}`);
   }
 
   // 6. Gerar treinos para os próximos 30 dias
@@ -1676,13 +1676,13 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
         
         // Determinar tipo de treino (A, B ou C) baseado no ciclo
         const tipoTreino = determinarTipoTreinoABC(divisao, ciclo);
-        console.log(`💪 Dia ${dataTreino.toLocaleDateString('pt-BR')} - Divisão: ${divisao} - Ciclo: ${ciclo} - Tipo calculado: ${tipoTreino}`);
+        console.log(`[INFO] Dia ${dataTreino.toLocaleDateString('pt-BR')} - Divisão: ${divisao} - Ciclo: ${ciclo} - Tipo calculado: ${tipoTreino}`);
 
         // Gerar treino usando nova lógica ABC
         const treino = await gerarTreinoABC(userId, dataTreino, tipoTreino);
 
         if (!treino || !treino.exercicios || treino.exercicios.length === 0) {
-          console.error(`❌ Treino criado sem exercícios para ${dataTreino.toLocaleDateString('pt-BR')} - Ciclo NÃO incrementado (${ciclo})`);
+          console.error(`[ERROR] Treino criado sem exercícios para ${dataTreino.toLocaleDateString('pt-BR')} - Ciclo NÃO incrementado (${ciclo})`);
           continue;
         }
 
@@ -1701,15 +1701,15 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
           ex.exercicio?.grupoMuscularPrincipal === 'Flexibilidade'
         );
 
-        console.log(`✅ Treino criado: ${dataTreino.toLocaleDateString('pt-BR')} - ${treino.exercicios.length} exercícios (${exerciciosForca.length} força, ${exerciciosCardio.length} cardio, ${exerciciosAlongamento.length} alongamento) - Tipo: ${tipoTreino} - Ciclo: ${ciclo}`);
+        console.log(`[OK] Treino criado: ${dataTreino.toLocaleDateString('pt-BR')} - ${treino.exercicios.length} exercícios (${exerciciosForca.length} força, ${exerciciosCardio.length} cardio, ${exerciciosAlongamento.length} alongamento) - Tipo: ${tipoTreino} - Ciclo: ${ciclo}`);
       } catch (error: any) {
-        console.error(`❌ Erro ao gerar treino para ${dataTreino.toLocaleDateString('pt-BR')}:`, error.message);
+        console.error(`[ERROR] Erro ao gerar treino para ${dataTreino.toLocaleDateString('pt-BR')}:`, error.message);
         console.error(error.stack);
       }
     }
   }
 
-  console.log(`✅ Gerados ${treinosGerados} treinos usando lógica ABC determinística`);
+  console.log(`[OK] Gerados ${treinosGerados} treinos usando lógica ABC determinística`);
   
   // Resumo final
   if (treinos.length > 0) {
@@ -1748,13 +1748,13 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
     if (treinosSemCardio.length > 0) {
       console.warn(`   ⚠️ ${treinosSemCardio.length} treinos sem exercício de cardio`);
     } else {
-      console.log(`   ✅ Todos os treinos têm exercício de cardio`);
+      console.log(`   [OK] Todos os treinos têm exercício de cardio`);
     }
     
     if (treinosSemAlongamento.length > 0) {
       console.warn(`   ⚠️ ${treinosSemAlongamento.length} treinos sem exercício de alongamento`);
     } else {
-      console.log(`   ✅ Todos os treinos têm exercício de alongamento`);
+      console.log(`   [OK] Todos os treinos têm exercício de alongamento`);
     }
     
     console.log(`\n`);
@@ -1768,7 +1768,7 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
  * Fallback: Gera treinos usando método dinâmico (método antigo)
  */
 async function gerarTreinos30DiasFallback(userId: string): Promise<any[]> {
-  console.log(`🔄 Usando método fallback (geração dinâmica)...`);
+  console.log(`[INFO] Usando método fallback (geração dinâmica)...`);
   
   const perfil = await prisma.perfil.findUnique({ where: { userId } });
   if (!perfil) {
@@ -1813,12 +1813,12 @@ async function gerarTreinos30DiasFallback(userId: string): Promise<any[]> {
           treinosGerados++;
         }
       } catch (error: any) {
-        console.error(`❌ Erro ao gerar treino para ${dataTreino.toLocaleDateString('pt-BR')}:`, error.message);
+        console.error(`[ERROR] Erro ao gerar treino para ${dataTreino.toLocaleDateString('pt-BR')}:`, error.message);
       }
     }
   }
 
-  console.log(`✅ Gerados ${treinosGerados} treinos (fallback)`);
+  console.log(`[OK] Gerados ${treinosGerados} treinos (fallback)`);
   return treinos;
 }
 
@@ -1826,7 +1826,7 @@ async function gerarTreinos30DiasFallback(userId: string): Promise<any[]> {
  * Busca treinos semanais (semana completa: domingo a domingo)
  */
 export async function buscarTreinosSemanais(userId: string): Promise<any[]> {
-  console.log(`🔍 Buscando treinos semanais - UserId: ${userId}`);
+  console.log(`[INFO] Buscando treinos semanais - UserId: ${userId}`);
   
   const perfil = await prisma.perfil.findUnique({ where: { userId } });
   if (!perfil) {
@@ -1841,7 +1841,7 @@ export async function buscarTreinosSemanais(userId: string): Promise<any[]> {
 
   // Se modoTreino for null, usar "IA" como padrão
   const modoTreino = user?.modoTreino || 'IA';
-  console.log(`📋 Modo de treino do usuário: ${modoTreino}`);
+  console.log(`[INFO] Modo de treino do usuário: ${modoTreino}`);
 
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
@@ -1886,17 +1886,17 @@ export async function buscarTreinosSemanais(userId: string): Promise<any[]> {
   if (modoTreino === 'IA') {
     // Mostrar apenas treinos gerados pela IA
     treinos = treinos.filter(t => t.criadoPor === 'IA');
-    console.log(`✅ Filtrado para modo IA: ${treinos.length} treinos`);
+    console.log(`[OK] Filtrado para modo IA: ${treinos.length} treinos`);
   } else if (modoTreino === 'MANUAL') {
     // Mostrar apenas treinos manuais (criados pelo usuário ou vinculados a templates personalizados)
     treinos = treinos.filter(t => 
       t.criadoPor === 'USUARIO' || 
       t.templatePersonalizado !== null
     );
-    console.log(`✅ Filtrado para modo MANUAL: ${treinos.length} treinos`);
+    console.log(`[OK] Filtrado para modo MANUAL: ${treinos.length} treinos`);
   }
 
-  console.log(`✅ Encontrados ${treinos.length} treinos para a semana`);
+  console.log(`[OK] Encontrados ${treinos.length} treinos para a semana`);
   
   // Validar e corrigir cada treino: garantir cardio e alongamento e ordem correta
   let treinosCorrigidos = 0;
@@ -1931,7 +1931,7 @@ export async function buscarTreinosSemanais(userId: string): Promise<any[]> {
   }
   
   if (treinosCorrigidos > 0) {
-    console.log(`✅ ${treinosCorrigidos} treinos corrigidos com cardio/alongamento`);
+    console.log(`[OK] ${treinosCorrigidos} treinos corrigidos com cardio/alongamento`);
     
     // Buscar treinos novamente após correções
     let treinosAtualizados = await prisma.treino.findMany({

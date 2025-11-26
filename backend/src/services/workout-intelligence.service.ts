@@ -264,7 +264,7 @@ export async function selecionarExercicioPrincipal(
   exerciciosJaSelecionados: any[] = [],
   seed?: number
 ): Promise<any | null> {
-  console.log(`🔍 [Intelligence] Selecionando exercício principal para ${grupoMuscular}...`);
+  console.log(`[Intelligence] Selecionando exercício principal para ${grupoMuscular}...`);
 
   // 1. Buscar exercícios do grupo
   const slugGrupo = slugify(grupoMuscular, 'grupo');
@@ -290,7 +290,7 @@ export async function selecionarExercicioPrincipal(
   });
 
   if (exercicios.length === 0) {
-    console.warn(`⚠️ Nenhum exercício relacionado ao slug ${slugGrupo}. Aplicando fallback por nome.`);
+    console.warn(`[Warn] Nenhum exercício relacionado ao slug ${slugGrupo}. Aplicando fallback por nome.`);
     exercicios = await prisma.exercicio.findMany({
       where: {
         grupoMuscularPrincipal: grupoMuscular,
@@ -306,7 +306,7 @@ export async function selecionarExercicioPrincipal(
   }
 
   if (exercicios.length === 0) {
-    console.error(`❌ Nenhum exercício encontrado para ${grupoMuscular}`);
+    console.error(`[Error] Nenhum exercício encontrado para ${grupoMuscular}`);
     return null;
   }
 
@@ -318,7 +318,7 @@ export async function selecionarExercicioPrincipal(
   });
 
   if (gruposEvitar.has(grupoMuscular)) {
-    console.log(`⏭️ Grupo ${grupoMuscular} afetado por lesão, pulando...`);
+    console.log(`[Intelligence] Grupo ${grupoMuscular} afetado por lesão, pulando...`);
     return null;
   }
 
@@ -326,7 +326,7 @@ export async function selecionarExercicioPrincipal(
   exercicios = filtrarPorLocalTreino(exercicios, perfil.localTreino);
 
   if (exercicios.length === 0) {
-    console.warn(`⚠️ Nenhum exercício disponível após filtro de local`);
+    console.warn(`[Warn] Nenhum exercício disponível após filtro de local`);
     // Tentar sem filtro de local
     exercicios = await prisma.exercicio.findMany({
       where: {
@@ -361,7 +361,7 @@ export async function selecionarExercicioPrincipal(
       : 0;
   const selecionado = exercicios[indiceBase];
   if (selecionado) {
-    console.log(`✅ [Intelligence] Exercício principal selecionado: ${selecionado.nome} (${isExercicioComposto(selecionado) ? 'Composto' : 'Isolado'})`);
+    console.log(`[Intelligence] Exercício principal selecionado: ${selecionado.nome} (${isExercicioComposto(selecionado) ? 'Composto' : 'Isolado'})`);
   }
   
   return selecionado || null;
@@ -377,7 +377,7 @@ export async function selecionarExercicioAcessorio(
   exerciciosJaSelecionados: any[] = [],
   seed?: number
 ): Promise<any | null> {
-  console.log(`🔍 [Intelligence] Selecionando exercício acessório para ${grupoMuscular}...`);
+  console.log(`[Intelligence] Selecionando exercício acessório para ${grupoMuscular}...`);
 
   // 1. Buscar exercícios do grupo
   const slugGrupo = slugify(grupoMuscular, 'grupo');
@@ -419,7 +419,7 @@ export async function selecionarExercicioAcessorio(
   }
 
   if (exercicios.length === 0) {
-    console.warn(`⚠️ Nenhum exercício acessório disponível para ${grupoMuscular}`);
+    console.warn(`[Warn] Nenhum exercício acessório disponível para ${grupoMuscular}`);
     return null;
   }
 
@@ -468,7 +468,7 @@ export async function selecionarExercicioAcessorio(
       : 0;
   const selecionado = exercicios[indiceBase];
   if (selecionado) {
-    console.log(`✅ [Intelligence] Exercício acessório selecionado: ${selecionado.nome} (${isExercicioComposto(selecionado) ? 'Composto' : 'Isolado'})`);
+    console.log(`[Intelligence] Exercício acessório selecionado: ${selecionado.nome} (${isExercicioComposto(selecionado) ? 'Composto' : 'Isolado'})`);
   }
   
   return selecionado || null;

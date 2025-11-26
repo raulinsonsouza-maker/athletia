@@ -103,8 +103,8 @@ const SPLITS_GRUPOS: Record<number, string[][]> = {
   ]
 };
 
-// Letras para identificação dos treinos
-const LETRAS_TREINO = ['A', 'B', 'C', 'D', 'E', 'F'];
+// Letras para identificação dos treinos (sem repetição na semana)
+const LETRAS_TREINO = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
 // ============================================================================
 // FUNÇÕES AUXILIARES
@@ -132,9 +132,12 @@ function obterFimSemana(inicioSemana: Date): Date {
 }
 
 function gerarNomeTreino(frequencia: number, indiceDia: number): string {
-  const letra = LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
-  const nomeBase = NOMES_SPLITS[frequencia]?.[indiceDia] || `Treino ${letra}`;
-  return `Treino ${letra} - ${nomeBase}`;
+  const letra = LETRAS_TREINO[indiceDia];
+  const nomeBase = NOMES_SPLITS[frequencia]?.[indiceDia % frequencia];
+  if (nomeBase) {
+    return `Treino ${letra} - ${nomeBase}`;
+  }
+  return `Treino ${letra}`;
 }
 
 function obterGruposDoDia(frequencia: number, indiceDia: number): string[] {

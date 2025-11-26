@@ -5,14 +5,8 @@ import { PlanoAtualResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 
 // ============================================================================
-// COMPONENTES AUXILIARES
+// ÍCONES SVG
 // ============================================================================
-
-const formatarCronometro = (totalSegundos: number) => {
-  const minutos = Math.floor(totalSegundos / 60)
-  const segundos = totalSegundos % 60
-  return `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`
-}
 
 const IconeVoltar = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-6 h-6">
@@ -21,7 +15,7 @@ const IconeVoltar = () => (
 )
 
 const IconeCheck = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-8 h-8">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-6 h-6">
     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
   </svg>
 )
@@ -38,6 +32,65 @@ const IconeSeta = ({ direcao }: { direcao: 'esquerda' | 'direita' }) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
   </svg>
 )
+
+const IconeMenu = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+)
+
+const IconeAlvo = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm0 8.625a1.125 1.125 0 100 2.25 1.125 1.125 0 000-2.25zM15.375 12a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" clipRule="evenodd" />
+  </svg>
+)
+
+const IconeInstrucoes = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <path fillRule="evenodd" d="M4.125 3C3.089 3 2.25 3.84 2.25 4.875V18a3 3 0 003 3h15a3 3 0 01-3-3V4.875C17.25 3.839 16.41 3 15.375 3H4.125zM12 9.75a.75.75 0 000 1.5h1.5a.75.75 0 000-1.5H12zm-.75-2.25a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75zM6 12.75a.75.75 0 000 1.5h7.5a.75.75 0 000-1.5H6zm-.75 3.75a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5H6a.75.75 0 01-.75-.75zM6 6.75a.75.75 0 00-.75.75v3c0 .414.336.75.75.75h3a.75.75 0 00.75-.75v-3A.75.75 0 009 6.75H6z" clipRule="evenodd" />
+    <path d="M18.75 6.75h1.875c.621 0 1.125.504 1.125 1.125V18a1.5 1.5 0 01-3 0V6.75z" />
+  </svg>
+)
+
+const IconeEquipamento = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+    <path fillRule="evenodd" d="M12 6.75a5.25 5.25 0 016.775-5.025.75.75 0 01.313 1.248l-3.32 3.319c.063.475.276.934.641 1.299.365.365.824.578 1.3.64l3.318-3.319a.75.75 0 011.248.313 5.25 5.25 0 01-5.472 6.756c-1.018-.086-1.87.1-2.309.634L7.344 21.3A3.298 3.298 0 112.7 16.657l8.684-7.151c.533-.44.72-1.291.634-2.309A5.342 5.342 0 0112 6.75zM4.117 19.125a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75h-.008a.75.75 0 01-.75-.75v-.008z" clipRule="evenodd" />
+  </svg>
+)
+
+const IconeTrofeu = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+    <path fillRule="evenodd" d="M5.166 2.621v.858c-1.035.148-2.059.33-3.071.543a.75.75 0 00-.584.859 6.753 6.753 0 006.138 5.6 6.73 6.73 0 002.743 1.346A6.707 6.707 0 019.279 15H8.54c-1.036 0-1.875.84-1.875 1.875V19.5h-.75a2.25 2.25 0 00-2.25 2.25c0 .414.336.75.75.75h15a.75.75 0 00.75-.75 2.25 2.25 0 00-2.25-2.25h-.75v-2.625c0-1.036-.84-1.875-1.875-1.875h-.739a6.706 6.706 0 01-1.112-3.173 6.73 6.73 0 002.743-1.347 6.753 6.753 0 006.139-5.6.75.75 0 00-.585-.858 47.077 47.077 0 00-3.07-.543V2.62a.75.75 0 00-.658-.744 49.22 49.22 0 00-6.093-.377c-2.063 0-4.096.128-6.093.377a.75.75 0 00-.657.744zm0 2.629c0 1.196.312 2.32.857 3.294A5.266 5.266 0 013.16 5.337a45.6 45.6 0 012.006-.343v.256zm13.5 0v-.256c.674.1 1.343.214 2.006.343a5.265 5.265 0 01-2.863 3.207 6.72 6.72 0 00.857-3.294z" clipRule="evenodd" />
+  </svg>
+)
+
+const IconeFechar = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+)
+
+const IconeDumbbell = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 text-white/20">
+    <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-3V3.5C14 2.12 12.88 1 11.5 1S9 2.12 9 3.5V5H6c-1.1 0-2 .9-2 2v4H2.5C1.12 11 0 12.12 0 13.5S1.12 16 2.5 16H4v4c0 1.1.9 2 2 2h3v1.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V22h3c1.1 0 2-.9 2-2v-4h1.5c1.38 0 2.5-1.12 2.5-2.5S21.88 11 20.5 11z"/>
+  </svg>
+)
+
+const IconePonto = ({ className = 'w-1.5 h-1.5 text-white/40' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
+    <circle cx="4" cy="4" r="4" />
+  </svg>
+)
+
+// ============================================================================
+// FORMATADORES
+// ============================================================================
+
+const formatarCronometro = (totalSegundos: number) => {
+  const minutos = Math.floor(totalSegundos / 60)
+  const segundos = totalSegundos % 60
+  return `${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`
+}
 
 // ============================================================================
 // COMPONENTE PRINCIPAL
@@ -58,6 +111,7 @@ export default function TreinoAtual() {
   const [timerAtivo, setTimerAtivo] = useState(false)
   const [concluindoTreino, setConcluindoTreino] = useState(false)
   const [mostrarChecklist, setMostrarChecklist] = useState(false)
+  const [abaAtiva, setAbaAtiva] = useState<'alvo' | 'instrucoes' | 'equipamento'>('alvo')
 
   // Timer
   useEffect(() => {
@@ -178,7 +232,7 @@ export default function TreinoAtual() {
     setConcluindoTreino(true)
     try {
       await concluirTreino(blocoAtivo.id)
-      showToast('Treino concluído! 💪', 'success')
+      showToast('Treino concluído com sucesso!', 'success')
       setTimerAtivo(false)
       setTimeout(() => navigate('/meu-plano'), 1000)
     } catch (error) {
@@ -214,6 +268,9 @@ export default function TreinoAtual() {
   if (!blocoAtivo || !exercicioEmFoco) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center p-6">
+        <div className="w-16 h-16 mb-4 rounded-full bg-white/5 flex items-center justify-center">
+          <IconeDumbbell />
+        </div>
         <p className="text-xl font-semibold mb-2">Nenhum treino encontrado</p>
         <p className="text-white/60 mb-6 text-center">Crie um treino rápido ou aguarde a geração do seu plano.</p>
         <button
@@ -227,6 +284,13 @@ export default function TreinoAtual() {
   }
 
   const exercicioConcluido = statusExercicios[exercicioEmFoco.id]
+
+  // Tabs de informações do exercício
+  const tabs = [
+    { id: 'alvo' as const, label: 'ALVO', icon: IconeAlvo },
+    { id: 'instrucoes' as const, label: 'INSTRUÇÕES', icon: IconeInstrucoes },
+    { id: 'equipamento' as const, label: 'EQUIPAMENTO', icon: IconeEquipamento }
+  ]
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
@@ -253,7 +317,7 @@ export default function TreinoAtual() {
           onClick={() => setMostrarChecklist(!mostrarChecklist)}
           className="p-2 -mr-2 text-white/80 hover:text-white relative"
         >
-          <span className="text-lg">☰</span>
+          <IconeMenu />
           {progresso.concluidos > 0 && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-xs rounded-full flex items-center justify-center font-bold">
               {progresso.concluidos}
@@ -263,10 +327,10 @@ export default function TreinoAtual() {
       </header>
 
       {/* CONTEÚDO PRINCIPAL */}
-      <main className="flex-1 pt-20 pb-32 px-4 flex flex-col">
+      <main className="flex-1 pt-20 pb-44 px-4 flex flex-col">
         {/* GIF DO EXERCÍCIO */}
-        <div className="flex-1 flex items-center justify-center mb-4">
-          <div className="w-full max-w-md aspect-square bg-black/40 rounded-3xl overflow-hidden border border-white/10">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-full max-w-sm aspect-square bg-[#111] rounded-3xl overflow-hidden border border-white/10 flex items-center justify-center">
             {exercicioEmFoco.gifUrl ? (
               <img
                 src={exercicioEmFoco.gifUrl}
@@ -274,32 +338,116 @@ export default function TreinoAtual() {
                 className="w-full h-full object-contain"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/30">
-                <span className="text-6xl">🏋️</span>
+              <IconeDumbbell />
+            )}
+          </div>
+        </div>
+
+        {/* BADGES */}
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <span className="px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs uppercase tracking-wider">
+            {exercicioEmFoco.grupo}
+          </span>
+          {exercicioConcluido && (
+            <span className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-semibold">
+              MUITO POPULAR
+            </span>
+          )}
+        </div>
+
+        {/* NOME DO EXERCÍCIO */}
+        <h1 className="text-2xl font-bold text-center mb-4">{exercicioEmFoco.nome}</h1>
+
+        {/* TABS DE INFORMAÇÕES */}
+        <div className="bg-[#111] rounded-2xl border border-white/10 overflow-hidden">
+          <div className="flex border-b border-white/10">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              const isActive = abaAtiva === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setAbaAtiva(tab.id)}
+                  className={`flex-1 py-3 px-2 flex items-center justify-center gap-2 text-xs font-semibold transition ${
+                    isActive 
+                      ? 'bg-white/5 text-white border-b-2 border-primary' 
+                      : 'text-white/50 hover:text-white/70'
+                  }`}
+                >
+                  <Icon />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="p-4 min-h-[120px]">
+            {abaAtiva === 'alvo' && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-red-500" />
+                  <span className="text-sm">Músculo principal: <strong className="text-white">{exercicioEmFoco.grupo}</strong></span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span className="px-3 py-1.5 rounded-lg bg-white/5 text-sm">{exercicioEmFoco.series} séries</span>
+                  <span className="px-3 py-1.5 rounded-lg bg-white/5 text-sm">{exercicioEmFoco.repeticoes} repetições</span>
+                  {exercicioEmFoco.carga && (
+                    <span className="px-3 py-1.5 rounded-lg bg-white/5 text-sm">{exercicioEmFoco.carga}kg</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {abaAtiva === 'instrucoes' && (
+              <div className="space-y-3 text-sm text-white/80">
+                {exercicioEmFoco.execucao ? (
+                  <p>{exercicioEmFoco.execucao}</p>
+                ) : exercicioEmFoco.descricao ? (
+                  <p>{exercicioEmFoco.descricao}</p>
+                ) : (
+                  <p className="text-white/50">Execute o movimento de forma controlada, mantendo a postura correta durante todo o exercício.</p>
+                )}
+                {exercicioEmFoco.errosComuns && exercicioEmFoco.errosComuns.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-white/10">
+                    <p className="text-xs uppercase tracking-wider text-white/50 mb-2">Erros comuns:</p>
+                    <ul className="space-y-1">
+                      {exercicioEmFoco.errosComuns.map((erro, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <IconePonto className="w-2 h-2 text-red-400 flex-shrink-0 translate-y-[7px]" />
+                          <span>{erro}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {abaAtiva === 'equipamento' && (
+              <div className="space-y-2">
+                {exercicioEmFoco.equipamentos && exercicioEmFoco.equipamentos.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {exercicioEmFoco.equipamentos.map((equip, idx) => (
+                      <span key={idx} className="px-3 py-2 rounded-lg bg-white/5 text-sm flex items-center gap-2">
+                        <IconeEquipamento />
+                        {equip}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-white/50 text-sm">Este exercício pode ser executado sem equipamentos específicos.</p>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* INFO DO EXERCÍCIO */}
-        <div className="text-center mb-4">
-          <p className="text-xs uppercase tracking-[0.3em] text-primary mb-1">{exercicioEmFoco.grupo}</p>
-          <h1 className="text-2xl font-bold mb-2">{exercicioEmFoco.nome}</h1>
-          <div className="flex items-center justify-center gap-3 text-white/70">
-            <span className="bg-white/10 px-3 py-1 rounded-full text-sm">{exercicioEmFoco.series} séries</span>
-            <span className="bg-white/10 px-3 py-1 rounded-full text-sm">{exercicioEmFoco.repeticoes} reps</span>
-            {exercicioEmFoco.carga && (
-              <span className="bg-white/10 px-3 py-1 rounded-full text-sm">{exercicioEmFoco.carga}kg</span>
-            )}
-          </div>
-        </div>
-
         {/* NAVEGAÇÃO ENTRE EXERCÍCIOS */}
-        <div className="flex items-center justify-center gap-4 mb-4">
+        <div className="flex items-center justify-center gap-6 mt-4">
           <button
             onClick={() => handleNavegar('anterior')}
             disabled={exercicioAtivoIndex === 0}
-            className="p-3 rounded-full bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-3 rounded-full bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition"
           >
             <IconeSeta direcao="esquerda" />
           </button>
@@ -309,7 +457,7 @@ export default function TreinoAtual() {
           <button
             onClick={() => handleNavegar('proximo')}
             disabled={exercicioAtivoIndex === blocoAtivo.exercicios.length - 1}
-            className="p-3 rounded-full bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-3 rounded-full bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white/10 transition"
           >
             <IconeSeta direcao="direita" />
           </button>
@@ -319,7 +467,7 @@ export default function TreinoAtual() {
         {proximoExercicio && (
           <button
             onClick={() => handleNavegar('proximo')}
-            className="mx-auto mb-2 text-center text-white/40 text-sm hover:text-white/60 transition"
+            className="mx-auto mt-3 text-center text-white/40 text-sm hover:text-white/60 transition"
           >
             Próximo: <span className="text-white/60">{proximoExercicio.nome}</span>
           </button>
@@ -353,7 +501,7 @@ export default function TreinoAtual() {
         >
           {exercicioConcluido ? (
             <>
-              <span className="text-primary">✓</span>
+              <IconeCheck />
               <span>Desmarcar exercício</span>
             </>
           ) : (
@@ -369,9 +517,10 @@ export default function TreinoAtual() {
           <button
             onClick={handleConcluirTreino}
             disabled={concluindoTreino}
-            className="w-full mt-3 py-4 rounded-2xl bg-green-600 text-white font-bold text-lg disabled:opacity-60"
+            className="w-full mt-3 py-4 rounded-2xl bg-green-600 text-white font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-60"
           >
-            {concluindoTreino ? 'Finalizando...' : '🎉 Finalizar Treino'}
+            <IconeTrofeu />
+            {concluindoTreino ? 'Finalizando...' : 'Finalizar Treino'}
           </button>
         )}
       </footer>
@@ -393,9 +542,9 @@ export default function TreinoAtual() {
               </div>
               <button 
                 onClick={() => setMostrarChecklist(false)}
-                className="text-white/50 text-2xl"
+                className="text-white/50 hover:text-white"
               >
-                ×
+                <IconeFechar />
               </button>
             </div>
             
@@ -415,13 +564,17 @@ export default function TreinoAtual() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                     statusExercicios[ex.id] ? 'bg-primary text-black' : 'bg-white/10 text-white/50'
                   }`}>
-                    {statusExercicios[ex.id] ? '✓' : idx + 1}
+                    {statusExercicios[ex.id] ? <IconeCheck /> : idx + 1}
                   </div>
                   <div className="flex-1">
                     <p className={`font-medium ${statusExercicios[ex.id] ? 'text-primary' : 'text-white'}`}>
                       {ex.nome}
                     </p>
-                    <p className="text-xs text-white/50">{ex.grupo} • {ex.series}x{ex.repeticoes}</p>
+                    <p className="text-xs text-white/50 flex items-center gap-2">
+                      <span>{ex.grupo}</span>
+                      <IconePonto className="w-1.5 h-1.5 text-white/40" />
+                      <span>{ex.series}x{ex.repeticoes}</span>
+                    </p>
                   </div>
                 </button>
               ))}

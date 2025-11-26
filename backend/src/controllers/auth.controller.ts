@@ -219,7 +219,7 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`[LOGIN] ✅ Login bem-sucedido para: ${emailNormalizado} (Role: ${user.role})`);
+    console.log(`[LOGIN] Login bem-sucedido para: ${emailNormalizado} (Role: ${user.role})`);
 
     // Gerar tokens
     const { accessToken, refreshToken } = generateTokens(user.id);
@@ -507,7 +507,7 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
     try {
       const { gerarTreinos30Dias } = await import('../services/treino.service');
       await gerarTreinos30Dias(user.id);
-      console.log(`✅ Treinos gerados para usuário ${user.id}`);
+      console.log(`[Ativação Plano] Treinos gerados para usuário ${user.id}`);
     } catch (error: any) {
       console.error(`⚠️ Erro ao gerar treinos:`, error);
       // Não falhar o cadastro se não conseguir gerar treinos
@@ -517,7 +517,7 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
     // Para produção, é recomendado integrar com serviço de e-mail (SendGrid, AWS SES, etc.)
     // e enviar as credenciais de forma segura via e-mail ao invés de retornar no JSON
     if (process.env.NODE_ENV === 'development') {
-      console.log(`📧 E-mail para ${email}:`);
+      console.log(`[Ativação Plano] E-mail para ${email}:`);
       console.log(`   Usuário: ${email}`);
       console.log(`   Senha: ${senhaGerada}`);
       console.log(`   Link de login: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`);
@@ -618,7 +618,7 @@ export const ativarPlanoAposPagamento = async (req: Request, res: Response) => {
       }
       
       const treinosGerados = await gerarTreinos30Dias(userId);
-      console.log(`✅ [Ativação Plano] ${treinosGerados.length} treinos gerados com sucesso para o usuário ${userId}!`);
+      console.log(`[Ativação Plano] ${treinosGerados.length} treinos gerados com sucesso para o usuário ${userId}!`);
       
       if (treinosGerados.length === 0) {
         console.warn(`⚠️ [Ativação Plano] Nenhum treino foi gerado para o usuário ${userId}. Verifique se há exercícios cadastrados e se a frequência semanal está configurada.`);
@@ -630,8 +630,8 @@ export const ativarPlanoAposPagamento = async (req: Request, res: Response) => {
         });
       }
     } catch (error: any) {
-      console.error(`❌ [Ativação Plano] Erro ao gerar treinos após pagamento para o usuário ${userId}:`, error);
-      console.error(`📋 [Ativação Plano] Detalhes do erro:`, {
+      console.error(`[Ativação Plano] Erro ao gerar treinos após pagamento para o usuário ${userId}:`, error);
+      console.error(`[Ativação Plano] Detalhes do erro:`, {
         message: error.message,
         stack: error.stack,
         name: error.name

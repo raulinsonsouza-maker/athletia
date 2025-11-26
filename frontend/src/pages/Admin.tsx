@@ -1490,7 +1490,7 @@ export default function Admin() {
                         <p className="text-3xl font-bold text-primary">
                           {estatisticas.metricas?.taxaConversao || 0}%
                         </p>
-                        <p className="text-xs text-light-muted mt-1">Onboarding → Pagamento</p>
+                        <p className="text-xs text-light-muted mt-1">Onboarding / Pagamento</p>
                       </div>
                     </div>
 

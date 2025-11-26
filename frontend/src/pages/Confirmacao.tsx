@@ -1,6 +1,44 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
+const IconeCheck = ({ className = 'w-12 h-12 text-success' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+)
+
+const IconeEmail = ({ className = 'w-5 h-5 text-primary' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 5h16a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M22 7l-10 6L2 7" />
+  </svg>
+)
+
+const IconeClipboard = ({ className = 'w-6 h-6 text-primary' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5h6M9 3h6a2 2 0 012 2v1h1a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h1V5a2 2 0 012-2z" />
+  </svg>
+)
+
+const IconeLock = ({ className = 'w-5 h-5 text-warning' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M7 11V7a5 5 0 0110 0v4" />
+  </svg>
+)
+
+const IconeArrowRight = ({ className = 'w-5 h-5' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+  </svg>
+)
+
+const IconePonto = ({ className = 'w-2 h-2 text-warning translate-y-[6px]' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
+    <circle cx="4" cy="4" r="4" />
+  </svg>
+)
+
 export default function Confirmacao() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -23,7 +61,7 @@ export default function Confirmacao() {
         {/* Header com ícone de sucesso */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-success/20 border-4 border-success mb-6">
-            <span className="text-5xl">✓</span>
+            <IconeCheck />
           </div>
           
           <h1 className="text-4xl md:text-6xl font-display font-bold text-light mb-4">
@@ -43,15 +81,19 @@ export default function Confirmacao() {
         <div className="card p-8 md:p-12 mb-8 animate-scale-in">
           {/* Email destacado */}
           <div className="bg-primary/10 border-2 border-primary/30 rounded-xl p-6 mb-8 text-center">
-            <div className="text-sm text-light-muted mb-2">📧 E-mail de confirmação enviado para:</div>
+            <div className="text-sm text-light-muted mb-2 flex items-center justify-center gap-2">
+              <IconeEmail />
+              <span>E-mail de confirmação enviado para:</span>
+            </div>
             <div className="text-xl md:text-2xl font-bold text-primary break-all">{email}</div>
           </div>
 
           {/* Próximos passos */}
           <div className="mb-8">
-            <h2 className="text-2xl font-display font-bold text-light mb-6 text-center">
-              📋 Próximos Passos
-            </h2>
+            <div className="text-2xl font-display font-bold text-light mb-6 text-center flex items-center justify-center gap-2">
+              <IconeClipboard />
+              <span>Próximos Passos</span>
+            </div>
             
             <div className="space-y-4">
               <div className="flex items-start gap-4 p-4 bg-dark-lighter rounded-lg border border-grey/30">
@@ -95,7 +137,9 @@ export default function Confirmacao() {
           {/* Plano ativado */}
           {plano && (
             <div className="bg-success/20 border-2 border-success/50 rounded-xl p-6 mb-8 text-center">
-              <div className="text-4xl mb-3">✅</div>
+              <div className="mb-3 flex justify-center">
+                <IconeCheck className="w-10 h-10 text-success" />
+              </div>
               <p className="text-success font-bold text-xl">
                 Plano <span className="text-light">{plano}</span> ativado com sucesso!
               </p>
@@ -105,23 +149,24 @@ export default function Confirmacao() {
           {/* Informações importantes */}
           <div className="bg-warning/10 border border-warning/30 rounded-lg p-6 mb-8">
             <h3 className="font-bold text-light mb-4 flex items-center gap-2">
-              <span>🔐</span> Informações Importantes
+              <IconeLock />
+              <span>Informações Importantes</span>
             </h3>
             <ul className="text-sm text-light-muted space-y-2 text-left">
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-1">•</span>
+                <IconePonto />
                 <span>Guarde suas credenciais em local seguro</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-1">•</span>
+                <IconePonto />
                 <span>Se não receber o e-mail, verifique a pasta de spam</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-1">•</span>
+                <IconePonto />
                 <span>O link de acesso estará no e-mail enviado</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-1">•</span>
+                <IconePonto />
                 <span>Seus treinos estarão disponíveis após o primeiro login</span>
               </li>
             </ul>
@@ -133,7 +178,10 @@ export default function Confirmacao() {
               onClick={() => navigate('/login')}
               className="btn-primary text-lg md:text-xl px-12 py-4 font-bold w-full md:w-auto"
             >
-              Ir para Tela de Login →
+              <span className="flex items-center justify-center gap-2">
+                <span>Ir para Tela de Login</span>
+                <IconeArrowRight />
+              </span>
             </button>
           </div>
         </div>

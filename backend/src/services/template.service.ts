@@ -85,7 +85,7 @@ export async function buscarTemplateAdequado(
   data: Date = new Date(),
   divisaoTreino?: string
 ): Promise<any | null> {
-  console.log(`🔍 Buscando template adequado...`);
+console.log(`[INFO] Buscando template adequado...`);
   console.log(`   Objetivo: ${objetivo}`);
   console.log(`   Nível: ${nivelExperiencia}`);
   console.log(`   Frequência: ${frequenciaSemanal}x/semana`);
@@ -170,7 +170,7 @@ export async function buscarTemplateAdequado(
   }
 
   if (templateEspecifico) {
-    console.log(`✅ Template específico encontrado: ${templateEspecifico.nome}`);
+    console.log(`[OK] Template específico encontrado: ${templateEspecifico.nome}`);
     return templateEspecifico;
   }
 
@@ -193,7 +193,7 @@ export async function buscarTemplateAdequado(
 
   // Se não encontrou exato, buscar alternativas e classificar por pontuação
   if (!template) {
-    console.log(`⚠️ Template exato não encontrado, buscando alternativas...`);
+    console.log(`[WARN] Template exato não encontrado, buscando alternativas...`);
     
     // Buscar todos os templates compatíveis
     let templatesAlternativos = await prisma.treinoTemplate.findMany({
@@ -242,15 +242,15 @@ export async function buscarTemplateAdequado(
       templatesComPontuacao.sort((a, b) => b.pontuacao - a.pontuacao);
 
       template = templatesComPontuacao[0].template;
-      console.log(`✅ Template selecionado por pontuação: ${template.nome} (pontuação: ${templatesComPontuacao[0].pontuacao})`);
+      console.log(`[OK] Template selecionado por pontuação: ${template.nome} (pontuação: ${templatesComPontuacao[0].pontuacao})`);
     }
   }
 
   if (template) {
-    console.log(`✅ Template encontrado: ${template.nome}`);
+    console.log(`[OK] Template encontrado: ${template.nome}`);
     console.log(`   Exercícios: ${template.exercicios.length}`);
   } else {
-    console.log(`❌ Nenhum template encontrado`);
+    console.log(`[WARN] Nenhum template encontrado`);
   }
 
   return template;
@@ -266,7 +266,7 @@ export async function adaptarTemplate(
   pesoAtual?: number,
   experiencia?: string
 ): Promise<any[]> {
-  console.log(`🔄 Adaptando template...`);
+  console.log(`[INFO] Adaptando template...`);
   console.log(`   Lesões: ${lesoes.join(', ') || 'Nenhuma'}`);
   console.log(`   Equipamentos: ${equipamentos.join(', ') || 'Nenhum'}`);
 
@@ -283,9 +283,9 @@ export async function adaptarTemplate(
       );
 
       if (temLesaoIncompativel && templateEx.obrigatorio) {
-        console.log(`⚠️ Exercício ${exercicio.nome} incompatível com lesões, mas é obrigatório. Mantendo.`);
+        console.log(`[WARN] Exercício ${exercicio.nome} incompatível com lesões, mas é obrigatório. Mantendo.`);
       } else if (temLesaoIncompativel && !templateEx.obrigatorio) {
-        console.log(`⏭️ Exercício ${exercicio.nome} incompatível com lesões, buscando alternativa...`);
+        console.log(`[INFO] Exercício ${exercicio.nome} incompatível com lesões, buscando alternativa...`);
         
         // Buscar alternativa
         if (exercicio.alternativas && exercicio.alternativas.length > 0) {
@@ -298,7 +298,7 @@ export async function adaptarTemplate(
           });
 
           if (alternativa) {
-            console.log(`✅ Alternativa encontrada: ${alternativa.nome}`);
+            console.log(`[OK] Alternativa encontrada: ${alternativa.nome}`);
             exerciciosAdaptados.push({
               ...templateEx,
               exercicio: alternativa,
@@ -310,7 +310,7 @@ export async function adaptarTemplate(
 
         // Se não encontrou alternativa, pular exercício não obrigatório
         if (!templateEx.obrigatorio) {
-          console.log(`⏭️ Pulando exercício ${exercicio.nome}`);
+          console.log(`[INFO] Pulando exercício ${exercicio.nome}`);
           continue;
         }
       }
@@ -323,7 +323,7 @@ export async function adaptarTemplate(
       );
 
       if (!temEquipamento && !templateEx.obrigatorio) {
-        console.log(`⚠️ Exercício ${exercicio.nome} requer equipamentos não disponíveis, buscando alternativa...`);
+        console.log(`[WARN] Exercício ${exercicio.nome} requer equipamentos não disponíveis, buscando alternativa...`);
         
         // Buscar alternativa com equipamentos disponíveis
         if (exercicio.alternativas && exercicio.alternativas.length > 0) {
@@ -340,7 +340,7 @@ export async function adaptarTemplate(
           });
 
           if (alternativa) {
-            console.log(`✅ Alternativa encontrada: ${alternativa.nome}`);
+            console.log(`[OK] Alternativa encontrada: ${alternativa.nome}`);
             exerciciosAdaptados.push({
               ...templateEx,
               exercicio: alternativa,
@@ -356,11 +356,11 @@ export async function adaptarTemplate(
     exerciciosAdaptados.push(templateEx);
   }
 
-  console.log(`✅ Template adaptado: ${exerciciosAdaptados.length} exercícios`);
+  console.log(`[OK] Template adaptado: ${exerciciosAdaptados.length} exercícios`);
 
   // Se não há exercícios adaptados, retornar os originais do template (fallback)
   if (exerciciosAdaptados.length === 0) {
-    console.warn(`⚠️ Nenhum exercício adaptado, usando exercícios originais do template`);
+    console.warn(`[WARN] Nenhum exercício adaptado, usando exercícios originais do template`);
     const exerciciosOriginais = template.exercicios.map((ex: any) => ({
       ...ex,
       exercicio: ex.exercicio,
@@ -368,14 +368,14 @@ export async function adaptarTemplate(
     }));
     
     if (exerciciosOriginais.length === 0) {
-      console.error(`❌ ERRO CRÍTICO: Template não tem exercícios!`);
+      console.error(`[ERROR] Template não tem exercícios!`);
       throw new Error(`Template ${template.nome} não possui exercícios`);
     }
     
     return exerciciosOriginais;
   }
 
-  console.log(`✅ Template adaptado: ${exerciciosAdaptados.length} exercícios`);
+  console.log(`[OK] Template adaptado: ${exerciciosAdaptados.length} exercícios`);
   return exerciciosAdaptados;
 }
 
@@ -426,7 +426,7 @@ export async function criarTreinoDoTemplate(
   exerciciosAdaptados: any[],
   data: Date = new Date()
 ): Promise<any> {
-  console.log(`🏋️ Criando treino do template...`);
+  console.log(`[INFO] Criando treino do template...`);
 
   // NOTA: Remoção de treinos existentes é feita pela função centralizada (treino-gerador.service.ts)
   // Esta função apenas cria o treino do template, assumindo que o treino anterior já foi removido
@@ -469,9 +469,9 @@ export async function criarTreinoDoTemplate(
       }
     });
     exerciciosTreino.push(exercicioAerobicoTreino);
-    console.log(`✅ Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
+    console.log(`[OK] Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
   } catch (error: any) {
-    console.error(`❌ Erro ao adicionar exercício aeróbico:`, error.message);
+    console.error(`[ERROR] Erro ao adicionar exercício aeróbico:`, error.message);
   }
 
   // Criar exercícios de força do treino (ordem 1, 2, 3...)
@@ -482,7 +482,7 @@ export async function criarTreinoDoTemplate(
 
     // Validar que o exercício existe
     if (!exercicio || !exercicio.id) {
-      console.error(`❌ Exercício inválido no índice ${i}`);
+      console.error(`[ERROR] Exercício inválido no índice ${i}`);
       continue;
     }
 
@@ -512,7 +512,7 @@ export async function criarTreinoDoTemplate(
 
       exerciciosTreino.push(exercicioTreino);
     } catch (error: any) {
-      console.error(`❌ Erro ao criar exercício ${exercicio.nome}:`, error.message);
+      console.error(`[ERROR] Erro ao criar exercício ${exercicio.nome}:`, error.message);
       // Continuar com os outros exercícios
     }
   }
@@ -536,16 +536,16 @@ export async function criarTreinoDoTemplate(
       }
     });
     exerciciosTreino.push(exercicioAlongamentoTreino);
-    console.log(`✅ Exercício de alongamento adicionado ÚLTIMO`);
+    console.log(`[OK] Exercício de alongamento adicionado ÚLTIMO`);
   } catch (error: any) {
-    console.error(`❌ Erro ao adicionar exercício de alongamento:`, error.message);
+    console.error(`[ERROR] Erro ao adicionar exercício de alongamento:`, error.message);
   }
 
-  console.log(`✅ Treino criado: ${treino.id}`);
+  console.log(`[OK] Treino criado: ${treino.id}`);
   console.log(`   Exercícios criados: ${exerciciosTreino.length}`);
 
   if (exerciciosTreino.length === 0) {
-    console.error(`❌ ERRO: Treino criado sem exercícios!`);
+    console.error(`[ERROR] Treino criado sem exercícios!`);
     console.error(`   Template: ${template.nome}`);
     console.error(`   Exercícios adaptados recebidos: ${exerciciosAdaptados.length}`);
     throw new Error(`Treino criado sem exercícios. Template: ${template.nome}, Exercícios adaptados: ${exerciciosAdaptados.length}`);
@@ -563,13 +563,13 @@ export async function criarTreinoDoTemplate(
   });
 
   if (!treinoCompleto || !treinoCompleto.exercicios || treinoCompleto.exercicios.length === 0) {
-    console.error(`❌ ERRO: Treino completo retornado sem exercícios!`);
+    console.error(`[ERROR] Treino completo retornado sem exercícios!`);
     console.error(`   Treino ID: ${treino.id}`);
     console.error(`   Exercícios criados: ${exerciciosTreino.length}`);
     throw new Error(`Treino retornado sem exercícios. ID: ${treino.id}`);
   }
 
-  console.log(`✅ Treino completo retornado com ${treinoCompleto.exercicios.length} exercícios`);
+  console.log(`[OK] Treino completo retornado com ${treinoCompleto.exercicios.length} exercícios`);
   
   // Garantir que o treino recém-criado tem cardio e alongamento (dupla verificação)
   const { garantirCardioEAlongamento } = await import('./treino.service');

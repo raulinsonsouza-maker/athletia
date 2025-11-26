@@ -128,7 +128,7 @@ export default function Register() {
               value={senha}
               onChange={(e) => handleSenhaChange(e.target.value)}
               className="input-field"
-              placeholder="••••••••"
+              placeholder="********"
               required
               disabled={loading}
               minLength={6}
@@ -177,7 +177,7 @@ export default function Register() {
               value={confirmarSenha}
               onChange={(e) => setConfirmarSenha(e.target.value)}
               className="input-field"
-              placeholder="••••••••"
+              placeholder="********"
               required
               disabled={loading}
             />

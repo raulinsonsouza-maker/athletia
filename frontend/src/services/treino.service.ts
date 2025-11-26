@@ -145,15 +145,15 @@ export const gerarTreino = async (data?: string, gerarSemana: boolean = false): 
       body.data = dataObj.toISOString().split('T')[0]
     }
     
-    console.log('📤 Enviando requisição para gerar treino:', body)
+    console.log('[treino.service] Enviando requisição para gerar treino:', body)
     
     const response = await api.post('/treino/gerar', body)
     
-    console.log('📥 Resposta do servidor:', response.data)
+    console.log('[treino.service] Resposta do servidor:', response.data)
     
     return response.data
   } catch (error: any) {
-    console.error('❌ Erro na requisição de gerar treino:', error)
+    console.error('[treino.service] Erro na requisição de gerar treino:', error)
     throw error
   }
 }

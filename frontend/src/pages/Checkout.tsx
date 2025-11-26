@@ -123,7 +123,7 @@ export default function Checkout() {
         // Atualizar contexto e localStorage
         updateUser(userAtualizado)
         
-        console.log('✅ Usuário atualizado com plano ativo:', userAtualizado)
+        console.log('[OK] Usuário atualizado com plano ativo:', userAtualizado)
         console.log('📦 Dados salvos no localStorage')
       } else {
         console.warn('⚠️ Resposta do backend não contém dados do usuário, atualizando manualmente')
@@ -132,7 +132,7 @@ export default function Checkout() {
           planoAtivo: true,
           plano: planoSelecionado
         })
-        console.log('✅ Estado atualizado manualmente')
+        console.log('[OK] Estado atualizado manualmente')
       }
       
       // Verificar se o estado foi atualizado corretamente

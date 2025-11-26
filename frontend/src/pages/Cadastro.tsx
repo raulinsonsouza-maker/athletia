@@ -26,6 +26,18 @@ interface OnboardingData {
   rpePreferido?: number
 }
 
+const IconeMarcadorLista = ({ className = 'w-2 h-2 text-primary translate-y-[2px]' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
+    <circle cx="4" cy="4" r="4" />
+  </svg>
+)
+
+const IconeCheckItem = ({ className = 'w-5 h-5 text-primary' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+)
+
 // interface Planos { // Não utilizado
 //   id: string
 //   nome: string
@@ -1211,19 +1223,19 @@ export default function Cadastro() {
             <h3 className="text-xl font-bold text-light mb-4 text-center">Benefícios do seu plano</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex items-center gap-3">
-                <span className="text-primary text-xl">✓</span>
+                <IconeCheckItem className="w-5 h-5 text-primary" />
                 <span className="text-light">Programa de treino personalizado</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-primary text-xl">✓</span>
+                <IconeCheckItem className="w-5 h-5 text-primary" />
                 <span className="text-light">Plano de treino claro e fácil de seguir</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-primary text-xl">✓</span>
+                <IconeCheckItem className="w-5 h-5 text-primary" />
                 <span className="text-light">Acompanhamento e análise do progresso</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-primary text-xl">✓</span>
+                <IconeCheckItem className="w-5 h-5 text-primary" />
                 <span className="text-light">Ajustes automáticos conforme você evolui</span>
               </div>
             </div>
@@ -1438,15 +1450,15 @@ export default function Cadastro() {
                 </div>
                 <ul className="space-y-2 text-sm text-light-muted">
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <IconeMarcadorLista className="w-2 h-2 text-primary flex-shrink-0 translate-y-[6px]" />
                     <span>Único sistema com IA que se adapta ao seu progresso em tempo real</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <IconeMarcadorLista className="w-2 h-2 text-primary flex-shrink-0 translate-y-[6px]" />
                     <span>Treinos criados por especialistas e otimizados por algoritmos avançados</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
+                    <IconeMarcadorLista className="w-2 h-2 text-primary flex-shrink-0 translate-y-[6px]" />
                     <span>Resultados comprovados em milhares de usuários</span>
                   </li>
                 </ul>
