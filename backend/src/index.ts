@@ -61,6 +61,7 @@ app.use('/api/', generalLimiter);
 
 // Servir arquivos estáticos de upload
 const uploadExerciciosPath = path.join(process.cwd(), 'upload', 'exercicios');
+const uploadGruposPath = path.join(process.cwd(), 'upload', 'grupos-musculares');
 
 // Middleware CORS específico para arquivos estáticos (ANTES das rotas)
 app.use('/api/uploads/exercicios', (req, res, next) => {
@@ -169,10 +170,23 @@ app.use('/api/uploads/exercicios', express.static(uploadExerciciosPath, {
   }
 }));
 
+// Servir imagens de grupos musculares (PNG/JPG/WEBP)
+app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.webp')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
+
 // Log para debug (apenas em desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
-  console.log(`📁 Servindo arquivos estáticos de: ${uploadExerciciosPath}`);
-  console.log(`🔗 URL base: /api/uploads/exercicios`);
+  console.log(`[UPLOAD] Exercícios em: ${uploadExerciciosPath} -> /api/uploads/exercicios`);
+  console.log(`[UPLOAD] Grupos musculares em: ${uploadGruposPath} -> /api/uploads/grupos-musculares`);
 }
 
 // Health check
