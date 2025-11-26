@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { treinoRapidoService, GrupoMuscularCard } from '../services/treino-rapido.service'
+import { treinoRapidoService } from '../services/treino-rapido.service'
 import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
@@ -8,7 +8,6 @@ import BottomTabs from '../components/navigation/BottomTabs'
 const DURACOES = [20, 30, 40, 50, 60]
 const DIFICULDADES = ['Iniciante', 'Intermediário', 'Avançado'] as const
 const LOCAIS_TREINO = ['Academia comercial', 'Academia Pequena', 'Sem equipamento', 'Customizado']
-const FOCOS_FALLBACK = ['Peito', 'Costas', 'Ombros', 'Quadríceps', 'Glúteos', 'Abdômen']
 
 export default function TreinoRapidoConfiguracao() {
   const navigate = useNavigate()
@@ -18,50 +17,30 @@ export default function TreinoRapidoConfiguracao() {
   const [duracao, setDuracao] = useState<number>(60)
   const [dificuldade, setDificuldade] = useState<'Iniciante' | 'Intermediário' | 'Avançado'>('Intermediário')
   const [localTreino, setLocalTreino] = useState<string>('Academia comercial')
-  const [corpoTodo, setCorpoTodo] = useState<boolean>(false)
-  const [focoMuscular, setFocoMuscular] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
-  const [carregandoGrupos, setCarregandoGrupos] = useState(true)
-  const [gruposSugestoes, setGruposSugestoes] = useState<GrupoMuscularCard[]>([])
 
   const gruposMusculares = location.state?.gruposMusculares || []
 
   useEffect(() => {
-    const carregarGrupos = async () => {
-      try {
-        setCarregandoGrupos(true)
-        const resposta = await treinoRapidoService.listarGrupos()
-        setGruposSugestoes(resposta.gruposPrincipais)
-      } catch (error) {
-        console.error('Erro ao carregar sugestões de grupos:', error)
-      } finally {
-        setCarregandoGrupos(false)
-      }
+    // Se vier direto para esta tela sem selecionar grupos antes, voltar
+    if (!location.state || !gruposMusculares.length) {
+      navigate('/treino-rapido', { replace: true })
     }
-    carregarGrupos()
-  }, [])
-
-  const toggleFoco = (foco: string) => {
-    setFocoMuscular((prev) =>
-      prev.includes(foco) ? prev.filter((item) => item !== foco) : [...prev, foco]
-    )
-  }
+  }, [location.state, gruposMusculares.length, navigate])
 
   const handleCriarTreino = async () => {
-    if (!corpoTodo && gruposMusculares.length === 0 && focoMuscular.length === 0) {
-      showToast('Selecione grupos musculares ou use corpo todo.', 'error')
+    if (gruposMusculares.length === 0) {
+      showToast('Selecione ao menos um grupo muscular na etapa anterior.', 'error')
       return
     }
 
     setLoading(true)
     try {
       await treinoRapidoService.criarTreinoRapido({
-        gruposMusculares: corpoTodo ? undefined : gruposMusculares,
+        gruposMusculares,
         duracao,
         dificuldade,
-        localTreino,
-        focoMuscular: corpoTodo ? undefined : focoMuscular,
-        corpoTodo
+        localTreino
       })
 
       showToast('Treino criado com sucesso!', 'success')
@@ -73,17 +52,6 @@ export default function TreinoRapidoConfiguracao() {
       setLoading(false)
     }
   }
-
-  const sugestoesFoco = useMemo(() => {
-    if (gruposSugestoes.length > 0) {
-      return gruposSugestoes.slice(0, 9)
-    }
-    return FOCOS_FALLBACK.map((nome, index) => ({
-      nome,
-      slug: `fallback-${index}`,
-      imagemUrl: null
-    }))
-  }, [gruposSugestoes])
 
   const gruposSelecionadosChips = gruposMusculares.slice(0, 6)
 
@@ -99,7 +67,7 @@ export default function TreinoRapidoConfiguracao() {
             </div>
             <span className="text-xs text-white/60">{new Date().toLocaleDateString('pt-BR')}</span>
           </div>
-          {gruposSelecionadosChips.length > 0 ? (
+          {gruposSelecionadosChips.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {gruposSelecionadosChips.map((grupo: string) => (
                 <span key={grupo} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
@@ -112,10 +80,6 @@ export default function TreinoRapidoConfiguracao() {
                 </span>
               )}
             </div>
-          ) : (
-            <p className="text-sm text-white/60">
-              Nenhum grupo selecionado. Ative &quot;Corpo todo&quot; ou escolha alguns alvos logo abaixo.
-            </p>
           )}
         </section>
 
@@ -188,65 +152,6 @@ export default function TreinoRapidoConfiguracao() {
           </div>
         </section>
 
-        <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Foco muscular</p>
-              <h3 className="text-lg font-semibold">
-                {corpoTodo ? 'Corpo todo ativado' : 'Selecione os detalhes do seu treino'}
-              </h3>
-            </div>
-            <label className="flex items-center gap-2 text-sm">
-              Corpo todo
-              <button
-                type="button"
-                onClick={() => {
-                  const novo = !corpoTodo
-                  setCorpoTodo(novo)
-                  if (novo) setFocoMuscular([])
-                }}
-                className={`w-12 h-6 rounded-full transition-colors duration-200 ${
-                  corpoTodo ? 'bg-primary/70' : 'bg-white/20'
-                }`}
-              >
-                <span
-                  className={`block w-5 h-5 bg-white rounded-full transition-transform duration-200 translate-y-0.5 ${
-                    corpoTodo ? 'translate-x-[22px]' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </label>
-          </div>
-
-          {!corpoTodo && (
-            <div className="grid grid-cols-3 gap-3">
-              {sugestoesFoco.map((grupo) => {
-                const ativo = focoMuscular.includes(grupo.nome)
-                const imagem = grupo.imagemUrl || 'https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=600&q=80'
-                return (
-                  <button
-                    key={grupo.slug}
-                    onClick={() => toggleFoco(grupo.nome)}
-                    disabled={carregandoGrupos}
-                    className={`relative rounded-2xl overflow-hidden border text-left transition ${
-                      ativo ? 'border-primary bg-primary/10 shadow-glow' : 'border-white/10 bg-white/5'
-                    }`}
-                  >
-                    <div className="absolute inset-0">
-                      <img src={imagem} alt={grupo.nome} className="w-full h-full object-cover opacity-40" />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent" />
-                    <div className="relative px-3 py-4 space-y-1">
-                      <p className="text-xs uppercase tracking-[0.3em] text-white/60">Grupo</p>
-                      <p className="text-sm font-semibold">{grupo.nome}</p>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </section>
-
         <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3">
           <div className="flex items-center justify-between text-sm text-white/70">
             <span>Duração</span>
@@ -259,10 +164,6 @@ export default function TreinoRapidoConfiguracao() {
           <div className="flex items-center justify-between text-sm text-white/70">
             <span>Local</span>
             <strong className="text-white">{localTreino}</strong>
-          </div>
-          <div className="flex items-center justify-between text-sm text-white/70">
-            <span>Modo</span>
-            <strong className="text-white">{corpoTodo ? 'Corpo todo' : `${focoMuscular.length} focos`}</strong>
           </div>
           <button
             onClick={handleCriarTreino}
