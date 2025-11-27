@@ -99,7 +99,22 @@ export default function TreinoRapidoSelecaoGrupos() {
                 }`}
               >
                 <div className="absolute inset-0">
-                  <img src={imagem} alt={grupo.nome} className="w-full h-full object-cover opacity-60" />
+                  <img 
+                    src={imagem} 
+                    alt={grupo.nome} 
+                    className="w-full h-full object-cover opacity-60" 
+                    onError={(e) => {
+                      // Se a imagem falhar, usar imagem padrão
+                      const target = e.currentTarget
+                      const fallback = DEFAULT_IMAGENS[grupo.slug as keyof typeof DEFAULT_IMAGENS] || DEFAULT_IMAGENS.peito
+                      if (target.src !== fallback) {
+                        target.src = fallback
+                      } else {
+                        // Se a fallback também falhar, ocultar imagem
+                        target.style.display = 'none'
+                      }
+                    }}
+                  />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/50 to-transparent" />
                 <div className="relative flex flex-col items-center gap-2 pb-4 px-3">

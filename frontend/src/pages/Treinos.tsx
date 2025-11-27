@@ -76,6 +76,15 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
             src={item.imagem || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'}
             alt={item.titulo}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.currentTarget
+              const fallback = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+              if (target.src !== fallback) {
+                target.src = fallback
+              } else {
+                target.style.display = 'none'
+              }
+            }}
           />
         </div>
         <div className="flex-1 p-4 flex flex-col justify-between">
@@ -185,6 +194,16 @@ export default function Treinos() {
                 src={treinoHoje.imagem || obterImagemPorGenero(genero, 'treinos')}
                 alt="Treino de hoje"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget
+                  const fallback = obterImagemPorGenero(genero, 'treinos')
+                  if (target.src !== fallback) {
+                    target.src = fallback
+                  } else {
+                    // Se a fallback também falhar, usar imagem padrão do Unsplash
+                    target.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                  }
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               
