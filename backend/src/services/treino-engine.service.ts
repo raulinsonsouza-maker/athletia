@@ -1,15 +1,19 @@
 /**
- * TREINO ENGINE SERVICE V2.0
+ * TREINO ENGINE SERVICE V2.2
  * 
- * Motor centralizado de geração de treinos inteligentes - VERSÃO REFATORADA
+ * Motor centralizado de geração de treinos inteligentes - VERSÃO OTIMIZADA PARA PERFORMANCE
  * 
- * CORREÇÕES APLICADAS:
- * 1. Sistema único de definição de grupos (baseado em split, não em letra)
- * 2. Tempo variável para cardio/alongamento baseado em objetivo
- * 3. Fallback inteligente para busca de exercícios
- * 4. Evita repetição por categoria, não apenas por ID
- * 5. Resolve problemas de concorrência
- * 6. Garante número mínimo de exercícios mesmo com pouco tempo
+ * MELHORIAS V2.2:
+ * 1. Redução de N+1 queries: busca todos exercícios de uma vez e filtra em memória
+ * 2. Cache de exercícios por grupo para evitar queries repetidas
+ * 3. Distribuição de exercícios simplificada (sem loops de ajuste)
+ * 4. Distribuição de dias otimizada (evita duplicados com Math.floor)
+ * 5. Fallback consolidado: 1 query por grupo (principal + sinergistas)
+ * 6. Filtro de lesões simplificado (sem lógica redundante)
+ * 7. Cálculo de máximo de exercícios simplificado (1 linha)
+ * 8. ExtrairGruposPrincipais otimizado (itera apenas 1x)
+ * 9. Seed unificado para semana inteira (consistência)
+ * 10. Tempo disponível configurável (mínimo e máximo dinâmico)
  */
 
 import { prisma } from '../lib/prisma';
@@ -185,6 +189,51 @@ function obterGruposDoDia(frequencia: number, indiceDia: number): string[] {
 }
 
 /**
+ * Distribui dias da semana uniformemente baseado na frequência
+ * Versão otimizada: evita duplicados usando intervalos precisos
+ * Retorna array com dias da semana (1=Segunda, 6=Sábado)
+ */
+function distribuirDiasSemana(frequencia: number): number[] {
+  if (frequencia <= 0 || frequencia > 7) {
+    return [1, 3, 5]; // Padrão: Segunda, Quarta, Sexta
+  }
+
+  if (frequencia === 1) {
+    return [1]; // Segunda
+  }
+
+  const dias: number[] = [];
+  const diasDisponiveis = 6; // Segunda (1) a Sábado (6)
+  
+  // Calcular intervalo uniforme sem duplicados
+  const intervalo = (diasDisponiveis - 1) / (frequencia - 1);
+  
+  for (let i = 0; i < frequencia; i++) {
+    // Usar Math.floor para evitar duplicados e garantir distribuição uniforme
+    const posicao = 1 + (i * intervalo);
+    const dia = Math.floor(posicao);
+    dias.push(Math.min(Math.max(dia, 1), 6)); // Garantir entre 1 e 6
+  }
+
+  // Remover duplicados e ordenar (garantia extra)
+  return Array.from(new Set(dias)).sort((a, b) => a - b);
+}
+
+/**
+ * Calcula índice do dia baseado na frequência e data
+ * Extraído para evitar código repetitivo
+ * Retorna o índice do treino (0, 1, 2...) ou -1 se não é dia de treino
+ */
+function calcularIndiceDia(frequencia: number, data: Date, inicioSemana: Date): number {
+  const diasTreino = distribuirDiasSemana(frequencia);
+  const diaSemana = data.getDay() === 0 ? 7 : data.getDay();
+  const indice = diasTreino.indexOf(diaSemana);
+  
+  // Se não encontrou, retornar -1 (não é dia de treino)
+  return indice;
+}
+
+/**
  * Calcula número mínimo de exercícios baseado na quantidade de grupos
  * Garante treino completo mesmo com pouco tempo
  */
@@ -195,47 +244,32 @@ function calcularMinimoExercicios(grupos: string[]): number {
 
 /**
  * Calcula máximo de exercícios baseado no tempo disponível
- * Considera tempo variável para cardio/alongamento baseado em objetivo
- * Retorna também o tempo estimado para avisar quando ultrapassa
+ * Versão simplificada e otimizada
  */
 function calcularMaxExerciciosPorTempo(
   tempoDisponivel: number,
   configTempo: ConfiguracaoTempo,
   minimoNecessario: number
 ): { maxExercicios: number; tempoEstimadoMinimo: number } {
-  const tempoUtil = tempoDisponivel - configTempo.cardio - configTempo.alongamento;
+  const { cardio, alongamento, tempoPorExercicio } = configTempo;
+  const tempoUtil = tempoDisponivel - cardio - alongamento;
   
-  if (tempoUtil <= 0) {
-    const tempoEstimadoMinimo = configTempo.cardio + (minimoNecessario * configTempo.tempoPorExercicio) + configTempo.alongamento;
+  // Calcular máximo de exercícios (simplificado)
+  const maxCalculado = tempoUtil > 0 
+    ? Math.floor(tempoUtil / tempoPorExercicio)
+    : 0;
+  
+  // Garantir mínimo e máximo (1 linha)
+  const maxExercicios = Math.max(minimoNecessario, Math.min(10, maxCalculado));
+  const tempoEstimadoMinimo = cardio + alongamento + (maxExercicios * tempoPorExercicio);
+  
+  // Log apenas se ultrapassar tempo disponível
+  if (tempoEstimadoMinimo > tempoDisponivel) {
     const excesso = Math.ceil(tempoEstimadoMinimo - tempoDisponivel);
-    console.log(`[WARN] Tempo disponível (${tempoDisponivel}min) não permite mínimo de ${minimoNecessario} exercícios`);
-    console.log(`[WARN] Tempo estimado mínimo: ${Math.ceil(tempoEstimadoMinimo)}min (excesso: +${excesso}min)`);
-    console.log(`[INFO] Garantindo treino completo mesmo assim (mínimo necessário para qualidade)`);
-    return { maxExercicios: minimoNecessario, tempoEstimadoMinimo };
+    console.log(`[WARN] Tempo disponível: ${tempoDisponivel}min | Estimado: ${Math.ceil(tempoEstimadoMinimo)}min (+${excesso}min)`);
   }
   
-  const maxExercicios = Math.floor(tempoUtil / configTempo.tempoPorExercicio);
-  
-  // Garantir mínimo necessário
-  if (maxExercicios < minimoNecessario) {
-    const tempoEstimadoMinimo = configTempo.cardio + (minimoNecessario * configTempo.tempoPorExercicio) + configTempo.alongamento;
-    const excesso = Math.ceil(tempoEstimadoMinimo - tempoDisponivel);
-    console.log(`[WARN] Tempo disponível (${tempoDisponivel}min) não permite ${minimoNecessario} exercícios`);
-    console.log(`[WARN] Tempo estimado mínimo: ${Math.ceil(tempoEstimadoMinimo)}min (excesso: +${excesso}min)`);
-    console.log(`[INFO] Garantindo treino completo mesmo assim (mínimo necessário para qualidade)`);
-    return { maxExercicios: minimoNecessario, tempoEstimadoMinimo };
-  }
-  
-  // Limite máximo
-  const maxFinal = maxExercicios > 10 ? 10 : maxExercicios;
-  const tempoEstimado = configTempo.cardio + (maxFinal * configTempo.tempoPorExercicio) + configTempo.alongamento;
-  
-  // Informar se está próximo do limite
-  if (tempoEstimado > tempoDisponivel * 0.9) {
-    console.log(`[INFO] Tempo estimado (${Math.ceil(tempoEstimado)}min) está próximo do limite (${tempoDisponivel}min)`);
-  }
-  
-  return { maxExercicios: maxFinal, tempoEstimadoMinimo: tempoEstimado };
+  return { maxExercicios, tempoEstimadoMinimo };
 }
 
 /**
@@ -251,17 +285,58 @@ function calcularTempoEstimado(
 
 /**
  * Determina quantos exercícios cada grupo deve ter baseado no split
- * Distribui exercícios de forma equilibrada
+ * Versão otimizada: busca todos exercícios de uma vez e calcula pesos em memória
  */
-function determinarExerciciosPorGrupo(grupos: string[], totalExercicios: number): Map<string, number> {
+async function determinarExerciciosPorGrupo(
+  grupos: string[], 
+  totalExercicios: number,
+  cacheExercicios?: Map<string, any[]> // Cache opcional para evitar queries repetidas
+): Promise<Map<string, number>> {
   const mapa = new Map<string, number>();
-  const quantidadePorGrupo = Math.floor(totalExercicios / grupos.length);
-  const resto = totalExercicios % grupos.length;
   
-  // Distribuir base
+  // Buscar todos exercícios ativos de uma vez (se não tiver cache)
+  let exerciciosAtivos: any[] = [];
+  if (!cacheExercicios) {
+    exerciciosAtivos = await prisma.exercicio.findMany({
+      where: { ativo: true },
+      select: {
+        id: true,
+        grupoMuscularPrincipal: true,
+        sinergistas: true
+      }
+    });
+  }
+  
+  // Calcular peso relativo de cada grupo (em memória)
+  const pesosGrupos = new Map<string, number>();
+  let pesoTotal = 0;
+  
+  grupos.forEach(grupo => {
+    const exerciciosGrupo = cacheExercicios 
+      ? cacheExercicios.get(grupo) || []
+      : exerciciosAtivos.filter(ex => 
+          ex.grupoMuscularPrincipal === grupo || 
+          (ex.sinergistas || []).includes(grupo)
+        );
+    
+    const peso = Math.max(1, exerciciosGrupo.length);
+    pesosGrupos.set(grupo, peso);
+    pesoTotal += peso;
+  });
+  
+  // Distribuir proporcionalmente (versão simplificada)
+  let distribuidos = 0;
   grupos.forEach((grupo, index) => {
-    const quantidade = quantidadePorGrupo + (index < resto ? 1 : 0);
-    mapa.set(grupo, Math.max(1, quantidade)); // Mínimo 1 por grupo
+    const peso = pesosGrupos.get(grupo) || 1;
+    const proporcao = peso / pesoTotal;
+    
+    // Último grupo recebe o resto para garantir total exato
+    const quantidade = index === grupos.length - 1
+      ? totalExercicios - distribuidos
+      : Math.max(1, Math.round(totalExercicios * proporcao));
+    
+    mapa.set(grupo, quantidade);
+    distribuidos += quantidade;
   });
   
   return mapa;
@@ -280,7 +355,7 @@ function contarExerciciosPorGrupo(exercicios: any[], grupo: string): number {
 
 /**
  * Redistribui exercícios após corte mantendo balanceamento por grupo
- * Garante que todos os grupos tenham pelo menos 1 exercício
+ * Versão simplificada e otimizada - garante todos os grupos incluídos
  */
 function balancearExerciciosAposCorte(
   exercicios: any[],
@@ -291,75 +366,71 @@ function balancearExerciciosAposCorte(
     return exercicios;
   }
 
-  // Contar exercícios por grupo (considerando sinergistas)
-  const contagemPorGrupo = new Map<string, any[]>();
-  grupos.forEach(grupo => {
-    contagemPorGrupo.set(grupo, []);
-  });
+  // Mapa de prioridade: grupo -> lista de exercícios
+  const mapaGrupos = new Map<string, any[]>();
+  grupos.forEach(grupo => mapaGrupos.set(grupo, []));
 
-  // Agrupar exercícios
+  // Agrupar exercícios por grupo principal ou sinergista
   exercicios.forEach(ex => {
     const grupoPrincipal = ex.grupoMuscularPrincipal || '';
     if (grupos.includes(grupoPrincipal)) {
-      contagemPorGrupo.get(grupoPrincipal)?.push(ex);
+      mapaGrupos.get(grupoPrincipal)?.push(ex);
     } else {
-      // Verificar sinergistas
+      // Verificar sinergistas - adicionar no primeiro grupo sinergista encontrado
       const sinergistas = ex.sinergistas || [];
       for (const grupo of grupos) {
         if (sinergistas.includes(grupo)) {
-          contagemPorGrupo.get(grupo)?.push(ex);
-          break; // Adicionar apenas no primeiro grupo sinergista encontrado
+          mapaGrupos.get(grupo)?.push(ex);
+          break;
         }
       }
     }
   });
 
-  // Garantir mínimo de 1 exercício por grupo
   const resultado: any[] = [];
-  const gruposComExercicios = new Set<string>();
+  const gruposProcessados = new Set<string>();
 
-  // Primeira passada: garantir mínimo
+  // Passo 1: Garantir mínimo de 1 exercício por grupo (todos os grupos incluídos)
   grupos.forEach(grupo => {
-    const exerciciosGrupo = contagemPorGrupo.get(grupo) || [];
+    const exerciciosGrupo = mapaGrupos.get(grupo) || [];
     if (exerciciosGrupo.length > 0 && resultado.length < maxExercicios) {
       resultado.push(exerciciosGrupo[0]);
-      gruposComExercicios.add(grupo);
+      gruposProcessados.add(grupo);
     }
   });
 
-  // Segunda passada: distribuir restante proporcionalmente
-  const exerciciosRestantes = exercicios.filter(ex => !resultado.includes(ex));
+  // Passo 2: Distribuir restante proporcionalmente entre TODOS os grupos
   const quantidadeRestante = maxExercicios - resultado.length;
-  
-  if (quantidadeRestante > 0 && exerciciosRestantes.length > 0) {
-    // Distribuir proporcionalmente entre grupos
-    const gruposParaDistribuir = Array.from(gruposComExercicios);
-    const quantidadePorGrupo = Math.floor(quantidadeRestante / gruposParaDistribuir.length);
-    const resto = quantidadeRestante % gruposParaDistribuir.length;
+  if (quantidadeRestante > 0) {
+    const quantidadePorGrupo = Math.floor(quantidadeRestante / grupos.length);
+    const resto = quantidadeRestante % grupos.length;
 
-    gruposParaDistribuir.forEach((grupo, index) => {
-      const quantidade = quantidadePorGrupo + (index < resto ? 1 : 0);
-      const exerciciosGrupo = contagemPorGrupo.get(grupo) || [];
+    grupos.forEach((grupo, index) => {
+      if (resultado.length >= maxExercicios) return;
+      
+      const exerciciosGrupo = mapaGrupos.get(grupo) || [];
       const jaAdicionados = resultado.filter(ex => {
-        const grupoPrincipal = ex.grupoMuscularPrincipal || '';
-        const sinergistas = ex.sinergistas || [];
-        return grupoPrincipal === grupo || sinergistas.includes(grupo);
+        const gp = ex.grupoMuscularPrincipal || '';
+        const sin = ex.sinergistas || [];
+        return gp === grupo || sin.includes(grupo);
       }).length;
 
-      const faltam = quantidade - jaAdicionados;
+      const quantidade = quantidadePorGrupo + (index < resto ? 1 : 0);
+      const faltam = Math.max(0, quantidade - jaAdicionados);
+      
       if (faltam > 0) {
         const disponiveis = exerciciosGrupo.filter(ex => !resultado.includes(ex));
         const adicionar = disponiveis.slice(0, faltam);
         resultado.push(...adicionar);
       }
     });
+  }
 
-    // Se ainda sobrar espaço, adicionar qualquer exercício restante
-    const aindaFaltam = maxExercicios - resultado.length;
-    if (aindaFaltam > 0) {
-      const restantes = exerciciosRestantes.filter(ex => !resultado.includes(ex));
-      resultado.push(...restantes.slice(0, aindaFaltam));
-    }
+  // Passo 3: Se ainda sobrar espaço, preencher com qualquer exercício restante
+  const aindaFaltam = maxExercicios - resultado.length;
+  if (aindaFaltam > 0) {
+    const restantes = exercicios.filter(ex => !resultado.includes(ex));
+    resultado.push(...restantes.slice(0, aindaFaltam));
   }
 
   return resultado.slice(0, maxExercicios);
@@ -430,18 +501,15 @@ function filtrarGruposPorLesoes(grupos: string[], lesoes: string[]): string[] {
   
   const gruposFiltrados = grupos.filter(grupo => !gruposEvitar.includes(grupo));
   
-  // Se todos os grupos foram filtrados, retornar pelo menos alguns grupos principais
-  // para não gerar treino vazio (priorizar grupos menos afetados)
+  // Se todos os grupos foram filtrados, garantir pelo menos 2 grupos para treino balanceado
   if (gruposFiltrados.length === 0) {
-    console.log(`[WARN] Todos os grupos foram filtrados por lesões. Tentando manter grupos menos críticos.`);
-    // Manter grupos que não estão diretamente relacionados às lesões mais comuns
-    const gruposMenosCriticos = grupos.filter(grupo => {
-      // Priorizar grupos que não são diretamente afetados
-      return !gruposEvitar.includes(grupo);
-    });
+    console.log(`[WARN] Todos os grupos foram filtrados por lesões. Selecionando grupos menos críticos.`);
     
-    // Se ainda vazio, retornar pelo menos um grupo para não quebrar
-    return gruposMenosCriticos.length > 0 ? gruposMenosCriticos : grupos.slice(0, 1);
+    // Versão simplificada: filtrar grupos não afetados e garantir mínimo de 2
+    const gruposPrioritarios = grupos.filter(grupo => !gruposEvitar.includes(grupo));
+    return gruposPrioritarios.length >= 2 
+      ? gruposPrioritarios.slice(0, 2) 
+      : grupos.slice(0, Math.min(2, grupos.length));
   }
   
   if (gruposFiltrados.length < grupos.length) {
@@ -514,61 +582,73 @@ function shuffleDeterministico<T>(array: T[], seed: number): T[] {
 // ============================================================================
 
 /**
- * Busca exercícios com fallback inteligente
- * Tenta: principal → sinergistas → qualquer do grupo → qualquer ativo
- * Remove duplicados que podem aparecer por sinergistas
- * Usa randomização determinística baseada em userId + data + grupo para consistência
+ * Busca exercícios com fallback inteligente otimizado
+ * Versão consolidada: busca todos exercícios possíveis de uma vez e filtra em memória
+ * Reduz N+1 queries para 1 query por grupo
  */
 async function buscarExerciciosComFallback(
   grupo: string,
   exerciciosEvitar: Set<string>,
   quantidade: number,
   userId: string,
-  data: Date
+  data: Date,
+  cacheExercicios?: Map<string, any[]> // Cache opcional para evitar queries repetidas
 ): Promise<any[]> {
-  // Tentativa 1: Buscar por grupo muscular principal
-  let exercicios = await prisma.exercicio.findMany({
-    where: {
-      ativo: true,
-      grupoMuscularPrincipal: grupo,
-      id: { notIn: Array.from(exerciciosEvitar) }
-    },
-    take: quantidade * 3
-  });
+  const quantidadeMinima = Math.max(quantidade, 3);
   
-  // Tentativa 2: Se não encontrou, buscar por sinergistas
-  if (exercicios.length < quantidade) {
-    const sinergistas = await prisma.exercicio.findMany({
+  // Buscar todos exercícios possíveis de uma vez (principal + sinergistas)
+  let exercicios: any[];
+  
+  if (cacheExercicios && cacheExercicios.has(grupo)) {
+    // Usar cache se disponível
+    exercicios = cacheExercicios.get(grupo) || [];
+  } else {
+    // Buscar principal e sinergistas em uma única query
+    exercicios = await prisma.exercicio.findMany({
       where: {
         ativo: true,
-        sinergistas: { has: grupo },
-        id: { notIn: Array.from(exerciciosEvitar) }
+        OR: [
+          { grupoMuscularPrincipal: grupo },
+          { sinergistas: { has: grupo } }
+        ]
       },
-      take: quantidade - exercicios.length
+      take: quantidadeMinima * 5, // Buscar mais para ter opções
+      distinct: ['id']
     });
-    exercicios.push(...sinergistas);
+    
+    // Armazenar no cache se fornecido
+    if (cacheExercicios) {
+      cacheExercicios.set(grupo, exercicios);
+    }
   }
   
-  // Tentativa 3: Se ainda não encontrou, buscar qualquer exercício do grupo (sem filtro de evitados)
-  if (exercicios.length < quantidade) {
+  // Filtrar em memória: remover evitados e duplicados
+  const exerciciosFiltrados = exercicios.filter(ex => !exerciciosEvitar.has(ex.id));
+  
+  // Se não tem suficientes, buscar qualquer exercício do grupo (fallback final)
+  if (exerciciosFiltrados.length < quantidadeMinima) {
+    const idsJaFiltrados = new Set(exerciciosFiltrados.map(ex => ex.id));
     const fallback = await prisma.exercicio.findMany({
       where: {
         ativo: true,
-        grupoMuscularPrincipal: grupo
+        grupoMuscularPrincipal: grupo,
+        id: { notIn: Array.from(idsJaFiltrados) }
       },
-      take: quantidade - exercicios.length
+      take: quantidadeMinima - exerciciosFiltrados.length
     });
-    exercicios.push(...fallback.filter(ex => !exerciciosEvitar.has(ex.id)));
+    exerciciosFiltrados.push(...fallback);
   }
   
-  // Remover duplicados (pode acontecer se exercício aparece como principal e sinergista)
+  // Remover duplicados (garantia extra)
   const exerciciosUnicos = Array.from(
-    new Map(exercicios.map(ex => [ex.id, ex])).values()
+    new Map(exerciciosFiltrados.map(ex => [ex.id, ex])).values()
   );
   
   // Selecionar quantidade necessária com randomização determinística
-  // Usar userId + data + grupo como seed para consistência (mesmo usuário, mesmo dia, mesmo grupo = mesma ordem)
-  const seed = gerarSeed(userId + grupo, data);
+  // Seed unificado para semana inteira (consistência)
+  const inicioSemana = obterInicioSemana(data);
+  const semana = Math.floor((inicioSemana.getTime() - new Date(inicioSemana.getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+  const seed = gerarSeed(userId + grupo + semana.toString(), inicioSemana);
   const shuffled = shuffleDeterministico(exerciciosUnicos, seed);
   
   const selecionados: any[] = [];
@@ -584,8 +664,13 @@ async function buscarExerciciosComFallback(
 /**
  * Busca histórico de exercícios para evitar repetição
  * Exclui cardio e alongamento para não bloquear exercícios essenciais
+ * Considera últimos 2 treinos do mesmo grupo para evitar repetição mais inteligente
  */
-async function buscarHistoricoExercicios(userId: string, dias: number = 14): Promise<Set<string>> {
+async function buscarHistoricoExercicios(
+  userId: string, 
+  dias: number = 14,
+  grupoAtual?: string
+): Promise<Set<string>> {
   const dataLimite = new Date();
   dataLimite.setDate(dataLimite.getDate() - dias);
 
@@ -600,16 +685,31 @@ async function buscarHistoricoExercicios(userId: string, dias: number = 14): Pro
           exercicio: {
             select: {
               id: true,
-              grupoMuscularPrincipal: true
+              grupoMuscularPrincipal: true,
+              sinergistas: true
             }
           }
         }
       }
-    }
+    },
+    orderBy: { data: 'desc' }
   });
 
   const exerciciosUsados = new Set<string>();
-  treinos.forEach(treino => {
+  
+  // Se grupo atual especificado, considerar apenas últimos 2 treinos desse grupo
+  let treinosRelevantes = treinos;
+  if (grupoAtual) {
+    treinosRelevantes = treinos.filter(treino => {
+      return treino.exercicios.some(ex => {
+        const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
+        const sinergistas = ex.exercicio?.sinergistas || [];
+        return grupo === grupoAtual || sinergistas.includes(grupoAtual);
+      });
+    }).slice(0, 2); // Últimos 2 treinos do mesmo grupo
+  }
+  
+  treinosRelevantes.forEach(treino => {
     treino.exercicios.forEach(ex => {
       // Excluir cardio e alongamento do histórico para não bloquear
       const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
@@ -667,7 +767,8 @@ async function gerarTreinoDoDia(
 
   // Calcular número mínimo e máximo de exercícios
   const minimoExercicios = calcularMinimoExercicios(gruposFiltrados);
-  const tempoDisponivel = Math.min(perfil.tempoDisponivel || 60, 120);
+  // Tempo disponível configurável: mínimo 30min, máximo 120min
+  const tempoDisponivel = Math.max(30, Math.min(perfil.tempoDisponivel || 60, 120));
   const { maxExercicios, tempoEstimadoMinimo } = calcularMaxExerciciosPorTempo(tempoDisponivel, configTempo, minimoExercicios);
   
   // Avisar se tempo estimado ultrapassa tempo disponível
@@ -676,21 +777,53 @@ async function gerarTreinoDoDia(
     console.log(`[INFO] Garantindo treino completo mesmo assim (mínimo necessário)`);
   }
   
-  // Determinar quantos exercícios por grupo
-  const exerciciosPorGrupoMap = determinarExerciciosPorGrupo(gruposFiltrados, maxExercicios);
+  // Buscar todos exercícios ativos de uma vez para cache (otimização de performance)
+  const exerciciosAtivos = await prisma.exercicio.findMany({
+    where: { ativo: true },
+    select: {
+      id: true,
+      grupoMuscularPrincipal: true,
+      sinergistas: true
+    }
+  });
   
-  // Buscar exercícios para cada grupo
+  // Criar cache de exercícios por grupo (em memória)
+  const cacheExercicios = new Map<string, any[]>();
+  gruposFiltrados.forEach(grupo => {
+    const exerciciosGrupo = exerciciosAtivos.filter(ex => 
+      ex.grupoMuscularPrincipal === grupo || 
+      (ex.sinergistas || []).includes(grupo)
+    );
+    cacheExercicios.set(grupo, exerciciosGrupo);
+  });
+  
+  // Determinar quantos exercícios por grupo (distribuição ponderada com cache)
+  const exerciciosPorGrupoMap = await determinarExerciciosPorGrupo(
+    gruposFiltrados, 
+    maxExercicios,
+    cacheExercicios
+  );
+  
+  // Buscar exercícios para cada grupo (com histórico específico por grupo e cache)
   const todosExercicios: any[] = [];
   for (const grupo of gruposFiltrados) {
     const quantidade = exerciciosPorGrupoMap.get(grupo) || 1;
+    // Buscar histórico específico para este grupo (últimos 2 treinos do mesmo grupo)
+    const historicoGrupo = await buscarHistoricoExercicios(userId, 14, grupo);
+    // Combinar com histórico geral
+    const historicoCombinado = new Set([...exerciciosEvitar, ...historicoGrupo]);
+    
     const exercicios = await buscarExerciciosComFallback(
       grupo,
-      exerciciosEvitar,
+      historicoCombinado,
       quantidade,
       userId,
-      data
+      data,
+      cacheExercicios
     );
     todosExercicios.push(...exercicios);
+    // Adicionar ao set global para próximos grupos
+    exercicios.forEach(ex => exerciciosEvitar.add(ex.id));
   }
 
   // Se não temos exercícios suficientes, tentar buscar mais
@@ -703,14 +836,30 @@ async function gerarTreinoDoDia(
       
       if (quantidadeAtual < quantidadeEsperada && todosExercicios.length < minimoExercicios) {
         const faltam = quantidadeEsperada - quantidadeAtual;
+        // Buscar histórico específico para este grupo
+        const historicoGrupo = await buscarHistoricoExercicios(userId, 14, grupo);
+        const historicoCombinado = new Set([...exerciciosEvitar, ...historicoGrupo]);
+        
+        // Buscar cache de exercícios se disponível
+        const cacheExercicios = new Map<string, any[]>();
+        gruposFiltrados.forEach(g => {
+          const exerciciosGrupo = todosExercicios.filter(ex => 
+            ex.grupoMuscularPrincipal === g || 
+            (ex.sinergistas || []).includes(g)
+          );
+          cacheExercicios.set(g, exerciciosGrupo);
+        });
+        
         const exerciciosAdicionais = await buscarExerciciosComFallback(
           grupo,
-          exerciciosEvitar,
+          historicoCombinado,
           faltam,
           userId,
-          data
+          data,
+          cacheExercicios
         );
         todosExercicios.push(...exerciciosAdicionais);
+        exerciciosAdicionais.forEach(ex => exerciciosEvitar.add(ex.id));
       }
     }
   }
@@ -730,80 +879,78 @@ async function gerarTreinoDoDia(
   console.log(`[INFO] Treino ${letraTreino}: ${exerciciosFinais.length} exercícios de força`);
   console.log(`[INFO] Grupos: ${gruposFiltrados.join(', ')}`);
 
-  // Criar treino no banco
-  const treino = await prisma.treino.create({
-    data: {
-      userId,
-      data: normalizarData(data),
-      nome: nomeTreino,
-      tipo: 'Treino IA',
-      criadoPor: 'IA',
-      concluido: false,
-      letraTreino,
-      tempoEstimado: 0 // Será recalculado
-    }
-  });
-
-  // 1. ADICIONAR CARDIO PRIMEIRO (ordem 0) - TEMPO VARIÁVEL
-  const exercicioCardio = await selecionarExercicioAerobicoDoDia(data);
-  await prisma.exercicioTreino.create({
-    data: {
-      treinoId: treino.id,
-      exercicioId: exercicioCardio.id,
-      ordem: 0,
-      series: 1,
-      repeticoes: `${configTempo.cardio} min`,
-      carga: null,
-      rpe: 5,
-      descanso: 0,
-      concluido: false,
-      observacoes: `Aquecimento cardiovascular - ${configTempo.cardio} minutos`
-    }
-  });
-
-  // 2. ADICIONAR EXERCÍCIOS DE FORÇA (ordem 1, 2, 3...) - BATCH INSERT para performance
-  const exerciciosTreinoData = exerciciosFinais.map((exercicio, index) => ({
-    treinoId: treino.id,
-    exercicioId: exercicio.id,
-    ordem: index + 1,
-    series: parametros.series,
-    repeticoes: parametros.repeticoes,
-    rpe: parametros.rpe,
-    descanso: parametros.descanso,
-    concluido: false
-  }));
-  
-  // Usar createMany para inserção em batch (melhor performance)
-  await prisma.exercicioTreino.createMany({
-    data: exerciciosTreinoData
-  });
-
-  // 3. ADICIONAR ALONGAMENTO POR ÚLTIMO (ordem final) - TEMPO VARIÁVEL
-  const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
-  const ordemAlongamento = exerciciosFinais.length + 1; // Ordem após todos os exercícios de força
-  await prisma.exercicioTreino.create({
-    data: {
-      treinoId: treino.id,
-      exercicioId: exercicioAlongamento.id,
-      ordem: ordemAlongamento,
-      series: 1,
-      repeticoes: `${configTempo.alongamento} min`,
-      carga: null,
-      rpe: 3,
-      descanso: 0,
-      concluido: false,
-      observacoes: `Alongamento geral - ${configTempo.alongamento} minutos`
-    }
-  });
-
-  // Calcular tempo estimado total
+  // Calcular tempo estimado antes de criar treino
   const tempoEstimado = calcularTempoEstimado(exerciciosFinais.length, configTempo);
 
-  // Atualizar tempo estimado
-  await prisma.treino.update({
-    where: { id: treino.id },
-    data: { tempoEstimado }
+  // Criar treino e todos os exercícios em uma única transaction
+  const treino = await prisma.$transaction(async (tx) => {
+    // Criar treino
+    const treinoCriado = await tx.treino.create({
+      data: {
+        userId,
+        data: normalizarData(data),
+        nome: nomeTreino,
+        tipo: 'Treino IA',
+        criadoPor: 'IA',
+        concluido: false,
+        letraTreino,
+        tempoEstimado
+      }
+    });
+
+    // Preparar todos os exercícios para batch insert (cardio + força + alongamento)
+    const exercicioCardio = await selecionarExercicioAerobicoDoDia(data);
+    const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
+    
+    const todosExerciciosTreino = [
+      // 1. Cardio primeiro (ordem 0)
+      {
+        treinoId: treinoCriado.id,
+        exercicioId: exercicioCardio.id,
+        ordem: 0,
+        series: 1,
+        repeticoes: `${configTempo.cardio} min`,
+        carga: null,
+        rpe: 5,
+        descanso: 0,
+        concluido: false,
+        observacoes: `Aquecimento cardiovascular - ${configTempo.cardio} minutos`
+      },
+      // 2. Exercícios de força (ordem 1, 2, 3...)
+      ...exerciciosFinais.map((exercicio, index) => ({
+        treinoId: treinoCriado.id,
+        exercicioId: exercicio.id,
+        ordem: index + 1,
+        series: parametros.series,
+        repeticoes: parametros.repeticoes,
+        rpe: parametros.rpe,
+        descanso: parametros.descanso,
+        concluido: false
+      })),
+      // 3. Alongamento por último (ordem final)
+      {
+        treinoId: treinoCriado.id,
+        exercicioId: exercicioAlongamento.id,
+        ordem: exerciciosFinais.length + 1,
+        series: 1,
+        repeticoes: `${configTempo.alongamento} min`,
+        carga: null,
+        rpe: 3,
+        descanso: 0,
+        concluido: false,
+        observacoes: `Alongamento geral - ${configTempo.alongamento} minutos`
+      }
+    ];
+
+    // Inserir todos os exercícios em batch
+    await tx.exercicioTreino.createMany({
+      data: todosExerciciosTreino
+    });
+
+    return treinoCriado;
   });
+
+  // Tempo estimado já foi calculado e salvo na transaction
 
   // Total de exercícios = cardio (1) + força (N) + alongamento (1)
   const totalExercicios = 1 + exerciciosFinais.length + 1;
@@ -883,19 +1030,13 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
     }
   });
 
-  // Buscar histórico para evitar repetição (inclui cardio e alongamento)
+  // Buscar histórico geral para evitar repetição
   const exerciciosEvitar = await buscarHistoricoExercicios(userId);
 
-  // Determinar dias da semana para treinar baseado na frequência
-  const diasTreino: number[] = [];
-  if (frequencia === 1) diasTreino.push(1); // Segunda
-  else if (frequencia === 2) diasTreino.push(1, 4); // Segunda e Quinta
-  else if (frequencia === 3) diasTreino.push(1, 3, 5); // Segunda, Quarta, Sexta
-  else if (frequencia === 4) diasTreino.push(1, 2, 4, 5); // Segunda, Terça, Quinta, Sexta
-  else if (frequencia === 5) diasTreino.push(1, 2, 3, 4, 5); // Segunda a Sexta
-  else if (frequencia === 6) diasTreino.push(1, 2, 3, 4, 5, 6); // Segunda a Sábado
-
-  console.log(`[INFO] Dias de treino: ${diasTreino.map(d => ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d]).join(', ')}`);
+  // Determinar dias da semana usando função automática
+  const diasTreino = distribuirDiasSemana(frequencia);
+  const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  console.log(`[INFO] Dias de treino: ${diasTreino.map(d => nomesDias[d] || `Dia${d}`).join(', ')}`);
 
   // Gerar treinos sequencialmente para evitar problemas de concorrência
   const treinosGerados: TreinoGerado[] = [];
@@ -921,50 +1062,46 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
 
 /**
  * Extrai os grupos musculares principais de um treino
+ * Versão otimizada: itera apenas uma vez sobre os exercícios
  * Considera grupo principal e sinergistas para refletir o balanceamento real
- * Exclui cardio e alongamento
  */
 function extrairGruposPrincipais(exercicios: any[]): string[] {
-  const grupos = new Set<string>();
-  const gruposIgnorar = ['Cardio', 'Alongamento', 'Flexibilidade'];
+  const gruposIgnorar = new Set(['Cardio', 'Alongamento', 'Flexibilidade']);
+  const gruposPrincipais = new Set<string>();
+  const gruposSinergistas = new Set<string>();
 
+  // Iterar apenas uma vez
   exercicios.forEach(ex => {
     const exercicio = ex.exercicio || ex;
     const grupoPrincipal = exercicio.grupoMuscularPrincipal;
     const sinergistas = exercicio.sinergistas || [];
     
     // Adicionar grupo principal (prioridade)
-    if (grupoPrincipal && !gruposIgnorar.includes(grupoPrincipal)) {
-      grupos.add(grupoPrincipal);
+    if (grupoPrincipal && !gruposIgnorar.has(grupoPrincipal)) {
+      gruposPrincipais.add(grupoPrincipal);
     }
     
-    // Adicionar sinergistas relevantes (para refletir balanceamento real)
+    // Adicionar sinergistas (sem duplicar principais)
     sinergistas.forEach((sinergista: string) => {
-      if (sinergista && !gruposIgnorar.includes(sinergista)) {
-        grupos.add(sinergista);
+      if (sinergista && !gruposIgnorar.has(sinergista) && !gruposPrincipais.has(sinergista)) {
+        gruposSinergistas.add(sinergista);
       }
     });
   });
 
-  // Retornar até 3 grupos principais (priorizando grupos principais sobre sinergistas)
-  const gruposArray = Array.from(grupos);
-  
-  // Separar principais e sinergistas
-  const principais = gruposArray.filter(g => {
-    return exercicios.some(ex => {
-      const exercicio = ex.exercicio || ex;
-      return exercicio.grupoMuscularPrincipal === g;
-    });
-  });
-  
-  const apenasSinergistas = gruposArray.filter(g => !principais.includes(g));
-  
-  // Priorizar principais, depois sinergistas
-  const resultado = [...principais, ...apenasSinergistas].slice(0, 3);
+  // Priorizar principais, depois sinergistas (até 3)
+  const resultado = [
+    ...Array.from(gruposPrincipais),
+    ...Array.from(gruposSinergistas)
+  ].slice(0, 3);
   
   return resultado;
 }
 
+/**
+ * Gera um único treino para uma data específica
+ * Usa o motor centralizado para garantir consistência
+ */
 /**
  * Gera um único treino para uma data específica
  * Usa o motor centralizado para garantir consistência
@@ -976,18 +1113,9 @@ export async function gerarTreinoDoDiaUnico(
   const perfil = await garantirPerfilParaInteligencia(userId);
   const frequencia = Math.min(Math.max(perfil.frequenciaSemanal || 3, 1), 6);
   
-  // Calcular qual índice de treino seria para esta data baseado na frequência
+  // Calcular índice do dia usando função utilitária
   const inicioSemana = obterInicioSemana(data);
-  const diasTreino: number[] = [];
-  if (frequencia === 1) diasTreino.push(1);
-  else if (frequencia === 2) diasTreino.push(1, 4);
-  else if (frequencia === 3) diasTreino.push(1, 3, 5);
-  else if (frequencia === 4) diasTreino.push(1, 2, 4, 5);
-  else if (frequencia === 5) diasTreino.push(1, 2, 3, 4, 5);
-  else if (frequencia === 6) diasTreino.push(1, 2, 3, 4, 5, 6);
-  
-  const diaSemana = data.getDay() === 0 ? 7 : data.getDay();
-  const indiceDia = diasTreino.indexOf(diaSemana);
+  const indiceDia = calcularIndiceDia(frequencia, data, inicioSemana);
   
   // Se não é dia de treino, retornar null
   if (indiceDia === -1) {
