@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gerador de Ícones AthletIA</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #070600;
+      color: #F7F7FF;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    canvas {
+      border: 1px solid #F9A620;
+      margin: 10px;
+      display: block;
+    }
+    .instructions {
+      margin: 20px 0;
+      padding: 15px;
+      background: #1A1814;
+      border-radius: 8px;
+      border: 1px solid #F9A620;
+    }
+    button {
+      background: #F9A620;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #E8940D;
+    }
+    .icon-group {
+      margin: 20px 0;
+      padding: 15px;
+      background: #1A1814;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Gerador de Ícones AthletIA</h1>
+  <div class="instructions">
+    <p><strong>Instruções:</strong></p>
+    <p>1. Clique no botão "Baixar Todos" para baixar todos os ícones automaticamente</p>
+    <p>2. Ou clique individualmente em cada botão "Baixar" abaixo de cada ícone</p>
+    <p>3. Coloque os arquivos baixados na pasta <code>/public</code> do projeto</p>
+    <button onclick="downloadAll()">📥 Baixar Todos os Ícones</button>
+  </div>
+  
+  <div class="icon-group">
+    <h3>apple-touch-icon.png (180x180)</h3>
+    <canvas id="apple" width="180" height="180"></canvas>
+    <button onclick="downloadIcon('apple', 'apple-touch-icon.png')">Baixar</button>
+  </div>
+  
+  <div class="icon-group">
+    <h3>android-chrome-192x192.png</h3>
+    <canvas id="android192" width="192" height="192"></canvas>
+    <button onclick="downloadIcon('android192', 'android-chrome-192x192.png')">Baixar</button>
+  </div>
+  
+  <div class="icon-group">
+    <h3>android-chrome-512x512.png</h3>
+    <canvas id="android512" width="512" height="512"></canvas>
+    <button onclick="downloadIcon('android512', 'android-chrome-512x512.png')">Baixar</button>
+  </div>
+  
+  <div class="icon-group">
+    <h3>favicon-16x16.png</h3>
+    <canvas id="favicon16" width="16" height="16"></canvas>
+    <button onclick="downloadIcon('favicon16', 'favicon-16x16.png')">Baixar</button>
+  </div>
+  
+  <div class="icon-group">
+    <h3>favicon-32x32.png</h3>
+    <canvas id="favicon32" width="32" height="32"></canvas>
+    <button onclick="downloadIcon('favicon32', 'favicon-32x32.png')">Baixar</button>
+  </div>
+  
+  <div class="icon-group">
+    <h3>mstile-150x150.png</h3>
+    <canvas id="mstile" width="150" height="150"></canvas>
+    <button onclick="downloadIcon('mstile', 'mstile-150x150.png')">Baixar</button>
+  </div>
+
+  <script>
+    function drawIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      
+      // Fundo amarelo
+      ctx.fillStyle = '#F9A620';
+      const radius = size * 0.22; // 22% de raio para bordas arredondadas
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fill();
+      
+      // Letra A preta
+      ctx.fillStyle = '#000000';
+      ctx.font = `bold ${Math.floor(size * 0.6)}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('A', size / 2, size / 2);
+    }
+    
+    function downloadIcon(canvasId, filename) {
+      const canvas = document.getElementById(canvasId);
+      canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+    
+    function downloadAll() {
+      const icons = [
+        { id: 'apple', name: 'apple-touch-icon.png' },
+        { id: 'android192', name: 'android-chrome-192x192.png' },
+        { id: 'android512', name: 'android-chrome-512x512.png' },
+        { id: 'favicon16', name: 'favicon-16x16.png' },
+        { id: 'favicon32', name: 'favicon-32x32.png' },
+        { id: 'mstile', name: 'mstile-150x150.png' }
+      ];
+      
+      icons.forEach((icon, index) => {
+        setTimeout(() => {
+          downloadIcon(icon.id, icon.name);
+        }, index * 300);
+      });
+    }
+    
+    // Polyfill para roundRect se não existir
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.closePath();
+      };
+    }
+    
+    // Gerar todos os ícones ao carregar
+    drawIcon('apple', 180);
+    drawIcon('android192', 192);
+    drawIcon('android512', 512);
+    drawIcon('favicon16', 16);
+    drawIcon('favicon32', 32);
+    drawIcon('mstile', 150);
+  </script>
+</body>
+</html>
+

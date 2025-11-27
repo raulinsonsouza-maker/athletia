@@ -1,0 +1,25 @@
+{
+  "name": "AthletIA - Sistema Inteligente de Treinos",
+  "short_name": "AthletIA",
+  "description": "Sistema inteligente de treinos personalizados",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070600",
+  "theme_color": "#F9A620",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
