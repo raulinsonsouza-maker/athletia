@@ -4,7 +4,9 @@ import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
 import { treinoRapidoService, GrupoMuscularCard } from '../services/treino-rapido.service'
+import { getImagemGrupoBanco, getImagemBanco } from '../utils/imagensBanco'
 
+// Imagens padrão do banco (fallback para Unsplash se não houver no banco)
 const DEFAULT_IMAGENS: Record<string, string> = {
   peito: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80',
   costas: 'https://images.unsplash.com/photo-1434682881908-b43d0467b798?auto=format&fit=crop&w=800&q=80',
@@ -68,9 +70,18 @@ export default function TreinoRapidoSelecaoGrupos() {
   }, [grupos])
 
   const getImagemGrupo = (grupo: GrupoMuscularCard | { slug: string; imagemUrl: string | null }) => {
+    // Prioridade 1: imagemUrl do grupo (se existir)
     if ('imagemUrl' in grupo && grupo.imagemUrl) {
       return grupo.imagemUrl
     }
+    
+    // Prioridade 2: imagem do banco para o grupo
+    const imagemBanco = getImagemGrupoBanco(grupo.slug)
+    if (imagemBanco) {
+      return imagemBanco
+    }
+    
+    // Prioridade 3: fallback para Unsplash
     return DEFAULT_IMAGENS[grupo.slug as keyof typeof DEFAULT_IMAGENS] || DEFAULT_IMAGENS.peito
   }
 
@@ -104,15 +115,21 @@ export default function TreinoRapidoSelecaoGrupos() {
                     alt={grupo.nome} 
                     className="w-full h-full object-cover opacity-60" 
                     onError={(e) => {
-                      // Se a imagem falhar, usar imagem padrão
+                      // Se a imagem falhar, tentar fallback
                       const target = e.currentTarget
-                      const fallback = DEFAULT_IMAGENS[grupo.slug as keyof typeof DEFAULT_IMAGENS] || DEFAULT_IMAGENS.peito
-                      if (target.src !== fallback) {
-                        target.src = fallback
-                      } else {
-                        // Se a fallback também falhar, ocultar imagem
-                        target.style.display = 'none'
+                      const currentSrc = target.src
+                      
+                      // Se estava tentando carregar do banco, tentar Unsplash
+                      if (currentSrc.includes('/api/imagens-banco/')) {
+                        const fallback = DEFAULT_IMAGENS[grupo.slug as keyof typeof DEFAULT_IMAGENS] || DEFAULT_IMAGENS.peito
+                        if (target.src !== fallback) {
+                          target.src = fallback
+                          return
+                        }
                       }
+                      
+                      // Se a fallback também falhar, ocultar imagem
+                      target.style.display = 'none'
                     }}
                   />
                 </div>

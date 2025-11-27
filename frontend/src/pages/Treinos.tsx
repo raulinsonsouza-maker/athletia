@@ -6,6 +6,7 @@ import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
+import { getImagemPadraoBanco } from '../utils/imagensBanco'
 
 // ============================================================================
 // ÍCONES SVG
@@ -73,17 +74,24 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
       <div className="flex">
         <div className="w-28 h-28 bg-black/50 flex-shrink-0">
           <img
-            src={item.imagem || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'}
+            src={item.imagem || getImagemPadraoBanco('treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'}
             alt={item.titulo}
             className="w-full h-full object-cover"
             onError={(e) => {
               const target = e.currentTarget
-              const fallback = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
-              if (target.src !== fallback) {
-                target.src = fallback
-              } else {
-                target.style.display = 'none'
+              const currentSrc = target.src
+              
+              // Se estava tentando carregar do banco, tentar Unsplash
+              if (currentSrc.includes('/api/imagens-banco/')) {
+                const fallback = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                if (target.src !== fallback) {
+                  target.src = fallback
+                  return
+                }
               }
+              
+              // Se a fallback também falhar, ocultar imagem
+              target.style.display = 'none'
             }}
           />
         </div>
@@ -191,18 +199,29 @@ export default function Treinos() {
           <section className="relative rounded-2xl overflow-hidden">
             <div className="h-48 relative">
               <img
-                src={treinoHoje.imagem || obterImagemPorGenero(genero, 'treinos')}
+                src={treinoHoje.imagem || getImagemPadraoBanco('treinos') || obterImagemPorGenero(genero, 'treinos')}
                 alt="Treino de hoje"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.currentTarget
-                  const fallback = obterImagemPorGenero(genero, 'treinos')
-                  if (target.src !== fallback) {
-                    target.src = fallback
-                  } else {
-                    // Se a fallback também falhar, usar imagem padrão do Unsplash
-                    target.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                  const currentSrc = target.src
+                  
+                  // Se estava tentando carregar do banco, tentar por gênero
+                  if (currentSrc.includes('/api/imagens-banco/')) {
+                    const fallback = obterImagemPorGenero(genero, 'treinos')
+                    if (target.src !== fallback) {
+                      target.src = fallback
+                      return
+                    }
                   }
+                  
+                  // Se estava tentando por gênero, tentar Unsplash
+                  if (currentSrc.includes('unsplash.com')) {
+                    return // Já tentou Unsplash
+                  }
+                  
+                  // Último fallback: Unsplash
+                  target.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
                 }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />

@@ -183,10 +183,102 @@ app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
   }
 }));
 
+// Servir imagens do banco de imagens (/opt/athletia/Imagens/Banco)
+const imagensBancoPath = '/opt/athletia/Imagens/Banco';
+
+// Middleware CORS para imagens do banco
+app.use('/api/imagens-banco', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).send();
+  }
+  next();
+});
+
+// Rota para servir imagens do banco
+app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
+  const { nomeArquivo } = req.params;
+  
+  // Validar nome do arquivo (prevenir path traversal)
+  if (nomeArquivo.includes('..') || nomeArquivo.includes('/') || nomeArquivo.includes('\\')) {
+    return res.status(400).json({ error: 'Nome de arquivo inválido' });
+  }
+
+  const filePath = path.join(imagensBancoPath, nomeArquivo);
+  
+  // Verificar se o arquivo existe
+  if (!fs.existsSync(filePath)) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`[Imagens Banco] Arquivo não encontrado: ${filePath}`);
+    }
+    return res.status(404).json({
+      error: 'Imagem não encontrada',
+      path: filePath
+    });
+  }
+
+  // Verificar se é um arquivo válido
+  try {
+    const stats = fs.statSync(filePath);
+    if (!stats.isFile()) {
+      return res.status(404).json({
+        error: 'Imagem não encontrada'
+      });
+    }
+  } catch (err: any) {
+    console.error(`[Imagens Banco] Erro ao verificar arquivo:`, err);
+    return res.status(500).json({
+      error: 'Erro ao acessar arquivo',
+      message: err.message
+    });
+  }
+
+  // Determinar Content-Type baseado na extensão
+  const ext = path.extname(nomeArquivo).toLowerCase();
+  let contentType = 'image/jpeg'; // padrão
+  if (ext === '.png') contentType = 'image/png';
+  else if (ext === '.gif') contentType = 'image/gif';
+  else if (ext === '.webp') contentType = 'image/webp';
+  else if (ext === '.svg') contentType = 'image/svg+xml';
+
+  // Configurar headers
+  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Accept-Ranges', 'bytes');
+
+  // Enviar arquivo usando stream
+  const fileStream = fs.createReadStream(filePath);
+  
+  fileStream.on('error', (err) => {
+    console.error(`[Imagens Banco] Erro ao ler arquivo:`, err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: 'Erro ao servir arquivo',
+        message: err.message
+      });
+    }
+  });
+
+  fileStream.on('open', () => {
+    fileStream.pipe(res);
+  });
+
+  // Log de sucesso (apenas em desenvolvimento)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[Imagens Banco] Servindo imagem: ${nomeArquivo} -> ${filePath}`);
+  }
+});
+
 // Log para debug (apenas em desenvolvimento)
 if (process.env.NODE_ENV !== 'production') {
   console.log(`[UPLOAD] Exercícios em: ${uploadExerciciosPath} -> /api/uploads/exercicios`);
   console.log(`[UPLOAD] Grupos musculares em: ${uploadGruposPath} -> /api/uploads/grupos-musculares`);
+  console.log(`[IMAGENS BANCO] Diretório: ${imagensBancoPath} -> /api/imagens-banco`);
 }
 
 // Health check
