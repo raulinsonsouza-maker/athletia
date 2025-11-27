@@ -7,6 +7,7 @@
 
 import { prisma } from '../lib/prisma';
 import { garantirPerfilParaInteligencia } from './perfil.service';
+import { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } from './treino.service';
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -145,9 +146,130 @@ function obterGruposDoDia(frequencia: number, indiceDia: number): string[] {
   return splits[indiceDia % splits.length] || splits[0];
 }
 
-function calcularTempoEstimado(totalExercicios: number, objetivo: string): number {
-  const tempoBase = objetivo === 'Força' ? 12 : objetivo === 'Emagrecimento' ? 8 : 10;
-  return totalExercicios * tempoBase;
+/**
+ * Calcula tempo estimado do treino considerando:
+ * - Cardio: 20-30 min (sempre primeiro)
+ * - Exercícios de força: variável baseado no objetivo
+ * - Alongamento: 5-10 min (sempre último)
+ */
+function calcularTempoEstimado(
+  totalExerciciosForca: number, 
+  objetivo: string, 
+  series: number, 
+  descanso: number
+): number {
+  const tempoCardio = 25; // 20-30 min de cardio
+  const tempoAlongamento = 7; // 5-10 min de alongamento
+  
+  // Tempo por exercício de força: (séries × tempo execução) + (descanso × séries-1)
+  const tempoExecucao = 0.5; // 30 segundos por série
+  const tempoPorExercicio = (series * tempoExecucao) + ((series - 1) * (descanso / 60));
+  
+  const tempoForca = totalExerciciosForca * tempoPorExercicio;
+  
+  return Math.ceil(tempoCardio + tempoForca + tempoAlongamento);
+}
+
+/**
+ * Calcula máximo de exercícios de força baseado no tempo disponível
+ * Considera: tempo disponível - cardio (25min) - alongamento (7min) = tempo para força
+ */
+function calcularMaxExerciciosPorTempo(
+  tempoDisponivel: number, 
+  series: number, 
+  descanso: number
+): number {
+  const tempoCardio = 25; // Cardio sempre primeiro
+  const tempoAlongamento = 7; // Alongamento sempre último
+  const tempoUtil = tempoDisponivel - tempoCardio - tempoAlongamento;
+  
+  if (tempoUtil <= 0) {
+    return 2; // Mínimo 2 exercícios mesmo com pouco tempo
+  }
+  
+  // Tempo por exercício de força
+  const tempoExecucao = 0.5; // 30 segundos por série
+  const tempoPorExercicio = (series * tempoExecucao) + ((series - 1) * (descanso / 60));
+  
+  const maxExercicios = Math.floor(tempoUtil / tempoPorExercicio);
+  
+  // Limites razoáveis
+  if (maxExercicios < 2) return 2;
+  if (maxExercicios > 10) return 10; // Máximo 10 exercícios de força
+  
+  return maxExercicios;
+}
+
+/**
+ * Determina quantos exercícios cada grupo deve ter baseado no tipo de treino (letra)
+ * Garante consistência: mesmo tipo de treino sempre tem mesmo número de exercícios
+ * Retorna um Map com grupo -> quantidade de exercícios
+ */
+function determinarExerciciosPorGrupoMap(letraTreino: string, grupos: string[]): Map<string, number> {
+  const mapa = new Map<string, number>();
+  const letra = letraTreino.toUpperCase();
+
+  // Padrões fixos baseados no tipo de treino para garantir consistência
+  switch (letra) {
+    case 'D': // Inferiores completos
+      // Padrão: 2 quadríceps + 2 posteriores + 1 panturrilha + 1 abdômen = 6 exercícios
+      grupos.forEach(grupo => {
+        if (grupo === 'Quadríceps' || grupo === 'Posteriores') {
+          mapa.set(grupo, 2);
+        } else if (grupo === 'Panturrilhas' || grupo === 'Abdômen') {
+          mapa.set(grupo, 1);
+        } else {
+          mapa.set(grupo, 1); // Padrão para outros grupos
+        }
+      });
+      break;
+
+    case 'E': // Superiores leves
+      // Padrão: 1 ombro + 1 tríceps + 1 bíceps + 1 abdômen = 4 exercícios
+      grupos.forEach(grupo => {
+        mapa.set(grupo, 1);
+      });
+      break;
+
+    case 'A': // Peito + Ombros + Tríceps
+      grupos.forEach(grupo => {
+        if (grupo === 'Peito' || grupo === 'Ombros') {
+          mapa.set(grupo, 2);
+        } else {
+          mapa.set(grupo, 1);
+        }
+      });
+      break;
+
+    case 'B': // Costas + Bíceps
+      grupos.forEach(grupo => {
+        if (grupo === 'Costas') {
+          mapa.set(grupo, 2);
+        } else {
+          mapa.set(grupo, 1);
+        }
+      });
+      break;
+
+    case 'C': // Pernas + Abdômen
+      grupos.forEach(grupo => {
+        if (grupo === 'Abdômen') {
+          mapa.set(grupo, 2); // 1-2 exercícios de abdômen
+        } else {
+          mapa.set(grupo, 1);
+        }
+      });
+      break;
+
+    default:
+      // Padrão inteligente baseado na quantidade de grupos
+      const quantidadePadrao = grupos.length <= 2 ? 3 : 2;
+      grupos.forEach(grupo => {
+        mapa.set(grupo, quantidadePadrao);
+      });
+  }
+
+  return mapa;
 }
 
 /**
@@ -275,27 +397,43 @@ async function gerarTreinoDoDia(
 
   if (gruposFiltrados.length === 0) return null;
 
-  // Determinar quantos exercícios por grupo
-  const exerciciosPorGrupo = gruposFiltrados.length <= 2 ? 3 : 2;
+  // Determinar quantos exercícios por grupo baseado no tipo de treino (letra)
+  // Isso garante consistência: mesmo tipo de treino sempre tem mesmo número de exercícios
+  const letraTreino = LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
+  
   const todosExercicios: any[] = [];
 
+  // Mapear quantos exercícios cada grupo deve ter baseado no tipo de treino
+  const exerciciosPorGrupoMap = determinarExerciciosPorGrupoMap(letraTreino, gruposFiltrados);
+
   for (const grupo of gruposFiltrados) {
+    const quantidade = exerciciosPorGrupoMap.get(grupo) || 2; // Padrão: 2 exercícios
     const exercicios = await selecionarExerciciosParaGrupo(
       grupo,
       perfil,
       exerciciosEvitar,
-      exerciciosPorGrupo
+      quantidade
     );
     todosExercicios.push(...exercicios);
   }
 
   if (todosExercicios.length === 0) return null;
 
-  // Calcular parâmetros de treino
+  // Calcular parâmetros de treino baseado no objetivo e experiência
   const parametros = calcularParametrosTreino(
     perfil.objetivo || 'Hipertrofia',
     perfil.experiencia || 'Intermediário'
   );
+
+  // Limitar exercícios baseado no tempo disponível do usuário
+  const tempoDisponivel = Math.min(perfil.tempoDisponivel || 60, 120);
+  const maxExercicios = calcularMaxExerciciosPorTempo(tempoDisponivel, parametros.series, parametros.descanso);
+  
+  // Limitar exercícios de força ao máximo permitido pelo tempo
+  const exerciciosForcaLimitados = todosExercicios.slice(0, maxExercicios);
+  
+  console.log(`[INFO] Tempo disponível: ${tempoDisponivel}min -> Máximo de ${maxExercicios} exercícios de força`);
+  console.log(`[INFO] Exercícios selecionados: ${exerciciosForcaLimitados.length} de ${todosExercicios.length} disponíveis`);
 
   // Criar treino no banco
   const treino = await prisma.treino.create({
@@ -307,19 +445,35 @@ async function gerarTreinoDoDia(
       criadoPor: 'IA',
       concluido: false,
       letraTreino: LETRAS_TREINO[indiceDia % LETRAS_TREINO.length],
-      tempoEstimado: calcularTempoEstimado(todosExercicios.length, perfil.objetivo || 'Hipertrofia')
+      tempoEstimado: 0 // Será recalculado depois
     }
   });
 
-  // Criar exercícios do treino
-  for (let ordem = 0; ordem < todosExercicios.length; ordem++) {
-    const exercicio = todosExercicios[ordem];
+  // 1. ADICIONAR CARDIO PRIMEIRO (ordem 0) - SEMPRE
+  const exercicioCardio = await selecionarExercicioAerobicoDoDia(data);
+  await prisma.exercicioTreino.create({
+    data: {
+      treinoId: treino.id,
+      exercicioId: exercicioCardio.id,
+      ordem: 0, // PRIMEIRO - sempre
+      series: 1,
+      repeticoes: '20-30 min',
+      carga: null,
+      rpe: 5,
+      descanso: 0,
+      concluido: false,
+      observacoes: 'Aquecimento cardiovascular'
+    }
+  });
 
+  // 2. ADICIONAR EXERCÍCIOS DE FORÇA (ordem 1, 2, 3...)
+  let ordem = 1;
+  for (const exercicio of exerciciosForcaLimitados) {
     await prisma.exercicioTreino.create({
       data: {
         treinoId: treino.id,
         exercicioId: exercicio.id,
-        ordem,
+        ordem: ordem++,
         series: parametros.series,
         repeticoes: parametros.repeticoes,
         rpe: parametros.rpe,
@@ -329,19 +483,63 @@ async function gerarTreinoDoDia(
     });
   }
 
+  // 3. ADICIONAR ALONGAMENTO POR ÚLTIMO (ordem final) - SEMPRE
+  const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
+  await prisma.exercicioTreino.create({
+    data: {
+      treinoId: treino.id,
+      exercicioId: exercicioAlongamento.id,
+      ordem: ordem, // ÚLTIMO - sempre
+      series: 1,
+      repeticoes: '5-10 min',
+      carga: null,
+      rpe: 3,
+      descanso: 0,
+      concluido: false,
+      observacoes: 'Alongamento geral de todos os grupos musculares'
+    }
+  });
+
+  // Calcular tempo estimado total (cardio + força + alongamento)
+  const tempoEstimado = calcularTempoEstimado(
+    exerciciosForcaLimitados.length,
+    perfil.objetivo || 'Hipertrofia',
+    parametros.series,
+    parametros.descanso
+  );
+
+  // Atualizar tempo estimado do treino
+  await prisma.treino.update({
+    where: { id: treino.id },
+    data: { tempoEstimado }
+  });
+
+  // Total de exercícios = cardio (1) + força (N) + alongamento (1)
+  const totalExercicios = 1 + exerciciosForcaLimitados.length + 1;
+
   return {
     id: treino.id,
     nome: nomeTreino,
     data: treino.data,
     gruposPrincipais: gruposFiltrados.slice(0, 2),
-    totalExercicios: todosExercicios.length,
-    tempoEstimado: treino.tempoEstimado || 60,
+    totalExercicios,
+    tempoEstimado,
     tipo: treino.tipo
   };
 }
 
 /**
  * Garante que existe um plano semanal completo para o usuário
+ * Gera treinos baseados na frequência semanal do onboarding:
+ * - 3 dias = A-B-C
+ * - 4 dias = A-B-C-D
+ * - 5 dias = A-B-C-D-E
+ * - 6 dias = A-B-C-D-E-F
+ * 
+ * Cada treino sempre inclui:
+ * - Cardio primeiro (ordem 0)
+ * - Exercícios de força no meio (limitados pelo tempo disponível)
+ * - Alongamento por último
  */
 export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<TreinoGerado[]> {
   const { userId, dataReferencia = new Date(), forcarRegeneracao = false } = config;
@@ -349,6 +547,11 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
   // Validar perfil
   const perfil = await garantirPerfilParaInteligencia(userId);
   const frequencia = Math.min(Math.max(perfil.frequenciaSemanal || 3, 1), 6);
+
+  console.log(`[INFO] Gerando plano semanal para usuário ${userId}`);
+  console.log(`[INFO] Frequência semanal: ${frequencia} dias`);
+  console.log(`[INFO] Objetivo: ${perfil.objetivo || 'Hipertrofia'}`);
+  console.log(`[INFO] Tempo disponível: ${perfil.tempoDisponivel || 60} minutos`);
 
   // Calcular período da semana
   const inicioSemana = obterInicioSemana(dataReferencia);
@@ -375,7 +578,8 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
 
   // Se já tem treinos suficientes e não forçar regeneração, retornar
   if (!forcarRegeneracao && treinosExistentes.length >= frequencia) {
-    return treinosExistentes.map((t, idx) => ({
+    console.log(`[INFO] Já existem ${treinosExistentes.length} treinos para esta semana`);
+    return treinosExistentes.map((t) => ({
       id: t.id,
       nome: t.nome,
       data: t.data,
@@ -401,32 +605,52 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
   // Buscar histórico para evitar repetição
   const exerciciosEvitar = await buscarHistoricoExercicios(userId);
 
-  // Gerar novos treinos
+  // Determinar dias da semana para treinar baseado na frequência
+  const diasTreino: number[] = [];
+  if (frequencia === 1) diasTreino.push(1); // Segunda
+  else if (frequencia === 2) diasTreino.push(1, 4); // Segunda e Quinta
+  else if (frequencia === 3) diasTreino.push(1, 3, 5); // Segunda, Quarta, Sexta
+  else if (frequencia === 4) diasTreino.push(1, 2, 4, 5); // Segunda, Terça, Quinta, Sexta
+  else if (frequencia === 5) diasTreino.push(1, 2, 3, 4, 5); // Segunda a Sexta
+  else if (frequencia === 6) diasTreino.push(1, 2, 3, 4, 5, 6); // Segunda a Sábado
+
+  console.log(`[INFO] Dias de treino: ${diasTreino.map(d => ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d]).join(', ')}`);
+
+  // Gerar novos treinos (A, B, C, D, E, F conforme frequência)
   const treinosGerados: TreinoGerado[] = [];
 
   for (let i = 0; i < frequencia; i++) {
+    const diaSemana = diasTreino[i];
     const dataTreino = new Date(inicioSemana);
-    dataTreino.setDate(dataTreino.getDate() + i);
+    dataTreino.setDate(dataTreino.getDate() + (diaSemana - 1)); // Ajustar para o dia correto da semana
+
+    console.log(`[INFO] Gerando Treino ${LETRAS_TREINO[i]} para ${dataTreino.toLocaleDateString('pt-BR')}`);
 
     const treino = await gerarTreinoDoDia(userId, perfil, dataTreino, i, exerciciosEvitar);
 
     if (treino) {
       treinosGerados.push(treino);
+      console.log(`[OK] Treino ${LETRAS_TREINO[i]} criado: ${treino.totalExercicios} exercícios (${treino.tempoEstimado} min)`);
     }
   }
 
+  console.log(`[OK] Plano semanal completo: ${treinosGerados.length} treinos gerados`);
   return treinosGerados;
 }
 
 /**
  * Extrai os grupos musculares principais de um treino
+ * Exclui cardio e alongamento, apenas grupos de força
  */
 function extrairGruposPrincipais(exercicios: any[]): string[] {
   const grupos = new Set<string>();
+  const gruposIgnorar = ['Cardio', 'Alongamento'];
 
   exercicios.forEach(ex => {
     const grupo = ex.exercicio?.grupoMuscularPrincipal;
-    if (grupo) grupos.add(grupo);
+    if (grupo && !gruposIgnorar.includes(grupo)) {
+      grupos.add(grupo);
+    }
   });
 
   return Array.from(grupos).slice(0, 3);
