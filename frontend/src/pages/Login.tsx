@@ -54,9 +54,18 @@ export default function Login() {
         <section className="rounded-[36px] border border-white/10 bg-white/5 overflow-hidden relative shadow-2xl">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=1200&q=80"
+              src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80"
               alt="Atleta treinando"
               className="w-full h-full object-cover opacity-40"
+              onError={(e) => {
+                const target = e.currentTarget
+                const fallback = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1200&q=80'
+                if (target.src !== fallback) {
+                  target.src = fallback
+                } else {
+                  target.style.display = 'none'
+                }
+              }}
             />
           </div>
           <div className="relative px-6 py-8 space-y-6">

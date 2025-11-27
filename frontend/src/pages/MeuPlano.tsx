@@ -5,13 +5,6 @@ import { PlanoAtualResponse, TreinoHomeResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
-import { normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
-
-const IconeSeparador = ({ className = 'w-1.5 h-1.5 text-white/40' }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
-    <circle cx="4" cy="4" r="4" />
-  </svg>
-)
 
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
@@ -67,8 +60,8 @@ export default function MeuPlano() {
     {
       label: 'Treinos concluídos',
       value: progressoSemana
-        ? `${progressoSemana.realizados}/${progressoSemana.planejados}`
-        : `${semanaStats.realizados}/${semanaStats.planejados || planoAtual?.plano.totalTreinos || 0}`
+        ? `${progressoSemana.realizados}`
+        : `${semanaStats.realizados}`
     },
     {
       label: 'Volume total',
@@ -84,51 +77,35 @@ export default function MeuPlano() {
     }
   ]
 
-  const generoNormalizado = normalizarGenero(planoAtual?.genero)
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
       <AppHeader title="Meu Plano" subtitle="Resumo semanal e próximos passos" />
       <div className="px-5 space-y-6">
-        {homeData?.destaquePlanoAtual && (
-          <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-            <div className="h-40 relative">
-              <img
-                src={
-                  homeData.destaquePlanoAtual.imagem || obterImagemPorGenero(generoNormalizado, 'plano')
-                }
-                alt={homeData.destaquePlanoAtual.titulo}
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-dark via-transparent" />
-              <div className="absolute bottom-4 left-4 right-4">
-                <p className="text-xs uppercase tracking-[0.3em] text-white/70">
-                  Próximo treino
-                </p>
-                <h2 className="text-2xl font-bold">{homeData.destaquePlanoAtual.titulo}</h2>
-                <div className="text-sm text-white/70 flex items-center gap-2">
-                  <span>{homeData.destaquePlanoAtual.duracao} min</span>
-                  <IconeSeparador />
-                  <span>{homeData.destaquePlanoAtual.local}</span>
-                </div>
-              </div>
+        <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
+          <div className="p-6 space-y-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">Ações rápidas</p>
+              <h2 className="text-xl font-bold text-white">Continue sua jornada</h2>
+              <p className="text-sm text-white/60 mt-1">
+                Acesse seus treinos ou configure seu plano personalizado
+              </p>
             </div>
-            <div className="p-4 flex gap-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => navigate('/treino/atual')}
-                className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm shadow-glow"
+                className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm shadow-glow hover:bg-primary/90 transition"
               >
-                Iniciar agora
+                Iniciar treino
               </button>
               <button
                 onClick={() => navigate('/treinos')}
-                className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
+                className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm hover:bg-white/5 transition"
               >
-                Configurar
+                Configurar treino
               </button>
             </div>
-          </section>
-        )}
+          </div>
+        </section>
 
         <section className="bg-white/5 backdrop-blur rounded-3xl border border-white/10 p-4 space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-white/50">Semana</p>
