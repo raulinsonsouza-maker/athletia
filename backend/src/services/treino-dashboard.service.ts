@@ -432,54 +432,8 @@ export async function buscarPlanoAtual(userId: string) {
     })
     .filter((bloco): bloco is NonNullable<typeof bloco> => bloco !== null); // Filtrar treinos sem exercícios
 
-  // Calcular tempo médio apenas dos treinos válidos (com exercícios)
-  // Se tempoEstimado não estiver disponível, recalcular baseado nos exercícios
-  const treinosComExercicios = treinos.filter(t => t.exercicios && t.exercicios.length > 0)
-  
-  const calcularTempoRealTreino = (treino: any): number => {
-    // Se tem tempoEstimado válido, usar ele
-    if (treino.tempoEstimado && treino.tempoEstimado > 0) {
-      return treino.tempoEstimado;
-    }
-    
-    // Caso contrário, recalcular baseado nos exercícios
-    let tempoTotal = 0;
-    
-    // Tempo de cardio (primeiro exercício se for cardio)
-    const exercicioCardio = treino.exercicios.find((ex: any) => 
-      ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
-    );
-    if (exercicioCardio) {
-      const tempoCardioMatch = exercicioCardio.repeticoes?.match(/(\d+)/);
-      tempoTotal += tempoCardioMatch ? parseInt(tempoCardioMatch[1], 10) : 10;
-    }
-    
-    // Tempo dos exercícios de força
-    treino.exercicios.forEach((ex: any) => {
-      const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
-      if (grupo !== 'Cardio' && grupo !== 'Flexibilidade') {
-        const tempoPorSerie = 30 + (ex.descanso || 90); // 30s execução + descanso
-        tempoTotal += (ex.series || 3) * tempoPorSerie / 60; // Converter para minutos
-      }
-    });
-    
-    // Tempo de alongamento (último exercício se for alongamento)
-    const exercicioAlongamento = treino.exercicios.find((ex: any) => 
-      ex.exercicio?.grupoMuscularPrincipal === 'Flexibilidade'
-    );
-    if (exercicioAlongamento) {
-      const tempoAlongMatch = exercicioAlongamento.repeticoes?.match(/(\d+)/);
-      tempoTotal += tempoAlongMatch ? parseInt(tempoAlongMatch[1], 10) : 5;
-    }
-    
-    return Math.ceil(tempoTotal);
-  };
-  
-  const tempoMedio = treinosComExercicios.length > 0
-    ? Math.round(
-        treinosComExercicios.reduce((acc, treino) => acc + calcularTempoRealTreino(treino), 0) / treinosComExercicios.length
-      )
-    : 0;
+  // Usar tempo disponível configurado no onboarding ao invés de calcular média
+  const tempoMedio = perfil.tempoDisponivel || 60; // Fallback para 60min se não configurado
 
   // Grupos principais do primeiro treino válido para a capa
   const primeiroTreinoValido = treinosComExercicios[0]
