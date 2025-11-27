@@ -60,34 +60,36 @@ export default function Login() {
             />
           </div>
           <div className="relative px-6 py-8 space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 rounded-full text-xs uppercase tracking-[0.3em] bg-white/10 border border-white/20">
-                Em tempo real
-              </span>
-              <span className="text-white/70 text-sm">Planos atualizados diariamente</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.4em] text-white/40">Atletas ativos hoje</p>
-                <p className="text-3xl font-bold text-white">12.480+</p>
-              </div>
-              <div className="flex flex-col text-right text-white/70 text-sm">
-                <span>Tempo médio de treino</span>
-                <strong className="text-2xl text-white">42 min</strong>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center text-xs text-white/70">
-              <div className="rounded-2xl border border-white/10 bg-dark/30 p-3">
-                <p className="text-lg font-semibold text-white">+3x</p>
-                <span>mais consistência</span>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-dark/30 p-3">
-                <p className="text-lg font-semibold text-white">24/7</p>
-                <span>planos dinâmicos</span>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-dark/30 p-3">
-                <p className="text-lg font-semibold text-white">100%</p>
-                <span>mobile first</span>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white">O que você vai encontrar:</h3>
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-white">Plano personalizado</p>
+                    <p className="text-xs text-white/60">Treinos adaptados ao seu objetivo e nível</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-white">Acompanhamento em tempo real</p>
+                    <p className="text-xs text-white/60">Acompanhe sua evolução e progresso</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-white">Instruções detalhadas</p>
+                    <p className="text-xs text-white/60">GIFs e orientações para cada exercício</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
