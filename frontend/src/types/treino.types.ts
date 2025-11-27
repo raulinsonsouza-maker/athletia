@@ -156,11 +156,20 @@ export interface PlanoAtualExercicio {
   equipamentos?: string[]
 }
 
+export interface CardioInfo {
+  ativo: boolean
+  tipo?: string // 'esteira', 'bicicleta', 'eliptico', 'remada', etc
+  tempoMinutos?: number
+  intensidade?: 'leve' | 'moderada' | 'alta'
+  momento?: 'inicio' | 'final' | 'intercalado'
+}
+
 export interface PlanoAtualBloco {
   id: string
   titulo: string
   data: string | Date
   totalExercicios: number
+  cardio?: CardioInfo
   exercicios: PlanoAtualExercicio[]
 }
 

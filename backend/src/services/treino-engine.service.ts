@@ -40,12 +40,21 @@ interface TreinoGerado {
   totalExercicios: number;
   tempoEstimado: number;
   tipo: string;
+  cardio?: CardioInfo;
 }
 
 interface ConfiguracaoTempo {
   cardio: number;
   alongamento: number;
   tempoPorExercicio: number;
+}
+
+interface CardioInfo {
+  ativo: boolean;
+  tipo?: string;
+  tempoMinutos?: number;
+  intensidade?: 'leve' | 'moderada' | 'alta';
+  momento?: 'inicio' | 'final' | 'intercalado';
 }
 
 // ============================================================================
@@ -723,6 +732,79 @@ async function buscarHistoricoExercicios(
 }
 
 // ============================================================================
+// APLICAÇÃO DE CARDIO ESTRUTURADO
+// ============================================================================
+
+/**
+ * Garante que todo treino tenha campo cardio estruturado
+ * Fallback estrutural obrigatório para evitar quebras na UI
+ */
+/**
+ * Garante que todo treino tenha campo cardio estruturado
+ * Fallback estrutural obrigatório para evitar quebras na UI
+ * Esta função pode ser usada em qualquer lugar onde um treino é retornado
+ */
+export function aplicarCardioAoTreino(treino: any, objetivo: string): any {
+  // Fallback estrutural obrigatório
+  if (!treino.cardio) {
+    treino.cardio = { ativo: false };
+  }
+
+  // Se já preenchido pela IA, não sobrescrever
+  if (treino.cardio.ativo === true && treino.cardio.tempoMinutos) {
+    return treino;
+  }
+
+  let tempo = 0;
+  let intensidade: 'leve' | 'moderada' | 'alta' = 'leve';
+  let tipo = 'esteira';
+  let momento: 'inicio' | 'final' | 'intercalado' = 'final';
+
+  // Configuração baseada no objetivo
+  switch (objetivo) {
+    case 'Hipertrofia':
+      tempo = 8;
+      intensidade = 'moderada';
+      momento = 'final';
+      break;
+    case 'Emagrecimento':
+      tempo = 20;
+      intensidade = 'moderada';
+      momento = 'final';
+      break;
+    case 'Força':
+      tempo = 5;
+      intensidade = 'leve';
+      momento = 'final';
+      break;
+    case 'Resistência':
+      tempo = 25;
+      intensidade = 'moderada';
+      momento = 'final';
+      break;
+    case 'Reabilitação':
+      tempo = 5;
+      intensidade = 'leve';
+      momento = 'final';
+      break;
+    default:
+      tempo = 10;
+      intensidade = 'moderada';
+      momento = 'final';
+  }
+
+  treino.cardio = {
+    ativo: tempo > 0,
+    tipo,
+    tempoMinutos: tempo,
+    intensidade,
+    momento
+  };
+
+  return treino;
+}
+
+// ============================================================================
 // GERAÇÃO DE TREINO
 // ============================================================================
 
@@ -952,18 +1034,57 @@ async function gerarTreinoDoDia(
 
   // Tempo estimado já foi calculado e salvo na transaction
 
-  // Total de exercícios = cardio (1) + força (N) + alongamento (1)
-  const totalExercicios = 1 + exerciciosFinais.length + 1;
+  // Buscar treino completo do banco para incluir cardio estruturado
+  const treinoCompleto = await prisma.treino.findUnique({
+    where: { id: treino.id },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  });
 
-  return {
+  // Extrair informações do cardio do exercício (se existir)
+  const exercicioCardio = treinoCompleto?.exercicios.find(
+    ex => ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
+  );
+
+  // Preparar objeto de retorno com cardio estruturado
+  const treinoRetorno: any = {
     id: treino.id,
     nome: nomeTreino,
     data: treino.data,
     gruposPrincipais: gruposFiltrados.slice(0, 3),
-    totalExercicios,
+    totalExercicios: 1 + exerciciosFinais.length + 1, // Total de exercícios = cardio (1) + força (N) + alongamento (1)
     tempoEstimado,
     tipo: treino.tipo
   };
+
+  // Aplicar cardio estruturado
+  if (exercicioCardio) {
+    const tempoMatch = exercicioCardio.repeticoes?.match(/(\d+)/);
+    const tempoMinutos = tempoMatch ? parseInt(tempoMatch[1], 10) : configTempo.cardio;
+    
+    const nomeCardio = exercicioCardio.exercicio?.nome?.toLowerCase() || '';
+    let tipo = 'esteira';
+    if (nomeCardio.includes('bicicleta')) tipo = 'bicicleta';
+    else if (nomeCardio.includes('eliptico') || nomeCardio.includes('elíptico')) tipo = 'eliptico';
+    else if (nomeCardio.includes('remada')) tipo = 'remada';
+    
+    treinoRetorno.cardio = {
+      ativo: true,
+      tipo,
+      tempoMinutos,
+      intensidade: 'moderada' as const,
+      momento: 'inicio' as const
+    };
+  } else {
+    // Aplicar função para garantir cardio estruturado mesmo sem exercício
+    aplicarCardioAoTreino(treinoRetorno, perfil.objetivo || 'Hipertrofia');
+  }
+
+  return treinoRetorno;
 }
 
 /**
@@ -1007,15 +1128,48 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
   // Se já tem treinos suficientes e não forçar regeneração, retornar
   if (!forcarRegeneracao && treinosExistentes.length >= frequencia) {
     console.log(`[INFO] Já existem ${treinosExistentes.length} treinos para esta semana`);
-    return treinosExistentes.map((t) => ({
-      id: t.id,
-      nome: t.nome,
-      data: t.data,
-      gruposPrincipais: extrairGruposPrincipais(t.exercicios),
-      totalExercicios: t.exercicios.length,
-      tempoEstimado: t.tempoEstimado || 60,
-      tipo: t.tipo
-    }));
+    return treinosExistentes.map((t) => {
+      // Extrair informações do cardio
+      const exercicioCardio = t.exercicios.find(
+        ex => ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
+      );
+      
+      let cardio: CardioInfo = { ativo: false };
+      if (exercicioCardio) {
+        const tempoMatch = exercicioCardio.repeticoes?.match(/(\d+)/);
+        const tempoMinutos = tempoMatch ? parseInt(tempoMatch[1], 10) : 15;
+        
+        const nomeCardio = exercicioCardio.exercicio?.nome?.toLowerCase() || '';
+        let tipo = 'esteira';
+        if (nomeCardio.includes('bicicleta')) tipo = 'bicicleta';
+        else if (nomeCardio.includes('eliptico') || nomeCardio.includes('elíptico')) tipo = 'eliptico';
+        else if (nomeCardio.includes('remada')) tipo = 'remada';
+        
+        cardio = {
+          ativo: true,
+          tipo,
+          tempoMinutos,
+          intensidade: 'moderada',
+          momento: exercicioCardio.ordem === 0 ? 'inicio' : 'final'
+        };
+      } else {
+        // Aplicar função para garantir cardio estruturado
+        const treinoTemp: any = {};
+        aplicarCardioAoTreino(treinoTemp, perfil.objetivo || 'Hipertrofia');
+        cardio = treinoTemp.cardio || { ativo: false };
+      }
+      
+      return {
+        id: t.id,
+        nome: t.nome,
+        data: t.data,
+        gruposPrincipais: extrairGruposPrincipais(t.exercicios),
+        totalExercicios: t.exercicios.length,
+        tempoEstimado: t.tempoEstimado || 60,
+        tipo: t.tipo,
+        cardio
+      };
+    });
   }
 
   // Limpar treinos IA existentes da semana

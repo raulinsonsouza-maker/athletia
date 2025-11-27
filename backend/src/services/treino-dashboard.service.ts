@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { garantirPlanoSemanal } from './treino-engine.service';
+import { garantirPlanoSemanal, aplicarCardioAoTreino } from './treino-engine.service';
 import { garantirPerfilParaInteligencia, obterPerfilBasico } from './perfil.service';
 import { obterImagemTreino, obterImagemGrupo } from '../utils/imagens-treino';
 
@@ -305,6 +305,7 @@ export async function obterResumoTreinos(userId: string) {
 export async function buscarPlanoAtual(userId: string) {
   const perfil = await garantirPerfilParaInteligencia(userId);
   const genero = perfil?.sexo || null;
+  const objetivo = perfil?.objetivo || 'Hipertrofia';
 
   // Garantir plano semanal usando novo engine
   await garantirPlanoSemanal({ userId });
@@ -369,6 +370,36 @@ export async function buscarPlanoAtual(userId: string) {
 
       const gruposPrincipais = extrairGruposPrincipais(exerciciosValidos)
       
+      // Extrair informações do cardio do exercício (se existir)
+      const exercicioCardio = treino.exercicios.find(
+        (ex: any) => ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
+      );
+
+      // Criar objeto cardio estruturado usando função centralizada
+      const treinoTemp: any = {};
+      if (exercicioCardio) {
+        const tempoMatch = exercicioCardio.repeticoes?.match(/(\d+)/);
+        const tempoMinutos = tempoMatch ? parseInt(tempoMatch[1], 10) : 0;
+        
+        const nomeCardio = exercicioCardio.exercicio?.nome?.toLowerCase() || '';
+        let tipo = 'esteira';
+        if (nomeCardio.includes('bicicleta')) tipo = 'bicicleta';
+        else if (nomeCardio.includes('eliptico') || nomeCardio.includes('elíptico')) tipo = 'eliptico';
+        else if (nomeCardio.includes('remada')) tipo = 'remada';
+        
+        treinoTemp.cardio = {
+          ativo: true,
+          tipo,
+          tempoMinutos: tempoMinutos || 15,
+          intensidade: 'moderada' as const,
+          momento: exercicioCardio.ordem === 0 ? 'inicio' as const : 'final' as const
+        };
+      }
+      
+      // Garantir que sempre tenha campo cardio (usar função centralizada)
+      aplicarCardioAoTreino(treinoTemp, objetivo);
+      const cardio = treinoTemp.cardio || { ativo: false };
+      
       return {
         id: treino.id,
         titulo: treino.nome || 'Treino',
@@ -377,6 +408,7 @@ export async function buscarPlanoAtual(userId: string) {
         gruposPrincipais,
         totalExercicios: exerciciosValidos.length,
         imagem: obterImagemTreino(gruposPrincipais, genero),
+        cardio,
         exercicios: exerciciosValidos.map(ex => ({
           id: ex.id,
           nome: ex.exercicio.nome,
