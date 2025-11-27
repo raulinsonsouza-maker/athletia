@@ -4,7 +4,7 @@ import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
 import { treinoRapidoService, GrupoMuscularCard } from '../services/treino-rapido.service'
-import { getImagemGrupoBanco, getImagemBanco } from '../utils/imagensBanco'
+import { getImagemGrupoBanco } from '../utils/imagensBanco'
 
 // Imagens padrão do banco (fallback para Unsplash se não houver no banco)
 const DEFAULT_IMAGENS: Record<string, string> = {
