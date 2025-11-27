@@ -436,10 +436,8 @@ export async function buscarPlanoAtual(userId: string) {
   const tempoMedio = perfil.tempoDisponivel || 60; // Fallback para 60min se não configurado
 
   // Grupos principais do primeiro treino válido para a capa
-  const primeiroTreinoValido = treinosComExercicios[0]
-  const gruposPrimeiro = primeiroTreinoValido 
-    ? extrairGruposPrincipais(primeiroTreinoValido.exercicios)
-    : [];
+  const primeiroBlocoValido = blocos[0];
+  const gruposPrimeiro = primeiroBlocoValido?.gruposPrincipais || [];
 
   // CORREÇÃO: totalTreinos deve mostrar frequência semanal do usuário, não quantidade de treinos no banco
   const frequenciaSemanal = perfil.frequenciaSemanal || 3;
