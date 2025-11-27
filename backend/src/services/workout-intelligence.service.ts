@@ -161,35 +161,50 @@ export function evitarRedundancia(
  * Filtra exercícios por local de treino
  */
 function filtrarPorLocalTreino(exercicios: any[], localTreino?: string | null): any[] {
-  if (!localTreino || localTreino === 'Academia') {
-    return exercicios; // Academia permite todos
+  if (!localTreino) {
+    return exercicios; // Sem filtro se não especificado
   }
 
-  if (localTreino === 'Casa') {
-    // Casa: apenas exercícios sem máquinas ou com halteres/peso corporal
+  const localLower = localTreino.toLowerCase();
+  
+  // Academia comercial: permite todos os equipamentos
+  if (localLower.includes('comercial') || localLower === 'academia') {
+    return exercicios;
+  }
+
+  // Academia Pequena: permite halteres, barras e máquinas básicas
+  if (localLower.includes('pequena')) {
     return exercicios.filter(ex => {
       const equipamentos = ex.equipamentoNecessario || [];
-      const temMaquina = equipamentos.some((eq: string) => 
-        eq.toLowerCase().includes('máquina') || 
-        eq.toLowerCase().includes('aparelho') ||
-        eq.toLowerCase().includes('polia') ||
-        eq.toLowerCase().includes('cabo')
-      );
-      
-      if (temMaquina) return false;
-      
-      const temHalteres = equipamentos.some((eq: string) => 
-        eq.toLowerCase().includes('halter') || 
-        eq.toLowerCase().includes('dumbbell')
-      );
-      
+      const temEquipamentoBasico = equipamentos.some((eq: string) => {
+        const eqLower = eq.toLowerCase();
+        return eqLower.includes('halter') || 
+               eqLower.includes('dumbbell') ||
+               eqLower.includes('barra') ||
+               eqLower.includes('peso corporal') ||
+               eqLower.includes('corpo') ||
+               eqLower.includes('máquina básica') ||
+               eqLower.includes('esteira');
+      });
+      return temEquipamentoBasico || equipamentos.length === 0;
+    });
+  }
+
+  // Sem equipamento: apenas peso corporal
+  if (localLower.includes('sem equipamento') || localLower.includes('sem equipamento')) {
+    return exercicios.filter(ex => {
+      const equipamentos = ex.equipamentoNecessario || [];
       const temPesoCorporal = equipamentos.some((eq: string) => 
         eq.toLowerCase().includes('peso corporal') || 
         eq.toLowerCase().includes('corpo')
       );
-      
-      return temHalteres || temPesoCorporal || equipamentos.length === 0;
+      return temPesoCorporal || equipamentos.length === 0;
     });
+  }
+
+  // Customizado: sem filtro (usuário escolhe)
+  if (localLower.includes('customizado')) {
+    return exercicios;
   }
 
   return exercicios;

@@ -19,9 +19,25 @@ function extrairRepeticoes(valor: string): number {
 }
 
 function calcularVolumeTreino(treino: any): number {
+  if (!treino || !treino.exercicios || !Array.isArray(treino.exercicios)) {
+    return 0;
+  }
+  
   return treino.exercicios.reduce((total: number, exercicio: any) => {
+    // Ignorar exercícios de cardio e alongamento no cálculo de volume
+    const grupo = exercicio.exercicio?.grupoMuscularPrincipal || exercicio.grupoMuscularPrincipal || '';
+    if (grupo === 'Cardio' || grupo === 'Flexibilidade' || exercicio.exercicio?.nome?.toLowerCase().includes('alongamento')) {
+      return total;
+    }
+    
     const repeticoes = extrairRepeticoes(exercicio.repeticoes);
     const carga = exercicio.carga || 0;
+    
+    // Validar valores numéricos válidos
+    if (isNaN(repeticoes) || isNaN(carga) || repeticoes <= 0 || carga <= 0) {
+      return total;
+    }
+    
     return total + exercicio.series * repeticoes * carga;
   }, 0);
 }
@@ -204,14 +220,46 @@ export async function obterResumoTreinos(userId: string) {
     };
   });
 
-  const realizados = treinosSemana.filter(treino => treino.concluido).length;
+  // Validar dados reais do banco
+  const realizados = treinosSemana.filter(treino => treino.concluido === true).length;
   const planejados = treinosSemana.length;
-  const volumeTotal = treinosSemana.reduce((acc, treino) => acc + calcularVolumeTreino(treino), 0);
-  const seriesTotais = treinosSemana.reduce(
-    (acc, treino) => acc + treino.exercicios.reduce((soma: number, exercicio: any) => soma + exercicio.series, 0),
-    0
-  );
-  const diasSemTreino = semana.filter(dia => !dia.hasTreino).length;
+  
+  // Calcular volume total apenas de treinos concluídos com exercícios válidos
+  const volumeTotal = treinosSemana
+    .filter(treino => treino.concluido === true)
+    .reduce((acc, treino) => {
+      const volume = calcularVolumeTreino(treino);
+      return acc + (isNaN(volume) ? 0 : volume);
+    }, 0);
+  
+  // Calcular séries totais apenas de treinos concluídos, excluindo cardio e alongamento
+  const seriesTotais = treinosSemana
+    .filter(treino => treino.concluido === true)
+    .reduce((acc, treino) => {
+      if (!treino.exercicios || !Array.isArray(treino.exercicios)) {
+        return acc;
+      }
+      
+      const seriesTreino = treino.exercicios.reduce((soma: number, exercicio: any) => {
+        const grupo = exercicio.exercicio?.grupoMuscularPrincipal || exercicio.grupoMuscularPrincipal || '';
+        // Ignorar cardio e alongamento
+        if (grupo === 'Cardio' || grupo === 'Flexibilidade' || exercicio.exercicio?.nome?.toLowerCase().includes('alongamento')) {
+          return soma;
+        }
+        
+        const series = exercicio.series || 0;
+        return soma + (isNaN(series) ? 0 : Math.max(0, series));
+      }, 0);
+      
+      return acc + seriesTreino;
+    }, 0);
+  
+  // Contar dias sem treino apenas dos dias passados (não futuros)
+  const diasSemTreino = semana.filter(dia => {
+    const dataDia = new Date(dia.data);
+    const hoje = normalizarData(new Date());
+    return dataDia.getTime() < hoje.getTime() && !dia.hasTreino;
+  }).length;
 
   const recomendacoes: string[] = [];
   if (planejados > 0 && realizados < Math.ceil(planejados * 0.5)) {

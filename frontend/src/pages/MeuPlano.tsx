@@ -124,7 +124,7 @@ export default function MeuPlano() {
                 onClick={() => navigate('/treinos')}
                 className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm"
               >
-                Ajustar plano
+                Configurar
               </button>
             </div>
           </section>

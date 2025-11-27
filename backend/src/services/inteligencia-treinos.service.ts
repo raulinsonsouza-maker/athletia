@@ -3,7 +3,8 @@ import {
   selecionarExercicioPrincipal,
   selecionarExercicioAcessorio,
   calcularParametrosTreino,
-  evitarRedundancia
+  evitarRedundancia,
+  isExercicioComposto
 } from './workout-intelligence.service'
 import { getVolumeGuideline } from './treino-knowledge.service'
 import { buscarOuCriarExercicioAerobico, buscarOuCriarExercicioAlongamento } from './treino.service'
@@ -364,21 +365,90 @@ export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
     throw new Error('Não encontramos exercícios adequados para o seu perfil. Tente ajustar as preferências.')
   }
 
-  const { series, repeticoes, rpe, descanso } = calcularParametrosTreino(
+  const parametrosBase = calcularParametrosTreino(
     objetivo,
     dificuldade,
     perfil.rpePreferido
   )
 
-  const exerciciosFormatados: TreinoExercicioInput[] = exerciciosSelecionados.map((ex, index) => ({
-    exercicioId: ex.id,
-    ordem: index + 1,
-    series,
-    repeticoes,
-    carga: null,
-    rpe,
-    descanso
-  }))
+  // Calcular repetições específicas por tipo de exercício
+  function calcularRepeticoesPorTipo(exercicio: any, parametrosBase: { series: number; repeticoes: string; rpe: number; descanso: number }): string {
+    const grupo = exercicio.grupoMuscularPrincipal || ''
+    
+    // Cardio: tempo em minutos
+    if (grupo === 'Cardio') {
+      return '10-15 min'
+    }
+    
+    // Alongamento/Flexibilidade: tempo em minutos
+    if (grupo === 'Flexibilidade' || exercicio.nome?.toLowerCase().includes('alongamento')) {
+      return '5-10 min'
+    }
+    
+    const isComposto = isExercicioComposto(exercicio)
+    const baseReps = parametrosBase.repeticoes
+    
+    // Extrair números da faixa base (ex: "8-12" -> [8, 12])
+    const match = baseReps.match(/(\d+)-(\d+)/)
+    if (!match) return baseReps
+    
+    let minReps = parseInt(match[1], 10)
+    let maxReps = parseInt(match[2], 10)
+    
+    // Ajustar baseado no tipo de exercício e objetivo
+    if (isComposto) {
+      // Exercícios compostos: menos repetições, mais força
+      if (objetivo === 'Força') {
+        minReps = Math.max(4, minReps - 2)
+        maxReps = Math.max(6, maxReps - 3)
+      } else if (objetivo === 'Hipertrofia') {
+        minReps = Math.max(6, minReps - 1)
+        maxReps = Math.max(8, maxReps - 2)
+      } else {
+        // Emagrecimento/Resistência: manter ou aumentar ligeiramente
+        minReps = Math.min(12, minReps + 1)
+        maxReps = Math.min(15, maxReps + 2)
+      }
+    } else {
+      // Exercícios isolados: mais repetições, mais foco em hipertrofia
+      if (objetivo === 'Força') {
+        minReps = Math.max(6, minReps)
+        maxReps = Math.max(8, maxReps)
+      } else if (objetivo === 'Hipertrofia') {
+        minReps = Math.min(15, minReps + 2)
+        maxReps = Math.min(20, maxReps + 3)
+      } else {
+        // Emagrecimento/Resistência: mais repetições
+        minReps = Math.min(15, minReps + 2)
+        maxReps = Math.min(20, maxReps + 3)
+      }
+    }
+    
+    // Ajustar por dificuldade
+    if (dificuldade === 'Iniciante') {
+      minReps = Math.max(8, minReps - 2)
+      maxReps = Math.max(12, maxReps - 2)
+    } else if (dificuldade === 'Avançado') {
+      minReps = Math.min(20, minReps + 1)
+      maxReps = Math.min(25, maxReps + 2)
+    }
+    
+    return `${minReps}-${maxReps}`
+  }
+
+  const exerciciosFormatados: TreinoExercicioInput[] = exerciciosSelecionados.map((ex, index) => {
+    const repeticoesAjustadas = calcularRepeticoesPorTipo(ex, parametrosBase)
+    
+    return {
+      exercicioId: ex.id,
+      ordem: index + 1,
+      series: parametrosBase.series,
+      repeticoes: repeticoesAjustadas,
+      carga: null,
+      rpe: parametrosBase.rpe,
+      descanso: parametrosBase.descanso
+    }
+  })
 
   const incluirCardio = options.incluirCardio ?? options.origem === 'IA'
   const incluirAlongamento = options.incluirAlongamento ?? options.origem === 'IA'
