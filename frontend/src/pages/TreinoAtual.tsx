@@ -131,32 +131,55 @@ export default function TreinoAtual() {
     try {
       setLoading(true)
       const response = await obterPlanoAtualResumo()
-      setPlano(response)
       
-      // Definir bloco ativo (do param ou primeiro)
-      const treinoIdParam = searchParams.get('treino')
-      if (treinoIdParam && response.blocos.find(b => b.id === treinoIdParam)) {
-        setBlocoAtivoId(treinoIdParam)
-      } else {
-        setBlocoAtivoId(response.blocos[0]?.id ?? null)
+      // Filtrar blocos que têm exercícios válidos
+      const blocosValidos = response.blocos.filter(bloco => 
+        bloco && bloco.exercicios && bloco.exercicios.length > 0
+      )
+      
+      // Se não houver blocos válidos, não definir plano
+      if (blocosValidos.length === 0) {
+        setPlano({ ...response, blocos: [] })
+        setBlocoAtivoId(null)
+        setStatusExercicios({})
+        setExercicioAtivoIndex(0)
+        return
       }
       
-      // Mapear status dos exercícios
-      const mapa = response.blocos.reduce<Record<string, boolean>>((acc, bloco) => {
-        bloco.exercicios.forEach((ex) => {
-          acc[ex.id] = Boolean(ex.concluido)
-        })
+      setPlano({ ...response, blocos: blocosValidos })
+      
+      // Definir bloco ativo (do param ou primeiro válido)
+      const treinoIdParam = searchParams.get('treino')
+      const blocoParam = treinoIdParam ? blocosValidos.find(b => b.id === treinoIdParam) : null
+      
+      if (blocoParam && blocoParam.exercicios.length > 0) {
+        setBlocoAtivoId(treinoIdParam!)
+      } else {
+        // Encontrar primeiro bloco com exercícios
+        const primeiroBlocoValido = blocosValidos.find(b => b.exercicios && b.exercicios.length > 0)
+        setBlocoAtivoId(primeiroBlocoValido?.id ?? null)
+      }
+      
+      // Mapear status dos exercícios apenas dos blocos válidos
+      const mapa = blocosValidos.reduce<Record<string, boolean>>((acc, bloco) => {
+        if (bloco.exercicios) {
+          bloco.exercicios.forEach((ex) => {
+            acc[ex.id] = Boolean(ex.concluido)
+          })
+        }
         return acc
       }, {})
       setStatusExercicios(mapa)
       
-      // Encontrar primeiro exercício não concluído
-      const blocoInicial = response.blocos.find(b => 
-        b.id === (treinoIdParam || response.blocos[0]?.id)
-      )
-      if (blocoInicial) {
+      // Encontrar primeiro exercício não concluído do bloco ativo
+      const blocoAtivoIdFinal = blocoParam?.id || blocosValidos[0]?.id
+      const blocoInicial = blocosValidos.find(b => b.id === blocoAtivoIdFinal)
+      
+      if (blocoInicial && blocoInicial.exercicios && blocoInicial.exercicios.length > 0) {
         const indexNaoConcluido = blocoInicial.exercicios.findIndex(ex => !mapa[ex.id])
         setExercicioAtivoIndex(indexNaoConcluido >= 0 ? indexNaoConcluido : 0)
+      } else {
+        setExercicioAtivoIndex(0)
       }
     } catch (error) {
       console.error(error)
@@ -172,8 +195,22 @@ export default function TreinoAtual() {
 
   // Bloco ativo
   const blocoAtivo = useMemo(() => {
-    if (!plano) return null
-    return plano.blocos.find((b) => b.id === blocoAtivoId) || plano.blocos[0] || null
+    if (!plano || !blocoAtivoId) return null
+    
+    // Buscar bloco pelo ID
+    const blocoEncontrado = plano.blocos.find((b) => b.id === blocoAtivoId)
+    
+    // Validar se o bloco tem exercícios válidos
+    if (blocoEncontrado && blocoEncontrado.exercicios && blocoEncontrado.exercicios.length > 0) {
+      return blocoEncontrado
+    }
+    
+    // Se não encontrou ou não tem exercícios, buscar primeiro bloco válido
+    const primeiroBlocoValido = plano.blocos.find(b => 
+      b && b.exercicios && b.exercicios.length > 0
+    )
+    
+    return primeiroBlocoValido || null
   }, [blocoAtivoId, plano])
 
   // Exercício em foco

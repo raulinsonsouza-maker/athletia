@@ -347,51 +347,68 @@ export async function buscarPlanoAtual(userId: string) {
     };
   }
 
-  const blocos = treinos.map((treino) => {
-    // Remover exercícios duplicados (mesmo exercicioId) dentro do mesmo treino
-    const vistos = new Set<string>()
-    const exerciciosUnicos = treino.exercicios.filter((ex: any) => {
-      const key = ex.exercicioId || ex.exercicio?.id
-      if (!key) return true
-      if (vistos.has(key)) return false
-      vistos.add(key)
-      return true
+  const blocos = treinos
+    .map((treino) => {
+      // Remover exercícios duplicados (mesmo exercicioId) dentro do mesmo treino
+      const vistos = new Set<string>()
+      const exerciciosUnicos = treino.exercicios.filter((ex: any) => {
+        const key = ex.exercicioId || ex.exercicio?.id
+        if (!key) return true
+        if (vistos.has(key)) return false
+        vistos.add(key)
+        return true
+      })
+
+      // Filtrar exercícios que não têm dados válidos
+      const exerciciosValidos = exerciciosUnicos.filter((ex: any) => ex.exercicio && ex.exercicio.nome)
+
+      // Se não tiver exercícios válidos, retornar null para filtrar depois
+      if (exerciciosValidos.length === 0) {
+        return null
+      }
+
+      const gruposPrincipais = extrairGruposPrincipais(exerciciosValidos)
+      
+      return {
+        id: treino.id,
+        titulo: treino.nome || 'Treino',
+        data: treino.data,
+        letraTreino: treino.letraTreino,
+        gruposPrincipais,
+        totalExercicios: exerciciosValidos.length,
+        imagem: obterImagemTreino(gruposPrincipais, genero),
+        exercicios: exerciciosValidos.map(ex => ({
+          id: ex.id,
+          nome: ex.exercicio.nome,
+          grupo: ex.exercicio.grupoMuscularPrincipal,
+          series: ex.series,
+          repeticoes: ex.repeticoes,
+          carga: ex.carga,
+          ordem: ex.ordem,
+          concluido: ex.concluido,
+          descricao: ex.exercicio.descricao,
+          execucao: ex.exercicio.execucaoTecnica,
+          errosComuns: ex.exercicio.errosComuns,
+          gifUrl: ex.exercicio.gifUrl,
+          equipamentos: ex.exercicio.equipamentoNecessario
+        }))
+      };
     })
+    .filter((bloco): bloco is NonNullable<typeof bloco> => bloco !== null); // Filtrar treinos sem exercícios
 
-    const gruposPrincipais = extrairGruposPrincipais(exerciciosUnicos)
-    
-    return {
-      id: treino.id,
-      titulo: treino.nome || 'Treino',
-      data: treino.data,
-      letraTreino: treino.letraTreino,
-      gruposPrincipais,
-      totalExercicios: exerciciosUnicos.length,
-      imagem: obterImagemTreino(gruposPrincipais, genero),
-      exercicios: exerciciosUnicos.map(ex => ({
-        id: ex.id,
-        nome: ex.exercicio.nome,
-        grupo: ex.exercicio.grupoMuscularPrincipal,
-        series: ex.series,
-        repeticoes: ex.repeticoes,
-        carga: ex.carga,
-        ordem: ex.ordem,
-        concluido: ex.concluido,
-        descricao: ex.exercicio.descricao,
-        execucao: ex.exercicio.execucaoTecnica,
-        errosComuns: ex.exercicio.errosComuns,
-        gifUrl: ex.exercicio.gifUrl,
-        equipamentos: ex.exercicio.equipamentoNecessario
-      }))
-    };
-  });
+  // Calcular tempo médio apenas dos treinos válidos (com exercícios)
+  const treinosComExercicios = treinos.filter(t => t.exercicios && t.exercicios.length > 0)
+  const tempoMedio = treinosComExercicios.length > 0
+    ? Math.round(
+        treinosComExercicios.reduce((acc, treino) => acc + (treino.tempoEstimado || 60), 0) / treinosComExercicios.length
+      )
+    : 0;
 
-  const tempoMedio = Math.round(
-    treinos.reduce((acc, treino) => acc + (treino.tempoEstimado || 60), 0) / treinos.length
-  );
-
-  // Grupos principais do primeiro treino para a capa
-  const gruposPrimeiro = extrairGruposPrincipais(treinos[0].exercicios);
+  // Grupos principais do primeiro treino válido para a capa
+  const primeiroTreinoValido = treinosComExercicios[0]
+  const gruposPrimeiro = primeiroTreinoValido 
+    ? extrairGruposPrincipais(primeiroTreinoValido.exercicios)
+    : [];
 
   return {
     plano: {
