@@ -4,19 +4,21 @@ import { prisma } from '../lib/prisma';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
 import { obterResumoTreinos, buscarPlanoAtual } from '../services/treino-dashboard.service';
-import { gerarTreinoPersonalizado } from '../services/inteligencia-treinos.service';
-import { garantirPlanoSemanal as garantirPlanoSemanalInteligente } from '../services/treino-engine.service';
+import { 
+  garantirPlanoSemanal as garantirPlanoSemanalInteligente,
+  gerarTreinoDoDiaUnico
+} from '../services/treino-engine.service';
 
-// Gerar treino do dia ou semana completa
+// Gerar treino do dia ou semana completa - USA APENAS MOTOR CENTRALIZADO
 export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { data, gerarSemana } = req.body;
 
-    console.log('[CONTROLLER] Gerando treino...', { userId, data, gerarSemana });
+    console.log('[CONTROLLER] Gerando treino usando motor centralizado...', { userId, data, gerarSemana });
 
     if (gerarSemana === true) {
-      // Gerar semana completa usando inteligencia
+      // Gerar semana completa usando motor centralizado
       const treinos = await garantirPlanoSemanalInteligente({ 
         userId, 
         dataReferencia: data ? new Date(data) : new Date() 
@@ -27,15 +29,33 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
         quantidadeGerados: treinos.length
       });
     } else {
-      // Gerar treino do dia
-      const treino = await gerarTreinoPersonalizado({
+      // Gerar treino do dia usando motor centralizado
+      const treinoGerado = await gerarTreinoDoDiaUnico(
         userId,
-        data: data ? new Date(data) : new Date()
+        data ? new Date(data) : new Date()
+      );
+
+      if (!treinoGerado) {
+        return res.status(400).json({
+          error: 'Não foi possível gerar treino',
+          message: 'A data selecionada não corresponde a um dia de treino baseado na sua frequência semanal'
+        });
+      }
+
+      // Buscar treino completo do banco
+      const treinoCompleto = await prisma.treino.findUnique({
+        where: { id: treinoGerado.id },
+        include: {
+          exercicios: {
+            include: { exercicio: true },
+            orderBy: { ordem: 'asc' }
+          }
+        }
       });
 
       return res.status(201).json({
         message: 'Treino gerado com sucesso',
-        treino
+        treino: treinoCompleto
       });
     }
   } catch (error: any) {

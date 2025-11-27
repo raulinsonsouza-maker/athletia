@@ -323,7 +323,42 @@ async function adicionarCardioEAlongamento(exercicios: TreinoExercicioInput[]) {
   return lista
 }
 
+/**
+ * DEPRECATED: Esta função foi substituída pelo motor centralizado (treino-engine.service.ts)
+ * Mantida apenas para compatibilidade, mas agora redireciona para o motor centralizado
+ * 
+ * @deprecated Use gerarTreinoDoDiaUnico do treino-engine.service.ts
+ */
 export async function gerarTreinoPersonalizado(options: GerarTreinoOptions) {
+  // Redirecionar para motor centralizado
+  const { gerarTreinoDoDiaUnico } = await import('./treino-engine.service');
+  
+  console.log('[DEPRECATED] gerarTreinoPersonalizado está sendo redirecionado para motor centralizado');
+  
+  const treinoGerado = await gerarTreinoDoDiaUnico(
+    options.userId,
+    options.data || new Date()
+  );
+
+  if (!treinoGerado) {
+    throw new Error('Não foi possível gerar treino. Verifique sua frequência semanal.');
+  }
+
+  // Buscar treino completo do banco
+  const { prisma } = await import('../lib/prisma');
+  const treinoCompleto = await prisma.treino.findUnique({
+    where: { id: treinoGerado.id },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  });
+
+  return treinoCompleto;
+  
+  /* CÓDIGO ANTIGO REMOVIDO - AGORA USA MOTOR CENTRALIZADO
   const perfil = await garantirPerfilParaInteligencia(options.userId)
   const gruposBase = determinarGruposParaTreino(options, perfil)
   const gruposFiltrados = filtrarGruposPorLesoes(gruposBase, perfil.lesoes)

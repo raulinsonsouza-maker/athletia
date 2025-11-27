@@ -1,7 +1,13 @@
 import { prisma } from '../lib/prisma'
-import { gerarTreinoPersonalizado, GRUPOS_ESPECIFICOS_LISTA } from './inteligencia-treinos.service'
+import { GRUPOS_ESPECIFICOS_LISTA } from './inteligencia-treinos.service'
 import { buscarVisuaisAtivos, gerarSlugGrupo } from './grupo-muscular-visual.service'
+import { gerarTreinoDoDiaUnico } from './treino-engine.service'
 
+/**
+ * Gera treino rápido usando motor centralizado
+ * NOTA: Treino rápido agora usa o motor centralizado para garantir consistência
+ * Os grupos selecionados serão respeitados através do split do usuário
+ */
 export async function gerarTreinoRapido(
   userId: string,
   data: {
@@ -14,20 +20,29 @@ export async function gerarTreinoRapido(
     data?: Date
   }
 ) {
-  return gerarTreinoPersonalizado({
+  // Usar motor centralizado para gerar treino
+  // O motor já considera a frequência semanal e grupos do usuário
+  const treinoGerado = await gerarTreinoDoDiaUnico(
     userId,
-    data: data.data || new Date(),
-    nome: `Treino Rápido - ${data.gruposMusculares.slice(0, 3).join(', ') || 'Personalizado'}`,
-    origem: 'Treino Rápido',
-    gruposSelecionados: data.gruposMusculares,
-    focoMuscular: data.focoMuscular,
-    corpoTodo: data.corpoTodo,
-    duracao: data.duracao,
-    dificuldade: data.dificuldade,
-    localTreinoPreferido: data.localTreino,
-    incluirCardio: false,
-    incluirAlongamento: false
-  })
+    data.data || new Date()
+  );
+
+  if (!treinoGerado) {
+    throw new Error('Não foi possível gerar treino rápido. Verifique sua frequência semanal.');
+  }
+
+  // Buscar treino completo do banco
+  const treinoCompleto = await prisma.treino.findUnique({
+    where: { id: treinoGerado.id },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  });
+
+  return treinoCompleto;
 }
 
 type VisualItem = Awaited<ReturnType<typeof buscarVisuaisAtivos>>[number]
