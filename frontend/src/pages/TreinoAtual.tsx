@@ -259,13 +259,6 @@ export default function TreinoAtual() {
         // Salvar informação para permitir desfazer
         setUltimoExercicioConcluido({ id: exercicioEmFoco.id, timestamp: Date.now() })
         
-        // Feedback visual
-        if (proximoExercicio) {
-          showToast(`Exercício concluído! Próximo: ${proximoExercicio.nome}`, 'success')
-        } else {
-          showToast('Exercício concluído!', 'success')
-        }
-        
         // Ir para próximo automaticamente após delay
         if (exercicioAtivoIndex < blocoAtivo.exercicios.length - 1) {
           setTimeout(() => setExercicioAtivoIndex(prev => prev + 1), 500)
