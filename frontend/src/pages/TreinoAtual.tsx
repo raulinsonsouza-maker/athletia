@@ -4,6 +4,7 @@ import { concluirTreino, marcarExercicioTreino, obterPlanoAtualResumo } from '..
 import { PlanoAtualResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import { resolveApiPath } from '../utils/api-url'
+import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
 
 // ============================================================================
 // ÍCONES SVG
@@ -117,6 +118,17 @@ export default function TreinoAtual() {
   const [ultimoExercicioConcluido, setUltimoExercicioConcluido] = useState<{ id: string; timestamp: number } | null>(null)
   const [gifErroAtual, setGifErroAtual] = useState(false)
   const [gifErroProximo, setGifErroProximo] = useState(false)
+  const [fallbackErroAtual, setFallbackErroAtual] = useState(false)
+  const [fallbackErroProximo, setFallbackErroProximo] = useState(false)
+
+  const normalizarGrupo = (grupo?: string | null) => {
+    if (!grupo) return ''
+    return grupo
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z]/g, '')
+  }
 
   // Timer
   useEffect(() => {
@@ -232,10 +244,12 @@ export default function TreinoAtual() {
 
   useEffect(() => {
     setGifErroAtual(false)
+    setFallbackErroAtual(false)
   }, [exercicioEmFoco?.id])
 
   useEffect(() => {
     setGifErroProximo(false)
+    setFallbackErroProximo(false)
   }, [proximoExercicio?.id])
 
   const exercicioGifUrl = useMemo(() => {
@@ -247,6 +261,54 @@ export default function TreinoAtual() {
     if (gifErroProximo) return null
     return resolveApiPath(proximoExercicio?.gifUrl)
   }, [proximoExercicio?.gifUrl, gifErroProximo])
+
+  const fallbackImagemAtual = useMemo(() => {
+    const slug = normalizarGrupo(exercicioEmFoco?.grupo)
+    const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
+    return imagemGrupo || getImagemPadraoBanco('treino')
+  }, [exercicioEmFoco?.grupo])
+
+  const fallbackImagemProximo = useMemo(() => {
+    const slug = normalizarGrupo(proximoExercicio?.grupo)
+    const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
+    return imagemGrupo || getImagemPadraoBanco('treino')
+  }, [proximoExercicio?.grupo])
+
+  const exercicioMediaUrl = useMemo(() => {
+    if (!gifErroAtual && exercicioGifUrl) {
+      return exercicioGifUrl
+    }
+    if (!fallbackErroAtual && fallbackImagemAtual) {
+      return fallbackImagemAtual
+    }
+    return null
+  }, [exercicioGifUrl, gifErroAtual, fallbackImagemAtual, fallbackErroAtual])
+
+  const proximoMediaUrl = useMemo(() => {
+    if (!gifErroProximo && proximoGifUrl) {
+      return proximoGifUrl
+    }
+    if (!fallbackErroProximo && fallbackImagemProximo) {
+      return fallbackImagemProximo
+    }
+    return null
+  }, [proximoGifUrl, gifErroProximo, fallbackImagemProximo, fallbackErroProximo])
+
+  const handleImagemAtualErro = () => {
+    if (!gifErroAtual && exercicioGifUrl) {
+      setGifErroAtual(true)
+    } else {
+      setFallbackErroAtual(true)
+    }
+  }
+
+  const handleImagemProximoErro = () => {
+    if (!gifErroProximo && proximoGifUrl) {
+      setGifErroProximo(true)
+    } else {
+      setFallbackErroProximo(true)
+    }
+  }
 
   // Progresso
   const progresso = useMemo(() => {
@@ -452,14 +514,18 @@ export default function TreinoAtual() {
                 <p className="text-sm font-semibold text-white/90">{proximoExercicio.nome}</p>
                 <p className="text-xs text-white/50 mt-1">{proximoExercicio.series}x{proximoExercicio.repeticoes}</p>
               </div>
-              {proximoGifUrl && (
+              {proximoMediaUrl ? (
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10">
                   <img
-                    src={proximoGifUrl}
+                    src={proximoMediaUrl}
                     alt={proximoExercicio.nome}
                     className="w-full h-full object-cover"
-                    onError={() => setGifErroProximo(true)}
+                    onError={handleImagemProximoErro}
                   />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10 flex items-center justify-center">
+                  <IconeDumbbell />
                 </div>
               )}
             </div>
@@ -472,13 +538,13 @@ export default function TreinoAtual() {
             onClick={() => setMostrarImagemExpandida(true)}
             className="w-full max-w-sm h-56 bg-[#111] rounded-xl overflow-hidden border border-white/10 flex items-center justify-center hover:border-primary/50 transition relative group"
           >
-            {exercicioGifUrl ? (
+            {exercicioMediaUrl ? (
               <>
                 <img
-                  src={exercicioGifUrl}
+                  src={exercicioMediaUrl}
                   alt={exercicioEmFoco.nome}
                   className="w-full h-full object-contain"
-                  onError={() => setGifErroAtual(true)}
+                  onError={handleImagemAtualErro}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                   <span className="text-xs text-white/70 opacity-0 group-hover:opacity-100 transition">Toque para expandir</span>

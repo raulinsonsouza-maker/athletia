@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { resolveApiPath } from '../utils/api-url'
+import { getImagemPadraoBanco } from '../utils/imagensBanco'
 
 interface Exercicio {
   id: string
@@ -23,8 +24,31 @@ export default function ModalInstrucoes({
   onClose,
   formatarEquipamentos
 }: ModalInstrucoesProps) {
-  const [imagemErro, setImagemErro] = useState(false)
-  const gifUrl = resolveApiPath(exercicio.gifUrl)
+  const [gifErro, setGifErro] = useState(false)
+  const [fallbackErro, setFallbackErro] = useState(false)
+
+  useEffect(() => {
+    setGifErro(false)
+    setFallbackErro(false)
+  }, [exercicio.id])
+
+  const gifUrl = useMemo(() => resolveApiPath(exercicio.gifUrl), [exercicio.gifUrl])
+  const imagemUrl = useMemo(() => resolveApiPath(exercicio.imagemUrl), [exercicio.imagemUrl])
+  const fallbackUrl = useMemo(() => imagemUrl || getImagemPadraoBanco('treino'), [imagemUrl])
+
+  const mediaUrl = useMemo(() => {
+    if (!gifErro && gifUrl) return gifUrl
+    if (!fallbackErro && fallbackUrl) return fallbackUrl
+    return null
+  }, [gifErro, gifUrl, fallbackErro, fallbackUrl])
+
+  const handleMediaError = () => {
+    if (!gifErro && gifUrl) {
+      setGifErro(true)
+    } else {
+      setFallbackErro(true)
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -48,19 +72,12 @@ export default function ModalInstrucoes({
 
         {/* Imagem/GIF Grande */}
         <div className="w-full mb-6 rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/20 flex items-center justify-center min-h-[200px] max-h-[500px]">
-          {gifUrl && !imagemErro ? (
+          {mediaUrl ? (
             <img
-              src={gifUrl}
+              src={mediaUrl}
               alt={exercicio.nome}
               className="w-full h-auto max-h-[500px] object-contain"
-              onError={() => setImagemErro(true)}
-            />
-          ) : exercicio.imagemUrl && !imagemErro ? (
-            <img
-              src={exercicio.imagemUrl}
-              alt={exercicio.nome}
-              className="w-full h-auto max-h-[500px] object-contain"
-              onError={() => setImagemErro(true)}
+              onError={handleMediaError}
             />
           ) : (
             <div className="w-full min-h-[200px] flex items-center justify-center bg-dark-lighter">

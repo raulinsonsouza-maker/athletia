@@ -1306,11 +1306,18 @@ export default function Landing() {
                   <div className="bg-primary/15 border border-primary/40 rounded-lg p-4">
                     <p className="text-xs text-light-muted uppercase tracking-wide">Seu IMC estimado</p>
                     <p className="text-3xl font-bold text-primary mt-1">
-                      {((onboardingData.pesoAtual / ((onboardingData.altura / 100) ** 2))).toFixed(1)}
+                      {(() => {
+                        const alturaMetros = (onboardingData.altura ?? 170) / 100
+                        if (alturaMetros <= 0) return '—'
+                        const imcValor = onboardingData.pesoAtual / (alturaMetros * alturaMetros)
+                        return imcValor.toFixed(1)
+                      })()}
                     </p>
                     <p className="text-xs text-light-muted mt-2">
                       {(() => {
-                        const imc = onboardingData.pesoAtual / ((onboardingData.altura / 100) ** 2)
+                        const alturaMetros = (onboardingData.altura ?? 170) / 100
+                        if (alturaMetros <= 0) return '—'
+                        const imc = onboardingData.pesoAtual / (alturaMetros * alturaMetros)
                         if (imc < 18.5) return 'Abaixo do peso'
                         if (imc < 25) return 'Peso normal'
                         if (imc < 30) return 'Sobrepeso'
