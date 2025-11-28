@@ -25,11 +25,13 @@ export const gerarCheckoutUrl = async (req: Request, res: Response) => {
     }
 
     // Gerar URL de checkout
+    // Verificar se há userId no request (pode vir de middleware de autenticação opcional)
+    const userId = (req as any).userId || '';
     const checkoutUrl = caktoService.generateCheckoutUrl(
       plano.toUpperCase() as 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL',
       email,
       {
-        userId: req.userId || '', // Se autenticado, passar userId
+        userId: userId,
         plano: plano.toUpperCase()
       }
     );

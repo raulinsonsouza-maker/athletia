@@ -39,7 +39,10 @@ router.post('/cakto', express.raw({ type: 'application/json' }), async (req: Req
     let validationMethod = '';
 
     // Método 1: Verificar headers (HMAC SHA256)
-    const signature = req.headers['x-cakto-signature'] || req.headers['x-signature'] as string;
+    const signatureHeader = req.headers['x-cakto-signature'] || req.headers['x-signature'];
+    // Tratar caso seja array (Express pode retornar string[])
+    const signature = Array.isArray(signatureHeader) ? signatureHeader[0] : (signatureHeader as string);
+    
     if (signature) {
       console.log('🔐 Tentando validação por header HMAC...');
       // Se o body é um Buffer (vindo do express.raw), usar diretamente

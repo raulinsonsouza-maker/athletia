@@ -44,7 +44,7 @@ const PLANOS: Planos[] = [
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const { user, updateUser } = useAuth()
+  const { user } = useAuth()
   const { showToast, ToastContainer } = useToast()
   const [planoSelecionado, setPlanoSelecionado] = useState<string>('SEMESTRAL')
   const [loading, setLoading] = useState(false)
