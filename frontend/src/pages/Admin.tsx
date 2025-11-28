@@ -502,8 +502,15 @@ export default function Admin() {
   const buildSourcesForExercicio = (exercicio: any | null) => {
     if (!exercicio) return []
     const slug = normalizarGrupo(exercicio.grupoMuscularPrincipal)
+    
+    // Sempre priorizar o GIF se ele estiver cadastrado
+    // Verificar se gifUrl existe e não é string vazia
+    const gifUrl = (exercicio.gifUrl && exercicio.gifUrl.trim() !== '') 
+      ? getGifUrl(exercicio.gifUrl) 
+      : null
+    
     return buildImageSourceChain(
-      getGifUrl(exercicio.gifUrl),
+      gifUrl, // GIF sempre primeiro se existir
       resolveApiPath((exercicio as any)?.imagemUrl || null),
       slug ? getImagemGrupoBanco(slug) : '',
       getImagemPadraoBanco('treino')
@@ -519,10 +526,16 @@ export default function Admin() {
         target.dataset.sources = JSON.stringify(rest)
         target.src = next
       } else {
-        target.style.display = 'none'
+        // Se não há mais fallbacks, manter a imagem visível mas com estilo de erro
+        // Isso evita que GIFs cadastrados desapareçam completamente
+        target.style.opacity = '0.5'
+        target.style.filter = 'grayscale(100%)'
+        target.alt = target.alt + ' (erro ao carregar)'
       }
     } catch (error) {
-      target.style.display = 'none'
+      // Em caso de erro no parsing, manter a imagem visível
+      target.style.opacity = '0.5'
+      target.style.filter = 'grayscale(100%)'
     }
   }
 
@@ -1124,17 +1137,28 @@ export default function Admin() {
                           <div className="flex flex-col">
                             <div className="mb-4">
                               {/* Miniatura da Demonstração */}
-                              {initialImage ? (
+                              {(initialImage || exercicio.gifUrl) ? (
                                 <div className="mb-3">
                                   <div className="relative w-full h-32 rounded-lg border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                                    <img
-                                      src={initialImage}
-                                      alt={`Demonstração de execução de ${exercicio.nome}`}
-                                      className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                      onClick={() => handleShowGifPreview(exercicio)}
-                                      data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                      onError={handleImagemErroSequencial}
-                                    />
+                                    {initialImage ? (
+                                      <img
+                                        src={initialImage}
+                                        alt={`Demonstração de execução de ${exercicio.nome}`}
+                                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => handleShowGifPreview(exercicio)}
+                                        data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
+                                        onError={handleImagemErroSequencial}
+                                      />
+                                    ) : (
+                                      <img
+                                        src={getGifUrl(exercicio.gifUrl) || ''}
+                                        alt={`Demonstração de execução de ${exercicio.nome}`}
+                                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => handleShowGifPreview(exercicio)}
+                                        data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
+                                        onError={handleImagemErroSequencial}
+                                      />
+                                    )}
                                     <button
                                       onClick={() => handleShowGifPreview(exercicio)}
                                       className="absolute top-2 right-2 btn-secondary text-xs p-1.5 rounded z-10"
@@ -1205,17 +1229,28 @@ export default function Admin() {
                           key={exercicio.id}
                           className="card-hover p-4 flex items-center gap-4"
                         >
-                          {initialImage ? (
+                          {(initialImage || exercicio.gifUrl) ? (
                             <div className="relative flex-shrink-0">
                               <div className="w-20 h-20 rounded-md border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                                <img
-                                  src={initialImage}
-                                  alt={`Demonstração de execução de ${exercicio.nome}`}
-                                  className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                  onClick={() => handleShowGifPreview(exercicio)}
-                                  data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                  onError={handleImagemErroSequencial}
-                                />
+                                {initialImage ? (
+                                  <img
+                                    src={initialImage}
+                                    alt={`Demonstração de execução de ${exercicio.nome}`}
+                                    className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => handleShowGifPreview(exercicio)}
+                                    data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
+                                    onError={handleImagemErroSequencial}
+                                  />
+                                ) : (
+                                  <img
+                                    src={getGifUrl(exercicio.gifUrl) || ''}
+                                    alt={`Demonstração de execução de ${exercicio.nome}`}
+                                    className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => handleShowGifPreview(exercicio)}
+                                    data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
+                                    onError={handleImagemErroSequencial}
+                                  />
+                                )}
                               </div>
                               <button
                                 onClick={() => handleShowGifPreview(exercicio)}
@@ -1311,17 +1346,30 @@ export default function Admin() {
                                 )}
                               </td>
                               <td className="py-3 px-4">
-                                {initialImage ? (
+                                {/* Sempre mostrar imagem se houver GIF cadastrado ou se houver alguma imagem na cadeia */}
+                                {(initialImage || exercicio.gifUrl) ? (
                                   <div className="relative inline-block">
                                     <div className="w-12 h-12 rounded border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                                      <img
-                                        src={initialImage}
-                                        alt={`Demonstração de execução de ${exercicio.nome}`}
-                                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => handleShowGifPreview(exercicio)}
-                                        data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                        onError={handleImagemErroSequencial}
-                                      />
+                                      {initialImage ? (
+                                        <img
+                                          src={initialImage}
+                                          alt={`Demonstração de execução de ${exercicio.nome}`}
+                                          className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={() => handleShowGifPreview(exercicio)}
+                                          data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
+                                          onError={handleImagemErroSequencial}
+                                        />
+                                      ) : (
+                                        // Se há GIF cadastrado mas a URL não foi resolvida, tentar construir manualmente
+                                        <img
+                                          src={getGifUrl(exercicio.gifUrl) || ''}
+                                          alt={`Demonstração de execução de ${exercicio.nome}`}
+                                          className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={() => handleShowGifPreview(exercicio)}
+                                          data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
+                                          onError={handleImagemErroSequencial}
+                                        />
+                                      )}
                                     </div>
                                     <button
                                       onClick={() => handleShowGifPreview(exercicio)}
