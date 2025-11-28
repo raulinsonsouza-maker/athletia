@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import UploadGif from '../components/UploadGif'
+import { getApiBaseUrl } from '../utils/api-url'
 
 interface User {
   id: string
@@ -492,8 +493,8 @@ export default function Admin() {
     }
     
     // Construir URL completa baseada na configuração do ambiente
-    // VITE_API_URL pode ser 'http://localhost:3001/api' ou 'http://localhost:3001'
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    // Usa utilitário que garante HTTPS quando necessário
+    const apiBaseUrl = getApiBaseUrl()
     
     // Remover /api do final se existir, pois a URL do GIF já inclui /api
     let baseUrl = apiBaseUrl.replace(/\/api$/, '').replace(/\/$/, '')

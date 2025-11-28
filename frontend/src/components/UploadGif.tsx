@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
+import { getApiBaseUrl } from '../utils/api-url'
 
 interface UploadGifProps {
   exercicioId: string
@@ -88,8 +89,8 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
     }
     
     // Construir URL completa baseada na configuração do ambiente
-    // VITE_API_URL pode ser 'http://localhost:3001/api' ou 'http://localhost:3001'
-    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    // Usa utilitário que garante HTTPS quando necessário
+    const apiBaseUrl = getApiBaseUrl()
     
     // Remover /api do final se existir, pois a URL do GIF já inclui /api
     let baseUrl = apiBaseUrl.replace(/\/api$/, '').replace(/\/$/, '')

@@ -394,12 +394,6 @@ export default function Landing() {
               >
                 Entrar
               </button>
-              <button
-                onClick={() => navigate('/register')}
-                className="btn-secondary px-4 py-2"
-              >
-                Cadastrar
-              </button>
             </div>
           </div>
         </header>

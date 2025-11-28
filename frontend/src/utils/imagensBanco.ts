@@ -4,7 +4,9 @@
  * e são servidas através da rota /api/imagens-banco/:nomeArquivo
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { getApiBaseUrl } from './api-url'
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Obtém a URL completa de uma imagem do banco
