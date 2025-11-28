@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script para testar webhook do Cakto localmente
 # Uso: bash test-webhook.sh <email> <evento> [product_id]
+# Exemplo: bash test-webhook.sh teste@example.com purchase_approved
+
+# Mudar para o diretório do script
+cd "$(dirname "$0")"
 
 EMAIL=${1:-"teste@example.com"}
 EVENT=${2:-"purchase_approved"}
@@ -101,7 +105,11 @@ HTTP_BODY=$(echo "$RESPONSE" | sed '$d')
 HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 
 echo -e "${CYAN}📥 Resposta (Status: ${HTTP_CODE}):${NC}"
-echo "$HTTP_BODY" | jq '.' 2>/dev/null || echo "$HTTP_BODY"
+if command -v jq &> /dev/null; then
+    echo "$HTTP_BODY" | jq '.' 2>/dev/null || echo "$HTTP_BODY"
+else
+    echo "$HTTP_BODY"
+fi
 echo ""
 
 if [ "$HTTP_CODE" = "200" ]; then

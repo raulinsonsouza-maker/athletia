@@ -133,7 +133,31 @@ export async function processPaymentApproved(webhookData: any) {
     const amount = transaction.amount || 0;
     const paymentMethod = transaction.paymentMethod || transaction.payment_method || 'unknown';
     const status = transaction.status || 'approved';
-    const productId = product?.id || transaction.productId || transaction.product_id;
+    
+    // Tentar extrair product_id de diferentes fontes
+    // 1. Da URL do checkout (contém o product_id do link de pagamento)
+    let productId: string | null = null;
+    const checkoutUrl = transaction.checkoutUrl || webhookData.checkoutUrl;
+    if (checkoutUrl) {
+      // Extrair product_id da URL: https://pay.cakto.com.br/{product_id}?...
+      const urlMatch = checkoutUrl.match(/https?:\/\/pay\.cakto\.com\.br\/([^\/\?]+)/);
+      if (urlMatch && urlMatch[1]) {
+        productId = urlMatch[1];
+        console.log(`📋 Product ID extraído da checkoutUrl: ${productId}`);
+      }
+    }
+    
+    // 2. Fallback: tentar product.short_id
+    if (!productId && product?.short_id) {
+      productId = product.short_id;
+      console.log(`📋 Product ID do short_id: ${productId}`);
+    }
+    
+    // 3. Fallback: tentar product.id (UUID interno - menos confiável)
+    if (!productId) {
+      productId = product?.id || transaction.productId || transaction.product_id;
+      console.log(`📋 Product ID do product.id (UUID): ${productId}`);
+    }
 
     console.log('Dados extraídos:', {
       email: customer?.email,
@@ -141,17 +165,32 @@ export async function processPaymentApproved(webhookData: any) {
       amount,
       paymentMethod,
       status,
-      productId
+      productId,
+      checkoutUrl: checkoutUrl || 'não encontrada',
+      productShortId: product?.short_id || 'não encontrado'
     });
 
     // Mapear product_id para plano
-    const plano = CAKTO_CONFIG.getPlanoByProductId(productId);
+    const plano = productId ? CAKTO_CONFIG.getPlanoByProductId(productId) : null;
     if (!plano) {
       console.error(`❌ Product ID não mapeado: ${productId}`);
+      console.error('📋 Product IDs configurados:', CAKTO_CONFIG.productIds);
+      console.error('📋 Dados do produto recebido:', {
+        productId: productId,
+        productShortId: product?.short_id,
+        productIdUUID: product?.id,
+        checkoutUrl: checkoutUrl
+      });
       return {
         success: false,
-        message: `Product ID não reconhecido: ${productId}`,
-        transaction_id: transactionId
+        message: `Product ID não reconhecido: ${productId}. Verifique se o product_id está correto no .env`,
+        transaction_id: transactionId,
+        debug: {
+          productId: productId,
+          productShortId: product?.short_id,
+          checkoutUrl: checkoutUrl,
+          configuredIds: CAKTO_CONFIG.productIds
+        }
       };
     }
 

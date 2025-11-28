@@ -1,6 +1,10 @@
 #!/bin/bash
 # Script para testar geração de URL de checkout
 # Uso: bash test-checkout.sh <plano> <email>
+# Exemplo: bash test-checkout.sh MENSAL teste@example.com
+
+# Mudar para o diretório do script
+cd "$(dirname "$0")"
 
 PLANO=${1:-"MENSAL"}
 EMAIL=${2:-"teste@example.com"}
@@ -50,9 +54,25 @@ echo "$HTTP_BODY" | jq '.' 2>/dev/null || echo "$HTTP_BODY"
 echo ""
 
 if [ "$HTTP_CODE" = "200" ]; then
-    CHECKOUT_URL=$(echo "$HTTP_BODY" | jq -r '.checkoutUrl' 2>/dev/null)
+    # Tentar extrair URL com jq primeiro
+    if command -v jq &> /dev/null; then
+        CHECKOUT_URL=$(echo "$HTTP_BODY" | jq -r '.checkoutUrl' 2>/dev/null)
+    fi
     
-    if [ -n "$CHECKOUT_URL" ] && [ "$CHECKOUT_URL" != "null" ]; then
+    # Se jq não funcionou ou não está instalado, usar sed/grep
+    if [ -z "$CHECKOUT_URL" ] || [ "$CHECKOUT_URL" = "null" ]; then
+        # Extrair usando sed (mais compatível)
+        CHECKOUT_URL=$(echo "$HTTP_BODY" | sed -n 's/.*"checkoutUrl":"\([^"]*\)".*/\1/p')
+        # Decodificar caracteres especiais
+        CHECKOUT_URL=$(echo "$CHECKOUT_URL" | sed 's/\\u0026/\&/g' | sed 's/\\//\//g' | sed 's/%40/@/g')
+    fi
+    
+    # Se ainda não encontrou, tentar método mais simples (extrair qualquer URL do Cakto)
+    if [ -z "$CHECKOUT_URL" ] || [ "$CHECKOUT_URL" = "null" ]; then
+        CHECKOUT_URL=$(echo "$HTTP_BODY" | grep -oE 'https://pay\.cakto\.com\.br/[^"&}]*' | head -1)
+    fi
+    
+    if [ -n "$CHECKOUT_URL" ] && [ "$CHECKOUT_URL" != "null" ] && echo "$CHECKOUT_URL" | grep -q "pay.cakto.com.br"; then
         echo -e "${GREEN}✅ URL de checkout gerada com sucesso!${NC}"
         echo ""
         echo -e "${CYAN}🔗 URL:${NC}"
@@ -76,6 +96,7 @@ if [ "$HTTP_CODE" = "200" ]; then
             echo -e "${GREEN}✅ Product ID correto: ${EXPECTED_ID}${NC}"
         else
             echo -e "${YELLOW}⚠️  Product ID pode estar incorreto. Esperado: ${EXPECTED_ID}${NC}"
+            echo -e "${YELLOW}   URL encontrada: ${CHECKOUT_URL}${NC}"
         fi
         
         # Verificar se email está na URL
@@ -86,9 +107,14 @@ if [ "$HTTP_CODE" = "200" ]; then
         fi
     else
         echo -e "${RED}❌ URL de checkout não encontrada na resposta${NC}"
+        echo -e "${YELLOW}Resposta completa:${NC}"
+        echo "$HTTP_BODY"
     fi
 else
-    echo -e "${RED}❌ Erro ao gerar URL de checkout${NC}"
+    echo -e "${RED}❌ Erro ao gerar URL de checkout (Status: ${HTTP_CODE})${NC}"
+    echo -e "${YELLOW}Resposta:${NC}"
+    echo "$HTTP_BODY"
+    echo ""
     echo "Verifique os logs do backend para mais detalhes"
 fi
 
