@@ -644,10 +644,11 @@ export default function Cadastro() {
   const metricasAdicionais = calcularMetricasAdicionais()
   
   // Combinar transformacao do hook com métricas adicionais
-  const transformacaoCompleta = transformacao && metricasAdicionais ? {
+  // Garantir que sempre temos todas as propriedades quando ambas existem
+  const transformacaoCompleta = (transformacao && metricasAdicionais) ? {
     ...transformacao,
     ...metricasAdicionais
-  } : (transformacao || metricasAdicionais)
+  } : transformacao || metricasAdicionais || null
 
   // Não renderizar até os dados estarem carregados
   if (!onboardingData) {
@@ -888,7 +889,7 @@ export default function Cadastro() {
                 <div className="text-base font-semibold text-light-muted mb-3 uppercase tracking-wide">Agora</div>
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-dark-lighter border-2 border-grey/30 shadow-lg">
                   <img 
-                    src={transformacaoCompleta.imagemAtual || ''} 
+                    src={transformacaoCompleta && 'imagemAtual' in transformacaoCompleta ? transformacaoCompleta.imagemAtual : ''} 
                     alt="Estado atual"
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -913,7 +914,7 @@ export default function Cadastro() {
                 <div className="text-base font-semibold text-light-muted mb-3 uppercase tracking-wide">6 meses</div>
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/50 shadow-lg">
                   <img 
-                    src={transformacaoCompleta.imagemFutura || ''} 
+                    src={transformacaoCompleta && 'imagemFutura' in transformacaoCompleta ? transformacaoCompleta.imagemFutura : ''} 
                     alt="Estado futuro"
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -937,12 +938,16 @@ export default function Cadastro() {
                 
                 <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Gordura corporal</div>
-                  <div className="text-3xl font-bold text-light">{transformacaoCompleta.gorduraAtual}</div>
+                  <div className="text-3xl font-bold text-light">
+                    {transformacaoCompleta && 'gorduraAtual' in transformacaoCompleta ? transformacaoCompleta.gorduraAtual : '-'}
+                  </div>
                 </div>
 
                 <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Idade de condicionamento físico</div>
-                  <div className="text-3xl font-bold text-light">{transformacaoCompleta.idadeAtual} anos</div>
+                  <div className="text-3xl font-bold text-light">
+                    {transformacaoCompleta && 'idadeAtual' in transformacaoCompleta ? `${transformacaoCompleta.idadeAtual} anos` : '-'}
+                  </div>
                 </div>
 
                 <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
@@ -952,7 +957,7 @@ export default function Cadastro() {
                       <div
                         key={i}
                         className={`h-2 flex-1 rounded ${
-                          i <= transformacaoCompleta.musculosAtual ? 'bg-primary' : 'bg-grey/30'
+                          transformacaoCompleta && 'musculosAtual' in transformacaoCompleta && i <= transformacaoCompleta.musculosAtual ? 'bg-primary' : 'bg-grey/30'
                         }`}
                       ></div>
                     ))}
@@ -968,12 +973,16 @@ export default function Cadastro() {
                 
                 <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Gordura corporal</div>
-                  <div className="text-3xl font-bold text-primary">{transformacaoCompleta.gorduraFutura}</div>
+                  <div className="text-3xl font-bold text-primary">
+                    {transformacaoCompleta && 'gorduraFutura' in transformacaoCompleta ? transformacaoCompleta.gorduraFutura : '-'}
+                  </div>
                 </div>
 
                 <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Idade de condicionamento físico</div>
-                  <div className="text-3xl font-bold text-primary">{transformacaoCompleta.idadeFutura} anos</div>
+                  <div className="text-3xl font-bold text-primary">
+                    {transformacaoCompleta && 'idadeFutura' in transformacaoCompleta ? `${transformacaoCompleta.idadeFutura} anos` : '-'}
+                  </div>
                 </div>
 
                 <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
@@ -983,7 +992,7 @@ export default function Cadastro() {
                       <div
                         key={i}
                         className={`h-2 flex-1 rounded ${
-                          i <= transformacaoCompleta.musculosFuturo ? 'bg-primary' : 'bg-grey/30'
+                          transformacaoCompleta && 'musculosFuturo' in transformacaoCompleta && i <= transformacaoCompleta.musculosFuturo ? 'bg-primary' : 'bg-grey/30'
                         }`}
                       ></div>
                     ))}
