@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { resolveApiPath } from '../utils/api-url'
 
 interface Exercicio {
   id: string
@@ -23,6 +24,7 @@ export default function ModalInstrucoes({
   formatarEquipamentos
 }: ModalInstrucoesProps) {
   const [imagemErro, setImagemErro] = useState(false)
+  const gifUrl = resolveApiPath(exercicio.gifUrl)
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -46,9 +48,9 @@ export default function ModalInstrucoes({
 
         {/* Imagem/GIF Grande */}
         <div className="w-full mb-6 rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/20 flex items-center justify-center min-h-[200px] max-h-[500px]">
-          {exercicio.gifUrl && !imagemErro ? (
+          {gifUrl && !imagemErro ? (
             <img
-              src={exercicio.gifUrl}
+              src={gifUrl}
               alt={exercicio.nome}
               className="w-full h-auto max-h-[500px] object-contain"
               onError={() => setImagemErro(true)}

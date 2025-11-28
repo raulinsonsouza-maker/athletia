@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { getApiBaseUrl } from '../utils/api-url'
+import { resolveApiPath } from '../utils/api-url'
 
 interface UploadGifProps {
   exercicioId: string
@@ -79,35 +79,10 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
   // Função de delete removida - não está sendo usada no componente
 
   const getGifUrl = () => {
-    if (!gifUrl) {
-      return null
-    }
-    
-    // Se já é uma URL completa, retornar como está
-    if (gifUrl.startsWith('http://') || gifUrl.startsWith('https://')) {
+    if (import.meta.env.DEV && gifUrl?.startsWith('/api/')) {
       return gifUrl
     }
-    
-    // Construir URL completa baseada na configuração do ambiente
-    // Usa utilitário que garante HTTPS quando necessário
-    const apiBaseUrl = getApiBaseUrl()
-    
-    // Remover /api do final se existir, pois a URL do GIF já inclui /api
-    let baseUrl = apiBaseUrl.replace(/\/api$/, '').replace(/\/$/, '')
-    
-    // A URL do gifUrl já vem como /api/uploads/exercicios/{id}/exercicio.gif
-    // Garantir que comece com /
-    const relativeUrl = gifUrl.startsWith('/') ? gifUrl : `/${gifUrl}`
-    
-    // Construir URL completa
-    const fullUrl = `${baseUrl}${relativeUrl}`
-    
-    // Em desenvolvimento, usar URL relativa se o proxy estiver configurado
-    if (import.meta.env.DEV && relativeUrl.startsWith('/api/')) {
-      return relativeUrl
-    }
-    
-    return fullUrl
+    return resolveApiPath(gifUrl)
   }
 
   const gifFullUrl = getGifUrl()

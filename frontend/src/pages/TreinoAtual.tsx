@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { concluirTreino, marcarExercicioTreino, obterPlanoAtualResumo } from '../services/treino.service'
 import { PlanoAtualResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
+import { resolveApiPath } from '../utils/api-url'
 
 // ============================================================================
 // ÍCONES SVG
@@ -227,6 +228,16 @@ export default function TreinoAtual() {
     return blocoAtivo.exercicios[exercicioAtivoIndex + 1] || null
   }, [blocoAtivo, exercicioAtivoIndex])
 
+  const exercicioGifUrl = useMemo(
+    () => resolveApiPath(exercicioEmFoco?.gifUrl),
+    [exercicioEmFoco?.gifUrl]
+  )
+
+  const proximoGifUrl = useMemo(
+    () => resolveApiPath(proximoExercicio?.gifUrl),
+    [proximoExercicio?.gifUrl]
+  )
+
   // Progresso
   const progresso = useMemo(() => {
     if (!blocoAtivo) return { concluidos: 0, total: 0, percentual: 0 }
@@ -431,9 +442,9 @@ export default function TreinoAtual() {
                 <p className="text-sm font-semibold text-white/90">{proximoExercicio.nome}</p>
                 <p className="text-xs text-white/50 mt-1">{proximoExercicio.series}x{proximoExercicio.repeticoes}</p>
               </div>
-              {proximoExercicio.gifUrl && (
+              {proximoGifUrl && (
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10">
-                  <img src={proximoExercicio.gifUrl} alt={proximoExercicio.nome} className="w-full h-full object-cover" />
+                  <img src={proximoGifUrl} alt={proximoExercicio.nome} className="w-full h-full object-cover" />
                 </div>
               )}
             </div>
@@ -446,10 +457,10 @@ export default function TreinoAtual() {
             onClick={() => setMostrarImagemExpandida(true)}
             className="w-full max-w-sm h-56 bg-[#111] rounded-xl overflow-hidden border border-white/10 flex items-center justify-center hover:border-primary/50 transition relative group"
           >
-            {exercicioEmFoco.gifUrl ? (
+            {exercicioGifUrl ? (
               <>
                 <img
-                  src={exercicioEmFoco.gifUrl}
+                  src={exercicioGifUrl}
                   alt={exercicioEmFoco.nome}
                   className="w-full h-full object-contain"
                 />
@@ -719,9 +730,9 @@ export default function TreinoAtual() {
             >
               <IconeFechar />
             </button>
-            {exercicioEmFoco.gifUrl && (
+            {exercicioGifUrl && (
               <img
-                src={exercicioEmFoco.gifUrl}
+                src={exercicioGifUrl}
                 alt={exercicioEmFoco.nome}
                 className="w-full h-auto rounded-xl"
                 onClick={(e) => e.stopPropagation()}

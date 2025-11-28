@@ -68,3 +68,22 @@ export function getApiUrl(): string {
   return `${baseUrl}/api`
 }
 
+/**
+ * Constrói uma URL absoluta para recursos servidos pela API (ex.: uploads)
+ * Aceita caminhos relativos iniciando (ou não) por /api e preserva URLs absolutas.
+ */
+export function resolveApiPath(path?: string | null): string | null {
+  if (!path) {
+    return null
+  }
+
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+
+  const baseUrl = getApiBaseUrl().replace(/\/$/, '')
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+
+  return `${baseUrl}${normalizedPath}`
+}
+

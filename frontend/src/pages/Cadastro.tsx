@@ -132,7 +132,17 @@ export default function Cadastro() {
       navigate('/')
       return
     }
-    setOnboardingData(JSON.parse(data))
+    try {
+      const parsedData = JSON.parse(data)
+      if (!parsedData || typeof parsedData !== 'object') {
+        throw new Error('Dados de onboarding inválidos')
+      }
+      setOnboardingData(parsedData)
+    } catch (parseError) {
+      console.error('Erro ao carregar dados do onboarding:', parseError)
+      localStorage.removeItem('onboardingData')
+      navigate('/')
+    }
   }, [navigate])
 
   const handleChange = (field: string, value: string) => {

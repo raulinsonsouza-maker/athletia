@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import UploadGif from '../components/UploadGif'
-import { getApiBaseUrl } from '../utils/api-url'
+import { resolveApiPath } from '../utils/api-url'
 
 interface User {
   id: string
@@ -482,32 +482,7 @@ export default function Admin() {
 
   // Função helper para construir URL do GIF
   // Baseado na implementação do fitnessprogramer.com para URLs confiáveis
-  const getGifUrl = (gifUrl: string | null) => {
-    if (!gifUrl) {
-      return null
-    }
-    
-    // Se já é uma URL completa, retornar como está
-    if (gifUrl.startsWith('http://') || gifUrl.startsWith('https://')) {
-      return gifUrl
-    }
-    
-    // Construir URL completa baseada na configuração do ambiente
-    // Usa utilitário que garante HTTPS quando necessário
-    const apiBaseUrl = getApiBaseUrl()
-    
-    // Remover /api do final se existir, pois a URL do GIF já inclui /api
-    let baseUrl = apiBaseUrl.replace(/\/api$/, '').replace(/\/$/, '')
-    
-    // A URL do gifUrl já vem como /api/uploads/exercicios/{id}/exercicio.gif
-    // Garantir que comece com /
-    const relativeUrl = gifUrl.startsWith('/') ? gifUrl : `/${gifUrl}`
-    
-    // Construir URL completa
-    const fullUrl = `${baseUrl}${relativeUrl}`
-    
-    return fullUrl
-  }
+  const getGifUrl = (gifUrl: string | null) => resolveApiPath(gifUrl)
 
   // Função para abrir preview do GIF
   const handleShowGifPreview = (exercicio: any) => {
