@@ -302,7 +302,8 @@ router.post('/gifs/bulk-upload',
 router.get('/exercicios/:id/gif/verify', async (req, res) => {
   try {
     const { id } = req.params;
-    const uploadBasePath = path.join(process.cwd(), 'upload', 'exercicios');
+    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
+    const uploadBasePath = getUploadExerciciosPath();
     const filePath = path.join(uploadBasePath, id, 'exercicio.gif');
     const exists = fs.existsSync(filePath);
     

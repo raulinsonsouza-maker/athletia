@@ -676,7 +676,8 @@ export const deletarGifExercicio = async (req: AuthRequest, res: Response) => {
     }
 
     // Caminho do arquivo (funciona tanto em dev quanto em produção)
-    const uploadBasePath = path.join(process.cwd(), 'upload', 'exercicios');
+    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
+    const uploadBasePath = getUploadExerciciosPath();
     const filePath = path.join(uploadBasePath, id, 'exercicio.gif');
 
     // Deletar arquivo físico se existir
@@ -819,7 +820,8 @@ export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer
         }
 
         // Mover arquivo para o diretório correto do exercício
-        const destinoDir = path.join(process.cwd(), 'upload', 'exercicios', exercicioId);
+        const { getUploadExerciciosPath } = await import('../utils/upload-paths');
+        const destinoDir = path.join(getUploadExerciciosPath(), exercicioId);
         if (!fs.existsSync(destinoDir)) {
           fs.mkdirSync(destinoDir, { recursive: true });
         }
@@ -876,7 +878,8 @@ export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer
 // Verificar status dos GIFs - quais exercícios têm URL mas arquivo não existe
 export const verificarStatusGifs = async (req: AuthRequest, res: Response) => {
   try {
-    const uploadBasePath = path.join(process.cwd(), 'upload', 'exercicios');
+    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
+    const uploadBasePath = getUploadExerciciosPath();
     
     // Buscar todos os exercícios com gifUrl
     const exerciciosComGif = await prisma.exercicio.findMany({

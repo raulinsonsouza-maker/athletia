@@ -1,6 +1,7 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { getUploadExerciciosPath } from '../utils/upload-paths';
 
 // ============================================================================
 // UPLOAD DE GIF DE EXERCÍCIO
@@ -13,7 +14,7 @@ const storageExercicioGif = multer.diskStorage({
       return cb(new Error('ID do exercício é obrigatório'), '');
     }
 
-    const uploadPath = path.join(process.cwd(), 'upload', 'exercicios', exercicioId);
+    const uploadPath = path.join(getUploadExerciciosPath(), exercicioId);
     
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });

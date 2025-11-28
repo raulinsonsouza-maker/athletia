@@ -21,13 +21,14 @@ import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
+import { getUploadExerciciosPath } from './utils/upload-paths';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Criar pasta de uploads se não existir
-const uploadDir = path.join(process.cwd(), 'upload', 'exercicios');
+const uploadDir = getUploadExerciciosPath();
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -62,7 +63,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/', generalLimiter);
 
 // Servir arquivos estáticos de upload
-const uploadExerciciosPath = path.join(process.cwd(), 'upload', 'exercicios');
+const uploadExerciciosPath = getUploadExerciciosPath();
 const uploadGruposPath = path.join(process.cwd(), 'upload', 'grupos-musculares');
 
 // Middleware CORS específico para arquivos estáticos (ANTES das rotas)
@@ -116,7 +117,7 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
 
     // Verificar magic bytes para garantir que é realmente um GIF
     // Isso previne servir arquivos JPEG ou outros formatos com extensão .gif
-    const fileBuffer = fs.readFileSync(filePath, { start: 0, end: 5 });
+    const fileBuffer = fs.readFileSync(filePath);
     const isValidGif = (buffer: Buffer): boolean => {
       const gif87a = Buffer.from('GIF87a', 'ascii');
       const gif89a = Buffer.from('GIF89a', 'ascii');
