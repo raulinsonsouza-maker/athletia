@@ -7,30 +7,48 @@
 import { getApiBaseUrl } from './api-url'
 
 /**
+ * Valida se uma URL de imagem é válida
+ */
+function isValidImageUrl(url: string): boolean {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    return false
+  }
+  
+  // Rejeitar URLs de CDN inválida
+  if (url.includes('minha-cdn.com')) {
+    return false
+  }
+  
+  return true
+}
+
+/**
  * Obtém a URL completa de uma imagem do banco
  * @param nomeArquivo Nome do arquivo da imagem (ex: "treino-cardio.jpg")
- * @returns URL completa para acessar a imagem
+ * @returns URL completa para acessar a imagem ou string vazia se inválida
  */
 export function getImagemBanco(nomeArquivo: string): string {
-  if (!nomeArquivo) {
+  if (!nomeArquivo || !isValidImageUrl(nomeArquivo)) {
     return '';
   }
 
-  // Se já for uma URL completa, retornar como está
+  // Se já for uma URL completa, validar e retornar
   if (nomeArquivo.startsWith('http://') || nomeArquivo.startsWith('https://')) {
-    return nomeArquivo;
+    return isValidImageUrl(nomeArquivo) ? nomeArquivo : '';
   }
 
   // Obter URL base dinamicamente (para detectar HTTPS em tempo de execução)
   const API_BASE_URL = getApiBaseUrl();
 
-  // Se já começar com /api/, retornar como está
+  // Se já começar com /api/, validar e retornar
   if (nomeArquivo.startsWith('/api/')) {
-    return `${API_BASE_URL}${nomeArquivo}`;
+    const fullUrl = `${API_BASE_URL}${nomeArquivo}`;
+    return isValidImageUrl(fullUrl) ? fullUrl : '';
   }
 
   // Construir URL da imagem do banco
-  return `${API_BASE_URL}/api/imagens-banco/${nomeArquivo}`;
+  const fullUrl = `${API_BASE_URL}/api/imagens-banco/${nomeArquivo}`;
+  return isValidImageUrl(fullUrl) ? fullUrl : '';
 }
 
 /**

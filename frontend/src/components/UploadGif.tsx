@@ -53,9 +53,13 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
       const formData = new FormData()
       formData.append('gif', file)
 
-      console.log('[UploadGif] Enviando GIF para exercício:', exercicioId)
+      if (import.meta.env.DEV) {
+        console.log('[UploadGif] Enviando GIF para exercício:', exercicioId)
+      }
       const response = await api.post(`/admin/exercicios/${exercicioId}/gif`, formData)
-      console.log('[UploadGif] Resposta do upload:', response.data)
+      if (import.meta.env.DEV) {
+        console.log('[UploadGif] Resposta do upload:', response.data)
+      }
 
       showToast('Demonstração enviada com sucesso!', 'success')
       
@@ -64,7 +68,9 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
         onUploadSuccess()
       }, 100)
     } catch (error: any) {
-      console.error('[UploadGif] Erro ao fazer upload:', error)
+      if (import.meta.env.DEV) {
+        console.error('[UploadGif] Erro ao fazer upload:', error)
+      }
       const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao fazer upload da demonstração'
       showToast(errorMessage, 'error')
     } finally {
@@ -155,8 +161,11 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
               alt={`Demonstração de execução de ${exercicioNome}`}
               className="w-full h-auto rounded-lg"
               onError={(e) => {
-                console.error('Erro ao carregar imagem no preview:', gifFullUrl)
-                e.currentTarget.style.display = 'none'
+                if (import.meta.env.DEV) {
+                  console.error('Erro ao carregar imagem no preview:', gifFullUrl)
+                }
+                e.currentTarget.style.opacity = '0.5'
+                e.currentTarget.style.filter = 'grayscale(100%)'
               }}
             />
             <p className="text-center text-light-muted mt-4">{exercicioNome}</p>

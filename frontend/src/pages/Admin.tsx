@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type { SyntheticEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import UploadGif from '../components/UploadGif'
+import ExercicioImage from '../components/ExercicioImage'
 import { resolveApiPath } from '../utils/api-url'
 import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
 
@@ -215,7 +216,9 @@ export default function Admin() {
       await carregarEstatisticas()
       setLoading(false)
     } catch (error: any) {
-      console.error('Erro ao verificar admin:', error)
+      if (import.meta.env.DEV) {
+        console.error('Erro ao verificar admin:', error)
+      }
       
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
@@ -247,7 +250,9 @@ export default function Admin() {
         setErrorUsuarios(`Nenhum usuário encontrado para "${search}"`)
       }
     } catch (error: any) {
-      console.error('Erro ao carregar usuários:', error)
+      if (import.meta.env.DEV) {
+        console.error('Erro ao carregar usuários:', error)
+      }
       
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
@@ -303,7 +308,9 @@ export default function Admin() {
         setErrorExercicios(`Nenhum exercício encontrado${searchExercicio ? ` para "${searchExercicio}"` : ''}${filtroGrupo ? ` no grupo "${filtroGrupo}"` : ''}`)
       }
     } catch (error: any) {
-      console.error('Erro ao carregar exercícios:', error)
+      if (import.meta.env.DEV) {
+        console.error('Erro ao carregar exercícios:', error)
+      }
       
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
@@ -333,7 +340,9 @@ export default function Admin() {
       const response = await api.get('/admin/estatisticas')
       setEstatisticas(response.data)
     } catch (error: any) {
-      console.error('Erro ao carregar estatísticas:', error)
+      if (import.meta.env.DEV) {
+        console.error('Erro ao carregar estatísticas:', error)
+      }
       
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
@@ -364,7 +373,9 @@ export default function Admin() {
       const response = await api.get(`/admin/usuarios/${userId}`)
       setUserDetails(response.data)
     } catch (error: any) {
-      console.error('Erro ao carregar detalhes do usuário:', error)
+      if (import.meta.env.DEV) {
+        console.error('Erro ao carregar detalhes do usuário:', error)
+      }
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
         localStorage.removeItem('adminRefreshToken')
@@ -475,18 +486,41 @@ export default function Admin() {
         carregarExercicios()
       }
     } catch (error: any) {
-      console.error('Erro ao salvar exercício:', error)
+      if (import.meta.env.DEV) {
+        console.error('Erro ao salvar exercício:', error)
+      }
       showToast(error.response?.data?.error || `Erro ao ${isCreatingExercicio ? 'criar' : 'atualizar'} exercício`, 'error')
     } finally {
       setSavingExercicio(false)
     }
   }
 
+  // Função para validar se uma URL de imagem é válida
+  const isValidImageUrl = (url: string | null | undefined): boolean => {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return false
+    }
+    
+    // Rejeitar URLs de CDN inválida
+    if (url.includes('minha-cdn.com')) {
+      return false
+    }
+    
+    // Verificar formato básico de URL
+    // Aceita URLs relativas (/api/...) ou absolutas (http://, https://)
+    const urlPattern = /^(https?:\/\/|\/)/i
+    if (!urlPattern.test(url.trim())) {
+      return false
+    }
+    
+    return true
+  }
+
   // Função helper para construir URL do GIF
   // Baseado na implementação do fitnessprogramer.com para URLs confiáveis
   // Garante que a URL sempre termine com .gif e não seja substituída por .jpg
   const getGifUrl = (gifUrl: string | null) => {
-    if (!gifUrl) return null
+    if (!gifUrl || !isValidImageUrl(gifUrl)) return null
     
     // Garantir que a URL sempre termine com .gif
     // Se a URL contém exercicio.gif, garantir que não seja substituída
@@ -510,7 +544,11 @@ export default function Admin() {
 
   const buildImageSourceChain = (...sources: Array<string | null | undefined>) => {
     const chain = sources
-      .filter((value): value is string => Boolean(value))
+      .filter((value): value is string => Boolean(value) && isValidImageUrl(value))
+      .filter((url) => {
+        // Validar cada URL antes de incluir na cadeia
+        return isValidImageUrl(url)
+      })
     return Array.from(new Set(chain))
   }
 
@@ -519,16 +557,28 @@ export default function Admin() {
     const slug = normalizarGrupo(exercicio.grupoMuscularPrincipal)
     
     // Sempre priorizar o GIF se ele estiver cadastrado
-    // Verificar se gifUrl existe e não é string vazia
-    const gifUrl = (exercicio.gifUrl && exercicio.gifUrl.trim() !== '') 
+    // Verificar se gifUrl existe, não é string vazia e é válida
+    const gifUrl = (exercicio.gifUrl && exercicio.gifUrl.trim() !== '' && isValidImageUrl(exercicio.gifUrl))
       ? getGifUrl(exercicio.gifUrl) 
       : null
     
+    // Construir cadeia de fallback validando cada URL
+    const imagemUrl = (exercicio as any)?.imagemUrl
+    const imagemUrlResolvida = imagemUrl && isValidImageUrl(imagemUrl) 
+      ? resolveApiPath(imagemUrl) 
+      : null
+    
+    const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
+    const imagemGrupoValida = imagemGrupo && isValidImageUrl(imagemGrupo) ? imagemGrupo : ''
+    
+    const imagemPadrao = getImagemPadraoBanco('treino')
+    const imagemPadraoValida = imagemPadrao && isValidImageUrl(imagemPadrao) ? imagemPadrao : ''
+    
     return buildImageSourceChain(
-      gifUrl, // GIF sempre primeiro se existir
-      resolveApiPath((exercicio as any)?.imagemUrl || null),
-      slug ? getImagemGrupoBanco(slug) : '',
-      getImagemPadraoBanco('treino')
+      gifUrl, // GIF sempre primeiro se existir e for válido
+      imagemUrlResolvida,
+      imagemGrupoValida,
+      imagemPadraoValida
     )
   }
 
@@ -536,21 +586,51 @@ export default function Admin() {
     const target = event.currentTarget
     try {
       const remaining = target.dataset.sources ? JSON.parse(target.dataset.sources) as string[] : []
-      if (remaining.length > 0) {
-        const [next, ...rest] = remaining
-        target.dataset.sources = JSON.stringify(rest)
-        target.src = next
-      } else {
-        // Se não há mais fallbacks, manter a imagem visível mas com estilo de erro
-        // Isso evita que GIFs cadastrados desapareçam completamente
+      
+      // Limite de tentativas para evitar loops infinitos
+      const maxAttempts = 5
+      const attemptCount = parseInt(target.dataset.attemptCount || '0', 10)
+      
+      if (attemptCount >= maxAttempts) {
+        // Parar tentativas após limite
         target.style.opacity = '0.5'
         target.style.filter = 'grayscale(100%)'
-        target.alt = target.alt + ' (erro ao carregar)'
+        target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
+        return
+      }
+      
+      if (remaining.length > 0) {
+        // Encontrar próximo URL válido
+        let nextIndex = -1
+        for (let i = 0; i < remaining.length; i++) {
+          if (isValidImageUrl(remaining[i])) {
+            nextIndex = i
+            break
+          }
+        }
+        
+        if (nextIndex >= 0) {
+          const [next, ...rest] = remaining.slice(nextIndex)
+          target.dataset.sources = JSON.stringify(rest)
+          target.dataset.attemptCount = String(attemptCount + 1)
+          target.src = next
+        } else {
+          // Nenhum URL válido restante
+          target.style.opacity = '0.5'
+          target.style.filter = 'grayscale(100%)'
+          target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
+        }
+      } else {
+        // Se não há mais fallbacks, manter a imagem visível mas com estilo de erro
+        target.style.opacity = '0.5'
+        target.style.filter = 'grayscale(100%)'
+        target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
       }
     } catch (error) {
       // Em caso de erro no parsing, manter a imagem visível
       target.style.opacity = '0.5'
       target.style.filter = 'grayscale(100%)'
+      target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
     }
   }
 
@@ -584,11 +664,11 @@ export default function Admin() {
     }
   }
 
-  const previewImageChain = buildSourcesForExercicio(exercicioEdit)
+  const previewImageChain = useMemo(() => buildSourcesForExercicio(exercicioEdit), [exercicioEdit?.id, exercicioEdit?.gifUrl, exercicioEdit?.imagemUrl, exercicioEdit?.grupoMuscularPrincipal])
   const [previewInitialImage, ...previewFallbackChain] = previewImageChain
 
   const previewModalTarget = exercicioPreview || exercicioEdit || null
-  const previewModalImageChain = buildSourcesForExercicio(previewModalTarget)
+  const previewModalImageChain = useMemo(() => buildSourcesForExercicio(previewModalTarget), [previewModalTarget?.id, previewModalTarget?.gifUrl, previewModalTarget?.imagemUrl, previewModalTarget?.grupoMuscularPrincipal])
   const [previewModalInitial, ...previewModalFallbackChain] = previewModalImageChain
 
 
@@ -1142,7 +1222,6 @@ export default function Admin() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {exercicios.map((exercicio) => {
                       const cadeiaImagens = buildSourcesForExercicio(exercicio)
-                      const [initialImage, ...fallbackChain] = cadeiaImagens
 
                       return (
                         <div
@@ -1152,48 +1231,15 @@ export default function Admin() {
                           <div className="flex flex-col">
                             <div className="mb-4">
                               {/* Miniatura da Demonstração */}
-                              {(initialImage || exercicio.gifUrl) ? (
-                                <div className="mb-3">
-                                  <div className="relative w-full h-32 rounded-lg border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                                    {initialImage ? (
-                                      <img
-                                        src={initialImage}
-                                        alt={`Demonstração de execução de ${exercicio.nome}`}
-                                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => handleShowGifPreview(exercicio)}
-                                        data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                        onError={handleImagemErroSequencial}
-                                      />
-                                    ) : (
-                                      <img
-                                        src={getGifUrl(exercicio.gifUrl) || ''}
-                                        alt={`Demonstração de execução de ${exercicio.nome}`}
-                                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => handleShowGifPreview(exercicio)}
-                                        data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                        onError={handleImagemErroSequencial}
-                                      />
-                                    )}
-                                    <button
-                                      onClick={() => handleShowGifPreview(exercicio)}
-                                      className="absolute top-2 right-2 btn-secondary text-xs p-1.5 rounded z-10"
-                                      title="Visualizar em tamanho maior"
-                                    >
-                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="mb-3">
-                                  <div className="w-full h-32 rounded-lg border border-grey/30 bg-dark-lighter flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              )}
+                              <div className="mb-3">
+                                <ExercicioImage
+                                  exercicio={exercicio}
+                                  imageChain={cadeiaImagens}
+                                  size="large"
+                                  onPreview={() => handleShowGifPreview(exercicio)}
+                                  onError={handleImagemErroSequencial}
+                                />
+                              </div>
                               
                               <h3 className="text-lg font-semibold text-light mb-2">
                                 {exercicio.nome}
@@ -1237,53 +1283,19 @@ export default function Admin() {
                   <div className="space-y-3">
                     {exercicios.map((exercicio) => {
                       const cadeiaImagens = buildSourcesForExercicio(exercicio)
-                      const [initialImage, ...fallbackChain] = cadeiaImagens
 
                       return (
                         <div
                           key={exercicio.id}
                           className="card-hover p-4 flex items-center gap-4"
                         >
-                          {(initialImage || exercicio.gifUrl) ? (
-                            <div className="relative flex-shrink-0">
-                              <div className="w-20 h-20 rounded-md border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                                {initialImage ? (
-                                  <img
-                                    src={initialImage}
-                                    alt={`Demonstração de execução de ${exercicio.nome}`}
-                                    className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                    onClick={() => handleShowGifPreview(exercicio)}
-                                    data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                    onError={handleImagemErroSequencial}
-                                  />
-                                ) : (
-                                  <img
-                                    src={getGifUrl(exercicio.gifUrl) || ''}
-                                    alt={`Demonstração de execução de ${exercicio.nome}`}
-                                    className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                    onClick={() => handleShowGifPreview(exercicio)}
-                                    data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                    onError={handleImagemErroSequencial}
-                                  />
-                                )}
-                              </div>
-                              <button
-                                onClick={() => handleShowGifPreview(exercicio)}
-                                className="absolute top-1 right-1 btn-secondary text-xs p-1 rounded z-10"
-                                title="Visualizar em tamanho maior"
-                              >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                </svg>
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="w-20 h-20 rounded-md border border-grey/30 bg-dark-lighter flex items-center justify-center flex-shrink-0">
-                              <svg className="w-8 h-8 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                          )}
+                          <ExercicioImage
+                            exercicio={exercicio}
+                            imageChain={cadeiaImagens}
+                            size="medium"
+                            onPreview={() => handleShowGifPreview(exercicio)}
+                            onError={handleImagemErroSequencial}
+                          />
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg font-semibold text-light mb-1 truncate">
                               {exercicio.nome}
@@ -1337,7 +1349,6 @@ export default function Admin() {
                       <tbody>
                         {exercicios.map((exercicio) => {
                           const cadeiaImagens = buildSourcesForExercicio(exercicio)
-                          const [initialImage, ...fallbackChain] = cadeiaImagens
 
                           return (
                             <tr
@@ -1361,48 +1372,13 @@ export default function Admin() {
                                 )}
                               </td>
                               <td className="py-3 px-4">
-                                {/* Sempre mostrar imagem se houver GIF cadastrado ou se houver alguma imagem na cadeia */}
-                                {(initialImage || exercicio.gifUrl) ? (
-                                  <div className="relative inline-block">
-                                    <div className="w-12 h-12 rounded border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                                      {initialImage ? (
-                                        <img
-                                          src={initialImage}
-                                          alt={`Demonstração de execução de ${exercicio.nome}`}
-                                          className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                          onClick={() => handleShowGifPreview(exercicio)}
-                                          data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                          onError={handleImagemErroSequencial}
-                                        />
-                                      ) : (
-                                        // Se há GIF cadastrado mas a URL não foi resolvida, tentar construir manualmente
-                                        <img
-                                          src={getGifUrl(exercicio.gifUrl) || ''}
-                                          alt={`Demonstração de execução de ${exercicio.nome}`}
-                                          className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                                          onClick={() => handleShowGifPreview(exercicio)}
-                                          data-sources={fallbackChain.length ? JSON.stringify(fallbackChain) : undefined}
-                                          onError={handleImagemErroSequencial}
-                                        />
-                                      )}
-                                    </div>
-                                    <button
-                                      onClick={() => handleShowGifPreview(exercicio)}
-                                      className="absolute -top-1 -right-1 btn-secondary text-xs p-0.5 rounded-full z-10"
-                                      title="Visualizar em tamanho maior"
-                                    >
-                                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="w-12 h-12 rounded border border-grey/30 bg-dark-lighter flex items-center justify-center">
-                                    <svg className="w-5 h-5 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                  </div>
-                                )}
+                                <ExercicioImage
+                                  exercicio={exercicio}
+                                  imageChain={cadeiaImagens}
+                                  size="small"
+                                  onPreview={() => handleShowGifPreview(exercicio)}
+                                  onError={handleImagemErroSequencial}
+                                />
                               </td>
                               <td className="py-3 px-4">
                                 <button
@@ -2396,33 +2372,30 @@ export default function Admin() {
                       Visualização do Exercício
                     </label>
                     <div className="flex items-center gap-4">
-                      <div className="relative flex-shrink-0">
-                        <div className="w-32 h-32 rounded-lg border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center">
-                          <img
-                            src={previewInitialImage}
-                            alt={`Demonstração de execução de ${exercicioEdit.nome || 'Exercício'}`}
-                            className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => exercicioEdit && handleShowGifPreview(exercicioEdit)}
-                            data-sources={previewFallbackChain.length ? JSON.stringify(previewFallbackChain) : undefined}
+                      {previewInitialImage && exercicioEdit ? (
+                        <>
+                          <ExercicioImage
+                            exercicio={exercicioEdit}
+                            imageChain={previewImageChain}
+                            size="large"
+                            onPreview={() => exercicioEdit && handleShowGifPreview(exercicioEdit)}
                             onError={handleImagemErroSequencial}
+                            className="flex-shrink-0"
                           />
-                        </div>
-                        <button
-                          onClick={() => setShowGifPreview(true)}
-                          className="absolute top-2 right-2 btn-secondary text-xs p-1.5 rounded z-10"
-                          title="Visualizar em tamanho maior"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          <div className="flex-1">
+                            <p className="text-sm text-light-muted mb-1">Demonstração de execução</p>
+                            <p className="text-xs text-light-muted">
+                              Clique na imagem para visualizar em tamanho maior
+                            </p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="w-32 h-32 rounded-lg border border-grey/30 bg-dark-lighter flex items-center justify-center flex-shrink-0">
+                          <svg className="w-8 h-8 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                        </button>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-light-muted mb-1">Demonstração de execução</p>
-                        <p className="text-xs text-light-muted">
-                          Clique na imagem para visualizar em tamanho maior
-                        </p>
-                      </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -2601,15 +2574,15 @@ export default function Admin() {
                       exercicioNome={exercicioEdit.nome || 'Exercício'}
                       gifUrl={exercicioEdit.gifUrl || null}
                       onUploadSuccess={async () => {
-                        console.log('[Admin] onUploadSuccess chamado, recarregando exercício...')
                         // Recarregar dados do exercício após upload para atualizar gifUrl
                         if (selectedExercicioId) {
                           try {
                             const response = await api.get(`/admin/exercicios/${selectedExercicioId}`)
-                            console.log('[Admin] Exercício recarregado:', response.data)
                             setExercicioEdit(response.data)
                           } catch (err) {
-                            console.error('[Admin] Erro ao recarregar exercício:', err)
+                            if (import.meta.env.DEV) {
+                              console.error('[Admin] Erro ao recarregar exercício:', err)
+                            }
                           }
                         }
                         // Recarregar lista de exercícios
@@ -2655,7 +2628,7 @@ export default function Admin() {
       )}
 
       {/* Modal de Preview da Demonstração em Tamanho Maior */}
-      {showGifPreview && previewModalInitial && (
+      {showGifPreview && previewModalInitial && previewModalTarget && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
           onClick={() => {
@@ -2677,12 +2650,13 @@ export default function Admin() {
             </button>
             <img
               src={previewModalInitial}
-              alt={`Demonstração de execução de ${exercicioPreview?.nome || exercicioEdit?.nome || 'Exercício'}`}
+              alt={`Demonstração de execução de ${previewModalTarget.nome || 'Exercício'}`}
               className="w-full h-auto rounded-lg"
               data-sources={previewModalFallbackChain.length ? JSON.stringify(previewModalFallbackChain) : undefined}
+              data-attempt-count="0"
               onError={handleImagemErroSequencial}
             />
-            <p className="text-center text-light-muted mt-4">{exercicioPreview?.nome || exercicioEdit?.nome || 'Exercício'}</p>
+            <p className="text-center text-light-muted mt-4">{previewModalTarget.nome || 'Exercício'}</p>
           </div>
         </div>
       )}
