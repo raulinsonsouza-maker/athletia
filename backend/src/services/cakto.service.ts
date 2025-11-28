@@ -171,7 +171,29 @@ export async function processPaymentApproved(webhookData: any) {
     });
 
     // Mapear product_id para plano
-    const plano = productId ? CAKTO_CONFIG.getPlanoByProductId(productId) : null;
+    let plano = productId ? CAKTO_CONFIG.getPlanoByProductId(productId) : null;
+    
+    // Se não encontrou pelo product_id e é um webhook de teste (contém "EXAMPLE")
+    // tentar identificar pelo valor do pagamento como fallback
+    if (!plano && checkoutUrl && checkoutUrl.includes('EXAMPLE')) {
+      console.log('⚠️  Webhook de teste detectado (EXAMPLE). Tentando identificar plano pelo valor...');
+      
+      // Valores aproximados dos planos (em reais)
+      // MENSAL: ~19.90, TRIMESTRAL: ~49.90, SEMESTRAL: ~89.90
+      const valor = amount || transaction.baseAmount || 0;
+      
+      if (valor >= 80 && valor <= 100) {
+        plano = 'SEMESTRAL';
+        console.log(`✅ Plano identificado pelo valor (R$ ${valor}): ${plano}`);
+      } else if (valor >= 45 && valor <= 55) {
+        plano = 'TRIMESTRAL';
+        console.log(`✅ Plano identificado pelo valor (R$ ${valor}): ${plano}`);
+      } else if (valor >= 15 && valor <= 25) {
+        plano = 'MENSAL';
+        console.log(`✅ Plano identificado pelo valor (R$ ${valor}): ${plano}`);
+      }
+    }
+    
     if (!plano) {
       console.error(`❌ Product ID não mapeado: ${productId}`);
       console.error('📋 Product IDs configurados:', CAKTO_CONFIG.productIds);
@@ -179,8 +201,29 @@ export async function processPaymentApproved(webhookData: any) {
         productId: productId,
         productShortId: product?.short_id,
         productIdUUID: product?.id,
-        checkoutUrl: checkoutUrl
+        checkoutUrl: checkoutUrl,
+        amount: amount,
+        baseAmount: transaction.baseAmount
       });
+      
+      // Se for webhook de teste, retornar erro mais amigável
+      if (checkoutUrl && checkoutUrl.includes('EXAMPLE')) {
+        return {
+          success: false,
+          message: `Webhook de teste detectado. O product_id "EXAMPLE" é um placeholder. Em webhooks reais, a URL do checkout contém o product_id correto. Valor recebido: R$ ${amount || transaction.baseAmount || 0}`,
+          transaction_id: transactionId,
+          debug: {
+            productId: productId,
+            productShortId: product?.short_id,
+            checkoutUrl: checkoutUrl,
+            configuredIds: CAKTO_CONFIG.productIds,
+            amount: amount,
+            baseAmount: transaction.baseAmount,
+            isTestWebhook: true
+          }
+        };
+      }
+      
       return {
         success: false,
         message: `Product ID não reconhecido: ${productId}. Verifique se o product_id está correto no .env`,

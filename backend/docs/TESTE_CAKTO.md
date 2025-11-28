@@ -110,6 +110,12 @@ ngrok http 3001
 5. Escolha o evento: `purchase_approved`
 6. Envie
 
+**⚠️ Nota sobre webhooks de teste:**
+- Webhooks de teste do Cakto usam "EXAMPLE" como placeholder na URL
+- O sistema tentará identificar o plano pelo valor do pagamento (fallback)
+- Para teste completo, faça um pagamento real de teste ou use sandbox
+- Webhooks reais de pagamentos funcionam perfeitamente
+
 ### 3.3. Verificar Logs do Backend
 
 ```bash

@@ -119,6 +119,12 @@ No painel do Cakto:
 4. Escolha o evento: `purchase_approved`
 5. Envie
 
+**⚠️ Importante sobre webhooks de teste:**
+- Webhooks de teste do Cakto usam "EXAMPLE" como placeholder na URL do checkout
+- O sistema tentará identificar o plano pelo valor do pagamento como fallback
+- **Webhooks reais funcionam perfeitamente**, pois contêm o product_id correto na URL
+- Para testar completamente, faça um pagamento de teste real ou use o modo sandbox
+
 ## 📝 Logs Esperados
 
 ```
