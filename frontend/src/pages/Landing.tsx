@@ -14,21 +14,21 @@ const DEPOIMENTOS: Depoimento[] = [
     nome: 'Miguel',
     idade: 32,
     depoimento: 'A IA ajustava o treino certinho toda semana. Eu nunca evoluí tão rápido.',
-    imagemAntes: '/images/onboarding/Miguel.png',
+    imagemAntes: '/images/onboarding/Miguel.webp',
     resultado: 'Perdeu 12 kg em 4 meses'
   },
   {
     nome: 'Carla',
     idade: 28,
     depoimento: 'Sempre me senti perdida na academia. Agora sei exatamente o que fazer.',
-    imagemAntes: '/images/onboarding/Julia.png',
+    imagemAntes: '/images/onboarding/Julia.webp',
     resultado: 'Ganhou definição em 90 dias'
   },
   {
     nome: 'João',
     idade: 35,
     depoimento: 'O app é direto. Sem enrolação. Só seguir que funciona.',
-    imagemAntes: '/images/onboarding/Rodrigo.png',
+    imagemAntes: '/images/onboarding/Rodrigo.webp',
     resultado: 'Ganhou 4 kg de massa magra em 2 meses'
   }
 ]
@@ -962,10 +962,10 @@ export default function Landing() {
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 {[
-                  { label: '18-29', value: 25, image: '/images/onboarding/18 aos 29.png' },
-                  { label: '30-39', value: 35, image: '/images/onboarding/30 aos 39.png' },
-                  { label: '40-49', value: 45, image: '/images/onboarding/40 aos 49.png' },
-                  { label: '50+', value: 55, image: '/images/onboarding/50+.png' }
+                  { label: '18-29', value: 25, image: '/images/onboarding/18 aos 29.webp' },
+                  { label: '30-39', value: 35, image: '/images/onboarding/30 aos 39.webp' },
+                  { label: '40-49', value: 45, image: '/images/onboarding/40 aos 49.webp' },
+                  { label: '50+', value: 55, image: '/images/onboarding/50+.webp' }
                 ].map((faixa) => {
                   const selected = onboardingData.idade ? 
                     (faixa.label === '18-29' && onboardingData.idade >= 18 && onboardingData.idade <= 29) ||
@@ -1036,11 +1036,11 @@ export default function Landing() {
                 {[
                   { 
                     value: 'Masculino', 
-                    image: '/images/onboarding/Homem.png'
+                    image: '/images/onboarding/Homem.webp'
                   },
                   { 
                     value: 'Feminino', 
-                    image: '/images/onboarding/Mulher.png'
+                    image: '/images/onboarding/Mulher.webp'
                   },
                   {
                     value: 'Outro',
@@ -1124,7 +1124,7 @@ export default function Landing() {
                     value: 'Em Forma',
                     label: 'Em Forma',
                     desc: 'Corpo tonificado e definido',
-                    image: '/images/onboarding/Em_forma.png'
+                    image: '/images/onboarding/Em_forma.webp'
                   },
                   {
                     value: 'Sobrepeso',
@@ -1136,13 +1136,13 @@ export default function Landing() {
                     value: 'Acima do Peso',
                     label: 'Acima do Peso',
                     desc: 'Significativamente acima do peso',
-                    image: '/images/onboarding/Acima do peso.png'
+                    image: '/images/onboarding/Acima do peso.webp'
                   },
                   {
                     value: 'Obesidade',
                     label: 'Obesidade',
                     desc: 'Obesidade que precisa de atenção',
-                    image: '/images/onboarding/Obesidade.png'
+                    image: '/images/onboarding/Obesidade.webp'
                   }
                 ] : [
                   {

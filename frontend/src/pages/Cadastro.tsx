@@ -89,22 +89,22 @@ const DEPOIMENTOS: Depoimento[] = [
     nome: 'Miguel',
     idade: 32,
     depoimento: 'Uma das razões pelas quais eu precisava de alguma orientação e ajuda é porque estou constantemente viajando por todo o país e até mesmo alguns outros países, então é difícil para mim manter uma ótima dieta',
-    imagemAntes: '/images/onboarding/Miguel.png',
-    imagemDepois: '/images/onboarding/Miguel.png'
+    imagemAntes: '/images/onboarding/Miguel.webp',
+    imagemDepois: '/images/onboarding/Miguel.webp'
   },
   {
     nome: 'Julia',
     idade: 28,
     depoimento: 'Consegui perder 15kg em 6 meses seguindo o plano personalizado. Os treinos são adaptados à minha rotina e os resultados apareceram rapidamente.',
-    imagemAntes: '/images/onboarding/Julia.png',
-    imagemDepois: '/images/onboarding/Julia.png'
+    imagemAntes: '/images/onboarding/Julia.webp',
+    imagemDepois: '/images/onboarding/Julia.webp'
   },
   {
     nome: 'Rodrigo',
     idade: 35,
     depoimento: 'Finalmente encontrei um programa que se adapta ao meu estilo de vida. Ganhei massa muscular e força de forma consistente e segura.',
-    imagemAntes: '/images/onboarding/Rodrigo.png',
-    imagemDepois: '/images/onboarding/Rodrigo.png'
+    imagemAntes: '/images/onboarding/Rodrigo.webp',
+    imagemDepois: '/images/onboarding/Rodrigo.webp'
   }
 ]
 
@@ -339,7 +339,6 @@ export default function Cadastro() {
     if (!onboardingData) return null
     if (!onboardingData.sexo) return null
 
-    const isMasculino = onboardingData.sexo === 'Masculino'
     const isFeminino = onboardingData.sexo === 'Feminino'
 
     // Calcular métricas atuais com base em tipoCorpo (prioritário) ou IMC
@@ -648,7 +647,7 @@ export default function Cadastro() {
   const transformacaoCompleta = transformacao && metricasAdicionais ? {
     ...transformacao,
     ...metricasAdicionais
-  } : transformacao
+  } : (transformacao || metricasAdicionais)
 
   // Não renderizar até os dados estarem carregados
   if (!onboardingData) {
@@ -800,12 +799,16 @@ export default function Cadastro() {
                 {/* Barra de progresso melhorada */}
                 <div className="relative mb-3">
                   <div className="h-3 bg-grey/30 rounded-full overflow-hidden">
-                    {calorias && (
-                      <div 
-                        className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, Math.max(5, ((calorias - 1000) / 4000) * 100))}%` }}
-                      ></div>
-                    )}
+                    {calorias && (() => {
+                      const caloriasNum = parseInt(calorias, 10);
+                      if (isNaN(caloriasNum)) return null;
+                      return (
+                        <div 
+                          className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.max(5, ((caloriasNum - 1000) / 4000) * 100))}%` }}
+                        ></div>
+                      );
+                    })()}
                   </div>
                   <div className="flex justify-between text-xs text-light-muted mt-2">
                     <span>1000</span>

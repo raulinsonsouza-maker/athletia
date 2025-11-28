@@ -221,9 +221,10 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
     });
   }
 
-  // Verificar se é um arquivo válido
+  // Verificar se é um arquivo válido e obter stats
+  let stats;
   try {
-    const stats = fs.statSync(filePath);
+    stats = fs.statSync(filePath);
     if (!stats.isFile()) {
       return res.status(404).json({
         error: 'Imagem não encontrada'
@@ -254,9 +255,6 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   res.setHeader('Expires', new Date(Date.now() + 31536000000).toUTCString());
   res.setHeader('ETag', `"${stats.mtime.getTime()}"`);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   res.setHeader('Content-Type', contentType);
   res.setHeader('Accept-Ranges', 'bytes');
 
