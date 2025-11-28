@@ -20,6 +20,9 @@ model User {
   plano                 String? // MENSAL, TRIMESTRAL, SEMESTRAL
   planoAtivo            Boolean   @default(false) @map("plano_ativo")
   dataPagamento         DateTime? @map("data_pagamento")
+  dataExpiracao         DateTime? @map("data_expiracao") // Data de expiração do plano
+  caktoCustomerId       String?   @map("cakto_customer_id") // ID do cliente no Cakto
+  caktoTransactionId    String?   @map("cakto_transaction_id") // ID da última transação
   modoTreino            String?   @default("IA") @map("modo_treino") // "IA" ou "MANUAL"
   currentTrainingSource String?   @map("current_training_source") // "IA" ou "MANUAL"
   currentTrainingId     String?   @map("current_training_id") // UUID do treino ativo
@@ -34,6 +37,7 @@ model User {
   refreshTokens                  RefreshToken[]
   treinosPersonalizadosTemplates TreinoPersonalizadoTemplate[]
   configuracoesTreino            ConfiguracaoTreinoUsuario[]
+  paymentHistory                 PaymentHistory[]
 
   @@map("users")
 }
@@ -142,15 +146,15 @@ model Exercicio {
 }
 
 model GrupoMuscularVisual {
-  id         String   @id @default(uuid()) @db.Uuid
-  nome       String
-  slug       String   @unique
-  descricao  String?
-  imagemUrl  String?  @map("imagem_url")
-  ordem      Int?     @default(0)
-  ativo      Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id        String   @id @default(uuid()) @db.Uuid
+  nome      String
+  slug      String   @unique
+  descricao String?
+  imagemUrl String?  @map("imagem_url")
+  ordem     Int?     @default(0)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   exercicios ExercicioGrupoMuscular[]
 
@@ -158,15 +162,15 @@ model GrupoMuscularVisual {
 }
 
 model ExercicioGrupoMuscular {
-  id            String                @id @default(uuid()) @db.Uuid
-  exercicioId   String                @map("exercicio_id")
-  grupoVisualId String                @map("grupo_visual_id") @db.Uuid
-  papel         PapelGrupoMuscular    @default(PRINCIPAL)
-  ordem         Int?                  @default(0)
-  createdAt     DateTime              @default(now()) @map("created_at")
+  id            String             @id @default(uuid()) @db.Uuid
+  exercicioId   String             @map("exercicio_id")
+  grupoVisualId String             @map("grupo_visual_id") @db.Uuid
+  papel         PapelGrupoMuscular @default(PRINCIPAL)
+  ordem         Int?               @default(0)
+  createdAt     DateTime           @default(now()) @map("created_at")
 
-  exercicio Exercicio            @relation(fields: [exercicioId], references: [id], onDelete: Cascade)
-  grupo     GrupoMuscularVisual  @relation(fields: [grupoVisualId], references: [id], onDelete: Cascade)
+  exercicio Exercicio           @relation(fields: [exercicioId], references: [id], onDelete: Cascade)
+  grupo     GrupoMuscularVisual @relation(fields: [grupoVisualId], references: [id], onDelete: Cascade)
 
   @@unique([exercicioId, grupoVisualId, papel])
   @@index([grupoVisualId])
@@ -315,4 +319,26 @@ enum Role {
 enum PapelGrupoMuscular {
   PRINCIPAL
   SINERGISTA
+}
+
+model PaymentHistory {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  transactionId String   @unique @map("transaction_id") // ID da transação no Cakto
+  amount        Float // Valor em reais
+  currency      String   @default("BRL")
+  status        String // completed, refunded, cancelled
+  paymentMethod String?  @map("payment_method")
+  caktoData     Json?    @map("cakto_data") // Dados completos do webhook
+  plano         String? // MENSAL, TRIMESTRAL, SEMESTRAL
+  eventType     String   @map("event_type") // purchase_approved, refund, subscription_cancelled
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([transactionId])
+  @@index([userId, createdAt])
+  @@index([status])
+  @@map("payment_history")
 }

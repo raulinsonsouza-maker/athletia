@@ -18,6 +18,8 @@ import adminRoutes from './routes/admin.routes';
 import exercicioRoutes from './routes/exercicio.routes';
 import userRoutes from './routes/user.routes';
 import dashboardRoutes from './routes/dashboard.routes';
+import webhookRoutes from './routes/webhook.routes';
+import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 
 const app = express();
@@ -300,6 +302,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/exercicios', exercicioRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/webhooks', webhookRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // 404 handler
 app.use((req, res) => {

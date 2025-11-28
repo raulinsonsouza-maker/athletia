@@ -97,7 +97,7 @@ export default function Checkout() {
   const totalAPagar = planoSelecionadoObj?.preco || 0
 
   const handleAtivarPlano = async () => {
-    if (!user?.id) {
+    if (!user?.id || !user?.email) {
       showToast('Erro: usuário não encontrado. Faça login novamente.', 'error')
       navigate('/login')
       return
@@ -107,63 +107,25 @@ export default function Checkout() {
     setError('')
 
     try {
-      const response = await api.post('/auth/ativar-plano-pagamento', {
-        userId: user.id,
-        plano: planoSelecionado
+      // Gerar URL de checkout do Cakto
+      const response = await api.post('/payment/checkout', {
+        plano: planoSelecionado,
+        email: user.email
       })
 
-      // Atualizar estado do usuário com dados do backend
-      if (response.data?.user) {
-        const userAtualizado = {
-          ...response.data.user,
-          planoAtivo: response.data.user.planoAtivo ?? true,
-          plano: response.data.user.plano ?? planoSelecionado
-        }
+      if (response.data?.checkoutUrl) {
+        // Limpar timer do localStorage
+        localStorage.removeItem('checkoutTimerStart')
         
-        // Atualizar contexto e localStorage
-        updateUser(userAtualizado)
-        
-        console.log('[OK] Usuário atualizado com plano ativo:', userAtualizado)
-        console.log('📦 Dados salvos no localStorage')
+        // Redirecionar para o checkout do Cakto
+        console.log('🔄 Redirecionando para checkout Cakto...')
+        window.location.href = response.data.checkoutUrl
       } else {
-        console.warn('⚠️ Resposta do backend não contém dados do usuário, atualizando manualmente')
-        // Atualizar manualmente mesmo sem resposta completa
-        updateUser({
-          planoAtivo: true,
-          plano: planoSelecionado
-        })
-        console.log('[OK] Estado atualizado manualmente')
+        throw new Error('URL de checkout não recebida')
       }
-      
-      // Verificar se o estado foi atualizado corretamente
-      const userData = localStorage.getItem('user')
-      if (userData) {
-        const parsedUser = JSON.parse(userData)
-        console.log('🔍 Estado atual do usuário no localStorage:', {
-          id: parsedUser.id,
-          planoAtivo: parsedUser.planoAtivo,
-          plano: parsedUser.plano
-        })
-      }
-
-      showToast('Plano ativado com sucesso! Treinos gerados automaticamente.', 'success')
-      
-      // Limpar timer do localStorage
-      localStorage.removeItem('checkoutTimerStart')
-      
-      // Aguardar um momento para garantir que o estado foi atualizado
-      // Usar window.location.href para forçar reload completo e garantir que o AuthContext
-      // seja recarregado do localStorage com os dados atualizados
-      setTimeout(() => {
-        console.log('🔄 Redirecionando para dashboard...')
-        // Usar window.location.href para forçar reload completo
-        // Isso garante que o AuthContext seja recarregado do localStorage
-        // e o ProtectedRoute veja o estado atualizado
-        window.location.href = '/dashboard'
-      }, 1000)
     } catch (err: any) {
-      console.error('❌ Erro ao ativar plano:', err)
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Erro ao ativar plano. Tente novamente.'
+      console.error('❌ Erro ao gerar checkout:', err)
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Erro ao processar checkout. Tente novamente.'
       setError(errorMessage)
       showToast(errorMessage, 'error')
       
