@@ -6,8 +6,6 @@
 
 import { getApiBaseUrl } from './api-url'
 
-const API_BASE_URL = getApiBaseUrl();
-
 /**
  * Obtém a URL completa de uma imagem do banco
  * @param nomeArquivo Nome do arquivo da imagem (ex: "treino-cardio.jpg")
@@ -22,6 +20,9 @@ export function getImagemBanco(nomeArquivo: string): string {
   if (nomeArquivo.startsWith('http://') || nomeArquivo.startsWith('https://')) {
     return nomeArquivo;
   }
+
+  // Obter URL base dinamicamente (para detectar HTTPS em tempo de execução)
+  const API_BASE_URL = getApiBaseUrl();
 
   // Se já começar com /api/, retornar como está
   if (nomeArquivo.startsWith('/api/')) {
