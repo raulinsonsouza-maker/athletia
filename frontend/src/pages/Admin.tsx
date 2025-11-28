@@ -665,7 +665,7 @@ export default function Admin() {
   }
 
   const previewImageChain = useMemo(() => buildSourcesForExercicio(exercicioEdit), [exercicioEdit?.id, exercicioEdit?.gifUrl, exercicioEdit?.imagemUrl, exercicioEdit?.grupoMuscularPrincipal])
-  const [previewInitialImage, ...previewFallbackChain] = previewImageChain
+  const previewInitialImage = previewImageChain.length > 0 ? previewImageChain[0] : null
 
   const previewModalTarget = exercicioPreview || exercicioEdit || null
   const previewModalImageChain = useMemo(() => buildSourcesForExercicio(previewModalTarget), [previewModalTarget?.id, previewModalTarget?.gifUrl, previewModalTarget?.imagemUrl, previewModalTarget?.grupoMuscularPrincipal])
