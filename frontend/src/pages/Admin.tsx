@@ -484,7 +484,22 @@ export default function Admin() {
 
   // Função helper para construir URL do GIF
   // Baseado na implementação do fitnessprogramer.com para URLs confiáveis
-  const getGifUrl = (gifUrl: string | null) => resolveApiPath(gifUrl)
+  // Garante que a URL sempre termine com .gif e não seja substituída por .jpg
+  const getGifUrl = (gifUrl: string | null) => {
+    if (!gifUrl) return null
+    
+    // Garantir que a URL sempre termine com .gif
+    // Se a URL contém exercicio.gif, garantir que não seja substituída
+    let resolvedUrl = resolveApiPath(gifUrl)
+    
+    // Se a URL resolvida não termina com .gif mas a original sim, corrigir
+    if (gifUrl.includes('exercicio.gif') && resolvedUrl && !resolvedUrl.endsWith('.gif')) {
+      // Remover qualquer extensão incorreta e adicionar .gif
+      resolvedUrl = resolvedUrl.replace(/\.(jpg|jpeg|png|webp)$/i, '.gif')
+    }
+    
+    return resolvedUrl
+  }
 
   const normalizarGrupo = (grupo?: string | null) =>
     (grupo || '')

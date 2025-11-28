@@ -113,6 +113,25 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
         error: 'GIF não encontrado'
       });
     }
+
+    // Verificar magic bytes para garantir que é realmente um GIF
+    // Isso previne servir arquivos JPEG ou outros formatos com extensão .gif
+    const fileBuffer = fs.readFileSync(filePath, { start: 0, end: 5 });
+    const isValidGif = (buffer: Buffer): boolean => {
+      const gif87a = Buffer.from('GIF87a', 'ascii');
+      const gif89a = Buffer.from('GIF89a', 'ascii');
+      const header = buffer.slice(0, 6);
+      return header.equals(gif87a) || header.equals(gif89a);
+    };
+
+    if (!isValidGif(fileBuffer)) {
+      console.error(`[GIF Route] Arquivo não é um GIF válido (magic bytes): ${filePath}`);
+      return res.status(400).json({
+        error: 'Arquivo não é um GIF válido',
+        path: filePath,
+        message: 'O arquivo não possui a assinatura mágica de um GIF (GIF87a ou GIF89a)'
+      });
+    }
   } catch (err: any) {
     console.error(`[GIF Route] Erro ao verificar arquivo:`, err);
     return res.status(500).json({
