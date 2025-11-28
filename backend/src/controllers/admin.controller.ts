@@ -984,6 +984,145 @@ export const verificarStatusGifs = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Corrigir URLs de GIFs no banco de dados
+// Converte URLs com nomes de exercícios para UUIDs corretos
+// Remove URLs que apontam para CDN inexistente ou arquivos não encontrados
+export const corrigirUrlsGifs = async (req: AuthRequest, res: Response) => {
+  try {
+    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
+    const uploadBasePath = getUploadExerciciosPath();
+    
+    // Buscar todos os exercícios com gifUrl
+    const exerciciosComGif = await prisma.exercicio.findMany({
+      where: {
+        gifUrl: { not: null }
+      },
+      select: {
+        id: true,
+        nome: true,
+        gifUrl: true
+      }
+    });
+
+    const resultados = {
+      total: exerciciosComGif.length,
+      corrigidos: 0,
+      removidos: 0,
+      semMudanca: 0,
+      detalhes: [] as Array<{
+        id: string;
+        nome: string;
+        gifUrlAntigo: string | null;
+        gifUrlNovo: string | null;
+        acao: string;
+      }>
+    };
+
+    for (const exercicio of exerciciosComGif) {
+      if (!exercicio.gifUrl) continue;
+
+      let precisaCorrigir = false;
+      let novaUrl: string | null = null;
+      let acao = 'sem_mudanca';
+
+      // Verificar se a URL aponta para CDN inexistente
+      if (exercicio.gifUrl.includes('minha-cdn.com')) {
+        precisaCorrigir = true;
+        novaUrl = null; // Remover URL inválida
+        acao = 'removido_cdn_invalida';
+      }
+      // Verificar se a URL usa nome em vez de UUID
+      else if (exercicio.gifUrl.includes('/api/uploads/exercicios/')) {
+        const match = exercicio.gifUrl.match(/\/exercicios\/([^\/]+)\/exercicio\.gif/);
+        const idNaUrl = match ? match[1] : null;
+        
+        // Se o ID na URL não é o UUID do exercício, pode ser um nome
+        if (idNaUrl && idNaUrl !== exercicio.id) {
+          // Verificar se é um UUID válido (formato UUID)
+          const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+          
+          if (!uuidPattern.test(idNaUrl)) {
+            // É um nome, não um UUID - corrigir para usar o UUID do exercício
+            const filePath = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
+            
+            // Verificar se o arquivo existe no caminho correto (com UUID)
+            if (fs.existsSync(filePath)) {
+              precisaCorrigir = true;
+              novaUrl = `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`;
+              acao = 'corrigido_nome_para_uuid';
+            } else {
+              // Arquivo não existe nem com nome nem com UUID - remover URL
+              precisaCorrigir = true;
+              novaUrl = null;
+              acao = 'removido_arquivo_nao_encontrado';
+            }
+          } else {
+            // É um UUID válido, mas diferente do ID do exercício
+            // Verificar se o arquivo existe no caminho do UUID na URL
+            const filePathComIdUrl = path.join(uploadBasePath, idNaUrl, 'exercicio.gif');
+            const filePathComIdExercicio = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
+            
+            if (fs.existsSync(filePathComIdExercicio)) {
+              // Arquivo existe com o ID correto do exercício
+              precisaCorrigir = true;
+              novaUrl = `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`;
+              acao = 'corrigido_uuid_incorreto';
+            } else if (!fs.existsSync(filePathComIdUrl)) {
+              // Arquivo não existe em nenhum dos dois lugares
+              precisaCorrigir = true;
+              novaUrl = null;
+              acao = 'removido_arquivo_nao_encontrado';
+            }
+            // Se existe apenas no caminho do UUID da URL, manter como está
+          }
+        } else if (idNaUrl === exercicio.id) {
+          // URL está correta, verificar se arquivo existe
+          const filePath = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
+          if (!fs.existsSync(filePath)) {
+            precisaCorrigir = true;
+            novaUrl = null;
+            acao = 'removido_arquivo_nao_encontrado';
+          }
+        }
+      }
+
+      if (precisaCorrigir) {
+        await prisma.exercicio.update({
+          where: { id: exercicio.id },
+          data: { gifUrl: novaUrl }
+        });
+
+        if (novaUrl === null) {
+          resultados.removidos++;
+        } else {
+          resultados.corrigidos++;
+        }
+
+        resultados.detalhes.push({
+          id: exercicio.id,
+          nome: exercicio.nome,
+          gifUrlAntigo: exercicio.gifUrl,
+          gifUrlNovo: novaUrl,
+          acao
+        });
+      } else {
+        resultados.semMudanca++;
+      }
+    }
+
+    res.json({
+      message: 'Correção de URLs concluída',
+      ...resultados
+    });
+  } catch (error: any) {
+    console.error('Erro ao corrigir URLs dos GIFs:', error);
+    res.status(500).json({
+      error: 'Erro ao corrigir URLs dos GIFs',
+      message: error.message
+    });
+  }
+};
+
 // Obter detalhes de um exercício
 export const obterExercicio = async (req: AuthRequest, res: Response) => {
   try {

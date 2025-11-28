@@ -31,8 +31,15 @@ export default defineConfig({
   build: {
     // Otimizar imagens durante o build
     assetsInlineLimit: 4096, // Inline imagens pequenas (< 4KB)
+    chunkSizeWarningLimit: 600, // Aumentar limite de aviso para 600KB
     rollupOptions: {
       output: {
+        // Code splitting manual para reduzir tamanho dos chunks
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+          'utils': ['axios']
+        },
         // Organizar assets por tipo
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && /\.(png|jpe?g|webp|svg|gif)$/.test(assetInfo.name)) {

@@ -18,7 +18,8 @@ import {
   uploadGifExercicio,
   deletarGifExercicio,
   verificarStatusGifs,
-  bulkUploadGifs
+  bulkUploadGifs,
+  corrigirUrlsGifs
 } from '../controllers/admin.controller';
 import {
   listarGruposAdmin,
@@ -273,6 +274,9 @@ router.post(
 
 // Endpoint para verificar status de todos os GIFs
 router.get('/gifs/status', verificarStatusGifs);
+
+// Endpoint para corrigir URLs de GIFs no banco de dados
+router.post('/gifs/corrigir-urls', corrigirUrlsGifs);
 
 // Endpoint para upload em lote de GIFs
 router.post('/gifs/bulk-upload', 

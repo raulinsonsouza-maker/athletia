@@ -90,10 +90,31 @@ app.options('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
 
 app.get('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
   const { id } = req.params;
-  const filePath = path.join(uploadExerciciosPath, id, 'exercicio.gif');
+  let filePath = path.join(uploadExerciciosPath, id, 'exercicio.gif');
   
-  // Verificar se o arquivo existe
+  // Verificar se o arquivo existe no caminho solicitado
   if (!fs.existsSync(filePath)) {
+    // Se o ID não é um UUID, pode ser um nome antigo
+    // Tentar encontrar o exercício pelo ID (que pode ser nome ou UUID)
+    // e verificar se o arquivo existe com o UUID correto
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    if (!uuidPattern.test(id)) {
+      // ID não é UUID, pode ser nome - tentar buscar no banco
+      // Mas não podemos fazer query aqui sem importar Prisma
+      // Então apenas retornar 404 - a correção deve ser feita via endpoint
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(`[GIF Route] ID não é UUID e arquivo não encontrado: ${filePath}`);
+        console.error(`[GIF Route] Use o endpoint /api/admin/gifs/corrigir-urls para corrigir URLs com nomes`);
+      }
+      return res.status(404).json({
+        error: 'GIF não encontrado',
+        path: filePath,
+        message: 'ID na URL não é um UUID válido. Use o endpoint de correção de URLs.'
+      });
+    }
+    
+    // É um UUID, mas arquivo não existe
     if (process.env.NODE_ENV !== 'production') {
       console.error(`[GIF Route] Arquivo não encontrado: ${filePath}`);
     }
@@ -206,7 +227,8 @@ app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
 }));
 
 // Servir imagens do banco de imagens (/opt/athletia/Imagens/Banco)
-const imagensBancoPath = '/opt/athletia/Imagens/Banco';
+// Usar variável de ambiente se disponível, senão usar caminho padrão
+const imagensBancoPath = process.env.IMAGENS_BANCO_PATH || '/opt/athletia/Imagens/Banco';
 
 // Middleware CORS para imagens do banco
 app.use('/api/imagens-banco', (req, res, next) => {
