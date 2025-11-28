@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import InputMask from 'react-input-mask'
 import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
+import { useOnboardingCalculations } from '../hooks/useOnboardingCalculations'
 
 interface OnboardingData {
   nome?: string
@@ -324,201 +325,22 @@ export default function Cadastro() {
   // }
 
   const idadeCalculada = calcularIdade()
-  // const resumo = gerarResumo() // Não utilizado
+  
+  // Usar hook customizado para cálculos (melhora performance com useMemo)
+  const { imc, classificacaoIMC, validacao, calorias: caloriasCalculadas, agua: aguaCalculada, transformacao } = useOnboardingCalculations(onboardingData)
+  
+  // Converter calorias e água para string (compatibilidade)
+  const calorias = caloriasCalculadas ? caloriasCalculadas.toString() : null
+  const agua = aguaCalculada || null
 
-  // Calcular IMC
-  const calcularIMC = () => {
-    if (onboardingData?.pesoAtual && onboardingData?.altura) {
-      const peso = Number(onboardingData.pesoAtual)
-      const altura = Number(onboardingData.altura)
-      if (isNaN(peso) || isNaN(altura) || altura === 0) return null
-      const alturaMetros = altura / 100
-      return (peso / (alturaMetros * alturaMetros)).toFixed(1)
-    }
-    return null
-  }
-
-  const imc = calcularIMC()
-  const classificacaoIMC = imc ? 
-    parseFloat(imc) < 18.5 ? 'Abaixo do peso' :
-    parseFloat(imc) < 25 ? 'Peso normal' :
-    parseFloat(imc) < 30 ? 'Sobrepeso' : 'Obesidade'
-    : null
-
-  // Validação cruzada entre tipoCorpo e IMC
-  const validarConsistencia = () => {
-    if (!onboardingData?.tipoCorpo || !imc) return null
-    
-    const imcValue = parseFloat(imc)
-    const tipoCorpo = onboardingData.tipoCorpo
-    const isFeminino = onboardingData.sexo === 'Feminino'
-    
-    // Mapear tipoCorpo para faixa de IMC esperada
-    let imcEsperadoMin = 0
-    let imcEsperadoMax = 0
-    
-    if (isFeminino) {
-      if (tipoCorpo === 'Em Forma') {
-        imcEsperadoMin = 18.5
-        imcEsperadoMax = 24.9
-      } else if (tipoCorpo === 'Sobrepeso') {
-        imcEsperadoMin = 25
-        imcEsperadoMax = 29.9
-      } else if (tipoCorpo === 'Acima do Peso') {
-        imcEsperadoMin = 25
-        imcEsperadoMax = 29.9
-      } else if (tipoCorpo === 'Obesidade') {
-        imcEsperadoMin = 30
-        imcEsperadoMax = 50
-      }
-    } else {
-      if (tipoCorpo === 'Ectomorfo') {
-        imcEsperadoMin = 18.5
-        imcEsperadoMax = 24.9
-      } else if (tipoCorpo === 'Mesomorfo') {
-        imcEsperadoMin = 20
-        imcEsperadoMax = 27
-      } else if (tipoCorpo === 'Endomorfo') {
-        imcEsperadoMin = 25
-        imcEsperadoMax = 29.9
-      } else if (tipoCorpo === 'Obesidade') {
-        imcEsperadoMin = 30
-        imcEsperadoMax = 50
-      }
-    }
-    
-    // Verificar se IMC está dentro da faixa esperada (com margem de tolerância)
-    const dentroDaFaixa = imcValue >= (imcEsperadoMin - 2) && imcValue <= (imcEsperadoMax + 2)
-    
-    return {
-      consistente: dentroDaFaixa,
-      tipoCorpo,
-      imcCalculado: imcValue,
-      faixaEsperada: `${imcEsperadoMin.toFixed(1)} - ${imcEsperadoMax.toFixed(1)}`
-    }
-  }
-
-  const validacao = validarConsistencia()
-
-  // Calcular calorias recomendadas (aproximado)
-  const calcularCalorias = () => {
-    if (!onboardingData?.pesoAtual || !onboardingData?.altura || !onboardingData?.idade) return null
-    
-    const peso = Number(onboardingData.pesoAtual)
-    const altura = Number(onboardingData.altura)
-    const idade = Number(onboardingData.idade)
-    
-    if (isNaN(peso) || isNaN(altura) || isNaN(idade)) return null
-    
-    // Fórmula simplificada: TMB = 10 * peso + 6.25 * altura - 5 * idade + 5 (homem) ou -161 (mulher)
-    const tmb = onboardingData.sexo === 'Masculino' 
-      ? 10 * peso + 6.25 * altura - 5 * idade + 5
-      : 10 * peso + 6.25 * altura - 5 * idade - 161
-    
-    // Multiplicador de atividade (sedentário = 1.2, leve = 1.375, moderado = 1.55)
-    const multiplicador = onboardingData.frequenciaSemanal ? 
-      onboardingData.frequenciaSemanal <= 2 ? 1.2 :
-      onboardingData.frequenciaSemanal <= 4 ? 1.375 : 1.55
-      : 1.2
-    
-    return Math.round(tmb * multiplicador)
-  }
-
-  const calorias = calcularCalorias()
-
-  // Calcular água recomendada
-  const calcularAgua = () => {
-    if (!onboardingData?.pesoAtual) return null
-    const peso = Number(onboardingData.pesoAtual)
-    if (isNaN(peso)) return null
-    // 35ml por kg de peso
-    return (peso * 35 / 1000).toFixed(1)
-  }
-
-  const agua = calcularAgua()
-
-  // Funções para transformação (homens e mulheres)
-  const calcularTransformacao = () => {
+  // Funções para métricas adicionais (gordura, idade de condicionamento, músculos)
+  // Nota: transformacao (imagens) já vem do hook useOnboardingCalculations
+  const calcularMetricasAdicionais = () => {
     if (!onboardingData) return null
     if (!onboardingData.sexo) return null
 
     const isMasculino = onboardingData.sexo === 'Masculino'
     const isFeminino = onboardingData.sexo === 'Feminino'
-
-    // Determinar imagem atual baseada no tipo de corpo ou IMC
-    const getImagemAtual = () => {
-      // Priorizar tipoCorpo quando disponível, usar IMC como fallback
-      const tipoCorpo = onboardingData.tipoCorpo
-      
-      if (isMasculino) {
-        // Homens - valores do onboarding: Ectomorfo, Mesomorfo, Endomorfo, Obesidade
-        if (tipoCorpo === 'Ectomorfo') {
-          return '/images/onboarding/magro.webp'
-        } else if (tipoCorpo === 'Mesomorfo') {
-          return '/images/onboarding/sobrepeso.webp'
-        } else if (tipoCorpo === 'Endomorfo') {
-          return '/images/onboarding/acima_do_peso.webp'
-        } else if (tipoCorpo === 'Obesidade') {
-          return '/images/onboarding/obeso.webp'
-        }
-        // Fallback para IMC se tipoCorpo não estiver disponível
-        if (imc) {
-          const imcValue = parseFloat(imc)
-          if (imcValue < 18.5) return '/images/onboarding/magro.webp'
-          else if (imcValue < 25) return '/images/onboarding/sobrepeso.webp'
-          else if (imcValue < 30) return '/images/onboarding/acima_do_peso.webp'
-          else return '/images/onboarding/obeso.webp'
-        }
-        return '/images/onboarding/sobrepeso.webp' // default
-      } else if (isFeminino) {
-        // Mulheres - valores do onboarding: "Em Forma", "Sobrepeso", "Acima do Peso", "Obesidade"
-        if (tipoCorpo === 'Em Forma') {
-          return '/images/onboarding/Em_forma.png'
-        } else if (tipoCorpo === 'Sobrepeso') {
-          return '/images/onboarding/Sobrepeso.png'
-        } else if (tipoCorpo === 'Acima do Peso') {
-          return '/images/onboarding/Acima do peso.png'
-        } else if (tipoCorpo === 'Obesidade') {
-          return '/images/onboarding/Obesidade.png'
-        }
-        // Fallback para IMC se tipoCorpo não estiver disponível
-        if (imc) {
-          const imcValue = parseFloat(imc)
-          if (imcValue < 18.5) return '/images/onboarding/Em_forma.png'
-          else if (imcValue < 25) return '/images/onboarding/Sobrepeso.png'
-          else if (imcValue < 30) return '/images/onboarding/Acima do peso.png'
-          else return '/images/onboarding/Obesidade.png'
-        }
-        return '/images/onboarding/Sobrepeso.png' // default
-      }
-      return null
-    }
-
-    // Determinar imagem futura baseada no objetivo
-    const getImagemFutura = () => {
-      if (isMasculino) {
-        // Homens
-        if (onboardingData.objetivo === 'Emagrecimento') {
-          return '/images/onboarding/perder_peso.webp'
-        } else if (onboardingData.objetivo === 'Hipertrofia') {
-          return '/images/onboarding/ganahr_massa.webp'
-        } else if (onboardingData.objetivo === 'Força') {
-          return '/images/onboarding/ficar_musculoso.webp'
-        }
-        return '/images/onboarding/ganahr_massa.webp' // default
-      } else if (isFeminino) {
-        // Mulheres
-        if (onboardingData.objetivo === 'Emagrecimento') {
-          return '/images/onboarding/Perder_peso.webp'
-        } else if (onboardingData.objetivo === 'Hipertrofia') {
-          return '/images/onboarding/Ganhar_massa_muscular.webp'
-        } else if (onboardingData.objetivo === 'Força') {
-          return '/images/onboarding/Ficar_musculosa.webp'
-        }
-        return '/images/onboarding/Ganhar_massa_muscular.webp' // default
-      }
-      return null
-    }
 
     // Calcular métricas atuais com base em tipoCorpo (prioritário) ou IMC
     const getGorduraAtual = () => {
@@ -811,8 +633,6 @@ export default function Cadastro() {
     }
 
     return {
-      imagemAtual: getImagemAtual(),
-      imagemFutura: getImagemFutura(),
       gorduraAtual: getGorduraAtual(),
       gorduraFutura: getGorduraFutura(),
       idadeAtual: getIdadeCondicionamentoAtual(),
@@ -822,7 +642,13 @@ export default function Cadastro() {
     }
   }
 
-  const transformacao = calcularTransformacao()
+  const metricasAdicionais = calcularMetricasAdicionais()
+  
+  // Combinar transformacao do hook com métricas adicionais
+  const transformacaoCompleta = transformacao && metricasAdicionais ? {
+    ...transformacao,
+    ...metricasAdicionais
+  } : transformacao
 
   // Não renderizar até os dados estarem carregados
   if (!onboardingData) {
@@ -1046,7 +872,7 @@ export default function Cadastro() {
         </div>
 
         {/* Transformação Antes e Depois do Usuário */}
-        {transformacao && (
+        {transformacaoCompleta && (
           <div className="card p-6 md:p-8 mb-8 animate-scale-in">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-8 text-center">
               Sua Transformação em 6 Meses
@@ -1059,10 +885,12 @@ export default function Cadastro() {
                 <div className="text-base font-semibold text-light-muted mb-3 uppercase tracking-wide">Agora</div>
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-dark-lighter border-2 border-grey/30 shadow-lg">
                   <img 
-                    src={transformacao.imagemAtual || ''} 
+                    src={transformacaoCompleta.imagemAtual || ''} 
                     alt="Estado atual"
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    width="300"
+                    height="400"
                     onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=Agora`
                     }}
@@ -1082,10 +910,12 @@ export default function Cadastro() {
                 <div className="text-base font-semibold text-light-muted mb-3 uppercase tracking-wide">6 meses</div>
                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/50 shadow-lg">
                   <img 
-                    src={transformacao.imagemFutura || ''} 
+                    src={transformacaoCompleta.imagemFutura || ''} 
                     alt="Estado futuro"
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    width="300"
+                    height="400"
                     onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=6+meses`
                     }}
@@ -1104,12 +934,12 @@ export default function Cadastro() {
                 
                 <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Gordura corporal</div>
-                  <div className="text-3xl font-bold text-light">{transformacao.gorduraAtual}</div>
+                  <div className="text-3xl font-bold text-light">{transformacaoCompleta.gorduraAtual}</div>
                 </div>
 
                 <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Idade de condicionamento físico</div>
-                  <div className="text-3xl font-bold text-light">{transformacao.idadeAtual} anos</div>
+                  <div className="text-3xl font-bold text-light">{transformacaoCompleta.idadeAtual} anos</div>
                 </div>
 
                 <div className="bg-dark-lighter rounded-lg p-4 border border-grey/20">
@@ -1119,7 +949,7 @@ export default function Cadastro() {
                       <div
                         key={i}
                         className={`h-2 flex-1 rounded ${
-                          i <= transformacao.musculosAtual ? 'bg-primary' : 'bg-grey/30'
+                          i <= transformacaoCompleta.musculosAtual ? 'bg-primary' : 'bg-grey/30'
                         }`}
                       ></div>
                     ))}
@@ -1135,12 +965,12 @@ export default function Cadastro() {
                 
                 <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Gordura corporal</div>
-                  <div className="text-3xl font-bold text-primary">{transformacao.gorduraFutura}</div>
+                  <div className="text-3xl font-bold text-primary">{transformacaoCompleta.gorduraFutura}</div>
                 </div>
 
                 <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
                   <div className="text-xs text-light-muted mb-2 uppercase tracking-wide">Idade de condicionamento físico</div>
-                  <div className="text-3xl font-bold text-primary">{transformacao.idadeFutura} anos</div>
+                  <div className="text-3xl font-bold text-primary">{transformacaoCompleta.idadeFutura} anos</div>
                 </div>
 
                 <div className="bg-primary/10 rounded-lg p-4 border border-primary/30">
@@ -1150,7 +980,7 @@ export default function Cadastro() {
                       <div
                         key={i}
                         className={`h-2 flex-1 rounded ${
-                          i <= transformacao.musculosFuturo ? 'bg-primary' : 'bg-grey/30'
+                          i <= transformacaoCompleta.musculosFuturo ? 'bg-primary' : 'bg-grey/30'
                         }`}
                       ></div>
                     ))}
@@ -1258,6 +1088,8 @@ export default function Cadastro() {
                     alt={`Transformação de ${DEPOIMENTOS[depoimentoAtual].nome}`}
                     className="w-full h-auto object-cover"
                     loading="lazy"
+                    width="600"
+                    height="800"
                     onError={(e) => {
                       e.currentTarget.src = `https://via.placeholder.com/600x800/4A4946/F9A620?text=Transformação`
                     }}

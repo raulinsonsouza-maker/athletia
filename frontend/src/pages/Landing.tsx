@@ -779,6 +779,8 @@ export default function Landing() {
                       alt={`Transformação de ${DEPOIMENTOS[depoimentoAtual].nome}`}
                       className="w-full h-auto object-cover"
                       loading="lazy"
+                      width="600"
+                      height="800"
                       onError={(e) => {
                         e.currentTarget.src = `https://via.placeholder.com/600x800/4A4946/F9A620?text=Transformação`
                       }}
@@ -995,6 +997,9 @@ export default function Landing() {
                           src={faixa.image} 
                           alt={`Idade ${faixa.label}`}
                           className="w-full h-full object-cover"
+                          loading="eager"
+                          width="300"
+                          height="400"
                         />
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-3">
@@ -1068,6 +1073,9 @@ export default function Landing() {
                             src={sexo.image} 
                             alt={sexo.value}
                             className="w-full h-full object-cover"
+                            loading="lazy"
+                            width="300"
+                            height="400"
                           />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center px-6 text-light">
@@ -1187,6 +1195,9 @@ export default function Landing() {
                           src={tipo.image} 
                           alt={tipo.label}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          width="300"
+                          height="400"
                           onError={(e) => {
                             e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=${tipo.label}`
                           }}
@@ -1567,6 +1578,9 @@ export default function Landing() {
                           src={obj.image} 
                           alt={obj.title}
                           className="w-full h-full object-cover"
+                          loading="lazy"
+                          width="300"
+                          height="400"
                           onError={(e) => {
                             e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=${obj.title}`
                           }}

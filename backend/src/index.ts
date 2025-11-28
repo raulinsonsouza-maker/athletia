@@ -249,6 +249,13 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Cache headers otimizados para imagens estáticas (1 ano)
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.setHeader('Expires', new Date(Date.now() + 31536000000).toUTCString());
+  res.setHeader('ETag', `"${stats.mtime.getTime()}"`);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   res.setHeader('Content-Type', contentType);
   res.setHeader('Accept-Ranges', 'bytes');
