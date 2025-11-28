@@ -115,6 +115,8 @@ export default function TreinoAtual() {
   const [abaAtiva, setAbaAtiva] = useState<'alvo' | 'instrucoes' | 'equipamento'>('alvo')
   const [mostrarImagemExpandida, setMostrarImagemExpandida] = useState(false)
   const [ultimoExercicioConcluido, setUltimoExercicioConcluido] = useState<{ id: string; timestamp: number } | null>(null)
+  const [gifErroAtual, setGifErroAtual] = useState(false)
+  const [gifErroProximo, setGifErroProximo] = useState(false)
 
   // Timer
   useEffect(() => {
@@ -228,15 +230,23 @@ export default function TreinoAtual() {
     return blocoAtivo.exercicios[exercicioAtivoIndex + 1] || null
   }, [blocoAtivo, exercicioAtivoIndex])
 
-  const exercicioGifUrl = useMemo(
-    () => resolveApiPath(exercicioEmFoco?.gifUrl),
-    [exercicioEmFoco?.gifUrl]
-  )
+  useEffect(() => {
+    setGifErroAtual(false)
+  }, [exercicioEmFoco?.id])
 
-  const proximoGifUrl = useMemo(
-    () => resolveApiPath(proximoExercicio?.gifUrl),
-    [proximoExercicio?.gifUrl]
-  )
+  useEffect(() => {
+    setGifErroProximo(false)
+  }, [proximoExercicio?.id])
+
+  const exercicioGifUrl = useMemo(() => {
+    if (gifErroAtual) return null
+    return resolveApiPath(exercicioEmFoco?.gifUrl)
+  }, [exercicioEmFoco?.gifUrl, gifErroAtual])
+
+  const proximoGifUrl = useMemo(() => {
+    if (gifErroProximo) return null
+    return resolveApiPath(proximoExercicio?.gifUrl)
+  }, [proximoExercicio?.gifUrl, gifErroProximo])
 
   // Progresso
   const progresso = useMemo(() => {
@@ -444,7 +454,12 @@ export default function TreinoAtual() {
               </div>
               {proximoGifUrl && (
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10">
-                  <img src={proximoGifUrl} alt={proximoExercicio.nome} className="w-full h-full object-cover" />
+                  <img
+                    src={proximoGifUrl}
+                    alt={proximoExercicio.nome}
+                    className="w-full h-full object-cover"
+                    onError={() => setGifErroProximo(true)}
+                  />
                 </div>
               )}
             </div>
@@ -463,6 +478,7 @@ export default function TreinoAtual() {
                   src={exercicioGifUrl}
                   alt={exercicioEmFoco.nome}
                   className="w-full h-full object-contain"
+                  onError={() => setGifErroAtual(true)}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                   <span className="text-xs text-white/70 opacity-0 group-hover:opacity-100 transition">Toque para expandir</span>

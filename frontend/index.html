@@ -26,11 +26,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AthletIA" />
     
-    <!-- Preload imagens críticas do primeiro passo do onboarding -->
-    <link rel="preload" as="image" href="/images/onboarding/18 aos 29.webp" />
-    <link rel="preload" as="image" href="/images/onboarding/30 aos 39.webp" />
-    <link rel="preload" as="image" href="/images/onboarding/40 aos 49.webp" />
-    <link rel="preload" as="image" href="/images/onboarding/50+.webp" />
+    <!-- Prefetch imagens críticas do onboarding para reduzir carregamentos sem gerar warnings -->
+    <link rel="prefetch" as="image" href="/images/onboarding/18 aos 29.webp" />
+    <link rel="prefetch" as="image" href="/images/onboarding/30 aos 39.webp" />
+    <link rel="prefetch" as="image" href="/images/onboarding/40 aos 49.webp" />
+    <link rel="prefetch" as="image" href="/images/onboarding/50+.webp" />
   </head>
   <body>
     <div id="root"></div>

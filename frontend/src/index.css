@@ -87,6 +87,14 @@
     background-color: #8A8985;
   }
 
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Animações */
   @keyframes fade-in {
     from {

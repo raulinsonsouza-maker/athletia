@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import MobileNumberPicker from '../components/MobileNumberPicker'
 
 interface Depoimento {
   nome: string
@@ -91,6 +92,44 @@ export default function Landing() {
       }
     })
   }
+
+  const calcularIdadeAPartirData = (data?: string | null) => {
+    if (!data) return null
+
+    const numbers = data.replace(/\D/g, '')
+    if (numbers.length !== 8) return null
+
+    const dia = parseInt(numbers.slice(0, 2), 10)
+    const mes = parseInt(numbers.slice(2, 4), 10) - 1
+    const ano = parseInt(numbers.slice(4, 8), 10)
+
+    if (Number.isNaN(dia) || Number.isNaN(mes) || Number.isNaN(ano)) return null
+
+    const dataNascimento = new Date(ano, mes, dia)
+    if (Number.isNaN(dataNascimento.getTime())) return null
+
+    const hoje = new Date()
+    let idade = hoje.getFullYear() - dataNascimento.getFullYear()
+    const mesAtual = hoje.getMonth()
+    const diaAtual = hoje.getDate()
+
+    if (mesAtual < mes || (mesAtual === mes && diaAtual < dia)) {
+      idade--
+    }
+
+    return idade
+  }
+
+  useEffect(() => {
+    if (step === 4 && !onboardingData.altura) {
+      setOnboardingData((prev) => ({ ...prev, altura: 170 }))
+    } else if (step === 4.5 && !onboardingData.pesoAtual) {
+      setOnboardingData((prev) => ({ ...prev, pesoAtual: 70 }))
+    } else if (step === 14 && !onboardingData.idade) {
+      const idadeCalculada = calcularIdadeAPartirData(onboardingData.dataNascimento)
+      setOnboardingData((prev) => ({ ...prev, idade: idadeCalculada ?? 30 }))
+    }
+  }, [step, onboardingData.altura, onboardingData.pesoAtual, onboardingData.idade, onboardingData.dataNascimento])
 
   const nextStep = () => {
     // Após altura (step 4), ir para peso (4.5)
@@ -1227,37 +1266,19 @@ export default function Landing() {
               <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-8">
                 Qual é a sua altura?
               </h2>
-              
-              <div className="space-y-6">
-                {/* Seleção de unidade */}
-                <div className="flex justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    className="px-8 py-3 rounded-lg font-semibold bg-primary text-dark"
-                  >
-                    cm
-                  </button>
-                </div>
+              <p className="text-light-muted mb-6 text-lg">
+                Ajuste deslizando — selecionamos a altura exata para montar seus treinos.
+              </p>
 
-                {/* Input de altura */}
-                <div className="mt-8">
-                  <input
-                    type="number"
-                    min="100"
-                    max="250"
-                    value={onboardingData.altura || ''}
-                    onChange={(e) => handleChange('altura', e.target.value ? Number(e.target.value) : undefined)}
-                    className="w-full bg-transparent border-b-2 border-grey text-center text-2xl md:text-4xl font-bold text-light focus:border-primary focus:outline-none py-4 transition-colors"
-                    placeholder="Altura, cm"
-                    required
-                    aria-label="Digite sua altura em centímetros"
-                    aria-required="true"
-                  />
-                  {onboardingData.altura && (onboardingData.altura < 100 || onboardingData.altura > 250) && (
-                    <p className="text-error text-sm mt-2">Altura deve estar entre 100 e 250 cm</p>
-                  )}
-                </div>
+              <div className="max-w-xs mx-auto mt-8">
+                <MobileNumberPicker
+                  min={120}
+                  max={230}
+                  value={onboardingData.altura ?? 170}
+                  onChange={(valor) => handleChange('altura', valor)}
+                  unit="cm"
+                />
+                <p className="text-xs text-light-muted mt-4">Arraste para cima ou para baixo para ajustar.</p>
               </div>
             </div>
           )}
@@ -1268,44 +1289,23 @@ export default function Landing() {
               <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-8">
                 Qual é o seu peso atual?
               </h2>
-              
-              <div className="space-y-6">
-                {/* Seleção de unidade */}
-                <div className="flex justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {}}
-                    className="px-8 py-3 rounded-lg font-semibold bg-primary text-dark"
-                  >
-                    kg
-                  </button>
-                </div>
+              <p className="text-light-muted mb-6 text-lg">
+                Use o seletor para informar o peso atual. Ajustamos automaticamente conforme sua evolução.
+              </p>
 
-                {/* Input de peso */}
-                <div className="mt-8">
-                  <input
-                    type="number"
-                    step="0.1"
-                    min="30"
-                    max="300"
-                    value={onboardingData.pesoAtual || ''}
-                    onChange={(e) => handleChange('pesoAtual', e.target.value ? Number(e.target.value) : undefined)}
-                    className="w-full bg-transparent border-b-2 border-grey text-center text-2xl md:text-4xl font-bold text-light focus:border-primary focus:outline-none py-4 transition-colors"
-                    placeholder="Peso atual, kg"
-                    required
-                    aria-label="Digite seu peso atual em quilogramas"
-                    aria-required="true"
-                  />
-                  {onboardingData.pesoAtual && (onboardingData.pesoAtual < 30 || onboardingData.pesoAtual > 300) && (
-                    <p className="text-error text-sm mt-2">Peso deve estar entre 30 e 300 kg</p>
-                  )}
-                </div>
+              <div className="max-w-xs mx-auto mt-8 space-y-6">
+                <MobileNumberPicker
+                  min={35}
+                  max={250}
+                  value={onboardingData.pesoAtual ?? 70}
+                  onChange={(valor) => handleChange('pesoAtual', valor)}
+                  unit="kg"
+                />
 
-                {/* Cálculo IMC */}
                 {onboardingData.altura && onboardingData.pesoAtual && (
-                  <div className="mt-8 bg-primary/20 border border-primary/50 rounded-lg p-4">
-                    <p className="text-sm text-light-muted mb-1">Seu IMC:</p>
-                    <p className="text-3xl font-bold text-primary">
+                  <div className="bg-primary/15 border border-primary/40 rounded-lg p-4">
+                    <p className="text-xs text-light-muted uppercase tracking-wide">Seu IMC estimado</p>
+                    <p className="text-3xl font-bold text-primary mt-1">
                       {((onboardingData.pesoAtual / ((onboardingData.altura / 100) ** 2))).toFixed(1)}
                     </p>
                     <p className="text-xs text-light-muted mt-2">
@@ -2301,14 +2301,39 @@ export default function Landing() {
             </div>
           )}
 
-          {/* Passo 14: Nome */}
+          {/* Passo 14: Idade */}
           {step === 14 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
-                Qual é o seu nome?
+                Qual é a sua idade?
               </h2>
               <p className="text-light-muted mb-8 text-lg">
-                Precisamos do seu nome para personalizar sua experiência
+                A idade nos ajuda a ajustar o volume e a intensidade dos treinos para você.
+              </p>
+
+              <div className="max-w-xs mx-auto mt-8">
+                <MobileNumberPicker
+                  min={14}
+                  max={80}
+                  value={onboardingData.idade ?? 30}
+                  onChange={(valor) => handleChange('idade', valor)}
+                  unit="anos"
+                />
+                <p className="text-xs text-light-muted mt-4">
+                  Arraste para selecionar. Ajustaremos isso automaticamente conforme o tempo passa.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Passo 15: Nome */}
+          {step === 15 && (
+            <div className="text-center animate-fade-in max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+                Para finalizar, como podemos te chamar?
+              </h2>
+              <p className="text-light-muted mb-8 text-lg">
+                Queremos que tudo seja personalizado para você.
               </p>
 
               <div className="max-w-md mx-auto mt-8">
@@ -2324,70 +2349,6 @@ export default function Landing() {
                 />
                 {onboardingData.nome && onboardingData.nome.trim().length < 2 && (
                   <p className="text-error text-sm mt-2">Nome deve ter pelo menos 2 caracteres</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Passo 15: Data de Nascimento */}
-          {step === 15 && (
-            <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
-                Qual é a sua data de nascimento?
-              </h2>
-              <p className="text-light-muted mb-8 text-lg">
-                Precisamos da sua data de nascimento para calcular sua idade e personalizar seu plano
-              </p>
-
-              <div className="max-w-md mx-auto mt-8">
-                <input
-                  type="text"
-                  value={onboardingData.dataNascimento || ''}
-                  onChange={(e) => {
-                    const input = e.target.value
-                    // Remove tudo que não é número
-                    const numbers = input.replace(/\D/g, '')
-                    
-                    // Limita a 8 dígitos
-                    const limitedNumbers = numbers.slice(0, 8)
-                    
-                    // Formata conforme o usuário digita
-                    let formatted = ''
-                    if (limitedNumbers.length === 0) {
-                      formatted = ''
-                    } else if (limitedNumbers.length <= 2) {
-                      formatted = limitedNumbers
-                    } else if (limitedNumbers.length <= 4) {
-                      formatted = `${limitedNumbers.slice(0, 2)} / ${limitedNumbers.slice(2)}`
-                    } else {
-                      formatted = `${limitedNumbers.slice(0, 2)} / ${limitedNumbers.slice(2, 4)} / ${limitedNumbers.slice(4, 8)}`
-                    }
-                    
-                    handleChange('dataNascimento', formatted)
-                  }}
-                  onKeyDown={(e) => {
-                    // Se o usuário pressionar backspace e o cursor estiver após uma barra, mover o cursor
-                    if (e.key === 'Backspace') {
-                      const input = e.target as HTMLInputElement
-                      const cursorPos = input.selectionStart || 0
-                      const value = input.value
-                      
-                      // Se o cursor está logo após " / ", mover para antes
-                      if (cursorPos > 0 && value[cursorPos - 1] === ' ') {
-                        setTimeout(() => {
-                          input.setSelectionRange(cursorPos - 3, cursorPos - 3)
-                        }, 0)
-                      }
-                    }
-                  }}
-                  className="w-full bg-transparent border-b-2 border-grey text-center text-2xl md:text-4xl font-bold text-light focus:border-primary focus:outline-none py-4 transition-colors"
-                  placeholder="DD / MM / AAAA"
-                  autoFocus
-                  aria-label="Digite sua data de nascimento no formato DD/MM/AAAA"
-                  aria-required="true"
-                />
-                {onboardingData.dataNascimento && onboardingData.dataNascimento.replace(/\D/g, '').length < 8 && (
-                  <p className="text-error text-sm mt-2">Data incompleta. Use o formato DD/MM/AAAA</p>
                 )}
               </div>
             </div>
@@ -2428,8 +2389,8 @@ export default function Landing() {
                   (step === 5.5 && !onboardingData.aguaDiaria) ||
                   (step === 7 && !onboardingData.experiencia) ||
                   (step === 7.5 && !onboardingData.experiencia) ||
-                  (step === 14 && !onboardingData.nome?.trim()) ||
-                  (step === 15 && (!onboardingData.dataNascimento || onboardingData.dataNascimento.replace(/\D/g, '').length < 8))
+                  (step === 14 && !onboardingData.idade) ||
+                  (step === 15 && !onboardingData.nome?.trim())
                   // Passos 11, 12 e 13 são opcionais
                 }
                 className="btn-primary px-12 py-3 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"

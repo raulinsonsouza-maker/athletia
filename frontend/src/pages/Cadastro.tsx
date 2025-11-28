@@ -263,7 +263,9 @@ export default function Cadastro() {
 
   // Calcular idade a partir da data de nascimento
   const calcularIdade = () => {
-    if (!onboardingData?.dataNascimento) return null
+    if (!onboardingData) return null
+    if (onboardingData.idade) return onboardingData.idade
+    if (!onboardingData.dataNascimento) return null
     
     try {
       // Converter DD / MM / AAAA para Date
@@ -327,6 +329,7 @@ export default function Cadastro() {
   // }
 
   const idadeCalculada = calcularIdade()
+  const idadeExibicao = idadeCalculada ?? onboardingData?.idade ?? null
   
   // Usar hook customizado para cálculos (melhora performance com useMemo)
   const { imc, classificacaoIMC, validacao, calorias: caloriasCalculadas, agua: aguaCalculada, transformacao } = useOnboardingCalculations(onboardingData)
@@ -697,10 +700,16 @@ export default function Cadastro() {
                     <div className="text-sm text-light-muted mb-1">Data de Nascimento</div>
                     <div className="text-xl font-bold text-light">
                       {onboardingData.dataNascimento}
-                      {idadeCalculada && (
-                        <span className="text-primary ml-2">({idadeCalculada} anos)</span>
+                      {idadeExibicao && (
+                        <span className="text-primary ml-2">({idadeExibicao} anos)</span>
                       )}
                     </div>
+                  </div>
+                )}
+                {!onboardingData.dataNascimento && idadeExibicao && (
+                  <div>
+                    <div className="text-sm text-light-muted mb-1">Idade</div>
+                    <div className="text-xl font-bold text-primary">{idadeExibicao} anos</div>
                   </div>
                 )}
               </div>
