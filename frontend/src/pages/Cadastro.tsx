@@ -251,14 +251,6 @@ export default function Cadastro() {
     }
   }
 
-  if (!onboardingData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
   // Calcular idade a partir da data de nascimento
   const calcularIdade = () => {
     if (!onboardingData?.dataNascimento) return null
