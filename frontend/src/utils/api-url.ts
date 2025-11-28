@@ -1,6 +1,7 @@
 /**
  * Utilitário para obter a URL base da API com suporte automático a HTTPS
  * Quando a página está em HTTPS, força a API a usar HTTPS também
+ * Se a URL contém IP, substitui pelo domínio atual quando em HTTPS
  */
 
 export function getApiBaseUrl(): string {
@@ -11,12 +12,40 @@ export function getApiBaseUrl(): string {
     return 'http://localhost:3001'
   }
   
-  // Se a página está em HTTPS e a API está em HTTP, converter para HTTPS
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
-    return envUrl.replace('http://', 'https://')
+  // Remover /api do final se existir (será adicionado por getApiUrl)
+  let cleanUrl = envUrl.replace(/\/api\/?$/, '')
+  
+  // Se estamos em produção HTTPS (não localhost)
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && window.location.hostname !== 'localhost') {
+    const currentHost = window.location.hostname
+    
+    // Se a URL da API contém um IP, substituir pelo domínio atual
+    const ipPattern = /https?:\/\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?(\/.*)?/
+    if (ipPattern.test(cleanUrl)) {
+      // Extrair porta e path se existirem
+      const match = cleanUrl.match(ipPattern)
+      const port = match?.[2] || ''
+      const path = match?.[3] || ''
+      // Remover /api do path se existir
+      const cleanPath = path.replace(/\/api\/?$/, '')
+      // Substituir IP pelo domínio atual e garantir HTTPS
+      return `https://${currentHost}${port}${cleanPath}`
+    }
+    
+    // Se a API está em HTTP, converter para HTTPS usando o domínio atual
+    if (cleanUrl.startsWith('http://')) {
+      // Extrair host, porta e path
+      const urlMatch = cleanUrl.match(/http:\/\/([^\/:]+)(:\d+)?(\/.*)?/)
+      if (urlMatch) {
+        const [, , port, path] = urlMatch
+        // Remover /api do path se existir
+        const cleanPath = path ? path.replace(/\/api\/?$/, '') : ''
+        return `https://${currentHost}${port || ''}${cleanPath}`
+      }
+    }
   }
   
-  return envUrl
+  return cleanUrl
 }
 
 /**
