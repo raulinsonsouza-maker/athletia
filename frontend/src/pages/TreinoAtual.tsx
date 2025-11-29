@@ -30,7 +30,7 @@ export default function TreinoAtual() {
     loading,
     podeDesfazer,
     tempoDesfazer,
-    proximoExercicio: proximoExercicioHandler,
+    irParaProximoExercicio,
     exercicioAnterior,
     selecionarExercicio,
     marcarConcluido,
@@ -230,7 +230,7 @@ export default function TreinoAtual() {
             {exercicioAtivoIndex + 1} / {blocoAtivo.exercicios.length}
           </span>
           <button
-            onClick={proximoExercicioHandler}
+            onClick={irParaProximoExercicio}
             disabled={exercicioAtivoIndex >= blocoAtivo.exercicios.length - 1}
             className="p-4 rounded-full bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/20 active:bg-white/30 transition border border-white/20"
           >

@@ -7,7 +7,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 export function useCronometro(autostart: boolean = true) {
   const [segundos, setSegundos] = useState(0)
   const [ativo, setAtivo] = useState(autostart)
-  const intervaloRef = useRef<NodeJS.Timeout | null>(null)
+  const intervaloRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Limpar intervalo ao desmontar
   useEffect(() => {

@@ -1,6 +1,6 @@
-import { useReducer, useCallback, useMemo, useEffect, useRef } from 'react'
+import { useReducer, useCallback, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { PlanoAtualResponse, PlanoAtualBloco, PlanoAtualExercicio } from '../types/treino.types'
+import { PlanoAtualResponse } from '../types/treino.types'
 import { treinoGateway } from '../gateways/treino.gateway'
 import { useToast } from './useToast'
 
@@ -213,7 +213,7 @@ export function useTreinoAtual() {
     dispatch({ type: 'SET_BLOCO_ATIVO', payload: blocoId })
   }, [])
 
-  const proximoExercicioHandler = useCallback(() => {
+  const irParaProximoExercicio = useCallback(() => {
     if (!blocoAtivo) return
     const novoIndex = Math.min(
       state.exercicioAtivoIndex + 1,
@@ -252,7 +252,7 @@ export function useTreinoAtual() {
         // Ir para próximo automaticamente
         if (state.exercicioAtivoIndex < (blocoAtivo?.exercicios.length || 0) - 1) {
           setTimeout(() => {
-            proximoExercicioHandler()
+            irParaProximoExercicio()
           }, 500)
         }
       }
@@ -265,7 +265,7 @@ export function useTreinoAtual() {
       })
       showToast('Erro ao atualizar exercício', 'error')
     }
-  }, [exercicioAtivo, blocoAtivo, state.exercicioAtivoIndex, proximoExercicioHandler, showToast])
+  }, [exercicioAtivo, blocoAtivo, state.exercicioAtivoIndex, irParaProximoExercicio, showToast])
 
   const podeDesfazer = useMemo(() => {
     if (!state.ultimoExercicioConcluido || !exercicioAtivo) return false
@@ -333,7 +333,7 @@ export function useTreinoAtual() {
 
     // Ações
     trocarBloco,
-    proximoExercicio: proximoExercicioHandler,
+    irParaProximoExercicio,
     exercicioAnterior,
     selecionarExercicio,
     marcarConcluido,
