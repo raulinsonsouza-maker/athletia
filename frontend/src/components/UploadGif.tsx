@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { resolveApiPath } from '../utils/api-url'
+import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface UploadGifProps {
   exercicioId: string
@@ -16,11 +17,29 @@ const IconeSeparador = ({ className = 'w-1.5 h-1.5 text-light-muted' }: { classN
   </svg>
 )
 
+// Extensões aceitas para tentar carregar
+const MEDIA_EXTENSIONS = ['.gif', '.jpg', '.jpeg', '.png', '.webp', '.mp4', '.webm'] as const
+
 export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUploadSuccess }: UploadGifProps) {
   const { showToast } = useToast()
   const [uploading, setUploading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Construir cadeia de fallback: gifUrl do banco > URL construída com ID do exercício
+  // O backend vai tentar todas as extensões automaticamente quando receber a requisição
+  const fallbackUrl = resolveApiPath(`/api/uploads/exercicios/${exercicioId}/exercicio.gif`)
+
+  // Usar hook unificado para gerenciar mídia
+  // Prioridade: gifUrl do banco > URL construída com ID do exercício
+  const exercicioMedia = useExercicioMedia({
+    gifUrl: gifUrl || undefined,
+    fallbackChain: fallbackUrl ? [fallbackUrl] : [],
+    onError: () => {
+      // Silenciosamente falhar - não mostrar erro no console para evitar spam de 404s
+      // O componente simplesmente não mostrará a mídia se não existir
+    }
+  })
 
   // Resetar estados quando gifUrl mudar
   useEffect(() => {
@@ -54,7 +73,7 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
       formData.append('gif', file)
 
       if (import.meta.env.DEV) {
-        console.log('[UploadGif] Enviando GIF para exercício:', exercicioId)
+        console.log('[UploadGif] Enviando mídia para exercício:', exercicioId)
       }
       const response = await api.post(`/admin/exercicios/${exercicioId}/gif`, formData)
       if (import.meta.env.DEV) {
@@ -82,39 +101,26 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
     }
   }
 
-  // Função de delete removida - não está sendo usada no componente
-
-  const gifFullUrl = useMemo(() => {
-    if (!gifUrl) return null
-    return resolveApiPath(gifUrl)
-  }, [gifUrl])
-
-  const isVideo = gifFullUrl && /\.(mp4|webm)$/i.test(gifFullUrl)
-
   return (
     <div className="space-y-3">
       {/* Preview do GIF/Video existente */}
-      {gifFullUrl && (
+      {exercicioMedia.hasMedia && exercicioMedia.url && (
         <div className="relative rounded-lg overflow-hidden border border-grey/30 bg-dark-lighter">
-          {isVideo ? (
+          {exercicioMedia.isVideo ? (
             <video
-              src={gifFullUrl}
+              src={exercicioMedia.url}
               className="w-full h-auto max-h-48 object-contain"
               controls
               muted
               loop
+              onError={exercicioMedia.handleError}
             />
           ) : (
             <img
-              src={gifFullUrl}
+              src={exercicioMedia.url}
               alt={`Demonstração de execução de ${exercicioNome}`}
               className="w-full h-auto max-h-48 object-contain"
-              onError={(e) => {
-                if (import.meta.env.DEV) {
-                  console.error('Erro ao carregar mídia:', gifFullUrl)
-                }
-                e.currentTarget.style.opacity = '0.5'
-              }}
+              onError={exercicioMedia.handleError}
             />
           )}
           <button
@@ -150,7 +156,7 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
               <div className="spinner h-3 w-3"></div>
               Enviando...
             </>
-          ) : gifFullUrl ? (
+          ) : exercicioMedia.hasMedia ? (
             <>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -166,7 +172,7 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
             </>
           )}
         </label>
-        {!gifFullUrl && (
+        {!exercicioMedia.hasMedia && (
           <div className="text-xs text-light-muted mt-2 text-center flex items-center justify-center gap-2">
             <span>Formatos aceitos: GIF, Imagem ou Vídeo</span>
             <IconeSeparador className="w-1.5 h-1.5 text-light-muted/60" />
@@ -176,7 +182,7 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
       </div>
 
       {/* Modal de Preview */}
-      {showPreview && gifFullUrl && (
+      {showPreview && exercicioMedia.hasMedia && exercicioMedia.url && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
           onClick={() => setShowPreview(false)}
@@ -190,31 +196,21 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            {isVideo ? (
+            {exercicioMedia.isVideo ? (
               <video
-                src={gifFullUrl}
+                src={exercicioMedia.url}
                 className="w-full h-auto rounded-lg"
                 controls
                 autoPlay
                 loop
-                onError={() => {
-                  if (import.meta.env.DEV) {
-                    console.error('Erro ao carregar vídeo no preview:', gifFullUrl)
-                  }
-                }}
+                onError={exercicioMedia.handleError}
               />
             ) : (
               <img
-                src={gifFullUrl}
+                src={exercicioMedia.url}
                 alt={`Demonstração de execução de ${exercicioNome}`}
                 className="w-full h-auto rounded-lg"
-                onError={(e) => {
-                  if (import.meta.env.DEV) {
-                    console.error('Erro ao carregar imagem no preview:', gifFullUrl)
-                  }
-                  e.currentTarget.style.opacity = '0.5'
-                  e.currentTarget.style.filter = 'grayscale(100%)'
-                }}
+                onError={exercicioMedia.handleError}
               />
             )}
             <p className="text-center text-light-muted mt-4">{exercicioNome}</p>

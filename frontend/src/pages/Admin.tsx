@@ -574,8 +574,14 @@ export default function Admin() {
     
     // Sempre priorizar o GIF se ele estiver cadastrado
     // Verificar se gifUrl existe, não é string vazia e é válida
-    const gifUrl = (exercicio.gifUrl && exercicio.gifUrl.trim() !== '' && isValidImageUrl(exercicio.gifUrl))
+    const gifUrlFromDb = (exercicio.gifUrl && exercicio.gifUrl.trim() !== '' && isValidImageUrl(exercicio.gifUrl))
       ? getGifUrl(exercicio.gifUrl) 
+      : null
+    
+    // Se não há gifUrl do banco, tentar construir URL usando o ID do exercício
+    // O backend vai tentar todas as extensões automaticamente
+    const gifUrlFromId = exercicio.id 
+      ? resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.gif`)
       : null
     
     // Construir cadeia de fallback validando cada URL
@@ -591,7 +597,8 @@ export default function Admin() {
     const imagemPadraoValida = imagemPadrao && isValidImageUrl(imagemPadrao) ? imagemPadrao : ''
     
     return buildImageSourceChain(
-      gifUrl, // GIF sempre primeiro se existir e for válido
+      gifUrlFromDb, // GIF do banco sempre primeiro se existir e for válido
+      gifUrlFromId, // Tentar URL construída com ID do exercício como fallback
       imagemUrlResolvida,
       imagemGrupoValida,
       imagemPadraoValida
@@ -704,17 +711,16 @@ export default function Admin() {
     }
   }
 
-  const previewImageChain = useMemo(() => buildSourcesForExercicio(exercicioEdit), [exercicioEdit?.id, exercicioEdit?.gifUrl, exercicioEdit?.imagemUrl, exercicioEdit?.grupoMuscularPrincipal])
-  const previewInitialImage = previewImageChain.length > 0 ? previewImageChain[0] : null
-
   const previewModalTarget = exercicioPreview || exercicioEdit || null
-  const previewModalImageChain = useMemo(() => buildSourcesForExercicio(previewModalTarget), [previewModalTarget?.id, previewModalTarget?.gifUrl, previewModalTarget?.imagemUrl, previewModalTarget?.grupoMuscularPrincipal])
   
   // Usar hook unificado para preview modal
+  // O hook vai construir a URL usando o ID do exercício automaticamente
   const previewModalMedia = useExercicioMedia({
-    gifUrl: previewModalTarget?.gifUrl,
-    imagemUrl: previewModalTarget?.imagemUrl,
-    fallbackChain: previewModalImageChain
+    gifUrl: previewModalTarget?.gifUrl || undefined,
+    imagemUrl: previewModalTarget?.imagemUrl || undefined,
+    onError: () => {
+      // Silenciosamente falhar - não mostrar erro no console
+    }
   })
 
 
@@ -1267,8 +1273,6 @@ export default function Admin() {
                 {viewModeExercicios === 'cards' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {exercicios.map((exercicio) => {
-                      const cadeiaImagens = buildSourcesForExercicio(exercicio)
-
                       return (
                         <div
                           key={exercicio.id}
@@ -1280,10 +1284,8 @@ export default function Admin() {
                               <div className="mb-3">
                                 <ExercicioImage
                                   exercicio={exercicio}
-                                  imageChain={cadeiaImagens}
                                   size="large"
                                   onPreview={() => handleShowGifPreview(exercicio)}
-                                  onError={handleImagemErroSequencial}
                                 />
                               </div>
                               
@@ -1328,8 +1330,6 @@ export default function Admin() {
                 {viewModeExercicios === 'list' && (
                   <div className="space-y-3">
                     {exercicios.map((exercicio) => {
-                      const cadeiaImagens = buildSourcesForExercicio(exercicio)
-
                       return (
                         <div
                           key={exercicio.id}
@@ -1337,10 +1337,8 @@ export default function Admin() {
                         >
                           <ExercicioImage
                             exercicio={exercicio}
-                            imageChain={cadeiaImagens}
                             size="medium"
                             onPreview={() => handleShowGifPreview(exercicio)}
-                            onError={handleImagemErroSequencial}
                           />
                           <div className="flex-1 min-w-0">
                             <h3 className="text-lg font-semibold text-light mb-1 truncate">
@@ -1394,8 +1392,6 @@ export default function Admin() {
                       </thead>
                       <tbody>
                         {exercicios.map((exercicio) => {
-                          const cadeiaImagens = buildSourcesForExercicio(exercicio)
-
                           return (
                             <tr
                               key={exercicio.id}
@@ -1420,10 +1416,8 @@ export default function Admin() {
                               <td className="py-3 px-4">
                                 <ExercicioImage
                                   exercicio={exercicio}
-                                  imageChain={cadeiaImagens}
                                   size="small"
                                   onPreview={() => handleShowGifPreview(exercicio)}
-                                  onError={handleImagemErroSequencial}
                                 />
                               </td>
                               <td className="py-3 px-4">
@@ -2412,36 +2406,24 @@ export default function Admin() {
             ) : exercicioEdit ? (
               <form onSubmit={handleSaveExercicio} className="p-6 space-y-6">
                 {/* Preview da Demonstração - Exibir no topo do formulário */}
-                {!isCreatingExercicio && previewInitialImage && (
+                {!isCreatingExercicio && exercicioEdit && (
                   <div className="mb-6 pb-6 border-b border-grey/30">
                     <label className="block text-sm font-medium text-light mb-3">
                       Visualização do Exercício
                     </label>
                     <div className="flex items-center gap-4">
-                      {previewInitialImage && exercicioEdit ? (
-                        <>
-                          <ExercicioImage
-                            exercicio={exercicioEdit}
-                            imageChain={previewImageChain}
-                            size="large"
-                            onPreview={() => exercicioEdit && handleShowGifPreview(exercicioEdit)}
-                            onError={handleImagemErroSequencial}
-                            className="flex-shrink-0"
-                          />
-                          <div className="flex-1">
-                            <p className="text-sm text-light-muted mb-1">Demonstração de execução</p>
-                            <p className="text-xs text-light-muted">
-                              Clique na imagem para visualizar em tamanho maior
-                            </p>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="w-32 h-32 rounded-lg border border-grey/30 bg-dark-lighter flex items-center justify-center flex-shrink-0">
-                          <svg className="w-8 h-8 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
+                      <ExercicioImage
+                        exercicio={exercicioEdit}
+                        size="large"
+                        onPreview={() => exercicioEdit && handleShowGifPreview(exercicioEdit)}
+                        className="flex-shrink-0"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm text-light-muted mb-1">Demonstração de execução</p>
+                        <p className="text-xs text-light-muted">
+                          Clique na imagem para visualizar em tamanho maior
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}

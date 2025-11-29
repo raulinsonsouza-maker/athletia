@@ -5,6 +5,7 @@ import { PlanoAtualResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
+import { resolveApiPath } from '../utils/api-url'
 
 // ============================================================================
 // ÍCONES SVG
@@ -238,29 +239,62 @@ export default function TreinoAtual() {
     return blocoAtivo.exercicios[exercicioAtivoIndex + 1] || null
   }, [blocoAtivo, exercicioAtivoIndex])
 
-  // Fallback images para cada exercício
-  const fallbackImagemAtual = useMemo(() => {
+  // Construir cadeia de fallback para cada exercício
+  // Prioridade: gifUrl do banco > URL construída com ID > imagens de banco
+  const fallbackChainAtual = useMemo(() => {
+    const chain: string[] = []
+    
+    // Tentar URL construída com ID do exercício (o backend vai tentar todas as extensões)
+    if (exercicioEmFoco?.id) {
+      const urlFromId = resolveApiPath(`/api/uploads/exercicios/${exercicioEmFoco.id}/exercicio.gif`)
+      if (urlFromId) chain.push(urlFromId)
+    }
+    
+    // Adicionar imagens de banco como último recurso
     const slug = normalizarGrupo(exercicioEmFoco?.grupo)
     const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
-    return imagemGrupo || getImagemPadraoBanco('treino')
-  }, [exercicioEmFoco?.grupo])
+    if (imagemGrupo) chain.push(imagemGrupo)
+    const imagemPadrao = getImagemPadraoBanco('treino')
+    if (imagemPadrao) chain.push(imagemPadrao)
+    
+    return chain
+  }, [exercicioEmFoco?.id, exercicioEmFoco?.grupo])
 
-  const fallbackImagemProximo = useMemo(() => {
+  const fallbackChainProximo = useMemo(() => {
+    const chain: string[] = []
+    
+    // Tentar URL construída com ID do exercício (o backend vai tentar todas as extensões)
+    if (proximoExercicio?.id) {
+      const urlFromId = resolveApiPath(`/api/uploads/exercicios/${proximoExercicio.id}/exercicio.gif`)
+      if (urlFromId) chain.push(urlFromId)
+    }
+    
+    // Adicionar imagens de banco como último recurso
     const slug = normalizarGrupo(proximoExercicio?.grupo)
     const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
-    return imagemGrupo || getImagemPadraoBanco('treino')
-  }, [proximoExercicio?.grupo])
+    if (imagemGrupo) chain.push(imagemGrupo)
+    const imagemPadrao = getImagemPadraoBanco('treino')
+    if (imagemPadrao) chain.push(imagemPadrao)
+    
+    return chain
+  }, [proximoExercicio?.id, proximoExercicio?.grupo])
 
   // Usar hook unificado para mídia do exercício atual
   const exercicioMedia = useExercicioMedia({
-    gifUrl: exercicioEmFoco?.gifUrl,
-    fallbackChain: [fallbackImagemAtual]
+    gifUrl: exercicioEmFoco?.gifUrl || undefined,
+    fallbackChain: fallbackChainAtual,
+    onError: () => {
+      // Silenciosamente falhar - não mostrar erro no console para evitar spam de 404s
+    }
   })
 
   // Usar hook unificado para mídia do próximo exercício
   const proximoMedia = useExercicioMedia({
-    gifUrl: proximoExercicio?.gifUrl,
-    fallbackChain: [fallbackImagemProximo]
+    gifUrl: proximoExercicio?.gifUrl || undefined,
+    fallbackChain: fallbackChainProximo,
+    onError: () => {
+      // Silenciosamente falhar - não mostrar erro no console para evitar spam de 404s
+    }
   })
 
   // Progresso
