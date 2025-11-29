@@ -1,5 +1,5 @@
 import { SyntheticEvent, useMemo } from 'react'
-import { resolveApiPath } from '../utils/api-url'
+import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface ExercicioImageProps {
   exercicio: {
@@ -23,14 +23,12 @@ export default function ExercicioImage({
   className = ''
 }: ExercicioImageProps) {
   const [initialImage, ...fallbackChain] = imageChain
-  const resolvedGifUrl = useMemo(() => {
-    if (!exercicio.gifUrl) return null
-    const resolved = resolveApiPath(exercicio.gifUrl)
-    if (import.meta.env.DEV && resolved) {
-      console.log('[ExercicioImage] GIF URL resolvida:', resolved, 'Original:', exercicio.gifUrl)
-    }
-    return resolved
-  }, [exercicio.gifUrl])
+  
+  const { url: mediaUrl, isVideo, hasMedia, handleError } = useExercicioMedia({
+    gifUrl: exercicio.gifUrl,
+    fallbackChain: initialImage ? [initialImage, ...fallbackChain] : fallbackChain,
+    onError: onError ? () => {} : undefined
+  })
 
   const sizeClasses = {
     small: 'w-12 h-12',
@@ -44,7 +42,14 @@ export default function ExercicioImage({
     large: 'w-full h-32'
   }
 
-  if (!initialImage && !resolvedGifUrl) {
+  const handleImageError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    handleError()
+    if (!hasMedia && onError) {
+      onError(e)
+    }
+  }
+
+  if (!hasMedia) {
     return (
       <div className={`${containerClasses[size]} ${size === 'large' ? 'rounded-lg' : 'rounded-md'} border border-grey/30 bg-dark-lighter flex items-center justify-center flex-shrink-0 ${className}`}>
         <svg className={`${size === 'small' ? 'w-5 h-5' : size === 'medium' ? 'w-8 h-8' : 'w-8 h-8'} text-light-muted`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,27 +61,25 @@ export default function ExercicioImage({
 
   return (
     <div className={`relative ${containerClasses[size]} ${size === 'large' ? 'rounded-lg' : 'rounded-md'} border border-grey/30 overflow-hidden bg-dark-lighter flex items-center justify-center ${className}`}>
-      {initialImage ? (
-        <img
-          src={initialImage}
+      {isVideo ? (
+        <video
+          src={mediaUrl!}
           alt={`Demonstração de execução de ${exercicio.nome}`}
           className={`${sizeClasses[size]} object-contain ${onPreview ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
           onClick={onPreview}
-          data-sources={fallbackChain.length > 0 ? JSON.stringify(fallbackChain) : undefined}
-          data-attempt-count="0"
-          onError={onError}
+          muted
+          loop
+          onError={handleImageError}
         />
-      ) : resolvedGifUrl ? (
+      ) : (
         <img
-          src={resolvedGifUrl}
+          src={mediaUrl!}
           alt={`Demonstração de execução de ${exercicio.nome}`}
           className={`${sizeClasses[size]} object-contain ${onPreview ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
           onClick={onPreview}
-          data-sources={fallbackChain.length > 0 ? JSON.stringify(fallbackChain) : undefined}
-          data-attempt-count="0"
-          onError={onError}
+          onError={handleImageError}
         />
-      ) : null}
+      )}
       {onPreview && size !== 'small' && (
         <button
           onClick={(e) => {

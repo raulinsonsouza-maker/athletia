@@ -84,191 +84,51 @@ app.use('/api/uploads/exercicios', (req, res, next) => {
 });
 
 // Rota específica para servir GIFs de exercícios (DEVE estar antes do express.static)
-// Baseado na implementação do fitnessprogramer.com para servir GIFs de forma confiável
+// Baseado na implementação do fitnessprogramer.com para servir mídias de exercícios de forma confiável
 
-// Suporte para requisições OPTIONS (CORS preflight)
-app.options('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
+// Suporte para requisições OPTIONS (CORS preflight) - aceita qualquer extensão
+app.options('/api/uploads/exercicios/:id/exercicio.*', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.status(204).send();
 });
 
-app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
-  const { id } = req.params;
-  const requestedId = id.trim();
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedId);
-  const manualAliases: Record<string, string> = {
-    'puxada-frontal': 'puxada-frente',
-    'puxada frente': 'puxada-frente',
-    'puxada-frente': 'puxada-frente'
-  };
-
-  const addCandidate = (set: Set<string>, candidate?: string | null) => {
-    if (!candidate) return;
-    const trimmed = candidate.trim();
-    if (!trimmed) return;
-    set.add(trimmed);
-    const alias = manualAliases[trimmed];
-    if (alias) {
-      set.add(alias);
-    }
-  };
-
-  const candidateFolders = new Set<string>();
-  addCandidate(candidateFolders, requestedId);
-  if (!isUuid) {
-    addCandidate(candidateFolders, requestedId.toLowerCase());
-    addCandidate(candidateFolders, requestedId.replace(/_/g, '-'));
-    addCandidate(candidateFolders, requestedId.replace(/\s+/g, '-'));
-    addCandidate(candidateFolders, slugify(requestedId));
+// Rota para servir mídias de exercícios (GIF, imagens, vídeos)
+// Aceita: /api/uploads/exercicios/:id/exercicio.gif, exercicio.jpg, exercicio.mp4, etc.
+app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
+  const { id, ext } = req.params;
+  const { resolveExercicioMedia } = await import('./services/exercicio-media.service');
+  
+  const resolved = await resolveExercicioMedia(id.trim(), ext);
+  
+  if (!resolved) {
+    return res.status(404).send('Not Found');
   }
 
-  const resolveExistingFolder = (): string | null => {
-    for (const folder of candidateFolders) {
-      const candidatePath = path.join(uploadExerciciosPath, folder, 'exercicio.gif');
-      if (fs.existsSync(candidatePath)) {
-        return folder;
-      }
-    }
-    return null;
-  };
+  const { filePath, contentType } = resolved;
 
-  let folderName = resolveExistingFolder();
-
-  if (!folderName && !isUuid) {
-    try {
-      const { prisma } = await import('./lib/prisma');
-      const searchTerm = requestedId.replace(/[-_]+/g, ' ').trim();
-      const exercicio = await prisma.exercicio.findFirst({
-        where: {
-          OR: [
-            { id: requestedId },
-            { nome: { equals: requestedId, mode: 'insensitive' as const } },
-            ...(searchTerm
-              ? [{ nome: { contains: searchTerm, mode: 'insensitive' as const } }]
-              : [])
-          ]
-        },
-        select: {
-          id: true,
-          nome: true,
-          gifUrl: true
-        }
-      });
-
-      if (exercicio) {
-        addCandidate(candidateFolders, exercicio.id);
-        addCandidate(candidateFolders, slugify(exercicio.nome));
-        addCandidate(candidateFolders, slugify(exercicio.nome, 'exercicio'));
-
-        if (exercicio.gifUrl) {
-          const match = exercicio.gifUrl.match(/exercicios[\/\\]([^\/\\]+)[\/\\]exercicio\.gif$/);
-          if (match && match[1]) {
-            addCandidate(candidateFolders, match[1]);
-          }
-        }
-      }
-
-      folderName = resolveExistingFolder();
-    } catch (dbError) {
-      console.error('[GIF Route] Erro ao buscar exercício no banco:', dbError);
-    }
-  }
-
-  if (!folderName) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('[GIF Route] Nenhum GIF encontrado para ID:', requestedId);
-      console.error('[GIF Route] Candidatos tentados:', Array.from(candidateFolders));
-      try {
-        const dirContents = fs.readdirSync(uploadExerciciosPath);
-        console.error('[GIF Route] Conteúdo do diretório (primeiros 20):', dirContents.slice(0, 20));
-      } catch (err) {
-        console.error('[GIF Route] Erro ao listar diretório:', err);
-      }
-    }
-    return res.status(404).json({
-      error: 'GIF não encontrado',
-      message: 'Nenhum arquivo correspondente foi localizado',
-      tried: Array.from(candidateFolders)
-    });
-  }
-
-  const filePath = path.join(uploadExerciciosPath, folderName, 'exercicio.gif');
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[GIF Route] Servindo ${requestedId} a partir de pasta ${folderName}`);
-  }
-
-  // Verificar se é um arquivo válido
-  try {
-    const stats = fs.statSync(filePath);
-    if (!stats.isFile()) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error(`[GIF Route] Caminho não é um arquivo: ${filePath}`);
-      }
-      return res.status(404).json({
-        error: 'GIF não encontrado'
-      });
-    }
-
-    // Verificar magic bytes para garantir que é realmente um GIF
-    // Isso previne servir arquivos JPEG ou outros formatos com extensão .gif
-    const fileBuffer = fs.readFileSync(filePath);
-    const isValidGif = (buffer: Buffer): boolean => {
-      const gif87a = Buffer.from('GIF87a', 'ascii');
-      const gif89a = Buffer.from('GIF89a', 'ascii');
-      const header = buffer.slice(0, 6);
-      return header.equals(gif87a) || header.equals(gif89a);
-    };
-
-    if (!isValidGif(fileBuffer)) {
-      console.error(`[GIF Route] Arquivo não é um GIF válido (magic bytes): ${filePath}`);
-      return res.status(400).json({
-        error: 'Arquivo não é um GIF válido',
-        path: filePath,
-        message: 'O arquivo não possui a assinatura mágica de um GIF (GIF87a ou GIF89a)'
-      });
-    }
-  } catch (err: any) {
-    console.error(`[GIF Route] Erro ao verificar arquivo:`, err);
-    return res.status(500).json({
-      error: 'Erro ao acessar arquivo',
-      message: err.message
-    });
-  }
-
-  // Configurar headers ANTES de enviar o arquivo
-  // Headers CORS (sem credentials para arquivos estáticos)
+  // Configurar headers
   res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  // Headers de cache e tipo de conteúdo
-  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  res.setHeader('Content-Type', 'image/gif');
+  res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+  res.setHeader('Content-Type', contentType);
   res.setHeader('Accept-Ranges', 'bytes');
   
   // Enviar arquivo usando stream
   const fileStream = fs.createReadStream(filePath);
   
   fileStream.on('error', (err) => {
-    console.error(`[GIF Route] Erro ao ler arquivo:`, err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`[Media Route] Erro ao ler arquivo:`, err);
+    }
     if (!res.headersSent) {
-      res.status(500).json({
-        error: 'Erro ao servir arquivo',
-        message: err.message
-      });
+      res.status(500).send('Internal Server Error');
     }
   });
 
-  fileStream.on('open', () => {
-    fileStream.pipe(res);
-  });
-
-  // Log de sucesso (apenas em desenvolvimento)
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[GIF Route] Servindo GIF: ${id} -> ${filePath}`);
-  }
+  fileStream.pipe(res);
 });
 
 

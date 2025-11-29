@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
 import { slugify } from '../utils/slugify';
+import { ACCEPTED_EXTENSIONS } from '../utils/file-validation';
 
 // Listar todos os usuários
 export const listarUsuarios = async (req: AuthRequest, res: Response) => {
@@ -592,41 +593,32 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
     }
 
     // Verificar se o arquivo foi salvo corretamente
-    const filePath = req.file.path;
-    if (!fs.existsSync(filePath)) {
+    const tempFilePath = req.file.path;
+    if (!fs.existsSync(tempFilePath)) {
       return res.status(500).json({
         error: 'Arquivo não foi salvo corretamente'
       });
     }
 
-    // Validar magic bytes do arquivo (garantir que é realmente um GIF)
-    const fileBuffer = fs.readFileSync(filePath);
-    const isValidGif = (buffer: Buffer): boolean => {
-      // GIF87a ou GIF89a - assinatura mágica dos arquivos GIF
-      const gif87a = Buffer.from('GIF87a', 'ascii');
-      const gif89a = Buffer.from('GIF89a', 'ascii');
-      const header = buffer.slice(0, 6);
-      return header.equals(gif87a) || header.equals(gif89a);
-    };
-
-    if (!isValidGif(fileBuffer)) {
+    // Processar arquivo usando serviço centralizado
+    const { processMediaFile, buildMediaUrl } = await import('../services/exercicio-media.service');
+    
+    let processedFile;
+    try {
+      processedFile = await processMediaFile(tempFilePath, id);
+    } catch (error: any) {
       // Deletar arquivo inválido
-      fs.unlinkSync(filePath);
+      if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+      }
       return res.status(400).json({
-        error: 'Arquivo não é um GIF válido. Magic bytes não correspondem a um GIF.'
+        error: error.message || 'Arquivo não é um formato de mídia válido. Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM.'
       });
     }
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[UploadGif] Arquivo salvo em:', filePath);
-      console.log('[UploadGif] Tamanho do arquivo:', fs.statSync(filePath).size, 'bytes');
-    }
+    const gifUrl = processedFile.url;
 
-    // Construir URL do GIF
-    const gifUrl = `/api/uploads/exercicios/${id}/exercicio.gif`;
-    console.log('[UploadGif] URL do GIF:', gifUrl);
-
-    // Atualizar exercício com a URL do GIF
+    // Atualizar exercício com a URL da mídia (apenas após arquivo ser salvo com sucesso)
     const exercicioAtualizado = await prisma.exercicio.update({
       where: { id },
       data: {
@@ -639,10 +631,12 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
       }
     });
 
-    console.log('[UploadGif] Exercício atualizado:', exercicioAtualizado);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[UploadMedia] Exercício atualizado:', exercicioAtualizado);
+    }
 
     res.json({
-      message: 'GIF enviado com sucesso',
+      message: 'Demonstração enviada com sucesso',
       exercicio: exercicioAtualizado
     });
   } catch (error: any) {
@@ -676,13 +670,13 @@ export const deletarGifExercicio = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Caminho do arquivo (funciona tanto em dev quanto em produção)
-    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
-    const uploadBasePath = getUploadExerciciosPath();
-    const filePath = path.join(uploadBasePath, id, 'exercicio.gif');
+    // Resolver arquivo usando serviço centralizado
+    const { resolveExercicioMedia } = await import('../services/exercicio-media.service');
+    const resolved = await resolveExercicioMedia(exercicio.id);
+    const filePath = resolved?.filePath;
 
     // Deletar arquivo físico se existir
-    if (fs.existsSync(filePath)) {
+    if (filePath && fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
@@ -722,6 +716,21 @@ export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer
     if (!files || files.length === 0) {
       return res.status(400).json({
         error: 'Nenhum arquivo enviado'
+      });
+    }
+
+    // Validar tamanho total dos arquivos
+    const { MAX_BULK_TOTAL_SIZE } = await import('../utils/file-validation');
+    const totalSize = files.reduce((sum, file) => sum + (file.size || 0), 0);
+    if (totalSize > MAX_BULK_TOTAL_SIZE) {
+      // Deletar todos os arquivos temporários
+      files.forEach(file => {
+        if (file.path && fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      });
+      return res.status(400).json({
+        error: `Tamanho total dos arquivos excede o limite de ${MAX_BULK_TOTAL_SIZE / (1024 * 1024)}MB`
       });
     }
 
@@ -799,23 +808,19 @@ export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer
           continue;
         }
 
-        // Validar que é GIF válido
+        // Validar que é arquivo de mídia válido
         const fileBuffer = fs.readFileSync(file.path);
-        const isValidGif = (buffer: Buffer): boolean => {
-          const gif87a = Buffer.from('GIF87a', 'ascii');
-          const gif89a = Buffer.from('GIF89a', 'ascii');
-          const header = buffer.slice(0, 6);
-          return header.equals(gif87a) || header.equals(gif89a);
-        };
+        const { validateMediaFile } = await import('../utils/file-validation');
+        const detectedMimeType = validateMediaFile(fileBuffer);
 
-        if (!isValidGif(fileBuffer)) {
+        if (!detectedMimeType) {
           fs.unlinkSync(file.path);
           resultados.erros++;
           resultados.detalhes.push({
             exercicioId,
             nome: exercicio.nome,
             status: 'erro',
-            mensagem: 'Arquivo não é um GIF válido'
+            mensagem: 'Arquivo não é um formato de mídia válido'
           });
           continue;
         }
@@ -827,12 +832,16 @@ export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer
           fs.mkdirSync(destinoDir, { recursive: true });
         }
         
-        const destinoPath = path.join(destinoDir, 'exercicio.gif');
+        // Obter extensão do arquivo original
+        const fileExt = path.extname(file.originalname).toLowerCase();
+        const validExt = ACCEPTED_EXTENSIONS.includes(fileExt) ? fileExt : '.gif';
+        
+        const destinoPath = path.join(destinoDir, `exercicio${validExt}`);
         fs.copyFileSync(file.path, destinoPath);
         fs.unlinkSync(file.path); // Remover arquivo temporário
 
-        // Construir URL do GIF
-        const gifUrl = `/api/uploads/exercicios/${exercicioId}/exercicio.gif`;
+        // Construir URL da mídia com extensão correta
+        const gifUrl = `/api/uploads/exercicios/${exercicioId}/exercicio${validExt}`;
 
         // Atualizar exercício com a URL do GIF
         await prisma.exercicio.update({

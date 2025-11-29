@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { resolveApiPath } from '../utils/api-url'
@@ -24,7 +24,7 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
 
   // Resetar estados quando gifUrl mudar
   useEffect(() => {
-    // Estados resetados quando necessário
+    setShowPreview(false)
   }, [gifUrl, exercicioId])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,17 +84,51 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
 
   // Função de delete removida - não está sendo usada no componente
 
-  const getGifUrl = () => {
-    if (import.meta.env.DEV && gifUrl?.startsWith('/api/')) {
-      return gifUrl
-    }
+  const gifFullUrl = useMemo(() => {
+    if (!gifUrl) return null
     return resolveApiPath(gifUrl)
-  }
+  }, [gifUrl])
 
-  const gifFullUrl = getGifUrl()
+  const isVideo = gifFullUrl && /\.(mp4|webm)$/i.test(gifFullUrl)
 
   return (
     <div className="space-y-3">
+      {/* Preview do GIF/Video existente */}
+      {gifFullUrl && (
+        <div className="relative rounded-lg overflow-hidden border border-grey/30 bg-dark-lighter">
+          {isVideo ? (
+            <video
+              src={gifFullUrl}
+              className="w-full h-auto max-h-48 object-contain"
+              controls
+              muted
+              loop
+            />
+          ) : (
+            <img
+              src={gifFullUrl}
+              alt={`Demonstração de execução de ${exercicioNome}`}
+              className="w-full h-auto max-h-48 object-contain"
+              onError={(e) => {
+                if (import.meta.env.DEV) {
+                  console.error('Erro ao carregar mídia:', gifFullUrl)
+                }
+                e.currentTarget.style.opacity = '0.5'
+              }}
+            />
+          )}
+          <button
+            onClick={() => setShowPreview(true)}
+            className="absolute top-2 right-2 btn-secondary p-1.5 text-xs"
+            title="Visualizar em tamanho maior"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       {/* Botão de Upload */}
       <div>
         <input
@@ -156,18 +190,34 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <img
-              src={gifFullUrl}
-              alt={`Demonstração de execução de ${exercicioNome}`}
-              className="w-full h-auto rounded-lg"
-              onError={(e) => {
-                if (import.meta.env.DEV) {
-                  console.error('Erro ao carregar imagem no preview:', gifFullUrl)
-                }
-                e.currentTarget.style.opacity = '0.5'
-                e.currentTarget.style.filter = 'grayscale(100%)'
-              }}
-            />
+            {isVideo ? (
+              <video
+                src={gifFullUrl}
+                alt={`Demonstração de execução de ${exercicioNome}`}
+                className="w-full h-auto rounded-lg"
+                controls
+                autoPlay
+                loop
+                onError={(e) => {
+                  if (import.meta.env.DEV) {
+                    console.error('Erro ao carregar vídeo no preview:', gifFullUrl)
+                  }
+                }}
+              />
+            ) : (
+              <img
+                src={gifFullUrl}
+                alt={`Demonstração de execução de ${exercicioNome}`}
+                className="w-full h-auto rounded-lg"
+                onError={(e) => {
+                  if (import.meta.env.DEV) {
+                    console.error('Erro ao carregar imagem no preview:', gifFullUrl)
+                  }
+                  e.currentTarget.style.opacity = '0.5'
+                  e.currentTarget.style.filter = 'grayscale(100%)'
+                }}
+              />
+            )}
             <p className="text-center text-light-muted mt-4">{exercicioNome}</p>
           </div>
         </div>

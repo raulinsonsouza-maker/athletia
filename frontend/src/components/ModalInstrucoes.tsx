@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { resolveApiPath } from '../utils/api-url'
 import { getImagemPadraoBanco } from '../utils/imagensBanco'
+import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface Exercicio {
   id: string
@@ -24,43 +23,13 @@ export default function ModalInstrucoes({
   onClose,
   formatarEquipamentos
 }: ModalInstrucoesProps) {
-  const [gifErro, setGifErro] = useState(false)
-  const [fallbackErro, setFallbackErro] = useState(false)
-
-  useEffect(() => {
-    setGifErro(false)
-    setFallbackErro(false)
-  }, [exercicio.id])
-
-  const gifUrl = useMemo(() => {
-    if (!exercicio.gifUrl) return null
-    const resolved = resolveApiPath(exercicio.gifUrl)
-    if (import.meta.env.DEV && resolved) {
-      console.log('[ModalInstrucoes] GIF URL resolvida:', resolved, 'Original:', exercicio.gifUrl)
-    }
-    return resolved
-  }, [exercicio.gifUrl])
+  const fallbackUrl = getImagemPadraoBanco('treino')
   
-  const imagemUrl = useMemo(() => {
-    if (!exercicio.imagemUrl) return null
-    return resolveApiPath(exercicio.imagemUrl)
-  }, [exercicio.imagemUrl])
-  
-  const fallbackUrl = useMemo(() => imagemUrl || getImagemPadraoBanco('treino'), [imagemUrl])
-
-  const mediaUrl = useMemo(() => {
-    if (!gifErro && gifUrl) return gifUrl
-    if (!fallbackErro && fallbackUrl) return fallbackUrl
-    return null
-  }, [gifErro, gifUrl, fallbackErro, fallbackUrl])
-
-  const handleMediaError = () => {
-    if (!gifErro && gifUrl) {
-      setGifErro(true)
-    } else {
-      setFallbackErro(true)
-    }
-  }
+  const { url: mediaUrl, isVideo, handleError } = useExercicioMedia({
+    gifUrl: exercicio.gifUrl,
+    imagemUrl: exercicio.imagemUrl,
+    fallbackChain: [fallbackUrl]
+  })
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -85,12 +54,24 @@ export default function ModalInstrucoes({
         {/* Imagem/GIF Grande */}
         <div className="w-full mb-6 rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/20 flex items-center justify-center min-h-[200px] max-h-[500px]">
           {mediaUrl ? (
-            <img
-              src={mediaUrl}
-              alt={exercicio.nome}
-              className="w-full h-auto max-h-[500px] object-contain"
-              onError={handleMediaError}
-            />
+            isVideo ? (
+              <video
+                src={mediaUrl}
+                alt={exercicio.nome}
+                className="w-full h-auto max-h-[500px] object-contain"
+                controls
+                muted
+                loop
+                onError={handleError}
+              />
+            ) : (
+              <img
+                src={mediaUrl}
+                alt={exercicio.nome}
+                className="w-full h-auto max-h-[500px] object-contain"
+                onError={handleError}
+              />
+            )
           ) : (
             <div className="w-full min-h-[200px] flex items-center justify-center bg-dark-lighter">
               <svg className="w-24 h-24 text-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">

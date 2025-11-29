@@ -2,12 +2,13 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { getUploadExerciciosPath } from '../utils/upload-paths';
+import { MAX_FILE_SIZE, ACCEPTED_EXTENSIONS, ACCEPTED_MEDIA_TYPES, getExtensionFromMimeType } from '../utils/file-validation';
 
 // ============================================================================
-// UPLOAD DE GIF DE EXERCÍCIO
+// UPLOAD DE MÍDIA DE EXERCÍCIO (GIF, Imagens, Vídeos)
 // ============================================================================
 
-const storageExercicioGif = multer.diskStorage({
+const storageExercicioMedia = multer.diskStorage({
   destination: (req, file, cb) => {
     const exercicioId = req.params.id;
     if (!exercicioId) {
@@ -23,27 +24,40 @@ const storageExercicioGif = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    cb(null, 'exercicio.gif');
+    // Salvar como arquivo temporário primeiro (será renomeado após validação)
+    const ext = path.extname(file.originalname).toLowerCase();
+    const validExt = ACCEPTED_EXTENSIONS.includes(ext) 
+      ? ext 
+      : getExtensionFromMimeType(file.mimetype);
+    // Usar timestamp para evitar conflitos
+    const timestamp = Date.now();
+    cb(null, `exercicio.tmp.${timestamp}${validExt}`);
   }
 });
 
-// Filtro para aceitar apenas GIFs válidos
-const fileFilterGif = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+// Filtro para aceitar mídias válidas (GIF, imagens, vídeos)
+const fileFilterMedia = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const ext = path.extname(file.originalname).toLowerCase();
   const mimeType = file.mimetype;
 
-  if (ext !== '.gif' && mimeType !== 'image/gif') {
-    return cb(new Error('Apenas arquivos GIF são permitidos'));
+  // Verificar extensão
+  const isValidExt = ACCEPTED_EXTENSIONS.includes(ext);
+  
+  // Verificar MIME type
+  const isValidMime = Object.keys(ACCEPTED_MEDIA_TYPES).includes(mimeType);
+
+  if (!isValidExt && !isValidMime) {
+    return cb(new Error(`Formato não suportado. Formatos aceitos: ${ACCEPTED_EXTENSIONS.join(', ')}`));
   }
 
   cb(null, true);
 };
 
 export const uploadGif = multer({
-  storage: storageExercicioGif,
-  fileFilter: fileFilterGif,
+  storage: storageExercicioMedia,
+  fileFilter: fileFilterMedia,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: MAX_FILE_SIZE
   }
 });
 
@@ -61,9 +75,9 @@ export const uploadGifsBulk = multer({
       cb(null, file.originalname);
     }
   }),
-  fileFilter: fileFilterGif,
+  fileFilter: fileFilterMedia,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB por arquivo
+    fileSize: MAX_FILE_SIZE,
     files: 50 // Máximo 50 arquivos
   }
 });
@@ -109,7 +123,7 @@ export const uploadImagemGrupo = multer({
   storage: storageGrupoImagem,
   fileFilter: fileFilterImagemGrupo,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: MAX_FILE_SIZE
   }
 });
 
