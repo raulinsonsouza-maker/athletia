@@ -23,7 +23,6 @@ import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import { slugify } from './utils/slugify';
-import { QueryMode } from '@prisma/client';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -145,9 +144,9 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
         where: {
           OR: [
             { id: requestedId },
-            { nome: { equals: requestedId, mode: QueryMode.insensitive } },
+            { nome: { equals: requestedId, mode: 'insensitive' as const } },
             ...(searchTerm
-              ? [{ nome: { contains: searchTerm, mode: QueryMode.insensitive } }]
+              ? [{ nome: { contains: searchTerm, mode: 'insensitive' as const } }]
               : [])
           ]
         },
