@@ -23,6 +23,7 @@ import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import { slugify } from './utils/slugify';
+import { getPlaceholderMedia } from './utils/media-placeholders';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -100,35 +101,52 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
   const { id, ext } = req.params;
   const { resolveExercicioMedia } = await import('./services/exercicio-media.service');
   
-  const resolved = await resolveExercicioMedia(id.trim(), ext);
-  
-  if (!resolved) {
-    return res.status(404).send('Not Found');
+  try {
+    const resolved = await resolveExercicioMedia(id.trim(), ext);
+    
+    if (resolved) {
+      const { filePath, contentType } = resolved;
+
+      // Configurar headers para arquivos reais
+      res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Accept-Ranges', 'bytes');
+      
+      const fileStream = fs.createReadStream(filePath);
+      
+      fileStream.on('error', (err) => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error(`[Media Route] Erro ao ler arquivo:`, err);
+        }
+        if (!res.headersSent) {
+          res.status(500).send('Internal Server Error');
+        }
+      });
+
+      return fileStream.pipe(res);
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[Media Route] Erro ao resolver mídia:', error);
+    }
   }
 
-  const { filePath, contentType } = resolved;
+  const placeholder = getPlaceholderMedia(ext);
+  if (placeholder) {
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.setHeader('Content-Type', placeholder.contentType);
+    res.setHeader('Accept-Ranges', 'none');
 
-  // Configurar headers
-  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
-  res.setHeader('Content-Type', contentType);
-  res.setHeader('Accept-Ranges', 'bytes');
-  
-  // Enviar arquivo usando stream
-  const fileStream = fs.createReadStream(filePath);
-  
-  fileStream.on('error', (err) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(`[Media Route] Erro ao ler arquivo:`, err);
-    }
-    if (!res.headersSent) {
-      res.status(500).send('Internal Server Error');
-    }
-  });
+    return res.status(200).send(placeholder.buffer);
+  }
 
-  fileStream.pipe(res);
+  return res.status(404).send('Not Found');
 });
 
 
