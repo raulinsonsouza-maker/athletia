@@ -1,4 +1,4 @@
-import { SyntheticEvent, useMemo } from 'react'
+import { SyntheticEvent } from 'react'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface ExercicioImageProps {
@@ -64,12 +64,11 @@ export default function ExercicioImage({
       {isVideo ? (
         <video
           src={mediaUrl!}
-          alt={`Demonstração de execução de ${exercicio.nome}`}
           className={`${sizeClasses[size]} object-contain ${onPreview ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
           onClick={onPreview}
           muted
           loop
-          onError={handleImageError}
+          onError={() => handleImageError({} as SyntheticEvent<HTMLImageElement, Event>)}
         />
       ) : (
         <img

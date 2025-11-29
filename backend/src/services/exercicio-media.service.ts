@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import { prisma } from '../lib/prisma';
 import { getUploadExerciciosPath } from '../utils/upload-paths';
-import { ACCEPTED_EXTENSIONS, getContentTypeFromExtension, validateMediaFile } from '../utils/file-validation';
+import { ACCEPTED_EXTENSIONS, getContentTypeFromExtension, validateMediaFile, isAcceptedExtension } from '../utils/file-validation';
 import { slugify } from '../utils/slugify';
 
 /**
@@ -105,8 +105,9 @@ export async function resolveExercicioMedia(
   );
 
   // Se extensão foi especificada, tentar apenas ela primeiro
-  const extensionsToTry = requestedExt && ACCEPTED_EXTENSIONS.includes(requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`)
-    ? [requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`]
+  const normalizedExt = requestedExt ? (requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`) : null;
+  const extensionsToTry = normalizedExt && isAcceptedExtension(normalizedExt)
+    ? [normalizedExt]
     : ACCEPTED_EXTENSIONS;
 
   for (const folder of candidates) {

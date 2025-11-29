@@ -193,12 +193,11 @@ export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUpload
             {isVideo ? (
               <video
                 src={gifFullUrl}
-                alt={`Demonstração de execução de ${exercicioNome}`}
                 className="w-full h-auto rounded-lg"
                 controls
                 autoPlay
                 loop
-                onError={(e) => {
+                onError={() => {
                   if (import.meta.env.DEV) {
                     console.error('Erro ao carregar vídeo no preview:', gifFullUrl)
                   }

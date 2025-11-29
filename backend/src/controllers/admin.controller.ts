@@ -834,7 +834,8 @@ export const bulkUploadGifs = async (req: AuthRequest & { files?: Express.Multer
         
         // Obter extensão do arquivo original
         const fileExt = path.extname(file.originalname).toLowerCase();
-        const validExt = ACCEPTED_EXTENSIONS.includes(fileExt) ? fileExt : '.gif';
+        const { isAcceptedExtension } = await import('../utils/file-validation');
+        const validExt = isAcceptedExtension(fileExt) ? fileExt : '.gif';
         
         const destinoPath = path.join(destinoDir, `exercicio${validExt}`);
         fs.copyFileSync(file.path, destinoPath);

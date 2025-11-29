@@ -19,7 +19,16 @@ export const ACCEPTED_MEDIA_TYPES = {
   'video/webm': ['.webm'],
 } as const;
 
-export const ACCEPTED_EXTENSIONS = Object.values(ACCEPTED_MEDIA_TYPES).flat();
+export const ACCEPTED_EXTENSIONS = Object.values(ACCEPTED_MEDIA_TYPES).flat() as readonly string[];
+
+export type AcceptedExtension = '.gif' | '.jpg' | '.jpeg' | '.png' | '.webp' | '.mp4' | '.webm';
+
+/**
+ * Verifica se uma extensão é aceita
+ */
+export function isAcceptedExtension(ext: string): ext is AcceptedExtension {
+  return (ACCEPTED_EXTENSIONS as readonly string[]).includes(ext);
+}
 
 /**
  * Valida magic bytes de arquivos de mídia

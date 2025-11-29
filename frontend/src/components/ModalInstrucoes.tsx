@@ -57,7 +57,6 @@ export default function ModalInstrucoes({
             isVideo ? (
               <video
                 src={mediaUrl}
-                alt={exercicio.nome}
                 className="w-full h-auto max-h-[500px] object-contain"
                 controls
                 muted
