@@ -520,16 +520,31 @@ export default function Admin() {
   // Baseado na implementação do fitnessprogramer.com para URLs confiáveis
   // Garante que a URL sempre termine com .gif e não seja substituída por .jpg
   const getGifUrl = (gifUrl: string | null) => {
-    if (!gifUrl || !isValidImageUrl(gifUrl)) return null
+    if (!gifUrl || !isValidImageUrl(gifUrl)) {
+      if (import.meta.env.DEV) {
+        console.log('[Admin] getGifUrl: URL inválida ou nula', gifUrl)
+      }
+      return null
+    }
     
     // Garantir que a URL sempre termine com .gif
     // Se a URL contém exercicio.gif, garantir que não seja substituída
     let resolvedUrl = resolveApiPath(gifUrl)
     
+    if (import.meta.env.DEV) {
+      console.log('[Admin] getGifUrl:', {
+        original: gifUrl,
+        resolved: resolvedUrl
+      })
+    }
+    
     // Se a URL resolvida não termina com .gif mas a original sim, corrigir
     if (gifUrl.includes('exercicio.gif') && resolvedUrl && !resolvedUrl.endsWith('.gif')) {
       // Remover qualquer extensão incorreta e adicionar .gif
       resolvedUrl = resolvedUrl.replace(/\.(jpg|jpeg|png|webp)$/i, '.gif')
+      if (import.meta.env.DEV) {
+        console.log('[Admin] getGifUrl: URL corrigida para .gif', resolvedUrl)
+      }
     }
     
     return resolvedUrl
@@ -584,6 +599,16 @@ export default function Admin() {
 
   const handleImagemErroSequencial = (event: SyntheticEvent<HTMLImageElement, Event>) => {
     const target = event.currentTarget
+    const currentSrc = target.src
+    
+    if (import.meta.env.DEV) {
+      console.error('[Admin] Erro ao carregar imagem:', {
+        src: currentSrc,
+        attemptCount: target.dataset.attemptCount,
+        remainingSources: target.dataset.sources
+      })
+    }
+    
     try {
       const remaining = target.dataset.sources ? JSON.parse(target.dataset.sources) as string[] : []
       
@@ -593,6 +618,9 @@ export default function Admin() {
       
       if (attemptCount >= maxAttempts) {
         // Parar tentativas após limite
+        if (import.meta.env.DEV) {
+          console.error('[Admin] Limite de tentativas atingido para:', currentSrc)
+        }
         target.style.opacity = '0.5'
         target.style.filter = 'grayscale(100%)'
         target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
@@ -613,15 +641,26 @@ export default function Admin() {
           const [next, ...rest] = remaining.slice(nextIndex)
           target.dataset.sources = JSON.stringify(rest)
           target.dataset.attemptCount = String(attemptCount + 1)
+          
+          if (import.meta.env.DEV) {
+            console.log('[Admin] Tentando próximo fallback:', next, 'Tentativa:', attemptCount + 1)
+          }
+          
           target.src = next
         } else {
           // Nenhum URL válido restante
+          if (import.meta.env.DEV) {
+            console.error('[Admin] Nenhum fallback válido restante para:', currentSrc)
+          }
           target.style.opacity = '0.5'
           target.style.filter = 'grayscale(100%)'
           target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
         }
       } else {
         // Se não há mais fallbacks, manter a imagem visível mas com estilo de erro
+        if (import.meta.env.DEV) {
+          console.error('[Admin] Sem mais fallbacks disponíveis para:', currentSrc)
+        }
         target.style.opacity = '0.5'
         target.style.filter = 'grayscale(100%)'
         target.alt = (target.alt || 'Imagem') + ' (erro ao carregar)'
@@ -2628,7 +2667,7 @@ export default function Admin() {
       )}
 
       {/* Modal de Preview da Demonstração em Tamanho Maior */}
-      {showGifPreview && previewModalInitial && previewModalTarget && (
+      {showGifPreview && previewModalTarget && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
           onClick={() => {
@@ -2648,14 +2687,25 @@ export default function Admin() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            <img
-              src={previewModalInitial}
-              alt={`Demonstração de execução de ${previewModalTarget.nome || 'Exercício'}`}
-              className="w-full h-auto rounded-lg"
-              data-sources={previewModalFallbackChain.length ? JSON.stringify(previewModalFallbackChain) : undefined}
-              data-attempt-count="0"
-              onError={handleImagemErroSequencial}
-            />
+            {previewModalInitial ? (
+              <img
+                src={previewModalInitial}
+                alt={`Demonstração de execução de ${previewModalTarget.nome || 'Exercício'}`}
+                className="w-full h-auto rounded-lg"
+                data-sources={previewModalFallbackChain.length ? JSON.stringify(previewModalFallbackChain) : undefined}
+                data-attempt-count="0"
+                onError={handleImagemErroSequencial}
+              />
+            ) : (
+              <div className="w-full h-96 bg-dark-lighter rounded-lg flex items-center justify-center border border-grey/30">
+                <div className="text-center">
+                  <svg className="w-24 h-24 text-primary/30 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-light-muted">Nenhuma demonstração disponível</p>
+                </div>
+              </div>
+            )}
             <p className="text-center text-light-muted mt-4">{previewModalTarget.nome || 'Exercício'}</p>
           </div>
         </div>

@@ -311,19 +311,73 @@ router.get('/exercicios/:id/gif/verify', async (req, res) => {
     const filePath = path.join(uploadBasePath, id, 'exercicio.gif');
     const exists = fs.existsSync(filePath);
     
+    // Buscar informações do exercício no banco
+    const { prisma } = await import('../lib/prisma');
+    const exercicio = await prisma.exercicio.findUnique({
+      where: { id },
+      select: { id: true, nome: true, gifUrl: true }
+    });
+    
+    // Verificar se há arquivos na pasta base
+    let dirContents: string[] = [];
+    try {
+      dirContents = fs.readdirSync(uploadBasePath);
+    } catch (err) {
+      // Ignorar erro ao ler diretório
+    }
+    
     if (exists) {
       const stats = fs.statSync(filePath);
       res.json({
         exists: true,
         path: filePath,
         size: stats.size,
-        url: `/api/uploads/exercicios/${id}/exercicio.gif`
+        url: `/api/uploads/exercicios/${id}/exercicio.gif`,
+        exercicio: exercicio ? {
+          id: exercicio.id,
+          nome: exercicio.nome,
+          gifUrl: exercicio.gifUrl
+        } : null,
+        uploadBasePath,
+        dirContents: dirContents.slice(0, 20) // Primeiros 20 itens para não sobrecarregar
       });
     } else {
+      // Tentar encontrar arquivo com UUID correto se exercício existe
+      let correctPath = filePath;
+      if (exercicio && exercicio.id !== id) {
+        correctPath = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
+        const correctExists = fs.existsSync(correctPath);
+        if (correctExists) {
+          const stats = fs.statSync(correctPath);
+          return res.json({
+            exists: true,
+            path: correctPath,
+            size: stats.size,
+            url: `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`,
+            exercicio: {
+              id: exercicio.id,
+              nome: exercicio.nome,
+              gifUrl: exercicio.gifUrl
+            },
+            uploadBasePath,
+            dirContents: dirContents.slice(0, 20),
+            note: `Arquivo encontrado com UUID correto do exercício (${exercicio.id})`
+          });
+        }
+      }
+      
       res.json({
         exists: false,
         path: filePath,
-        url: `/api/uploads/exercicios/${id}/exercicio.gif`
+        url: `/api/uploads/exercicios/${id}/exercicio.gif`,
+        exercicio: exercicio ? {
+          id: exercicio.id,
+          nome: exercicio.nome,
+          gifUrl: exercicio.gifUrl
+        } : null,
+        uploadBasePath,
+        dirContents: dirContents.slice(0, 20),
+        message: exercicio ? 'Exercício encontrado no banco, mas arquivo não existe' : 'Exercício não encontrado no banco'
       });
     }
   } catch (error: any) {
