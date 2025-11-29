@@ -1538,3 +1538,36 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Limpar todas as URLs de mídia de todos os exercícios
+export const limparTodasUrlsMidias = async (req: AuthRequest, res: Response) => {
+  try {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[LimparMidias] Iniciando limpeza de todas as URLs de mídia...');
+    }
+
+    // Atualizar todos os exercícios, setando gifUrl e imagemUrl como null
+    const resultado = await prisma.exercicio.updateMany({
+      data: {
+        gifUrl: null,
+        imagemUrl: null
+      }
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[LimparMidias] ${resultado.count} exercícios atualizados`);
+    }
+
+    res.json({
+      message: 'Todas as URLs de mídia foram removidas com sucesso',
+      exerciciosAtualizados: resultado.count,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('Erro ao limpar URLs de mídia:', error);
+    res.status(500).json({
+      error: 'Erro ao limpar URLs de mídia',
+      message: error.message
+    });
+  }
+};
+

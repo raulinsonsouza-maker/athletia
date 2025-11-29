@@ -21,7 +21,8 @@ import {
   bulkUploadGifs,
   corrigirUrlsGifs,
   listarArquivosGifs,
-  listarImagensBanco
+  listarImagensBanco,
+  limparTodasUrlsMidias
 } from '../controllers/admin.controller';
 import {
   listarGruposAdmin,
@@ -280,6 +281,9 @@ router.get('/gifs/arquivos', listarArquivosGifs);
 
 // Endpoint para corrigir URLs de GIFs no banco de dados
 router.post('/gifs/corrigir-urls', corrigirUrlsGifs);
+
+// Endpoint para limpar todas as URLs de mídia de todos os exercícios
+router.delete('/exercicios/midias/limpar-todas', limparTodasUrlsMidias);
 
 // Endpoint para listar imagens do banco
 router.get('/imagens-banco/arquivos', listarImagensBanco);
