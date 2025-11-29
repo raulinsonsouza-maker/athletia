@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { slugify } from '../utils/slugify';
 import { ACCEPTED_EXTENSIONS } from '../utils/file-validation';
+import { toUserAdminDTO, sanitizeString, isValidUUID, isValidEmail } from '../utils/dto';
 
 // Listar todos os usuários
 export const listarUsuarios = async (req: AuthRequest, res: Response) => {
@@ -24,11 +25,27 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
       ];
     }
 
+    // CORREÇÃO: Validar e limitar paginação
+    const maxLimit = 100;
+    const finalLimit = Math.min(limitNum, maxLimit);
+    const finalSkip = Math.max(0, skip);
+
+    // CORREÇÃO: Sanitizar search para prevenir injection
+    if (search) {
+      const searchSanitized = sanitizeString(search as string, 100);
+      if (searchSanitized) {
+        where.OR = [
+          { email: { contains: searchSanitized, mode: 'insensitive' } },
+          { nome: { contains: searchSanitized, mode: 'insensitive' } }
+        ];
+      }
+    }
+
     const [usuarios, total] = await Promise.all([
       prisma.user.findMany({
         where,
-        skip,
-        take: limitNum,
+        skip: finalSkip,
+        take: finalLimit,
         select: {
           id: true,
           email: true,
@@ -55,13 +72,16 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
       prisma.user.count({ where })
     ]);
 
+    // CORREÇÃO: Usar DTOs para não vazar dados sensíveis
+    const usuariosDTO = usuarios.map(toUserAdminDTO);
+
     res.json({
-      usuarios,
+      usuarios: usuariosDTO,
       paginacao: {
         pagina: pageNum,
-        limite: limitNum,
+        limite: finalLimit,
         total,
-        totalPaginas: Math.ceil(total / limitNum)
+        totalPaginas: Math.ceil(total / finalLimit)
       }
     });
   } catch (error: any) {
@@ -74,12 +94,35 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
 };
 
 // Criar novo usuário
+// CORREÇÃO PROBLEMA 4: Role sempre 'USER', ignorar role do client
 export const criarUsuario = async (req: AuthRequest, res: Response) => {
   try {
-    const { email, senha, nome, role = 'USER' } = req.body;
+    const { email, senha, nome } = req.body;
+
+    // CORREÇÃO: Validações rigorosas
+    if (!email || !senha) {
+      return res.status(400).json({
+        error: 'Email e senha são obrigatórios'
+      });
+    }
+
+    // Sanitizar e validar email
+    const emailSanitized = sanitizeString(email, 255);
+    if (!emailSanitized || !isValidEmail(emailSanitized)) {
+      return res.status(400).json({
+        error: 'Email inválido'
+      });
+    }
+
+    // Validar senha
+    if (senha.length < 6 || senha.length > 128) {
+      return res.status(400).json({
+        error: 'Senha deve ter entre 6 e 128 caracteres'
+      });
+    }
 
     // Normalizar email
-    const emailNormalizado = email.trim().toLowerCase();
+    const emailNormalizado = emailSanitized.trim().toLowerCase();
 
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
@@ -95,13 +138,17 @@ export const criarUsuario = async (req: AuthRequest, res: Response) => {
     // Hash da senha
     const senhaHash = await bcrypt.hash(senha, 10);
 
+    // CORREÇÃO CRÍTICA: Role sempre 'USER', NUNCA aceitar do client
+    // Apenas admins podem criar outros admins (via endpoint separado se necessário)
+    const role = 'USER';
+
     // Criar usuário
     const user = await prisma.user.create({
       data: {
         email: emailNormalizado,
         senhaHash,
-        nome: nome || null,
-        role: role as 'USER' | 'ADMIN'
+        nome: nome?.trim() || null,
+        role // Sempre USER, ignorar qualquer role enviado pelo client
       },
       select: {
         id: true,
@@ -126,6 +173,7 @@ export const criarUsuario = async (req: AuthRequest, res: Response) => {
 };
 
 // Atualizar usuário
+// CORREÇÃO: Validar role e prevenir role escalation
 export const atualizarUsuario = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -144,8 +192,27 @@ export const atualizarUsuario = async (req: AuthRequest, res: Response) => {
 
     // Preparar dados para atualização
     const data: any = {};
-    if (nome !== undefined) data.nome = nome || null;
-    if (role !== undefined) data.role = role;
+    if (nome !== undefined) {
+      const nomeTrimmed = nome?.trim();
+      data.nome = nomeTrimmed || null;
+    }
+    
+    // CORREÇÃO: Validar role se fornecido
+    if (role !== undefined) {
+      // Apenas roles válidas
+      if (role !== 'USER' && role !== 'ADMIN') {
+        return res.status(400).json({
+          error: 'Role inválida. Valores aceitos: USER, ADMIN'
+        });
+      }
+      // Apenas admins podem alterar roles (já verificado pelo middleware, mas double-check)
+      if (req.userRole !== 'ADMIN') {
+        return res.status(403).json({
+          error: 'Apenas administradores podem alterar roles'
+        });
+      }
+      data.role = role;
+    }
 
     // Atualizar usuário
     const user = await prisma.user.update({
@@ -577,20 +644,29 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
       });
     }
 
-    // Verificar se exercício existe
+    // Verificar se exercício existe e obter ID real (UUID)
+    // IMPORTANTE: Sempre usar UUID do banco, nunca slug ou nome
     const exercicio = await prisma.exercicio.findUnique({
-      where: { id }
+      where: { id },
+      select: { id: true }
     });
 
     if (!exercicio) {
       // Deletar arquivo se exercício não existir
       if (req.file.path) {
-        fs.unlinkSync(req.file.path);
+        try {
+          fs.unlinkSync(req.file.path);
+        } catch {
+          // Ignorar erro
+        }
       }
       return res.status(404).json({
         error: 'Exercício não encontrado'
       });
     }
+
+    // GARANTIR: Usar sempre o UUID real do exercício (não o parâmetro da URL)
+    const exercicioId = exercicio.id;
 
     // Verificar se o arquivo foi salvo corretamente
     const tempFilePath = req.file.path;
@@ -601,11 +677,12 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
     }
 
     // Processar arquivo usando serviço centralizado
+    // IMPORTANTE: processMediaFile sempre renomeia para exercicio.<ext> na pasta do UUID
     const { processMediaFile } = await import('../services/exercicio-media.service');
     
     let processedFile;
     try {
-      processedFile = await processMediaFile(tempFilePath, id);
+      processedFile = await processMediaFile(tempFilePath, exercicioId);
     } catch (error: any) {
       // Deletar arquivo inválido
       if (fs.existsSync(tempFilePath)) {
@@ -630,8 +707,9 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
     const gifUrl = processedFile.url;
 
     // Atualizar exercício com a URL da mídia (apenas após arquivo ser salvo com sucesso)
+    // IMPORTANTE: URL sempre usa UUID do exercício
     const exercicioAtualizado = await prisma.exercicio.update({
-      where: { id },
+      where: { id: exercicioId },
       data: {
         gifUrl: gifUrl
       },

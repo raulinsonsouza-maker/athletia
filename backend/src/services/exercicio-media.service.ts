@@ -2,139 +2,101 @@ import path from 'path';
 import fs from 'fs';
 import { prisma } from '../lib/prisma';
 import { getUploadExerciciosPath } from '../utils/upload-paths';
-import { ACCEPTED_EXTENSIONS, getContentTypeFromExtension, validateMediaFile, isAcceptedExtension } from '../utils/file-validation';
-import { slugify } from '../utils/slugify';
+import { ACCEPTED_EXTENSIONS, getContentTypeFromExtension, validateMediaFile, getExtensionFromMimeType } from '../utils/file-validation';
 
 /**
  * Serviço centralizado para gerenciar mídias de exercícios
- * Unifica toda a lógica de resolução, validação e construção de URLs
+ * REGRA ABSOLUTA: Arquivo sempre em /upload/exercicios/<exercicioId>/exercicio.<ext>
  */
-
-const MANUAL_ALIASES: Record<string, string> = {
-  'puxada-frontal': 'puxada-frente',
-  'puxada frente': 'puxada-frente',
-  'puxada-frente': 'puxada-frente'
-};
-
-/**
- * Gera candidatos de pasta para busca de arquivo
- */
-function generateFolderCandidates(
-  requestedId: string,
-  exercicioId?: string | null,
-  exercicioNome?: string | null,
-  gifUrl?: string | null
-): Set<string> {
-  const candidates = new Set<string>();
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedId);
-
-  const addCandidate = (candidate?: string | null) => {
-    if (!candidate) return;
-    const trimmed = candidate.trim();
-    if (!trimmed || trimmed.includes('..') || trimmed.includes('/') || trimmed.includes('\\')) return;
-    candidates.add(trimmed);
-    const alias = MANUAL_ALIASES[trimmed];
-    if (alias) candidates.add(alias);
-  };
-
-  addCandidate(requestedId);
-  if (!isUuid) {
-    addCandidate(requestedId.toLowerCase());
-    addCandidate(requestedId.replace(/_/g, '-'));
-    addCandidate(requestedId.replace(/\s+/g, '-'));
-    addCandidate(slugify(requestedId));
-  }
-
-  if (exercicioId) addCandidate(exercicioId);
-  if (exercicioNome) {
-    addCandidate(slugify(exercicioNome));
-    addCandidate(slugify(exercicioNome, 'exercicio'));
-  }
-
-  if (gifUrl) {
-    const match = gifUrl.match(/exercicios[\/\\]([^\/\\]+)[\/\\]exercicio\.([a-z0-9]+)$/i);
-    if (match?.[1]) addCandidate(match[1]);
-  }
-
-  return candidates;
-}
 
 /**
  * Resolve arquivo de mídia de exercício
+ * SOLUÇÃO SIMPLES: Usa APENAS o ID do exercício, sem adivinhações
  */
 export async function resolveExercicioMedia(
-  requestedId: string,
+  exercicioId: string,
   requestedExt?: string | null
 ): Promise<{ filePath: string; contentType: string; ext: string } | null> {
-  const uploadBasePath = getUploadExerciciosPath();
-  
   // Validar path traversal
-  if (requestedId.includes('..') || requestedId.includes('/') || requestedId.includes('\\')) {
+  if (!exercicioId || exercicioId.includes('..') || exercicioId.includes('/') || exercicioId.includes('\\')) {
     return null;
   }
 
-  // Buscar exercício no banco se não for UUID
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedId);
-  let exercicio: { id: string; nome: string; gifUrl: string | null } | null = null;
+  // Se não for UUID, buscar exercício no banco para obter o ID real
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
+  let realExercicioId = exercicioId;
 
   if (!isUuid) {
     try {
-      const searchTerm = requestedId.replace(/[-_]+/g, ' ').trim();
-      exercicio = await prisma.exercicio.findFirst({
+      const exercicio = await prisma.exercicio.findFirst({
         where: {
           OR: [
-            { id: requestedId },
-            { nome: { equals: requestedId, mode: 'insensitive' as const } },
-            ...(searchTerm ? [{ nome: { contains: searchTerm, mode: 'insensitive' as const } }] : [])
+            { id: exercicioId },
+            { nome: { equals: exercicioId, mode: 'insensitive' as const } }
           ]
         },
-        select: { id: true, nome: true, gifUrl: true }
+        select: { id: true }
       });
+      
+      if (!exercicio) {
+        return null;
+      }
+      
+      realExercicioId = exercicio.id;
     } catch (error) {
       if (process.env.NODE_ENV !== 'production') {
         console.error('[ExercicioMedia] Erro ao buscar exercício:', error);
       }
+      return null;
     }
   }
 
-  const candidates = generateFolderCandidates(
-    requestedId,
-    exercicio?.id,
-    exercicio?.nome,
-    exercicio?.gifUrl
-  );
+  const uploadBasePath = getUploadExerciciosPath();
+  const exercicioDir = path.join(uploadBasePath, realExercicioId);
 
   // Se extensão foi especificada, tentar apenas ela primeiro
   const normalizedExt = requestedExt ? (requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`) : null;
-  const extensionsToTry = normalizedExt && isAcceptedExtension(normalizedExt)
+  const extensionsToTry = normalizedExt && ACCEPTED_EXTENSIONS.includes(normalizedExt)
     ? [normalizedExt]
     : ACCEPTED_EXTENSIONS;
 
-  for (const folder of candidates) {
-    for (const ext of extensionsToTry) {
-      const filePath = path.join(uploadBasePath, folder, `exercicio${ext}`);
-      if (fs.existsSync(filePath)) {
-        // Validar que é arquivo válido
-        try {
-          const stats = fs.statSync(filePath);
-          if (!stats.isFile()) continue;
-
-          // Validar magic bytes (ler apenas primeiros 12 bytes)
-          const fileHandle = fs.openSync(filePath, 'r');
-          const headerBuffer = Buffer.alloc(12);
-          fs.readSync(fileHandle, headerBuffer, 0, 12, 0);
-          fs.closeSync(fileHandle);
-
-          if (!validateMediaFile(headerBuffer)) continue;
-
-          return {
-            filePath,
-            contentType: getContentTypeFromExtension(`exercicio${ext}`),
-            ext
-          };
-        } catch {
+  // Procurar APENAS na pasta do exercício, com o nome padrão exercicio.<ext>
+  for (const ext of extensionsToTry) {
+    const filePath = path.join(exercicioDir, `exercicio${ext}`);
+    
+    if (fs.existsSync(filePath)) {
+      try {
+        const stats = fs.statSync(filePath);
+        if (!stats.isFile() || stats.size === 0) {
           continue;
         }
+
+        // Validar magic bytes (ler apenas primeiros 12 bytes)
+        const fileHandle = fs.openSync(filePath, 'r');
+        const headerBuffer = Buffer.alloc(Math.min(12, stats.size));
+        const bytesRead = fs.readSync(fileHandle, headerBuffer, 0, headerBuffer.length, 0);
+        fs.closeSync(fileHandle);
+
+        if (bytesRead < headerBuffer.length) {
+          continue;
+        }
+
+        // validateMediaFile retorna MIME type ou null
+        const detectedMimeType = validateMediaFile(headerBuffer);
+        if (!detectedMimeType) {
+          continue;
+        }
+
+        return {
+          filePath,
+          contentType: getContentTypeFromExtension(`exercicio${ext}`),
+          ext
+        };
+      } catch (error) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error(`[ExercicioMedia] Erro ao validar arquivo ${filePath}:`, error);
+        }
+        continue;
       }
     }
   }
@@ -151,6 +113,7 @@ export function buildMediaUrl(exercicioId: string, fileExt: string): string {
 
 /**
  * Valida e processa arquivo de mídia (usado no upload)
+ * GARANTE: Sempre renomeia para exercicio.<ext> na pasta correta
  */
 export async function processMediaFile(
   tempFilePath: string,
@@ -178,7 +141,6 @@ export async function processMediaFile(
     fs.closeSync(fileHandle);
     
     if (bytesRead < bytesToRead) {
-      // Arquivo muito pequeno, pode não ser válido
       if (bytesRead < 4) {
         fs.unlinkSync(tempFilePath);
         throw new Error('Arquivo muito pequeno para ser um arquivo de mídia válido');
@@ -191,6 +153,7 @@ export async function processMediaFile(
     throw new Error(`Erro ao ler arquivo: ${error.message}`);
   }
 
+  // validateMediaFile retorna MIME type ou null
   const detectedMimeType = validateMediaFile(headerBuffer);
   if (!detectedMimeType) {
     if (fs.existsSync(tempFilePath)) {
@@ -199,17 +162,17 @@ export async function processMediaFile(
     throw new Error('Arquivo não é um formato de mídia válido. Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM.');
   }
 
-  const { getExtensionFromMimeType } = await import('../utils/file-validation');
+  // Obter extensão do MIME type detectado
   const fileExt = getExtensionFromMimeType(detectedMimeType);
   const finalFileName = `exercicio${fileExt}`;
-  const uploadPath = path.join(getUploadExerciciosPath(), exercicioId);
-  
+  const uploadPath = getUploadExerciciosPath();
+  const exercicioDir = path.join(uploadPath, exercicioId);
+  const finalPath = path.join(exercicioDir, finalFileName);
+
   // Garantir que o diretório existe
-  if (!fs.existsSync(uploadPath)) {
-    fs.mkdirSync(uploadPath, { recursive: true });
+  if (!fs.existsSync(exercicioDir)) {
+    fs.mkdirSync(exercicioDir, { recursive: true });
   }
-  
-  const finalPath = path.join(uploadPath, finalFileName);
 
   // Criar backup se arquivo existir
   if (fs.existsSync(finalPath)) {
@@ -234,7 +197,7 @@ export async function processMediaFile(
     }
   }
 
-  // Mover arquivo temporário para final
+  // Mover arquivo temporário para final (SEMPRE renomeia para exercicio.<ext>)
   try {
     fs.renameSync(tempFilePath, finalPath);
   } catch (error: any) {
@@ -262,3 +225,74 @@ export async function processMediaFile(
   };
 }
 
+/**
+ * Limpa arquivos temporários órfãos
+ * Remove arquivos .tmp.* que ficaram para trás por mais de 1 hora
+ */
+export async function cleanupTempFiles(): Promise<{ removed: number; errors: number }> {
+  const uploadBasePath = getUploadExerciciosPath();
+  const stats = { removed: 0, errors: 0 };
+  const oneHourAgo = Date.now() - 3600000;
+
+  try {
+    if (!fs.existsSync(uploadBasePath)) {
+      return stats;
+    }
+
+    const dirs = fs.readdirSync(uploadBasePath, { withFileTypes: true });
+    
+    for (const dir of dirs) {
+      if (!dir.isDirectory()) continue;
+      
+      const exercicioDir = path.join(uploadBasePath, dir.name);
+      try {
+        const files = fs.readdirSync(exercicioDir);
+        for (const file of files) {
+          // Remover arquivos temporários órfãos
+          if (file.startsWith('exercicio.tmp.')) {
+            const filePath = path.join(exercicioDir, file);
+            try {
+              const fileStats = fs.statSync(filePath);
+              if (fileStats.mtime.getTime() < oneHourAgo) {
+                fs.unlinkSync(filePath);
+                stats.removed++;
+              }
+            } catch (err) {
+              stats.errors++;
+            }
+          }
+        }
+      } catch (err) {
+        stats.errors++;
+      }
+    }
+
+    // Limpar arquivos temporários do bulk upload
+    const tempDir = path.join(path.dirname(uploadBasePath), 'temp');
+    if (fs.existsSync(tempDir)) {
+      try {
+        const tempFiles = fs.readdirSync(tempDir);
+        for (const file of tempFiles) {
+          if (file.startsWith('bulk.')) {
+            const filePath = path.join(tempDir, file);
+            try {
+              const fileStats = fs.statSync(filePath);
+              if (fileStats.mtime.getTime() < oneHourAgo) {
+                fs.unlinkSync(filePath);
+                stats.removed++;
+              }
+            } catch (err) {
+              stats.errors++;
+            }
+          }
+        }
+      } catch (err) {
+        stats.errors++;
+      }
+    }
+  } catch (error) {
+    stats.errors++;
+  }
+
+  return stats;
+}
