@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import UploadGif from '../components/UploadGif'
 import ExercicioImage from '../components/ExercicioImage'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
+import EditExercicioModal from '../components/EditExercicioModal'
+import ExerciciosList from '../components/ExerciciosList'
 
 interface User {
   id: string
@@ -417,20 +418,7 @@ export default function Admin() {
   const handleCreateExercicio = () => {
     setIsCreatingExercicio(true)
     setSelectedExercicioId(null)
-    setExercicioEdit({
-      nome: '',
-      grupoMuscularPrincipal: '',
-      nivelDificuldade: '',
-      descricao: '',
-      execucaoTecnica: '',
-      sinergistas: [],
-      errosComuns: [],
-      equipamentoNecessario: [],
-      cargaInicialSugerida: null,
-      rpeSugerido: null,
-      alternativas: [],
-      ativo: true
-    })
+    setExercicioEdit(null)
     setShowEditModal(true)
   }
 
@@ -970,307 +958,22 @@ export default function Admin() {
 
         {activeTab === 'exercicios' && (
           <div className="card">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-display font-bold text-light">Gerenciar Exercícios</h2>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-dark-lighter rounded-lg p-1">
-                  <button
-                    onClick={() => handleViewModeExerciciosChange('cards')}
-                    className={`p-2 rounded transition-colors ${
-                      viewModeExercicios === 'cards'
-                        ? 'bg-primary text-dark'
-                        : 'text-light-muted hover:text-light'
-                    }`}
-                    title="Visualização em Cards"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleViewModeExerciciosChange('list')}
-                    className={`p-2 rounded transition-colors ${
-                      viewModeExercicios === 'list'
-                        ? 'bg-primary text-dark'
-                        : 'text-light-muted hover:text-light'
-                    }`}
-                    title="Visualização em Lista"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleViewModeExerciciosChange('table')}
-                    className={`p-2 rounded transition-colors ${
-                      viewModeExercicios === 'table'
-                        ? 'bg-primary text-dark'
-                        : 'text-light-muted hover:text-light'
-                    }`}
-                    title="Visualização em Tabela"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                </div>
-                <button 
-                  onClick={handleCreateExercicio}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Adicionar Exercício
-                </button>
-              </div>
-            </div>
-
-            {/* Busca e Filtro */}
-            <div className="mb-6 space-y-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={searchExercicio}
-                    onChange={(e) => setSearchExercicio(e.target.value)}
-                    className="input-field"
-                    placeholder="Buscar por nome do exercício..."
-                  />
-                </div>
-                <div className="md:w-64">
-                  <select
-                    value={filtroGrupo}
-                    onChange={(e) => setFiltroGrupo(e.target.value)}
-                    className="input-field"
-                  >
-                    <option value="">Todos os grupos musculares</option>
-                    {gruposMusculares.map((grupo) => (
-                      <option key={grupo} value={grupo}>
-                        {grupo}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Lista de Exercícios */}
-            {loadingExercicios ? (
-              <div className="text-center py-12">
-                <div className="spinner h-8 w-8 mx-auto"></div>
-                <p className="mt-4 text-light-muted">Carregando exercícios...</p>
-              </div>
-            ) : errorExercicios ? (
-              <div className="text-center py-12">
-                <div className="text-red-400 mb-2">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-red-400 mb-2">{errorExercicios}</p>
-                <button onClick={carregarExercicios} className="btn-secondary text-sm mt-4">
-                  Tentar Novamente
-                </button>
-              </div>
-            ) : (
-              <>
-                {exercicios.length > 0 && (
-                  <div className="mb-4 text-sm text-light-muted">
-                    {exercicios.length} {exercicios.length === 1 ? 'exercício encontrado' : 'exercícios encontrados'}
-                  </div>
-                )}
-                
-                {/* Visualização em Cards */}
-                {viewModeExercicios === 'cards' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {exercicios.map((exercicio) => {
-                      return (
-                        <div
-                          key={exercicio.id}
-                          className="card-hover p-5"
-                        >
-                          <div className="flex flex-col">
-                            <div className="mb-4">
-                              {/* Miniatura da Demonstração */}
-                              <div className="mb-3">
-                                <ExercicioImage
-                                  exercicio={exercicio}
-                                  size="large"
-                                  onPreview={() => handleShowGifPreview(exercicio)}
-                                />
-                              </div>
-                              
-                              <h3 className="text-lg font-semibold text-light mb-2">
-                                {exercicio.nome}
-                              </h3>
-                              <div className="flex flex-wrap gap-2 mb-3">
-                                <span className="badge-primary text-xs">{exercicio.grupoMuscularPrincipal}</span>
-                                <span className="badge-secondary text-xs">{exercicio.nivelDificuldade}</span>
-                                {exercicio.ativo ? (
-                                  <span className="badge-success text-xs">Ativo</span>
-                                ) : (
-                                  <span className="badge-error text-xs">Inativo</span>
-                                )}
-                              </div>
-                              {exercicio.descricao && (
-                                <p className="text-sm text-light-muted line-clamp-2 mb-2">
-                                  {exercicio.descricao}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="mt-auto pt-4 border-t border-grey/30">
-                              <button
-                                onClick={() => handleEditExercicio(exercicio.id)}
-                                className="btn-secondary btn-sm w-full flex items-center justify-center gap-2"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Editar Exercício
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* Visualização em Lista */}
-                {viewModeExercicios === 'list' && (
-                  <div className="space-y-3">
-                    {exercicios.map((exercicio) => {
-                      return (
-                        <div
-                          key={exercicio.id}
-                          className="card-hover p-4 flex items-center gap-4"
-                        >
-                          <ExercicioImage
-                            exercicio={exercicio}
-                            size="medium"
-                            onPreview={() => handleShowGifPreview(exercicio)}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-light mb-1 truncate">
-                              {exercicio.nome}
-                            </h3>
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              <span className="badge-primary text-xs">{exercicio.grupoMuscularPrincipal}</span>
-                              <span className="badge-secondary text-xs">{exercicio.nivelDificuldade}</span>
-                              {exercicio.ativo ? (
-                                <span className="badge-success text-xs">Ativo</span>
-                              ) : (
-                                <span className="badge-error text-xs">Inativo</span>
-                              )}
-                            </div>
-                            {exercicio.descricao && (
-                              <p className="text-sm text-light-muted line-clamp-1">
-                                {exercicio.descricao}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <button
-                              onClick={() => handleEditExercicio(exercicio.id)}
-                              className="btn-secondary btn-sm flex items-center gap-2"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              Editar
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* Visualização em Tabela */}
-                {viewModeExercicios === 'table' && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-grey/30">
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Nome</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Grupo Muscular</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Nível</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Status</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Demonstração</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {exercicios.map((exercicio) => {
-                          return (
-                            <tr
-                              key={exercicio.id}
-                              className="border-b border-grey/10 hover:bg-dark-lighter transition-colors"
-                            >
-                              <td className="py-3 px-4 text-sm text-light font-medium">
-                                {exercicio.nome}
-                              </td>
-                              <td className="py-3 px-4">
-                                <span className="badge-primary text-xs">{exercicio.grupoMuscularPrincipal}</span>
-                              </td>
-                              <td className="py-3 px-4">
-                                <span className="badge-secondary text-xs">{exercicio.nivelDificuldade}</span>
-                              </td>
-                              <td className="py-3 px-4">
-                                {exercicio.ativo ? (
-                                  <span className="badge-success text-xs">Ativo</span>
-                                ) : (
-                                  <span className="badge-error text-xs">Inativo</span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                <ExercicioImage
-                                  exercicio={exercicio}
-                                  size="small"
-                                  onPreview={() => handleShowGifPreview(exercicio)}
-                                />
-                              </td>
-                              <td className="py-3 px-4">
-                                <button
-                                  onClick={() => handleEditExercicio(exercicio.id)}
-                                  className="btn-secondary text-xs flex items-center gap-1"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                  Editar
-                                </button>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                
-                {exercicios.length === 0 && !searchExercicio && !filtroGrupo && (
-                  <div className="text-center py-12 text-light-muted">
-                    <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <p className="text-lg mb-2">Nenhum exercício cadastrado</p>
-                    <p className="text-sm">Os exercícios aparecerão aqui quando forem cadastrados</p>
-                  </div>
-                )}
-                {exercicios.length === 0 && (searchExercicio || filtroGrupo) && (
-                  <div className="text-center py-12 text-light-muted">
-                    <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <p className="text-lg mb-2">Nenhum exercício encontrado</p>
-                    <p className="text-sm">Tente buscar com outro termo ou filtrar por outro grupo</p>
-                  </div>
-                )}
-              </>
-            )}
+            <ExerciciosList
+              exercicios={exercicios}
+              loading={loadingExercicios}
+              error={errorExercicios}
+              gruposMusculares={gruposMusculares}
+              searchTerm={searchExercicio}
+              filtroGrupo={filtroGrupo}
+              viewMode={viewModeExercicios}
+              onSearchChange={setSearchExercicio}
+              onFiltroChange={setFiltroGrupo}
+              onViewModeChange={handleViewModeExerciciosChange}
+              onEdit={handleEditExercicio}
+              onPreview={handleShowGifPreview}
+              onCreate={handleCreateExercicio}
+              onRetry={carregarExercicios}
+            />
           </div>
         )}
 
@@ -2187,285 +1890,33 @@ export default function Admin() {
       )}
 
       {/* Modal de Edição de Exercício */}
-      {showEditModal && (
-        <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={handleCloseEditModal}
-        >
-          <div
-            className="bg-dark rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="sticky top-0 bg-dark border-b border-grey/30 p-6 flex justify-between items-center">
-              <h2 className="text-2xl font-display font-bold text-light">
-                {isCreatingExercicio ? 'Criar Exercício' : 'Editar Exercício'}
-              </h2>
-              <button
-                onClick={handleCloseEditModal}
-                className="text-light-muted hover:text-light transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {loadingExercicioEdit && !isCreatingExercicio ? (
-              <div className="p-12 text-center">
-                <div className="spinner h-8 w-8 mx-auto"></div>
-                <p className="mt-4 text-light-muted">Carregando exercício...</p>
-              </div>
-            ) : exercicioEdit ? (
-              <form onSubmit={handleSaveExercicio} className="p-6 space-y-6">
-                {/* Preview da Demonstração - Exibir no topo do formulário */}
-                {!isCreatingExercicio && exercicioEdit && (
-                  <div className="mb-6 pb-6 border-b border-grey/30">
-                    <label className="block text-sm font-medium text-light mb-3">
-                      Visualização do Exercício
-                    </label>
-                    <div className="flex items-center gap-4">
-                      <ExercicioImage
-                        exercicio={exercicioEdit}
-                        size="large"
-                        onPreview={() => exercicioEdit && handleShowGifPreview(exercicioEdit)}
-                        className="flex-shrink-0"
-                      />
-                      <div className="flex-1">
-                        <p className="text-sm text-light-muted mb-1">Demonstração de execução</p>
-                        <p className="text-xs text-light-muted">
-                          Clique na imagem para visualizar em tamanho maior
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Nome */}
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">
-                      Nome <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={exercicioEdit.nome || ''}
-                      onChange={(e) => setExercicioEdit({ ...exercicioEdit, nome: e.target.value })}
-                      className="input-field"
-                      required
-                    />
-                  </div>
-
-                  {/* Grupo Muscular Principal */}
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">
-                      Grupo Muscular Principal <span className="text-red-400">*</span>
-                    </label>
-                    <select
-                      value={exercicioEdit.grupoMuscularPrincipal || ''}
-                      onChange={(e) => setExercicioEdit({ ...exercicioEdit, grupoMuscularPrincipal: e.target.value })}
-                      className="input-field"
-                      required
-                    >
-                      <option value="">Selecione...</option>
-                      {gruposMusculares.map((grupo) => (
-                        <option key={grupo} value={grupo}>
-                          {grupo}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Nível de Dificuldade */}
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">
-                      Nível de Dificuldade <span className="text-red-400">*</span>
-                    </label>
-                    <select
-                      value={exercicioEdit.nivelDificuldade || ''}
-                      onChange={(e) => setExercicioEdit({ ...exercicioEdit, nivelDificuldade: e.target.value })}
-                      className="input-field"
-                      required
-                    >
-                      <option value="">Selecione...</option>
-                      <option value="Iniciante">Iniciante</option>
-                      <option value="Intermediário">Intermediário</option>
-                      <option value="Avançado">Avançado</option>
-                    </select>
-                  </div>
-
-                  {/* Status */}
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">Status</label>
-                    <select
-                      value={exercicioEdit.ativo ? 'true' : 'false'}
-                      onChange={(e) => setExercicioEdit({ ...exercicioEdit, ativo: e.target.value === 'true' })}
-                      className="input-field"
-                    >
-                      <option value="true">Ativo</option>
-                      <option value="false">Inativo</option>
-                    </select>
-                  </div>
-
-                  {/* Carga Inicial Sugerida */}
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">
-                      Carga Inicial Sugerida (kg)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      value={exercicioEdit.cargaInicialSugerida || ''}
-                      onChange={(e) => setExercicioEdit({ ...exercicioEdit, cargaInicialSugerida: e.target.value ? parseFloat(e.target.value) : null })}
-                      className="input-field"
-                    />
-                  </div>
-
-                  {/* RPE Sugerido */}
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">
-                      RPE Sugerido (1-10)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={exercicioEdit.rpeSugerido || ''}
-                      onChange={(e) => setExercicioEdit({ ...exercicioEdit, rpeSugerido: e.target.value ? parseInt(e.target.value) : null })}
-                      className="input-field"
-                    />
-                  </div>
-                </div>
-
-                {/* Descrição */}
-                <div>
-                  <label className="block text-sm font-medium text-light mb-2">Descrição</label>
-                  <textarea
-                    value={exercicioEdit.descricao || ''}
-                    onChange={(e) => setExercicioEdit({ ...exercicioEdit, descricao: e.target.value })}
-                    className="input-field"
-                    rows={3}
-                  />
-                </div>
-
-                {/* Execução Técnica */}
-                <div>
-                  <label className="block text-sm font-medium text-light mb-2">Execução Técnica</label>
-                  <textarea
-                    value={exercicioEdit.execucaoTecnica || ''}
-                    onChange={(e) => setExercicioEdit({ ...exercicioEdit, execucaoTecnica: e.target.value })}
-                    className="input-field"
-                    rows={4}
-                  />
-                </div>
-
-                {/* Sinergistas */}
-                <div>
-                  <label className="block text-sm font-medium text-light mb-2">Sinergistas (um por linha)</label>
-                  <textarea
-                    value={Array.isArray(exercicioEdit.sinergistas) ? exercicioEdit.sinergistas.join('\n') : ''}
-                    onChange={(e) => {
-                      const sinergistas = e.target.value.split('\n').filter(s => s.trim())
-                      setExercicioEdit({ ...exercicioEdit, sinergistas })
-                    }}
-                    className="input-field"
-                    rows={3}
-                    placeholder="Peito&#10;Ombros"
-                  />
-                </div>
-
-                {/* Erros Comuns */}
-                <div>
-                  <label className="block text-sm font-medium text-light mb-2">Erros Comuns (um por linha)</label>
-                  <textarea
-                    value={Array.isArray(exercicioEdit.errosComuns) ? exercicioEdit.errosComuns.join('\n') : ''}
-                    onChange={(e) => {
-                      const errosComuns = e.target.value.split('\n').filter(e => e.trim())
-                      setExercicioEdit({ ...exercicioEdit, errosComuns })
-                    }}
-                    className="input-field"
-                    rows={3}
-                    placeholder="Arquear demais as costas&#10;Movimento muito rápido"
-                  />
-                </div>
-
-                {/* Equipamento Necessário */}
-                <div>
-                  <label className="block text-sm font-medium text-light mb-2">Equipamento Necessário (um por linha)</label>
-                  <textarea
-                    value={Array.isArray(exercicioEdit.equipamentoNecessario) ? exercicioEdit.equipamentoNecessario.join('\n') : ''}
-                    onChange={(e) => {
-                      const equipamentoNecessario = e.target.value.split('\n').filter(e => e.trim())
-                      setExercicioEdit({ ...exercicioEdit, equipamentoNecessario })
-                    }}
-                    className="input-field"
-                    rows={3}
-                    placeholder="Barra&#10;Anilhas"
-                  />
-                </div>
-
-                {/* Upload de GIF - Apenas quando há ID (após criação ou em edição) */}
-                {selectedExercicioId && (
-                  <div className="pt-4 border-t border-grey/30">
-                    <label className="block text-sm font-medium text-light mb-3">GIF de Demonstração</label>
-                    <UploadGif
-                      key={`upload-gif-${selectedExercicioId}-${exercicioEdit.gifUrl || 'no-gif'}`}
-                      exercicioId={selectedExercicioId}
-                      exercicioNome={exercicioEdit.nome || 'Exercício'}
-                      gifUrl={exercicioEdit.gifUrl || null}
-                      onUploadSuccess={async () => {
-                        // Recarregar dados do exercício após upload para atualizar gifUrl
-                        if (selectedExercicioId) {
-                          try {
-                            const response = await api.get(`/admin/exercicios/${selectedExercicioId}`)
-                            setExercicioEdit(response.data)
-                          } catch (err) {
-                            if (import.meta.env.DEV) {
-                              console.error('[Admin] Erro ao recarregar exercício:', err)
-                            }
-                          }
-                        }
-                        // Recarregar lista de exercícios
-                        await carregarExercicios()
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Botões */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-grey/30">
-                  <button
-                    type="button"
-                    onClick={handleCloseEditModal}
-                    className="btn-secondary"
-                    disabled={savingExercicio}
-                  >
-                    {isCreatingExercicio ? 'Cancelar' : 'Fechar'}
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn-primary"
-                    disabled={savingExercicio}
-                  >
-                    {savingExercicio ? (
-                      <>
-                        <div className="spinner h-4 w-4"></div>
-                        {isCreatingExercicio ? 'Criando...' : 'Salvando...'}
-                      </>
-                    ) : (
-                      isCreatingExercicio ? 'Criar Exercício' : 'Salvar Alterações'
-                    )}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="p-12 text-center text-light-muted">
-                <p>Erro ao carregar exercício</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <EditExercicioModal
+        exercicio={loadingExercicioEdit ? null : exercicioEdit}
+        isOpen={showEditModal}
+        isCreating={isCreatingExercicio}
+        gruposMusculares={gruposMusculares}
+        onClose={handleCloseEditModal}
+        onSave={async (createdExercicio?: any) => {
+          await carregarExercicios()
+          // Se criou um exercício, atualizar estado para modo edição
+          if (createdExercicio && isCreatingExercicio) {
+            setSelectedExercicioId(createdExercicio.id)
+            setExercicioEdit(createdExercicio)
+            setIsCreatingExercicio(false)
+          } else if (selectedExercicioId && !isCreatingExercicio) {
+            // Se estiver editando, recarregar dados do exercício
+            try {
+              const response = await api.get(`/admin/exercicios/${selectedExercicioId}`)
+              setExercicioEdit(response.data)
+            } catch (err) {
+              if (import.meta.env.DEV) {
+                console.error('[Admin] Erro ao recarregar exercício:', err)
+              }
+            }
+          }
+        }}
+        onShowPreview={handleShowGifPreview}
+      />
 
       {/* Modal de Preview da Demonstração em Tamanho Maior */}
       {showGifPreview && previewModalTarget && (
