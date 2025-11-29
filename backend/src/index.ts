@@ -163,8 +163,7 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
         addCandidate(candidateFolders, slugify(exercicio.nome, 'exercicio'));
 
         if (exercicio.gifUrl) {
-          const match = exercicio.gifUrl.match(/exercicios\\/([^\\/]+)\\/exercicio\\.gif$/) ||
-            exercicio.gifUrl.match(/exercicios\/([^/]+)\/exercicio\.gif$/);
+          const match = exercicio.gifUrl.match(/exercicios[\/\\]([^\/\\]+)[\/\\]exercicio\.gif$/);
           if (match && match[1]) {
             addCandidate(candidateFolders, match[1]);
           }
