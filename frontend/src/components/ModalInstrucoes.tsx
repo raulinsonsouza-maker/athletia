@@ -32,8 +32,20 @@ export default function ModalInstrucoes({
     setFallbackErro(false)
   }, [exercicio.id])
 
-  const gifUrl = useMemo(() => resolveApiPath(exercicio.gifUrl), [exercicio.gifUrl])
-  const imagemUrl = useMemo(() => resolveApiPath(exercicio.imagemUrl), [exercicio.imagemUrl])
+  const gifUrl = useMemo(() => {
+    if (!exercicio.gifUrl) return null
+    const resolved = resolveApiPath(exercicio.gifUrl)
+    if (import.meta.env.DEV && resolved) {
+      console.log('[ModalInstrucoes] GIF URL resolvida:', resolved, 'Original:', exercicio.gifUrl)
+    }
+    return resolved
+  }, [exercicio.gifUrl])
+  
+  const imagemUrl = useMemo(() => {
+    if (!exercicio.imagemUrl) return null
+    return resolveApiPath(exercicio.imagemUrl)
+  }, [exercicio.imagemUrl])
+  
   const fallbackUrl = useMemo(() => imagemUrl || getImagemPadraoBanco('treino'), [imagemUrl])
 
   const mediaUrl = useMemo(() => {

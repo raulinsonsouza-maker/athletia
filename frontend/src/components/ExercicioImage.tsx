@@ -1,4 +1,4 @@
-import { SyntheticEvent } from 'react'
+import { SyntheticEvent, useMemo } from 'react'
 import { resolveApiPath } from '../utils/api-url'
 
 interface ExercicioImageProps {
@@ -23,7 +23,14 @@ export default function ExercicioImage({
   className = ''
 }: ExercicioImageProps) {
   const [initialImage, ...fallbackChain] = imageChain
-  const resolvedGifUrl = exercicio.gifUrl ? resolveApiPath(exercicio.gifUrl) : null
+  const resolvedGifUrl = useMemo(() => {
+    if (!exercicio.gifUrl) return null
+    const resolved = resolveApiPath(exercicio.gifUrl)
+    if (import.meta.env.DEV && resolved) {
+      console.log('[ExercicioImage] GIF URL resolvida:', resolved, 'Original:', exercicio.gifUrl)
+    }
+    return resolved
+  }, [exercicio.gifUrl])
 
   const sizeClasses = {
     small: 'w-12 h-12',

@@ -254,12 +254,24 @@ export default function TreinoAtual() {
 
   const exercicioGifUrl = useMemo(() => {
     if (gifErroAtual) return null
-    return resolveApiPath(exercicioEmFoco?.gifUrl)
+    if (!exercicioEmFoco?.gifUrl) return null
+    // Garantir que a URL do GIF seja resolvida corretamente
+    const resolved = resolveApiPath(exercicioEmFoco.gifUrl)
+    if (import.meta.env.DEV && resolved) {
+      console.log('[TreinoAtual] GIF URL resolvida:', resolved, 'Original:', exercicioEmFoco.gifUrl)
+    }
+    return resolved
   }, [exercicioEmFoco?.gifUrl, gifErroAtual])
 
   const proximoGifUrl = useMemo(() => {
     if (gifErroProximo) return null
-    return resolveApiPath(proximoExercicio?.gifUrl)
+    if (!proximoExercicio?.gifUrl) return null
+    // Garantir que a URL do GIF seja resolvida corretamente
+    const resolved = resolveApiPath(proximoExercicio.gifUrl)
+    if (import.meta.env.DEV && resolved) {
+      console.log('[TreinoAtual] Próximo GIF URL resolvida:', resolved, 'Original:', proximoExercicio.gifUrl)
+    }
+    return resolved
   }, [proximoExercicio?.gifUrl, gifErroProximo])
 
   const fallbackImagemAtual = useMemo(() => {
@@ -294,18 +306,34 @@ export default function TreinoAtual() {
     return null
   }, [proximoGifUrl, gifErroProximo, fallbackImagemProximo, fallbackErroProximo])
 
-  const handleImagemAtualErro = () => {
+  const handleImagemAtualErro = (e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    if (import.meta.env.DEV) {
+      console.error('[TreinoAtual] Erro ao carregar imagem atual:', {
+        gifUrl: exercicioGifUrl,
+        fallbackUrl: fallbackImagemAtual,
+        gifErro: gifErroAtual,
+        fallbackErro: fallbackErroAtual
+      })
+    }
     if (!gifErroAtual && exercicioGifUrl) {
       setGifErroAtual(true)
-    } else {
+    } else if (!fallbackErroAtual && fallbackImagemAtual) {
       setFallbackErroAtual(true)
     }
   }
 
-  const handleImagemProximoErro = () => {
+  const handleImagemProximoErro = (e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    if (import.meta.env.DEV) {
+      console.error('[TreinoAtual] Erro ao carregar imagem próximo:', {
+        gifUrl: proximoGifUrl,
+        fallbackUrl: fallbackImagemProximo,
+        gifErro: gifErroProximo,
+        fallbackErro: fallbackErroProximo
+      })
+    }
     if (!gifErroProximo && proximoGifUrl) {
       setGifErroProximo(true)
-    } else {
+    } else if (!fallbackErroProximo && fallbackImagemProximo) {
       setFallbackErroProximo(true)
     }
   }
@@ -800,25 +828,26 @@ export default function TreinoAtual() {
       )}
 
       {/* MODAL IMAGEM EXPANDIDA */}
-      {mostrarImagemExpandida && (
+      {mostrarImagemExpandida && exercicioMediaUrl && (
         <div 
           className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
           onClick={() => setMostrarImagemExpandida(false)}
         >
-          <div className="relative w-full max-w-2xl">
+          <div className="relative w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setMostrarImagemExpandida(false)}
               className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition z-10"
             >
               <IconeFechar />
             </button>
-            {exercicioGifUrl && (
-              <img
-                src={exercicioGifUrl}
-                alt={exercicioEmFoco.nome}
-                className="w-full h-auto rounded-xl"
-                onClick={(e) => e.stopPropagation()}
-              />
+            <img
+              src={exercicioMediaUrl}
+              alt={`Demonstração de execução de ${exercicioEmFoco?.nome || 'Exercício'}`}
+              className="w-full h-auto rounded-xl max-h-[90vh] object-contain"
+              onError={handleImagemAtualErro}
+            />
+            {exercicioEmFoco?.nome && (
+              <p className="text-center text-white/80 mt-4">{exercicioEmFoco.nome}</p>
             )}
           </div>
         </div>
