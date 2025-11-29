@@ -306,7 +306,7 @@ export default function TreinoAtual() {
     return null
   }, [proximoGifUrl, gifErroProximo, fallbackImagemProximo, fallbackErroProximo])
 
-  const handleImagemAtualErro = (e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const handleImagemAtualErro = () => {
     if (import.meta.env.DEV) {
       console.error('[TreinoAtual] Erro ao carregar imagem atual:', {
         gifUrl: exercicioGifUrl,
@@ -322,7 +322,7 @@ export default function TreinoAtual() {
     }
   }
 
-  const handleImagemProximoErro = (e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const handleImagemProximoErro = () => {
     if (import.meta.env.DEV) {
       console.error('[TreinoAtual] Erro ao carregar imagem próximo:', {
         gifUrl: proximoGifUrl,
