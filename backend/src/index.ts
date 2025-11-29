@@ -23,6 +23,7 @@ import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import { slugify } from './utils/slugify';
+import { QueryMode } from '@prisma/client';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -144,9 +145,9 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
         where: {
           OR: [
             { id: requestedId },
-            { nome: { equals: requestedId, mode: 'insensitive' } },
+            { nome: { equals: requestedId, mode: QueryMode.insensitive } },
             ...(searchTerm
-              ? [{ nome: { contains: searchTerm, mode: 'insensitive' } }]
+              ? [{ nome: { contains: searchTerm, mode: QueryMode.insensitive } }]
               : [])
           ]
         },
@@ -420,7 +421,7 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
 if (process.env.NODE_ENV !== 'production') {
   console.log(`[UPLOAD] Exercícios em: ${uploadExerciciosPath} -> /api/uploads/exercicios`);
   console.log(`[UPLOAD] Grupos musculares em: ${uploadGruposPath} -> /api/uploads/grupos-musculares`);
-  console.log(`[IMAGENS BANCO] Diretório: ${imagensBancoPath} -> /api/imagens-banco`);
+  console.log(`[IMAGENS BANCO] Diretório: ${primaryBancoPath} -> /api/imagens-banco`);
 }
 
 // Health check
