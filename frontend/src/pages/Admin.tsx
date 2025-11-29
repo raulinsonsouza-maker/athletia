@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
-import type { SyntheticEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import UploadGif from '../components/UploadGif'
 import ExercicioImage from '../components/ExercicioImage'
-import { resolveApiPath } from '../utils/api-url'
-import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface User {
@@ -494,27 +491,6 @@ export default function Admin() {
     } finally {
       setSavingExercicio(false)
     }
-  }
-
-  // Função para validar se uma URL de imagem é válida
-  const isValidImageUrl = (url: string | null | undefined): boolean => {
-    if (!url || typeof url !== 'string' || url.trim() === '') {
-      return false
-    }
-    
-    // Rejeitar URLs de CDN inválida
-    if (url.includes('minha-cdn.com')) {
-      return false
-    }
-    
-    // Verificar formato básico de URL
-    // Aceita URLs relativas (/api/...) ou absolutas (http://, https://)
-    const urlPattern = /^(https?:\/\/|\/)/i
-    if (!urlPattern.test(url.trim())) {
-      return false
-    }
-    
-    return true
   }
 
   // Função para abrir preview do GIF
