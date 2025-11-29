@@ -72,28 +72,44 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
       className="bg-[#111] rounded-2xl overflow-hidden text-left w-full hover:bg-[#161616] transition-all border border-white/5"
     >
       <div className="flex">
-        <div className="w-28 h-28 bg-black/50 flex-shrink-0">
-          <img
-            src={item.imagem || getImagemPadraoBanco('treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'}
-            alt={item.titulo}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.currentTarget
-              const currentSrc = target.src
-              
-              // Se estava tentando carregar do banco, tentar Unsplash
-              if (currentSrc.includes('/api/imagens-banco/')) {
-                const fallback = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
-                if (target.src !== fallback) {
-                  target.src = fallback
-                  return
-                }
-              }
-              
-              // Se a fallback também falhar, ocultar imagem
-              target.style.display = 'none'
-            }}
-          />
+        <div className="w-28 h-28 bg-black/50 flex-shrink-0 relative overflow-hidden">
+          {(() => {
+            const imagemPadrao = getImagemPadraoBanco('treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+            const imagemFinal = item.imagem || imagemPadrao
+            return (
+              <img
+                key={`${item.id}-${imagemFinal}`}
+                src={imagemFinal}
+                alt={item.titulo}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget
+                  const currentSrc = target.src
+                  
+                  // Se estava tentando carregar do Unsplash ou banco, tentar fallback padrão
+                  if (currentSrc.includes('unsplash.com') || currentSrc.includes('/api/imagens-banco/')) {
+                    const fallback = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                    if (target.src !== fallback) {
+                      target.src = fallback
+                      return
+                    }
+                  }
+                  
+                  // Se a fallback também falhar, mostrar placeholder
+                  target.style.display = 'none'
+                  const placeholder = target.parentElement?.querySelector('.image-placeholder')
+                  if (placeholder) {
+                    (placeholder as HTMLElement).style.display = 'flex'
+                  }
+                }}
+              />
+            )
+          })()}
+          <div className="image-placeholder absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center" style={{ display: 'none' }}>
+            <svg className="w-8 h-8 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
         </div>
         <div className="flex-1 p-4 flex flex-col justify-between">
           <div>
@@ -198,32 +214,52 @@ export default function Treinos() {
         {treinoHoje && (
           <section className="relative rounded-2xl overflow-hidden">
             <div className="h-48 relative">
-              <img
-                src={treinoHoje.imagem || getImagemPadraoBanco('treinos') || obterImagemPorGenero(genero, 'treinos')}
-                alt="Treino de hoje"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.currentTarget
-                  const currentSrc = target.src
-                  
-                  // Se estava tentando carregar do banco, tentar por gênero
-                  if (currentSrc.includes('/api/imagens-banco/')) {
-                    const fallback = obterImagemPorGenero(genero, 'treinos')
-                    if (target.src !== fallback) {
-                      target.src = fallback
-                      return
-                    }
-                  }
-                  
-                  // Se estava tentando por gênero, tentar Unsplash
-                  if (currentSrc.includes('unsplash.com')) {
-                    return // Já tentou Unsplash
-                  }
-                  
-                  // Último fallback: Unsplash
-                  target.src = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
-                }}
-              />
+              {(() => {
+                const imagemPadrao = getImagemPadraoBanco('treinos') || obterImagemPorGenero(genero, 'treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                const imagemFinal = treinoHoje.imagem || imagemPadrao
+                return (
+                  <img
+                    key={`treino-hoje-${imagemFinal}`}
+                    src={imagemFinal}
+                    alt="Treino de hoje"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget
+                      const currentSrc = target.src
+                      
+                      // Se estava tentando carregar do banco, tentar por gênero
+                      if (currentSrc.includes('/api/imagens-banco/')) {
+                        const fallback = obterImagemPorGenero(genero, 'treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                        if (target.src !== fallback) {
+                          target.src = fallback
+                          return
+                        }
+                      }
+                      
+                      // Se estava tentando por gênero, tentar Unsplash padrão
+                      if (currentSrc.includes('unsplash.com')) {
+                        const fallback = 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                        if (target.src !== fallback) {
+                          target.src = fallback
+                          return
+                        }
+                      }
+                      
+                      // Se todas as tentativas falharam, mostrar placeholder
+                      target.style.display = 'none'
+                      const placeholder = target.parentElement?.querySelector('.image-placeholder')
+                      if (placeholder) {
+                        (placeholder as HTMLElement).style.display = 'flex'
+                      }
+                    }}
+                  />
+                )
+              })()}
+              <div className="image-placeholder absolute inset-0 bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center" style={{ display: 'none' }}>
+                <svg className="w-16 h-16 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
               
               <div className="absolute bottom-0 left-0 right-0 p-4">
