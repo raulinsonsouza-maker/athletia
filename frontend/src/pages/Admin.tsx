@@ -7,6 +7,7 @@ import UploadGif from '../components/UploadGif'
 import ExercicioImage from '../components/ExercicioImage'
 import { resolveApiPath } from '../utils/api-url'
 import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
+import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface User {
   id: string
@@ -708,7 +709,13 @@ export default function Admin() {
 
   const previewModalTarget = exercicioPreview || exercicioEdit || null
   const previewModalImageChain = useMemo(() => buildSourcesForExercicio(previewModalTarget), [previewModalTarget?.id, previewModalTarget?.gifUrl, previewModalTarget?.imagemUrl, previewModalTarget?.grupoMuscularPrincipal])
-  const [previewModalInitial, ...previewModalFallbackChain] = previewModalImageChain
+  
+  // Usar hook unificado para preview modal
+  const previewModalMedia = useExercicioMedia({
+    gifUrl: previewModalTarget?.gifUrl,
+    imagemUrl: previewModalTarget?.imagemUrl,
+    fallbackChain: previewModalImageChain
+  })
 
 
   if (loading) {
@@ -2687,15 +2694,24 @@ export default function Admin() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-            {previewModalInitial ? (
-              <img
-                src={previewModalInitial}
-                alt={`Demonstração de execução de ${previewModalTarget.nome || 'Exercício'}`}
-                className="w-full h-auto rounded-lg"
-                data-sources={previewModalFallbackChain.length ? JSON.stringify(previewModalFallbackChain) : undefined}
-                data-attempt-count="0"
-                onError={handleImagemErroSequencial}
-              />
+            {previewModalMedia.url ? (
+              previewModalMedia.isVideo ? (
+                <video
+                  src={previewModalMedia.url}
+                  className="w-full h-auto rounded-lg"
+                  controls
+                  autoPlay
+                  loop
+                  onError={previewModalMedia.handleError}
+                />
+              ) : (
+                <img
+                  src={previewModalMedia.url}
+                  alt={`Demonstração de execução de ${previewModalTarget?.nome || 'Exercício'}`}
+                  className="w-full h-auto rounded-lg"
+                  onError={previewModalMedia.handleError}
+                />
+              )
             ) : (
               <div className="w-full h-96 bg-dark-lighter rounded-lg flex items-center justify-center border border-grey/30">
                 <div className="text-center">

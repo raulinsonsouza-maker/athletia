@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { concluirTreino, marcarExercicioTreino, obterPlanoAtualResumo } from '../services/treino.service'
 import { PlanoAtualResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
-import { resolveApiPath } from '../utils/api-url'
 import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
+import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 // ============================================================================
 // ÍCONES SVG
@@ -116,10 +116,6 @@ export default function TreinoAtual() {
   const [abaAtiva, setAbaAtiva] = useState<'alvo' | 'instrucoes' | 'equipamento'>('alvo')
   const [mostrarImagemExpandida, setMostrarImagemExpandida] = useState(false)
   const [ultimoExercicioConcluido, setUltimoExercicioConcluido] = useState<{ id: string; timestamp: number } | null>(null)
-  const [gifErroAtual, setGifErroAtual] = useState(false)
-  const [gifErroProximo, setGifErroProximo] = useState(false)
-  const [fallbackErroAtual, setFallbackErroAtual] = useState(false)
-  const [fallbackErroProximo, setFallbackErroProximo] = useState(false)
 
   const normalizarGrupo = (grupo?: string | null) => {
     if (!grupo) return ''
@@ -242,38 +238,7 @@ export default function TreinoAtual() {
     return blocoAtivo.exercicios[exercicioAtivoIndex + 1] || null
   }, [blocoAtivo, exercicioAtivoIndex])
 
-  useEffect(() => {
-    setGifErroAtual(false)
-    setFallbackErroAtual(false)
-  }, [exercicioEmFoco?.id])
-
-  useEffect(() => {
-    setGifErroProximo(false)
-    setFallbackErroProximo(false)
-  }, [proximoExercicio?.id])
-
-  const exercicioGifUrl = useMemo(() => {
-    if (gifErroAtual) return null
-    if (!exercicioEmFoco?.gifUrl) return null
-    // Garantir que a URL do GIF seja resolvida corretamente
-    const resolved = resolveApiPath(exercicioEmFoco.gifUrl)
-    if (import.meta.env.DEV && resolved) {
-      console.log('[TreinoAtual] GIF URL resolvida:', resolved, 'Original:', exercicioEmFoco.gifUrl)
-    }
-    return resolved
-  }, [exercicioEmFoco?.gifUrl, gifErroAtual])
-
-  const proximoGifUrl = useMemo(() => {
-    if (gifErroProximo) return null
-    if (!proximoExercicio?.gifUrl) return null
-    // Garantir que a URL do GIF seja resolvida corretamente
-    const resolved = resolveApiPath(proximoExercicio.gifUrl)
-    if (import.meta.env.DEV && resolved) {
-      console.log('[TreinoAtual] Próximo GIF URL resolvida:', resolved, 'Original:', proximoExercicio.gifUrl)
-    }
-    return resolved
-  }, [proximoExercicio?.gifUrl, gifErroProximo])
-
+  // Fallback images para cada exercício
   const fallbackImagemAtual = useMemo(() => {
     const slug = normalizarGrupo(exercicioEmFoco?.grupo)
     const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
@@ -286,57 +251,17 @@ export default function TreinoAtual() {
     return imagemGrupo || getImagemPadraoBanco('treino')
   }, [proximoExercicio?.grupo])
 
-  const exercicioMediaUrl = useMemo(() => {
-    if (!gifErroAtual && exercicioGifUrl) {
-      return exercicioGifUrl
-    }
-    if (!fallbackErroAtual && fallbackImagemAtual) {
-      return fallbackImagemAtual
-    }
-    return null
-  }, [exercicioGifUrl, gifErroAtual, fallbackImagemAtual, fallbackErroAtual])
+  // Usar hook unificado para mídia do exercício atual
+  const exercicioMedia = useExercicioMedia({
+    gifUrl: exercicioEmFoco?.gifUrl,
+    fallbackChain: [fallbackImagemAtual]
+  })
 
-  const proximoMediaUrl = useMemo(() => {
-    if (!gifErroProximo && proximoGifUrl) {
-      return proximoGifUrl
-    }
-    if (!fallbackErroProximo && fallbackImagemProximo) {
-      return fallbackImagemProximo
-    }
-    return null
-  }, [proximoGifUrl, gifErroProximo, fallbackImagemProximo, fallbackErroProximo])
-
-  const handleImagemAtualErro = () => {
-    if (import.meta.env.DEV) {
-      console.error('[TreinoAtual] Erro ao carregar imagem atual:', {
-        gifUrl: exercicioGifUrl,
-        fallbackUrl: fallbackImagemAtual,
-        gifErro: gifErroAtual,
-        fallbackErro: fallbackErroAtual
-      })
-    }
-    if (!gifErroAtual && exercicioGifUrl) {
-      setGifErroAtual(true)
-    } else if (!fallbackErroAtual && fallbackImagemAtual) {
-      setFallbackErroAtual(true)
-    }
-  }
-
-  const handleImagemProximoErro = () => {
-    if (import.meta.env.DEV) {
-      console.error('[TreinoAtual] Erro ao carregar imagem próximo:', {
-        gifUrl: proximoGifUrl,
-        fallbackUrl: fallbackImagemProximo,
-        gifErro: gifErroProximo,
-        fallbackErro: fallbackErroProximo
-      })
-    }
-    if (!gifErroProximo && proximoGifUrl) {
-      setGifErroProximo(true)
-    } else if (!fallbackErroProximo && fallbackImagemProximo) {
-      setFallbackErroProximo(true)
-    }
-  }
+  // Usar hook unificado para mídia do próximo exercício
+  const proximoMedia = useExercicioMedia({
+    gifUrl: proximoExercicio?.gifUrl,
+    fallbackChain: [fallbackImagemProximo]
+  })
 
   // Progresso
   const progresso = useMemo(() => {
@@ -542,14 +467,24 @@ export default function TreinoAtual() {
                 <p className="text-sm font-semibold text-white/90">{proximoExercicio.nome}</p>
                 <p className="text-xs text-white/50 mt-1">{proximoExercicio.series}x{proximoExercicio.repeticoes}</p>
               </div>
-              {proximoMediaUrl ? (
+              {proximoMedia.url ? (
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10">
-                  <img
-                    src={proximoMediaUrl}
-                    alt={proximoExercicio.nome}
-                    className="w-full h-full object-cover"
-                    onError={handleImagemProximoErro}
-                  />
+                  {proximoMedia.isVideo ? (
+                    <video
+                      src={proximoMedia.url}
+                      className="w-full h-full object-cover"
+                      muted
+                      loop
+                      onError={proximoMedia.handleError}
+                    />
+                  ) : (
+                    <img
+                      src={proximoMedia.url}
+                      alt={proximoExercicio.nome}
+                      className="w-full h-full object-cover"
+                      onError={proximoMedia.handleError}
+                    />
+                  )}
                 </div>
               ) : (
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10 flex items-center justify-center">
@@ -566,14 +501,24 @@ export default function TreinoAtual() {
             onClick={() => setMostrarImagemExpandida(true)}
             className="w-full max-w-sm h-56 bg-[#111] rounded-xl overflow-hidden border border-white/10 flex items-center justify-center hover:border-primary/50 transition relative group"
           >
-            {exercicioMediaUrl ? (
+            {exercicioMedia.url ? (
               <>
-                <img
-                  src={exercicioMediaUrl}
-                  alt={exercicioEmFoco.nome}
-                  className="w-full h-full object-contain"
-                  onError={handleImagemAtualErro}
-                />
+                {exercicioMedia.isVideo ? (
+                  <video
+                    src={exercicioMedia.url}
+                    className="w-full h-full object-contain"
+                    muted
+                    loop
+                    onError={exercicioMedia.handleError}
+                  />
+                ) : (
+                  <img
+                    src={exercicioMedia.url}
+                    alt={exercicioEmFoco.nome}
+                    className="w-full h-full object-contain"
+                    onError={exercicioMedia.handleError}
+                  />
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                   <span className="text-xs text-white/70 opacity-0 group-hover:opacity-100 transition">Toque para expandir</span>
                 </div>
@@ -828,7 +773,7 @@ export default function TreinoAtual() {
       )}
 
       {/* MODAL IMAGEM EXPANDIDA */}
-      {mostrarImagemExpandida && exercicioMediaUrl && (
+      {mostrarImagemExpandida && exercicioMedia.url && (
         <div 
           className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
           onClick={() => setMostrarImagemExpandida(false)}
@@ -840,12 +785,23 @@ export default function TreinoAtual() {
             >
               <IconeFechar />
             </button>
-            <img
-              src={exercicioMediaUrl}
-              alt={`Demonstração de execução de ${exercicioEmFoco?.nome || 'Exercício'}`}
-              className="w-full h-auto rounded-xl max-h-[90vh] object-contain"
-              onError={handleImagemAtualErro}
-            />
+            {exercicioMedia.isVideo ? (
+              <video
+                src={exercicioMedia.url}
+                className="w-full h-auto rounded-xl max-h-[90vh] object-contain"
+                controls
+                autoPlay
+                loop
+                onError={exercicioMedia.handleError}
+              />
+            ) : (
+              <img
+                src={exercicioMedia.url}
+                alt={`Demonstração de execução de ${exercicioEmFoco?.nome || 'Exercício'}`}
+                className="w-full h-auto rounded-xl max-h-[90vh] object-contain"
+                onError={exercicioMedia.handleError}
+              />
+            )}
             {exercicioEmFoco?.nome && (
               <p className="text-center text-white/80 mt-4">{exercicioEmFoco.nome}</p>
             )}
