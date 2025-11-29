@@ -21,7 +21,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
-import { getUploadExerciciosPath } from './utils/upload-paths';
+import { getUploadExerciciosPath, getImagensBancoPath } from './utils/upload-paths';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -66,6 +66,11 @@ app.use('/api/', generalLimiter);
 const uploadExerciciosPath = getUploadExerciciosPath();
 const uploadGruposPath = path.join(process.cwd(), 'upload', 'grupos-musculares');
 
+// Log do caminho configurado (sempre, para debug)
+console.log(`[CONFIG] Caminho de upload de exercícios: ${uploadExerciciosPath}`);
+console.log(`[CONFIG] Rota virtual: /api/uploads/exercicios`);
+console.log(`[CONFIG] Mapeamento: /api/uploads/exercicios -> ${uploadExerciciosPath}`);
+
 // Middleware CORS específico para arquivos estáticos (ANTES das rotas)
 app.use('/api/uploads/exercicios', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
@@ -101,11 +106,28 @@ app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
   
   const filePath = path.join(uploadExerciciosPath, folderName, 'exercicio.gif');
   
+  // Log detalhado para debug
+  console.log(`[GIF Route] ID recebido: ${id}`);
+  console.log(`[GIF Route] Folder name: ${folderName}`);
+  console.log(`[GIF Route] Caminho base: ${uploadExerciciosPath}`);
+  console.log(`[GIF Route] Caminho completo: ${filePath}`);
+  console.log(`[GIF Route] Arquivo existe: ${fs.existsSync(filePath)}`);
+  
   // Verificar se o arquivo existe
   if (!fs.existsSync(filePath)) {
+    // Listar conteúdo do diretório para debug
+    try {
+      const dirContents = fs.readdirSync(uploadExerciciosPath);
+      console.log(`[GIF Route] Conteúdo do diretório (primeiros 20):`, dirContents.slice(0, 20));
+    } catch (err) {
+      console.error(`[GIF Route] Erro ao listar diretório:`, err);
+    }
+    
     return res.status(404).json({
       error: 'GIF não encontrado',
       path: filePath,
+      uploadBasePath: uploadExerciciosPath,
+      folderName: folderName,
       message: 'Arquivo não encontrado no sistema de arquivos'
     });
   }
@@ -212,9 +234,9 @@ app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
   }
 }));
 
-// Servir imagens do banco de imagens (/opt/athletia/Imagens/Banco)
-// Usar variável de ambiente se disponível, senão usar caminho padrão
-const imagensBancoPath = process.env.IMAGENS_BANCO_PATH || '/opt/athletia/Imagens/Banco';
+// Servir imagens do banco de imagens com detecção automática de path real
+const imagensBancoPath = getImagensBancoPath();
+console.log(`[CONFIG] Banco de imagens: ${imagensBancoPath} -> /api/imagens-banco`);
 
 // Middleware CORS para imagens do banco
 app.use('/api/imagens-banco', (req, res, next) => {
