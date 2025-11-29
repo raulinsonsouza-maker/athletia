@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import ExercicioImage from '../components/ExercicioImage'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 import EditExercicioModal from '../components/EditExercicioModal'
 import ExerciciosList from '../components/ExerciciosList'
@@ -183,7 +182,6 @@ export default function Admin() {
   const [selectedExercicioId, setSelectedExercicioId] = useState<string | null>(null)
   const [exercicioEdit, setExercicioEdit] = useState<any>(null)
   const [loadingExercicioEdit, setLoadingExercicioEdit] = useState(false)
-  const [savingExercicio, setSavingExercicio] = useState(false)
   const [isCreatingExercicio, setIsCreatingExercicio] = useState(false)
   const [showGifPreview, setShowGifPreview] = useState(false)
   const [exercicioPreview, setExercicioPreview] = useState<any>(null)
@@ -448,38 +446,6 @@ export default function Admin() {
     setIsCreatingExercicio(false)
   }
 
-  const handleSaveExercicio = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!exercicioEdit) return
-
-    setSavingExercicio(true)
-    try {
-      if (isCreatingExercicio) {
-        // Criar novo exercício
-        const response = await api.post('/admin/exercicios', exercicioEdit)
-        showToast('Exercício criado com sucesso!', 'success')
-        // Atualizar estado para modo edição e manter modal aberto
-        setSelectedExercicioId(response.data.exercicio.id)
-        setExercicioEdit(response.data.exercicio)
-        setIsCreatingExercicio(false)
-        carregarExercicios()
-      } else {
-        // Atualizar exercício existente
-        if (!selectedExercicioId) return
-        await api.put(`/admin/exercicios/${selectedExercicioId}`, exercicioEdit)
-        showToast('Exercício atualizado com sucesso!', 'success')
-        handleCloseEditModal()
-        carregarExercicios()
-      }
-    } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error('Erro ao salvar exercício:', error)
-      }
-      showToast(error.response?.data?.error || `Erro ao ${isCreatingExercicio ? 'criar' : 'atualizar'} exercício`, 'error')
-    } finally {
-      setSavingExercicio(false)
-    }
-  }
 
   // Função para abrir preview do GIF
   const handleShowGifPreview = (exercicio: any) => {

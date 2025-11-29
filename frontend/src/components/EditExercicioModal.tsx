@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import UploadGif from './UploadGif'
