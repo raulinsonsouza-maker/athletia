@@ -5,6 +5,7 @@ import { sincronizarGruposDoExercicio } from '../services/grupo-muscular.service
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import fs from 'fs';
+import { slugify } from '../utils/slugify';
 
 // Listar todos os usuários
 export const listarUsuarios = async (req: AuthRequest, res: Response) => {
@@ -991,6 +992,44 @@ export const corrigirUrlsGifs = async (req: AuthRequest, res: Response) => {
   try {
     const { getUploadExerciciosPath } = await import('../utils/upload-paths');
     const uploadBasePath = getUploadExerciciosPath();
+    const manualAliases: Record<string, string> = {
+      'puxada-frontal': 'puxada-frente',
+      'puxada frente': 'puxada-frente',
+      'puxada-frente': 'puxada-frente'
+    };
+
+    const addCandidate = (set: Set<string>, candidate?: string | null) => {
+      if (!candidate) return;
+      const trimmed = candidate.trim();
+      if (!trimmed) return;
+      set.add(trimmed);
+      const alias = manualAliases[trimmed.toLowerCase()];
+      if (alias) {
+        set.add(alias);
+      }
+    };
+
+    const localizarGifExistente = (candidatos: Set<string>) => {
+      for (const folder of candidatos) {
+        const candidatePath = path.join(uploadBasePath, folder, 'exercicio.gif');
+        if (fs.existsSync(candidatePath)) {
+          return { folder, filePath: candidatePath };
+        }
+      }
+      return null;
+    };
+
+    const garantirGifNoUuid = (exercicioId: string, origem: string) => {
+      const destinoDir = path.join(uploadBasePath, exercicioId);
+      if (!fs.existsSync(destinoDir)) {
+        fs.mkdirSync(destinoDir, { recursive: true });
+      }
+      const destino = path.join(destinoDir, 'exercicio.gif');
+      if (!fs.existsSync(destino)) {
+        fs.copyFileSync(origem, destino);
+      }
+      return destino;
+    };
     
     // Buscar todos os exercícios com gifUrl
     const exerciciosComGif = await prisma.exercicio.findMany({
@@ -1042,16 +1081,23 @@ export const corrigirUrlsGifs = async (req: AuthRequest, res: Response) => {
           const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
           
           if (!uuidPattern.test(idNaUrl)) {
-            // É um nome, não um UUID - corrigir para usar o UUID do exercício
-            const filePath = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
-            
-            // Verificar se o arquivo existe no caminho correto (com UUID)
-            if (fs.existsSync(filePath)) {
-              precisaCorrigir = true;
-              novaUrl = `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`;
-              acao = 'corrigido_nome_para_uuid';
+            const candidatos = new Set<string>();
+            addCandidate(candidatos, idNaUrl);
+            addCandidate(candidatos, idNaUrl.toLowerCase());
+            addCandidate(candidatos, idNaUrl.replace(/_/g, '-'));
+            addCandidate(candidatos, slugify(idNaUrl));
+            addCandidate(candidatos, slugify(exercicio.nome));
+
+            const existente = localizarGifExistente(candidatos);
+
+            if (existente) {
+              const novoArquivo = garantirGifNoUuid(exercicio.id, existente.filePath);
+              if (fs.existsSync(novoArquivo)) {
+                precisaCorrigir = true;
+                novaUrl = `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`;
+                acao = 'copiado_nome_para_uuid';
+              }
             } else {
-              // Arquivo não existe nem com nome nem com UUID - remover URL
               precisaCorrigir = true;
               novaUrl = null;
               acao = 'removido_arquivo_nao_encontrado';
@@ -1063,17 +1109,19 @@ export const corrigirUrlsGifs = async (req: AuthRequest, res: Response) => {
             const filePathComIdExercicio = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
             
             if (fs.existsSync(filePathComIdExercicio)) {
-              // Arquivo existe com o ID correto do exercício
               precisaCorrigir = true;
               novaUrl = `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`;
               acao = 'corrigido_uuid_incorreto';
-            } else if (!fs.existsSync(filePathComIdUrl)) {
-              // Arquivo não existe em nenhum dos dois lugares
+            } else if (fs.existsSync(filePathComIdUrl)) {
+              garantirGifNoUuid(exercicio.id, filePathComIdUrl);
+              precisaCorrigir = true;
+              novaUrl = `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`;
+              acao = 'copiado_uuid_incorreto';
+            } else {
               precisaCorrigir = true;
               novaUrl = null;
               acao = 'removido_arquivo_nao_encontrado';
             }
-            // Se existe apenas no caminho do UUID da URL, manter como está
           }
         } else if (idNaUrl === exercicio.id) {
           // URL está correta, verificar se arquivo existe
@@ -1118,6 +1166,142 @@ export const corrigirUrlsGifs = async (req: AuthRequest, res: Response) => {
     console.error('Erro ao corrigir URLs dos GIFs:', error);
     res.status(500).json({
       error: 'Erro ao corrigir URLs dos GIFs',
+      message: error.message
+    });
+  }
+};
+
+export const listarArquivosGifs = async (req: AuthRequest, res: Response) => {
+  try {
+    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
+    const uploadBasePath = getUploadExerciciosPath();
+    const limit = Math.min(parseInt((req.query.limit as string) || '100', 10) || 100, 500);
+    const page = Math.max(parseInt((req.query.page as string) || '1', 10) || 1, 1);
+    const search = ((req.query.search as string) || '').toLowerCase().trim();
+    const offset = (page - 1) * limit;
+
+    let dirEntries: fs.Dirent[];
+    try {
+      dirEntries = fs.readdirSync(uploadBasePath, { withFileTypes: true });
+    } catch (err: any) {
+      return res.status(500).json({
+        error: 'Não foi possível ler o diretório de GIFs',
+        message: err.message
+      });
+    }
+
+    const pastas = dirEntries.filter((entry) => entry.isDirectory());
+    const mapped = pastas
+      .map((dir) => {
+        const folderName = dir.name;
+        const gifPath = path.join(uploadBasePath, folderName, 'exercicio.gif');
+        const exists = fs.existsSync(gifPath);
+        let size: number | null = null;
+        let updatedAt: Date | null = null;
+        if (exists) {
+          const stats = fs.statSync(gifPath);
+          size = stats.size;
+          updatedAt = stats.mtime;
+        }
+        return {
+          pasta: folderName,
+          possuiGif: exists,
+          gifPath: exists ? gifPath : null,
+          url: exists ? `/api/uploads/exercicios/${folderName}/exercicio.gif` : null,
+          size,
+          updatedAt
+        };
+      })
+      .filter((item) => !search || item.pasta.toLowerCase().includes(search));
+
+    const totalFiltrado = mapped.length;
+    const paged = mapped.slice(offset, offset + limit);
+
+    res.json({
+      basePath: uploadBasePath,
+      totalPastas: pastas.length,
+      totalFiltradas: totalFiltrado,
+      totalComGif: mapped.filter((item) => item.possuiGif).length,
+      page,
+      limit,
+      resultados: paged
+    });
+  } catch (error: any) {
+    console.error('Erro ao listar arquivos de GIFs:', error);
+    res.status(500).json({
+      error: 'Erro ao listar arquivos de GIFs',
+      message: error.message
+    });
+  }
+};
+
+export const listarImagensBanco = async (req: AuthRequest, res: Response) => {
+  try {
+    const { getImagensBancoPathCandidates } = await import('../utils/upload-paths');
+    const candidatos = getImagensBancoPathCandidates();
+    const limit = Math.min(parseInt((req.query.limit as string) || '100', 10) || 100, 500);
+    const page = Math.max(parseInt((req.query.page as string) || '1', 10) || 1, 1);
+    const search = ((req.query.search as string) || '').toLowerCase().trim();
+    const offset = (page - 1) * limit;
+    const extensoesPermitidas = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.avif']);
+
+    const arquivos: Array<{
+      nome: string;
+      basePath: string;
+      path: string;
+      size: number;
+      updatedAt: Date;
+      url: string;
+    }> = [];
+    const errosLeitura: Array<{ basePath: string; error: string }> = [];
+
+    for (const basePath of candidatos) {
+      if (!fs.existsSync(basePath)) {
+        errosLeitura.push({ basePath, error: 'Diretório inexistente' });
+        continue;
+      }
+
+      try {
+        const dirEntries = fs.readdirSync(basePath, { withFileTypes: true });
+        for (const entry of dirEntries) {
+          if (!entry.isFile()) continue;
+          const ext = path.extname(entry.name).toLowerCase();
+          if (!extensoesPermitidas.has(ext)) continue;
+          const filePath = path.join(basePath, entry.name);
+          const stats = fs.statSync(filePath);
+          arquivos.push({
+            nome: entry.name,
+            basePath,
+            path: filePath,
+            size: stats.size,
+            updatedAt: stats.mtime,
+            url: `/api/imagens-banco/${entry.name}`
+          });
+        }
+      } catch (err: any) {
+        errosLeitura.push({ basePath, error: err.message });
+      }
+    }
+
+    const filtrados = search
+      ? arquivos.filter((arquivo) => arquivo.nome.toLowerCase().includes(search))
+      : arquivos;
+    const totalFiltrado = filtrados.length;
+    const paged = filtrados.slice(offset, offset + limit);
+
+    res.json({
+      candidatos,
+      totalArquivos: arquivos.length,
+      totalFiltrados: totalFiltrado,
+      page,
+      limit,
+      resultados: paged,
+      errosLeitura
+    });
+  } catch (error: any) {
+    console.error('Erro ao listar imagens do banco:', error);
+    res.status(500).json({
+      error: 'Erro ao listar imagens do banco',
       message: error.message
     });
   }

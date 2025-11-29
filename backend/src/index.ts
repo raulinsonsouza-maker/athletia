@@ -21,7 +21,8 @@ import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
-import { getUploadExerciciosPath, getImagensBancoPath } from './utils/upload-paths';
+import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
+import { slugify } from './utils/slugify';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -95,41 +96,108 @@ app.options('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
 
 app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
   const { id } = req.params;
-  
-  // Lógica especial para Puxada Frontal - buscar em puxada-frente
-  const idLower = id.toLowerCase();
-  let folderName = id;
-  
-  if (idLower.includes('puxada-frontal') || idLower.includes('puxada-frente')) {
-    folderName = 'puxada-frente';
-  }
-  
-  const filePath = path.join(uploadExerciciosPath, folderName, 'exercicio.gif');
-  
-  // Log detalhado para debug
-  console.log(`[GIF Route] ID recebido: ${id}`);
-  console.log(`[GIF Route] Folder name: ${folderName}`);
-  console.log(`[GIF Route] Caminho base: ${uploadExerciciosPath}`);
-  console.log(`[GIF Route] Caminho completo: ${filePath}`);
-  console.log(`[GIF Route] Arquivo existe: ${fs.existsSync(filePath)}`);
-  
-  // Verificar se o arquivo existe
-  if (!fs.existsSync(filePath)) {
-    // Listar conteúdo do diretório para debug
-    try {
-      const dirContents = fs.readdirSync(uploadExerciciosPath);
-      console.log(`[GIF Route] Conteúdo do diretório (primeiros 20):`, dirContents.slice(0, 20));
-    } catch (err) {
-      console.error(`[GIF Route] Erro ao listar diretório:`, err);
+  const requestedId = id.trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedId);
+  const manualAliases: Record<string, string> = {
+    'puxada-frontal': 'puxada-frente',
+    'puxada frente': 'puxada-frente',
+    'puxada-frente': 'puxada-frente'
+  };
+
+  const addCandidate = (set: Set<string>, candidate?: string | null) => {
+    if (!candidate) return;
+    const trimmed = candidate.trim();
+    if (!trimmed) return;
+    set.add(trimmed);
+    const alias = manualAliases[trimmed];
+    if (alias) {
+      set.add(alias);
     }
-    
+  };
+
+  const candidateFolders = new Set<string>();
+  addCandidate(candidateFolders, requestedId);
+  if (!isUuid) {
+    addCandidate(candidateFolders, requestedId.toLowerCase());
+    addCandidate(candidateFolders, requestedId.replace(/_/g, '-'));
+    addCandidate(candidateFolders, requestedId.replace(/\s+/g, '-'));
+    addCandidate(candidateFolders, slugify(requestedId));
+  }
+
+  const resolveExistingFolder = (): string | null => {
+    for (const folder of candidateFolders) {
+      const candidatePath = path.join(uploadExerciciosPath, folder, 'exercicio.gif');
+      if (fs.existsSync(candidatePath)) {
+        return folder;
+      }
+    }
+    return null;
+  };
+
+  let folderName = resolveExistingFolder();
+
+  if (!folderName && !isUuid) {
+    try {
+      const { prisma } = await import('./lib/prisma');
+      const searchTerm = requestedId.replace(/[-_]+/g, ' ').trim();
+      const exercicio = await prisma.exercicio.findFirst({
+        where: {
+          OR: [
+            { id: requestedId },
+            { nome: { equals: requestedId, mode: 'insensitive' } },
+            ...(searchTerm
+              ? [{ nome: { contains: searchTerm, mode: 'insensitive' } }]
+              : [])
+          ]
+        },
+        select: {
+          id: true,
+          nome: true,
+          gifUrl: true
+        }
+      });
+
+      if (exercicio) {
+        addCandidate(candidateFolders, exercicio.id);
+        addCandidate(candidateFolders, slugify(exercicio.nome));
+        addCandidate(candidateFolders, slugify(exercicio.nome, 'exercicio'));
+
+        if (exercicio.gifUrl) {
+          const match = exercicio.gifUrl.match(/exercicios\\/([^\\/]+)\\/exercicio\\.gif$/) ||
+            exercicio.gifUrl.match(/exercicios\/([^/]+)\/exercicio\.gif$/);
+          if (match && match[1]) {
+            addCandidate(candidateFolders, match[1]);
+          }
+        }
+      }
+
+      folderName = resolveExistingFolder();
+    } catch (dbError) {
+      console.error('[GIF Route] Erro ao buscar exercício no banco:', dbError);
+    }
+  }
+
+  if (!folderName) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[GIF Route] Nenhum GIF encontrado para ID:', requestedId);
+      console.error('[GIF Route] Candidatos tentados:', Array.from(candidateFolders));
+      try {
+        const dirContents = fs.readdirSync(uploadExerciciosPath);
+        console.error('[GIF Route] Conteúdo do diretório (primeiros 20):', dirContents.slice(0, 20));
+      } catch (err) {
+        console.error('[GIF Route] Erro ao listar diretório:', err);
+      }
+    }
     return res.status(404).json({
       error: 'GIF não encontrado',
-      path: filePath,
-      uploadBasePath: uploadExerciciosPath,
-      folderName: folderName,
-      message: 'Arquivo não encontrado no sistema de arquivos'
+      message: 'Nenhum arquivo correspondente foi localizado',
+      tried: Array.from(candidateFolders)
     });
+  }
+
+  const filePath = path.join(uploadExerciciosPath, folderName, 'exercicio.gif');
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[GIF Route] Servindo ${requestedId} a partir de pasta ${folderName}`);
   }
 
   // Verificar se é um arquivo válido
@@ -234,9 +302,25 @@ app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
   }
 }));
 
-// Servir imagens do banco de imagens com detecção automática de path real
-const imagensBancoPath = getImagensBancoPath();
-console.log(`[CONFIG] Banco de imagens: ${imagensBancoPath} -> /api/imagens-banco`);
+// Servir imagens do banco com múltiplos caminhos candidatos
+const imagensBancoCandidates = getImagensBancoPathCandidates();
+const resolveImagemBancoArquivo = (nomeArquivo: string): { filePath: string; basePath: string } | null => {
+  for (const basePath of imagensBancoCandidates) {
+    const candidatePath = path.join(basePath, nomeArquivo);
+    if (fs.existsSync(candidatePath)) {
+      return { filePath: candidatePath, basePath };
+    }
+  }
+  return null;
+};
+
+const primaryBancoPath =
+  imagensBancoCandidates.find((candidate) => fs.existsSync(candidate)) ||
+  imagensBancoCandidates[imagensBancoCandidates.length - 1];
+console.log(`[CONFIG] Banco de imagens (primary): ${primaryBancoPath} -> /api/imagens-banco`);
+if (process.env.NODE_ENV !== 'production') {
+  console.log('[CONFIG] Candidatos banco de imagens:', imagensBancoCandidates);
+}
 
 // Middleware CORS para imagens do banco
 app.use('/api/imagens-banco', (req, res, next) => {
@@ -258,18 +342,20 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
     return res.status(400).json({ error: 'Nome de arquivo inválido' });
   }
 
-  const filePath = path.join(imagensBancoPath, nomeArquivo);
-  
-  // Verificar se o arquivo existe
-  if (!fs.existsSync(filePath)) {
+  const resolved = resolveImagemBancoArquivo(nomeArquivo);
+  if (!resolved) {
     if (process.env.NODE_ENV !== 'production') {
-      console.error(`[Imagens Banco] Arquivo não encontrado: ${filePath}`);
+      console.error(`[Imagens Banco] Arquivo não encontrado em candidatos: ${nomeArquivo}`);
+      console.error('[Imagens Banco] Candidatos:', imagensBancoCandidates);
     }
     return res.status(404).json({
       error: 'Imagem não encontrada',
-      path: filePath
+      nomeArquivo,
+      candidatos: imagensBancoCandidates
     });
   }
+
+  const { filePath, basePath } = resolved;
 
   // Verificar se é um arquivo válido e obter stats
   let stats;
@@ -327,7 +413,7 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
 
   // Log de sucesso (apenas em desenvolvimento)
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[Imagens Banco] Servindo imagem: ${nomeArquivo} -> ${filePath}`);
+    console.log(`[Imagens Banco] Servindo ${nomeArquivo} a partir de ${basePath}`);
   }
 });
 
