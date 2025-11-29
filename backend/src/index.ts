@@ -90,88 +90,24 @@ app.options('/api/uploads/exercicios/:id/exercicio.gif', (req, res) => {
 
 app.get('/api/uploads/exercicios/:id/exercicio.gif', async (req, res) => {
   const { id } = req.params;
-  let filePath = path.join(uploadExerciciosPath, id, 'exercicio.gif');
   
-  // Log detalhado para debug
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[GIF Route] Requisição recebida - ID: ${id}, Caminho esperado: ${filePath}`);
-    console.log(`[GIF Route] Caminho base de upload: ${uploadExerciciosPath}`);
+  // Lógica especial para Puxada Frontal - buscar em puxada-frente
+  const idLower = id.toLowerCase();
+  let folderName = id;
+  
+  if (idLower.includes('puxada-frontal') || idLower.includes('puxada-frente')) {
+    folderName = 'puxada-frente';
   }
   
-  // Verificar se o arquivo existe no caminho solicitado
+  const filePath = path.join(uploadExerciciosPath, folderName, 'exercicio.gif');
+  
+  // Verificar se o arquivo existe
   if (!fs.existsSync(filePath)) {
-    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    
-    // Se não é UUID, tentar buscar no banco para encontrar o UUID correto
-    if (!uuidPattern.test(id)) {
-      try {
-        // Importar Prisma dinamicamente para buscar exercício
-        const { prisma } = await import('./lib/prisma');
-        
-        // Tentar buscar por nome ou slug
-        const exercicio = await prisma.exercicio.findFirst({
-          where: {
-            OR: [
-              { nome: { contains: id, mode: 'insensitive' } },
-              { id: id }
-            ]
-          },
-          select: { id: true, nome: true }
-        });
-        
-        if (exercicio) {
-          // Tentar com o UUID correto
-          const correctPath = path.join(uploadExerciciosPath, exercicio.id, 'exercicio.gif');
-          if (fs.existsSync(correctPath)) {
-            filePath = correctPath;
-            if (process.env.NODE_ENV !== 'production') {
-              console.log(`[GIF Route] Arquivo encontrado com UUID correto: ${correctPath}`);
-            }
-          } else {
-            if (process.env.NODE_ENV !== 'production') {
-              console.error(`[GIF Route] Exercício encontrado no banco (${exercicio.nome}), mas arquivo não existe: ${correctPath}`);
-            }
-            return res.status(404).json({
-              error: 'GIF não encontrado',
-              path: correctPath,
-              exercicioId: exercicio.id,
-              exercicioNome: exercicio.nome,
-              message: 'Arquivo não encontrado no sistema de arquivos'
-            });
-          }
-        } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(`[GIF Route] ID não é UUID e exercício não encontrado no banco: ${id}`);
-            console.error(`[GIF Route] Caminho tentado: ${filePath}`);
-          }
-          return res.status(404).json({
-            error: 'GIF não encontrado',
-            path: filePath,
-            message: 'ID na URL não é um UUID válido e exercício não foi encontrado no banco de dados.'
-          });
-        }
-      } catch (dbError: any) {
-        console.error(`[GIF Route] Erro ao buscar exercício no banco:`, dbError);
-        // Continuar com o caminho original se houver erro no banco
-      }
-    } else {
-      // É um UUID, mas arquivo não existe - tentar verificar se há arquivos na pasta base
-      try {
-        const dirContents = fs.readdirSync(uploadExerciciosPath);
-        if (process.env.NODE_ENV !== 'production') {
-          console.error(`[GIF Route] Arquivo não encontrado: ${filePath}`);
-          console.error(`[GIF Route] Conteúdo do diretório base: ${dirContents.slice(0, 10).join(', ')}${dirContents.length > 10 ? '...' : ''}`);
-        }
-      } catch (dirError) {
-        // Ignorar erro ao ler diretório
-      }
-      
-      return res.status(404).json({
-        error: 'GIF não encontrado',
-        path: filePath,
-        message: 'Arquivo não encontrado no caminho esperado'
-      });
-    }
+    return res.status(404).json({
+      error: 'GIF não encontrado',
+      path: filePath,
+      message: 'Arquivo não encontrado no sistema de arquivos'
+    });
   }
 
   // Verificar se é um arquivo válido
