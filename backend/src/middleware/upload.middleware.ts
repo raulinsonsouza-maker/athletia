@@ -38,19 +38,29 @@ const storageExercicioMedia = multer.diskStorage({
 // Filtro para aceitar mídias válidas (GIF, imagens, vídeos)
 const fileFilterMedia = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const ext = path.extname(file.originalname).toLowerCase();
-  const mimeType = file.mimetype;
+  const mimeType = file.mimetype || '';
 
-  // Verificar extensão
+  // Verificar extensão (prioridade)
   const isValidExt = isAcceptedExtension(ext);
   
-  // Verificar MIME type
+  // Verificar MIME type (alguns navegadores podem enviar MIME types genéricos)
   const isValidMime = Object.keys(ACCEPTED_MEDIA_TYPES).includes(mimeType);
+  
+  // Também aceitar MIME types genéricos se a extensão for válida
+  const isGenericImageMime = mimeType.startsWith('image/') && isValidExt;
+  const isGenericVideoMime = mimeType.startsWith('video/') && isValidExt;
+  const isEmptyMime = !mimeType || mimeType === 'application/octet-stream';
 
-  if (!isValidExt && !isValidMime) {
-    return cb(new Error(`Formato não suportado. Formatos aceitos: ${ACCEPTED_EXTENSIONS.join(', ')}`));
+  // Aceitar se:
+  // 1. Extensão é válida OU
+  // 2. MIME type é válido OU
+  // 3. MIME type genérico (image/* ou video/*) com extensão válida OU
+  // 4. Sem MIME type mas com extensão válida
+  if (isValidExt || isValidMime || isGenericImageMime || isGenericVideoMime || (isEmptyMime && isValidExt)) {
+    return cb(null, true);
   }
 
-  cb(null, true);
+  return cb(new Error(`Formato não suportado. Formatos aceitos: ${ACCEPTED_EXTENSIONS.join(', ')}`));
 };
 
 export const uploadGif = multer({

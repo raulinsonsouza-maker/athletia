@@ -65,12 +65,24 @@ export function validateMediaFile(buffer: Buffer): string | null {
   }
 
   // MP4: ftyp box (vários tipos possíveis)
-  // Verifica se começa com ftyp box (bytes 4-8)
+  // MP4 pode começar com alguns bytes nulos antes do ftyp
+  // Verifica se contém ftyp box em diferentes posições
   const ftypPos = buffer.indexOf('ftyp');
   if (ftypPos !== -1 && ftypPos < 20) {
     // Verifica se é um dos tipos conhecidos de MP4
-    const brand = buffer.slice(ftypPos + 4, ftypPos + 8).toString('ascii');
-    if (['mp41', 'mp42', 'isom', 'iso2', 'avc1'].includes(brand)) {
+    if (ftypPos + 8 <= buffer.length) {
+      const brand = buffer.slice(ftypPos + 4, ftypPos + 8).toString('ascii');
+      if (['mp41', 'mp42', 'isom', 'iso2', 'avc1', 'iso3', 'mp71'].includes(brand)) {
+        return 'video/mp4';
+      }
+    }
+  }
+  
+  // Também verificar se começa com bytes nulos seguidos de ftyp (formato comum)
+  if (buffer.length >= 8) {
+    // Verificar padrões comuns de MP4: 00 00 00 XX ftyp ou 00 00 00 20 ftyp
+    if ((buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70) ||
+        (buffer.length >= 12 && buffer[8] === 0x66 && buffer[9] === 0x74 && buffer[10] === 0x79 && buffer[11] === 0x70)) {
       return 'video/mp4';
     }
   }

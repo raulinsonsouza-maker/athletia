@@ -156,35 +156,104 @@ export async function processMediaFile(
   tempFilePath: string,
   exercicioId: string
 ): Promise<{ finalPath: string; url: string; ext: string }> {
-  // Validar magic bytes
-  const fileHandle = fs.openSync(tempFilePath, 'r');
-  const headerBuffer = Buffer.alloc(12);
-  fs.readSync(fileHandle, headerBuffer, 0, 12, 0);
-  fs.closeSync(fileHandle);
+  // Verificar se arquivo existe
+  if (!fs.existsSync(tempFilePath)) {
+    throw new Error('Arquivo temporário não encontrado');
+  }
+
+  // Verificar tamanho do arquivo
+  const stats = fs.statSync(tempFilePath);
+  if (stats.size === 0) {
+    fs.unlinkSync(tempFilePath);
+    throw new Error('Arquivo está vazio');
+  }
+
+  // Validar magic bytes (ler pelo menos 12 bytes, mas pode ser menos)
+  let headerBuffer: Buffer;
+  try {
+    const fileHandle = fs.openSync(tempFilePath, 'r');
+    const bytesToRead = Math.min(12, stats.size);
+    headerBuffer = Buffer.alloc(bytesToRead);
+    const bytesRead = fs.readSync(fileHandle, headerBuffer, 0, bytesToRead, 0);
+    fs.closeSync(fileHandle);
+    
+    if (bytesRead < bytesToRead) {
+      // Arquivo muito pequeno, pode não ser válido
+      if (bytesRead < 4) {
+        fs.unlinkSync(tempFilePath);
+        throw new Error('Arquivo muito pequeno para ser um arquivo de mídia válido');
+      }
+    }
+  } catch (error: any) {
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+    throw new Error(`Erro ao ler arquivo: ${error.message}`);
+  }
 
   const detectedMimeType = validateMediaFile(headerBuffer);
   if (!detectedMimeType) {
-    throw new Error('Arquivo não é um formato de mídia válido');
+    if (fs.existsSync(tempFilePath)) {
+      fs.unlinkSync(tempFilePath);
+    }
+    throw new Error('Arquivo não é um formato de mídia válido. Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM.');
   }
 
   const { getExtensionFromMimeType } = await import('../utils/file-validation');
   const fileExt = getExtensionFromMimeType(detectedMimeType);
   const finalFileName = `exercicio${fileExt}`;
   const uploadPath = path.join(getUploadExerciciosPath(), exercicioId);
+  
+  // Garantir que o diretório existe
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+  
   const finalPath = path.join(uploadPath, finalFileName);
 
   // Criar backup se arquivo existir
   if (fs.existsSync(finalPath)) {
-    const backupPath = `${finalPath}.backup.${Date.now()}`;
-    fs.copyFileSync(finalPath, backupPath);
-    // Deletar backup após 1 hora
-    setTimeout(() => {
-      if (fs.existsSync(backupPath)) fs.unlinkSync(backupPath);
-    }, 3600000);
+    try {
+      const backupPath = `${finalPath}.backup.${Date.now()}`;
+      fs.copyFileSync(finalPath, backupPath);
+      // Deletar backup após 1 hora
+      setTimeout(() => {
+        if (fs.existsSync(backupPath)) {
+          try {
+            fs.unlinkSync(backupPath);
+          } catch {
+            // Ignorar erro ao deletar backup
+          }
+        }
+      }, 3600000);
+    } catch (error) {
+      // Se não conseguir fazer backup, continuar mesmo assim
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('[ProcessMediaFile] Não foi possível criar backup:', error);
+      }
+    }
   }
 
   // Mover arquivo temporário para final
-  fs.renameSync(tempFilePath, finalPath);
+  try {
+    fs.renameSync(tempFilePath, finalPath);
+  } catch (error: any) {
+    // Se falhar, tentar copiar e depois deletar
+    try {
+      fs.copyFileSync(tempFilePath, finalPath);
+      fs.unlinkSync(tempFilePath);
+    } catch (copyError: any) {
+      if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+      }
+      throw new Error(`Erro ao salvar arquivo: ${copyError.message}`);
+    }
+  }
+
+  // Verificar se arquivo final foi criado corretamente
+  if (!fs.existsSync(finalPath)) {
+    throw new Error('Arquivo não foi salvo corretamente');
+  }
 
   return {
     finalPath,

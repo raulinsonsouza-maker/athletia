@@ -601,7 +601,7 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
     }
 
     // Processar arquivo usando serviço centralizado
-    const { processMediaFile, buildMediaUrl } = await import('../services/exercicio-media.service');
+    const { processMediaFile } = await import('../services/exercicio-media.service');
     
     let processedFile;
     try {
@@ -609,10 +609,21 @@ export const uploadGifExercicio = async (req: AuthRequest & { file?: Express.Mul
     } catch (error: any) {
       // Deletar arquivo inválido
       if (fs.existsSync(tempFilePath)) {
-        fs.unlinkSync(tempFilePath);
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (unlinkError) {
+          // Ignorar erro ao deletar
+        }
       }
+      
+      const errorMessage = error.message || 'Arquivo não é um formato de mídia válido. Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM.';
+      
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[UploadGif] Erro ao processar arquivo:', error);
+      }
+      
       return res.status(400).json({
-        error: error.message || 'Arquivo não é um formato de mídia válido. Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM.'
+        error: errorMessage
       });
     }
 
