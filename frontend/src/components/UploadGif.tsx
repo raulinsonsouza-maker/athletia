@@ -17,9 +17,6 @@ const IconeSeparador = ({ className = 'w-1.5 h-1.5 text-light-muted' }: { classN
   </svg>
 )
 
-// Extensões aceitas para tentar carregar
-const MEDIA_EXTENSIONS = ['.gif', '.jpg', '.jpeg', '.png', '.webp', '.mp4', '.webm'] as const
-
 export default function UploadGif({ exercicioId, exercicioNome, gifUrl, onUploadSuccess }: UploadGifProps) {
   const { showToast } = useToast()
   const [uploading, setUploading] = useState(false)
