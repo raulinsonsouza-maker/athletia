@@ -1034,6 +1034,39 @@ Realiza atualização periódica.
 - ✅ Tratamento de erros melhorado com mensagens mais claras
 - ✅ Logs de sucesso/erro para cada treino gerado
 
+### 2024-11-29 - Correção Sistema de Upload de Imagens
+**Alterações:**
+
+#### Problema
+Após execução de script de conversão PNG→WebP, sistema de imagens apresentou erros 404 e falhas no upload.
+
+#### Causa
+Diretórios de upload não existiam no servidor VPS (estão no `.gitignore`).
+
+#### Solução Implementada
+- ✅ **Estrutura de Diretórios:**
+  - Criados `backend/upload/exercicios/`, `grupos-musculares/`, `imagens-banco/`
+  - Arquivos `.gitkeep` para manter estrutura no Git
+  
+- ✅ **Scripts de Automação:**
+  - `criar-estrutura-upload.sh` - Cria diretórios automaticamente na VPS
+  - `validar-sistema-upload.sh` - Diagnóstico completo do sistema
+
+- ✅ **Correções de Código:**
+  - `Landing.tsx` - Corrigido `Sobrepeso.png` → `Sobrepeso.webp`
+
+#### Deploy na VPS
+**Comando único:**
+```bash
+cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh && bash scripts/criar-estrutura-upload.sh && pm2 restart backend
+```
+
+**Arquivos Modificados:**
+- `backend/upload/*/.gitkeep` - Estrutura de diretórios
+- `backend/scripts/criar-estrutura-upload.sh` - Script de criação
+- `backend/scripts/validar-sistema-upload.sh` - Script de validação
+- `frontend/src/pages/Landing.tsx` - Correção de referência de imagem
+
 ### 2024-11-16 - Melhorias de UX, Design e Conversão
 **Alterações:**
 

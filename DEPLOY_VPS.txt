@@ -1,0 +1,13 @@
+# DEPLOY NA VPS - COMANDO ÚNICO
+
+cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh && bash scripts/criar-estrutura-upload.sh && pm2 restart backend
+
+# Isso vai:
+# 1. Fazer pull das alterações
+# 2. Criar estrutura de diretórios upload/
+# 3. Reiniciar o backend
+# 4. Sistema de imagens deve funcionar
+
+# Para validar (opcional):
+bash scripts/validar-sistema-upload.sh
+

@@ -1169,7 +1169,7 @@ export default function Landing() {
                     value: 'Sobrepeso',
                     label: 'Sobrepeso',
                     desc: 'Pouco acima do peso ideal',
-                    image: '/images/onboarding/Sobrepeso.png'
+                    image: '/images/onboarding/Sobrepeso.webp'
                   },
                   {
                     value: 'Acima do Peso',
