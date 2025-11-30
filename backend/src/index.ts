@@ -107,33 +107,46 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
     if (resolved) {
       const { filePath, contentType } = resolved;
 
-      // Configurar headers para arquivos reais
-      res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Accept-Ranges', 'bytes');
-      
-      const fileStream = fs.createReadStream(filePath);
-      
-      fileStream.on('error', (err) => {
+      // Verificar se arquivo ainda existe (pode ter sido deletado após resolução)
+      if (!fs.existsSync(filePath)) {
         if (process.env.NODE_ENV !== 'production') {
-          console.error(`[Media Route] Erro ao ler arquivo:`, err);
+          console.warn(`[Media Route] Arquivo não encontrado após resolução: ${filePath}`);
         }
-        if (!res.headersSent) {
-          res.status(500).send('Internal Server Error');
-        }
-      });
+        // Continuar para retornar placeholder
+      } else {
+        // Configurar headers para arquivos reais
+        res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Accept-Ranges', 'bytes');
+        
+        const fileStream = fs.createReadStream(filePath);
+        
+        fileStream.on('error', (err) => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.error(`[Media Route] Erro ao ler arquivo ${filePath}:`, err);
+          }
+          if (!res.headersSent) {
+            res.status(500).send('Internal Server Error');
+          }
+        });
 
-      return fileStream.pipe(res);
+        return fileStream.pipe(res);
+      }
+    } else {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[Media Route] Mídia não encontrada para exercício: ${id}${ext ? ` (ext: ${ext})` : ''}`);
+      }
     }
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
-      console.error('[Media Route] Erro ao resolver mídia:', error);
+      console.error(`[Media Route] Erro ao resolver mídia para ${id}:`, error);
     }
   }
 
+  // Retornar placeholder se arquivo não foi encontrado
   const placeholder = getPlaceholderMedia(ext);
   if (placeholder) {
     res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
@@ -146,6 +159,10 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
     return res.status(200).send(placeholder.buffer);
   }
 
+  // Se não há placeholder, retornar 404
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(`[Media Route] 404 - Mídia não encontrada e sem placeholder para: ${id}${ext ? `.${ext}` : ''}`);
+  }
   return res.status(404).send('Not Found');
 });
 

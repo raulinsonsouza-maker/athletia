@@ -19,6 +19,9 @@ export async function resolveExercicioMedia(
 ): Promise<{ filePath: string; contentType: string; ext: string } | null> {
   // Validar path traversal
   if (!exercicioId || exercicioId.includes('..') || exercicioId.includes('/') || exercicioId.includes('\\')) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[ExercicioMedia] ID inválido (path traversal): ${exercicioId}`);
+    }
     return null;
   }
 
@@ -28,21 +31,34 @@ export async function resolveExercicioMedia(
 
   if (!isUuid) {
     try {
-      const exercicio = await prisma.exercicio.findFirst({
-        where: {
-          OR: [
-            { id: exercicioId },
-            { nome: { equals: exercicioId, mode: 'insensitive' as const } }
-          ]
-        },
+      // Primeiro tentar buscar pelo ID exato (pode ser um slug)
+      let exercicio = await prisma.exercicio.findUnique({
+        where: { id: exercicioId },
         select: { id: true }
       });
       
+      // Se não encontrou pelo ID, tentar pelo nome
       if (!exercicio) {
+        exercicio = await prisma.exercicio.findFirst({
+          where: {
+            nome: { equals: exercicioId, mode: 'insensitive' as const }
+          },
+          select: { id: true }
+        });
+      }
+      
+      if (!exercicio) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`[ExercicioMedia] Exercício não encontrado no banco: ${exercicioId}`);
+        }
         return null;
       }
       
       realExercicioId = exercicio.id;
+      
+      if (process.env.NODE_ENV !== 'production' && realExercicioId !== exercicioId) {
+        console.log(`[ExercicioMedia] ID convertido: ${exercicioId} -> ${realExercicioId}`);
+      }
     } catch (error) {
       if (process.env.NODE_ENV !== 'production') {
         console.error('[ExercicioMedia] Erro ao buscar exercício:', error);
@@ -53,12 +69,24 @@ export async function resolveExercicioMedia(
 
   const uploadBasePath = getUploadExerciciosPath();
   const exercicioDir = path.join(uploadBasePath, realExercicioId);
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[ExercicioMedia] Procurando arquivo em: ${exercicioDir}`);
+  }
 
   // Se extensão foi especificada, tentar apenas ela primeiro
   const normalizedExt = requestedExt ? (requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`) : null;
   const extensionsToTry = normalizedExt && ACCEPTED_EXTENSIONS.includes(normalizedExt)
     ? [normalizedExt]
     : ACCEPTED_EXTENSIONS;
+
+  // Verificar se diretório existe
+  if (!fs.existsSync(exercicioDir)) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn(`[ExercicioMedia] Diretório não existe: ${exercicioDir}`);
+    }
+    return null;
+  }
 
   // Procurar APENAS na pasta do exercício, com o nome padrão exercicio.<ext>
   for (const ext of extensionsToTry) {
@@ -68,6 +96,9 @@ export async function resolveExercicioMedia(
       try {
         const stats = fs.statSync(filePath);
         if (!stats.isFile() || stats.size === 0) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(`[ExercicioMedia] Arquivo inválido (vazio ou não é arquivo): ${filePath}`);
+          }
           continue;
         }
 
@@ -78,13 +109,23 @@ export async function resolveExercicioMedia(
         fs.closeSync(fileHandle);
 
         if (bytesRead < headerBuffer.length) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(`[ExercicioMedia] Erro ao ler header do arquivo: ${filePath}`);
+          }
           continue;
         }
 
         // validateMediaFile retorna MIME type ou null
         const detectedMimeType = validateMediaFile(headerBuffer);
         if (!detectedMimeType) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn(`[ExercicioMedia] Tipo de mídia não reconhecido: ${filePath}`);
+          }
           continue;
+        }
+
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`[ExercicioMedia] Arquivo encontrado: ${filePath}`);
         }
 
         return {
@@ -99,6 +140,10 @@ export async function resolveExercicioMedia(
         continue;
       }
     }
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(`[ExercicioMedia] Nenhum arquivo encontrado para exercício ${exercicioId} (ID real: ${realExercicioId})`);
   }
 
   return null;

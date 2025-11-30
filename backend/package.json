@@ -18,7 +18,9 @@
     "testar-banco": "tsx scripts/testar-banco.ts",
     "migrar-treinos": "tsx scripts/migrar-treinos-motor-centralizado.ts",
     "corrigir-urls-gifs": "tsx scripts/corrigir-urls-gifs.ts",
-    "restaurar-gifs": "tsx scripts/restaurar-gifs-da-pasta.ts"
+    "restaurar-gifs": "tsx scripts/restaurar-gifs-da-pasta.ts",
+    "diagnosticar-imagens": "tsx scripts/diagnosticar-imagens-exercicios.ts",
+    "corrigir-imagens": "tsx scripts/corrigir-imagens-exercicios.ts"
   },
   "keywords": [
     "fitness",
