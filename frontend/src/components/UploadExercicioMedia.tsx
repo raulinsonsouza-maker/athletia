@@ -81,7 +81,7 @@ export default function UploadExercicioMedia({
         })
       }, 200)
 
-      const response = await uploadExercicioMedia(exercicioId, selectedFile)
+      await uploadExercicioMedia(exercicioId, selectedFile)
       
       clearInterval(progressInterval)
       setUploadProgress(100)
@@ -141,7 +141,6 @@ export default function UploadExercicioMedia({
     }
   }
 
-  const displayUrl = previewUrl || currentMediaUrl
   const isVideo = previewUrl 
     ? selectedFile?.type.startsWith('video/') || false
     : isCurrentVideo

@@ -633,8 +633,7 @@ export default function EditExercicioModal({
                     onUploadSuccess={async () => {
                       // Recarregar dados do exercício após upload
                       try {
-                        const response = await api.get(`/admin/exercicios/${exercicio.id}`)
-                        const updated = response.data
+                        await api.get(`/admin/exercicios/${exercicio.id}`)
                         // Atualizar exercício no estado do componente pai se necessário
                         if (onSave) {
                           onSave()
