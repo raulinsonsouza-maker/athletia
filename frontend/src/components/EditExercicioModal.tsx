@@ -599,51 +599,17 @@ export default function EditExercicioModal({
             {/* Tab: Mídia */}
             {activeTab === 'midia' && (
               <div className="space-y-6">
-                {exercicio?.id ? (
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-3">
-                      Demonstração de Execução
-                    </label>
-                    <UploadGif
-                      key={`upload-gif-${exercicio.id}-${exercicio.gifUrl || 'no-gif'}`}
-                      exercicioId={exercicio.id}
-                      exercicioNome={formData.nome || 'Exercício'}
-                      gifUrl={exercicio.gifUrl || null}
-                      onUploadSuccess={async () => {
-                        // Recarregar dados do exercício após upload
-                        try {
-                          const response = await api.get(`/admin/exercicios/${exercicio.id}`)
-                          // Atualizar formData com dados atualizados
-                          const updated = response.data
-                          setFormData((prev: any) => ({
-                            ...prev,
-                            gifUrl: updated.gifUrl
-                          }))
-                        } catch (err) {
-                          if (import.meta.env.DEV) {
-                            console.error('[EditExercicioModal] Erro ao recarregar exercício:', err)
-                          }
-                        }
-                        onSave()
-                      }}
-                    />
-                    <p className="text-xs text-light-muted mt-2">
-                      Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM. Tamanho máximo: 5MB
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-dark-lighter rounded-lg p-8 border border-grey/30 text-center">
-                    <svg className="w-16 h-16 text-light-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-light-muted mb-2">
-                      Salve o exercício primeiro para adicionar uma demonstração
-                    </p>
-                    <p className="text-xs text-light-muted">
-                      Após criar o exercício, você será redirecionado para esta aba automaticamente
-                    </p>
-                  </div>
-                )}
+                <div className="bg-dark-lighter rounded-lg p-8 border border-grey/30 text-center">
+                  <svg className="w-16 h-16 text-light-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p className="text-light-muted mb-2">
+                    Upload de mídia temporariamente indisponível
+                  </p>
+                  <p className="text-xs text-light-muted">
+                    A funcionalidade de upload de mídia está sendo atualizada. Em breve estará disponível novamente.
+                  </p>
+                </div>
               </div>
             )}
           </div>

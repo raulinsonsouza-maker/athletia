@@ -47,7 +47,7 @@ export function useExercicioMediaChain(exercicio: PlanoAtualExercicio | null) {
   )
 
   const media = useExercicioMedia({
-    imagemUrl: exercicio?.imagemUrl || undefined,
+    imagemUrl: exercicio?.gifUrl || undefined,
     fallbackChain,
     onError: () => {
       // Silenciosamente falhar - não mostrar erro no console
