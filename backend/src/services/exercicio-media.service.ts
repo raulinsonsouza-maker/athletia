@@ -37,14 +37,41 @@ export async function resolveExercicioMedia(
         select: { id: true }
       });
       
-      // Se não encontrou pelo ID, tentar pelo nome
+      // Se não encontrou pelo ID, tentar pelo nome (pode ser slug convertido)
       if (!exercicio) {
+        // Primeiro tentar busca exata pelo nome
         exercicio = await prisma.exercicio.findFirst({
           where: {
             nome: { equals: exercicioId, mode: 'insensitive' as const }
           },
           select: { id: true }
         });
+        
+        // Se ainda não encontrou, tentar busca parcial (slug pode ser parte do nome)
+        if (!exercicio) {
+          // Converter slug para nome aproximado (ex: "abdominal-bicicleta" -> "Abdominal Bicicleta")
+          const nomeAproximado = exercicioId
+            .split('-')
+            .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+            .join(' ');
+          
+          exercicio = await prisma.exercicio.findFirst({
+            where: {
+              nome: { equals: nomeAproximado, mode: 'insensitive' as const }
+            },
+            select: { id: true }
+          });
+          
+          // Se ainda não encontrou, tentar busca por contains (slug pode estar no nome)
+          if (!exercicio) {
+            exercicio = await prisma.exercicio.findFirst({
+              where: {
+                nome: { contains: exercicioId.replace(/-/g, ' '), mode: 'insensitive' as const }
+              },
+              select: { id: true }
+            });
+          }
+        }
       }
       
       if (!exercicio) {
@@ -204,7 +231,7 @@ export async function processMediaFile(
     if (fs.existsSync(tempFilePath)) {
       fs.unlinkSync(tempFilePath);
     }
-    throw new Error('Arquivo não é um formato de mídia válido. Formatos aceitos: JPEG, PNG, WebP, MP4, WebM.');
+    throw new Error('Arquivo não é um formato de mídia válido. Formatos aceitos: JPEG, PNG, WebP, GIF, MP4, WebM.');
   }
 
   // Obter extensão do MIME type detectado

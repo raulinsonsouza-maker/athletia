@@ -936,11 +936,22 @@ export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Verificar se exercício existe
-    const exercicioExistente = await prisma.exercicio.findUnique({
+    // Verificar se exercício existe e obter ID real (UUID)
+    // Se o ID for um slug, buscar pelo nome para obter o UUID real
+    let exercicioExistente = await prisma.exercicio.findUnique({
       where: { id },
       select: { id: true, nome: true }
     });
+
+    // Se não encontrou pelo ID, tentar buscar pelo nome (caso seja slug)
+    if (!exercicioExistente) {
+      exercicioExistente = await prisma.exercicio.findFirst({
+        where: {
+          nome: { equals: id, mode: 'insensitive' as const }
+        },
+        select: { id: true, nome: true }
+      });
+    }
 
     if (!exercicioExistente) {
       // Limpar arquivo temporário se exercício não existe
@@ -952,13 +963,16 @@ export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Processar arquivo usando serviço existente
-    const { processMediaFile } = await import('../services/exercicio-media.service');
-    const { finalPath, url, ext } = await processMediaFile(file.path, id);
+    // Usar sempre o UUID real do exercício para salvar o arquivo
+    const exercicioIdReal = exercicioExistente.id;
 
-    // Atualizar campo imagemUrl no banco
+    // Processar arquivo usando serviço existente (sempre com UUID real)
+    const { processMediaFile } = await import('../services/exercicio-media.service');
+    const { finalPath, url, ext } = await processMediaFile(file.path, exercicioIdReal);
+
+    // Atualizar campo imagemUrl no banco usando o ID original (pode ser slug ou UUID)
     const exercicioAtualizado = await prisma.exercicio.update({
-      where: { id },
+      where: { id: exercicioIdReal },
       data: {
         imagemUrl: url
       },
