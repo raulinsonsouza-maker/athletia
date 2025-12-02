@@ -25,11 +25,21 @@ export async function resolveExercicioMedia(
     return null;
   }
 
-  // Se não for UUID, buscar exercício no banco para obter o ID real
+  const uploadBasePath = getUploadExerciciosPath();
+  
+  // IMPORTANTE: Primeiro tentar buscar o arquivo usando o ID recebido diretamente (pode ser slug)
+  // Isso garante compatibilidade com arquivos antigos que foram salvos usando slugs
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
-  let realExercicioId = exercicioId;
-
-  if (!isUuid) {
+  
+  // Tentar primeiro com o ID original (pode ser slug ou UUID) - compatibilidade com sistema antigo
+  let exercicioDir = path.join(uploadBasePath, exercicioId);
+  console.log(`[ExercicioMedia] Tentativa 1: Procurando arquivo em: ${exercicioDir} (ID original: ${exercicioId}, isUuid: ${isUuid})`);
+  
+  // Verificar se diretório existe com o ID original
+  let dirExists = fs.existsSync(exercicioDir);
+  
+  // Se não encontrou e não é UUID, tentar converter para UUID
+  if (!dirExists && !isUuid) {
     try {
       // Primeiro tentar buscar pelo ID exato (pode ser um slug)
       let exercicio = await prisma.exercicio.findUnique({
@@ -89,28 +99,24 @@ export async function resolveExercicioMedia(
         }
       }
       
-      if (!exercicio) {
-        console.warn(`[ExercicioMedia] Exercício não encontrado no banco: ${exercicioId}`);
-        return null;
-      }
-      
-      realExercicioId = exercicio.id;
-      
-      if (realExercicioId !== exercicioId) {
-        console.log(`[ExercicioMedia] ID convertido: ${exercicioId} -> ${realExercicioId}`);
+      // Se encontrou exercício no banco, tentar buscar arquivo na pasta do UUID
+      if (exercicio && exercicio.id !== exercicioId) {
+        const uuidDir = path.join(uploadBasePath, exercicio.id);
+        console.log(`[ExercicioMedia] Tentativa 2: Procurando arquivo em: ${uuidDir} (UUID convertido: ${exercicio.id})`);
+        
+        // Verificar se diretório UUID existe
+        if (fs.existsSync(uuidDir)) {
+          exercicioDir = uuidDir;
+          dirExists = true;
+        }
       }
     } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('[ExercicioMedia] Erro ao buscar exercício:', error);
-      }
-      return null;
+      console.error('[ExercicioMedia] Erro ao buscar exercício:', error);
+      // Continuar tentando com o ID original
     }
   }
-
-  const uploadBasePath = getUploadExerciciosPath();
-  const exercicioDir = path.join(uploadBasePath, realExercicioId);
   
-  console.log(`[ExercicioMedia] Procurando arquivo em: ${exercicioDir} (exercicioId original: ${exercicioId}, UUID real: ${realExercicioId})`);
+  console.log(`[ExercicioMedia] Procurando arquivo em: ${exercicioDir} (ID original: ${exercicioId})`);
 
   // Se extensão foi especificada, tentar apenas ela primeiro
   const normalizedExt = requestedExt ? (requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`) : null;
@@ -119,7 +125,7 @@ export async function resolveExercicioMedia(
     : ACCEPTED_EXTENSIONS;
 
   // Verificar se diretório existe
-  if (!fs.existsSync(exercicioDir)) {
+  if (!dirExists) {
     console.warn(`[ExercicioMedia] Diretório não existe: ${exercicioDir}`);
     return null;
   }
