@@ -4,20 +4,42 @@ import fs from 'fs';
 /**
  * Função helper para obter o caminho de upload de exercícios
  * Prioridade: variável de ambiente > caminho absoluto produção > caminho relativo dev
+ * 
+ * GARANTE que o diretório existe antes de retornar
  */
 export function getUploadExerciciosPath(): string {
+  let basePath: string;
+  
   // Prioridade: variável de ambiente > caminho absoluto produção > caminho relativo dev
   if (process.env.UPLOAD_EXERCICIOS_PATH) {
-    return process.env.UPLOAD_EXERCICIOS_PATH;
+    basePath = process.env.UPLOAD_EXERCICIOS_PATH;
+  } else if (process.env.NODE_ENV === 'production') {
+    // CORREÇÃO: Usar /uploads/ (com 's') que é o padrão
+    basePath = '/opt/athletia/backend/uploads/exercicios';
+  } else {
+    // Em desenvolvimento, usar caminho relativo
+    basePath = path.join(process.cwd(), 'upload', 'exercicios');
   }
   
-  // Em produção (servidor), usar caminho absoluto
-  if (process.env.NODE_ENV === 'production') {
-    return '/opt/athletia/backend/upload/exercicios';
+  // GARANTIR que o diretório existe (criar estrutura completa se necessário)
+  try {
+    if (!fs.existsSync(basePath)) {
+      fs.mkdirSync(basePath, { recursive: true });
+      console.log(`[UPLOAD-PATHS] Diretório criado: ${basePath}`);
+    }
+  } catch (error: any) {
+    console.error(`[UPLOAD-PATHS] ERRO ao criar diretório ${basePath}:`, error.message);
+    // Em caso de erro, tentar fallback
+    const fallbackPath = path.join(process.cwd(), 'upload', 'exercicios');
+    if (!fs.existsSync(fallbackPath)) {
+      fs.mkdirSync(fallbackPath, { recursive: true });
+      console.warn(`[UPLOAD-PATHS] Usando fallback: ${fallbackPath}`);
+      return fallbackPath;
+    }
+    return fallbackPath;
   }
   
-  // Em desenvolvimento, usar caminho relativo
-  return path.join(process.cwd(), 'upload', 'exercicios');
+  return basePath;
 }
 
 function resolveExistingPath(paths: string[]): string | null {
@@ -58,4 +80,3 @@ export function getImagensBancoPathCandidates(): string[] {
 
   return Array.from(new Set(candidates));
 }
-

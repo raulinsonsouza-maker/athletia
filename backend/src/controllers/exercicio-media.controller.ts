@@ -20,9 +20,10 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
     const { exercicioId } = req.params;
     const extension = req.path.split('.').pop() || undefined;
 
-    console.log(`[MediaController] Requisição: exercicioId=${exercicioId}, ext=${extension}`);
+    console.log(`[MediaController] Requisição: exercicioId=${exercicioId}, ext=${extension}, path=${req.path}`);
 
     if (!extension) {
+      console.warn(`[MediaController] Extensão não especificada na requisição`);
       return res.status(400).json({
         error: 'Extensão do arquivo não especificada',
         exercicioId
@@ -30,37 +31,46 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
     }
 
     // Resolver exercicioId (pode ser UUID, slug ou nome) para UUID real
+    console.log(`[MediaController] Resolvendo exercicioId: ${exercicioId}`);
     const realExercicioId = await resolveExercicioId(exercicioId);
     
     if (!realExercicioId) {
+      console.warn(`[MediaController] Exercício não encontrado: ${exercicioId}`);
       return res.status(404).json({
         error: 'Exercício não encontrado',
         exercicioId
       });
     }
 
-    const filePath = await getMediaFilePath(realExercicioId, extension);
+    console.log(`[MediaController] UUID real do exercício: ${realExercicioId} (original: ${exercicioId})`);
+
+    const filePath = await getMediaFilePath(realExercicioId, `.${extension}`);
 
     if (!filePath) {
+      console.warn(`[MediaController] Mídia não encontrada: exercicioId=${exercicioId}, realId=${realExercicioId}, ext=${extension}`);
       return res.status(404).json({
         error: 'Mídia não encontrada',
-        exercicioId
+        exercicioId,
+        realExercicioId,
+        extension
       });
     }
 
     // Verificar se arquivo existe
     if (!fs.existsSync(filePath)) {
+      console.error(`[MediaController] Arquivo não existe no sistema de arquivos: ${filePath}`);
       return res.status(404).json({
         error: 'Arquivo não encontrado',
-        exercicioId
+        filePath
       });
     }
 
     const stats = fs.statSync(filePath);
     if (!stats.isFile() || stats.size === 0) {
+      console.error(`[MediaController] Arquivo inválido: ${filePath} (size: ${stats.size}, isFile: ${stats.isFile()})`);
       return res.status(404).json({
         error: 'Arquivo inválido',
-        exercicioId
+        filePath
       });
     }
 
@@ -79,11 +89,21 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
 
     // Enviar arquivo
     const fileStream = fs.createReadStream(filePath);
+    fileStream.on('error', (streamError) => {
+      console.error(`[MediaController] Erro ao ler arquivo ${filePath}:`, streamError);
+      if (!res.headersSent) {
+        res.status(500).json({
+          error: 'Erro ao ler arquivo',
+          message: streamError.message
+        });
+      }
+    });
     fileStream.pipe(res);
 
-    console.log(`[MediaController] Arquivo servido: ${filePath}`);
+    console.log(`[MediaController] ✅ Arquivo servido com sucesso: ${filePath} (${stats.size} bytes)`);
   } catch (error: any) {
-    console.error('[MediaController] Erro ao servir mídia:', error);
+    console.error('[MediaController] ❌ Erro ao servir mídia:', error);
+    console.error('[MediaController] Stack:', error.stack);
     if (!res.headersSent) {
       res.status(500).json({
         error: 'Erro ao servir mídia',

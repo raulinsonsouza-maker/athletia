@@ -5,27 +5,46 @@ import { validateMediaFile, ACCEPTED_EXTENSIONS, ACCEPTED_MEDIA_TYPES, MAX_FILE_
 
 /**
  * Obtém o caminho do arquivo de mídia para um exercício
+ * IMPORTANTE: exercicioId deve ser o UUID do exercício (não slug)
  */
 export async function getMediaFilePath(exercicioId: string, extension?: string): Promise<string | null> {
   const basePath = getUploadExerciciosPath();
   const exercicioPath = path.join(basePath, exercicioId);
   
+  // Log para debug
+  console.log(`[MediaService] Procurando mídia: exercicioId=${exercicioId}, basePath=${basePath}, exercicioPath=${exercicioPath}`);
+  
+  // Verificar se o diretório do exercício existe
+  if (!fs.existsSync(exercicioPath)) {
+    console.warn(`[MediaService] Diretório do exercício não existe: ${exercicioPath}`);
+    return null;
+  }
+  
   if (extension) {
     const filePath = path.join(exercicioPath, `media${extension}`);
     if (fs.existsSync(filePath)) {
+      console.log(`[MediaService] Arquivo encontrado: ${filePath}`);
       return filePath;
+    } else {
+      console.warn(`[MediaService] Arquivo não encontrado: ${filePath}`);
     }
   }
   
-  // Se não tem extensão, procurar por qualquer arquivo de mídia
-  if (fs.existsSync(exercicioPath)) {
+  // Se não tem extensão ou não encontrou com a extensão específica, procurar por qualquer arquivo de mídia
+  try {
     const files = fs.readdirSync(exercicioPath);
+    console.log(`[MediaService] Arquivos no diretório ${exercicioPath}:`, files);
     const mediaFile = files.find(f => f.startsWith('media.'));
     if (mediaFile) {
-      return path.join(exercicioPath, mediaFile);
+      const filePath = path.join(exercicioPath, mediaFile);
+      console.log(`[MediaService] Arquivo de mídia encontrado: ${filePath}`);
+      return filePath;
     }
+  } catch (error: any) {
+    console.error(`[MediaService] Erro ao ler diretório ${exercicioPath}:`, error.message);
   }
   
+  console.warn(`[MediaService] Nenhuma mídia encontrada para exercício ${exercicioId}`);
   return null;
 }
 

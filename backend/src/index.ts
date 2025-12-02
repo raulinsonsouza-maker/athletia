@@ -36,11 +36,10 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 // sem permitir bypass trivial do rate limiting
 app.set('trust proxy', 1);
 
-// Criar pasta de uploads se não existir
+// Criar pasta de uploads se não existir (já é feito dentro de getUploadExerciciosPath, mas garantimos aqui também)
 const uploadDir = getUploadExerciciosPath();
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+console.log(`[INIT] Diretório de upload de exercícios configurado: ${uploadDir}`);
+console.log(`[INIT] Diretório existe: ${fs.existsSync(uploadDir) ? 'SIM' : 'NÃO'}`);
 
 // Rate limiting - Proteção contra brute force e DDoS
 // Aumentado para permitir mais requisições legítimas
