@@ -140,9 +140,20 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
         console.warn(`[Media Route] Mídia não encontrada para exercício: ${id}${ext ? ` (ext: ${ext})` : ''}`);
       }
     }
-  } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(`[Media Route] Erro ao resolver mídia para ${id}:`, error);
+  } catch (error: any) {
+    console.error(`[Media Route] Erro ao resolver mídia para ${id}:`, error);
+    // Não retornar erro 500 aqui - retornar placeholder ou 404
+    if (!res.headersSent) {
+      // Tentar retornar placeholder mesmo em caso de erro
+      const placeholder = getPlaceholderMedia(ext);
+      if (placeholder) {
+        res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        res.setHeader('Content-Type', placeholder.contentType);
+        return res.status(200).send(placeholder.buffer);
+      }
     }
   }
 

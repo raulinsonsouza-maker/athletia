@@ -710,83 +710,52 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
+    if (!id || typeof id !== 'string') {
+      return res.status(400).json({
+        error: 'ID do exercício é obrigatório'
+      });
+    }
+
     // Verificar se é UUID
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
     
     let exercicio = null;
     
-    if (isUuid) {
-      // Buscar por UUID
-      exercicio = await prisma.exercicio.findUnique({
-        where: { id },
-        select: {
-          id: true,
-          nome: true,
-          grupoMuscularPrincipal: true,
-          sinergistas: true,
-          descricao: true,
-          execucaoTecnica: true,
-          errosComuns: true,
-          imagemUrl: true,
-          cargaInicialSugerida: true,
-          rpeSugerido: true,
-          equipamentoNecessario: true,
-          nivelDificuldade: true,
-          alternativas: true,
-          ativo: true,
-          createdAt: true,
-          updatedAt: true,
-          gruposMusculares: {
-            include: {
-              grupo: true
+    try {
+      if (isUuid) {
+        // Buscar por UUID
+        exercicio = await prisma.exercicio.findUnique({
+          where: { id: id.trim() },
+          select: {
+            id: true,
+            nome: true,
+            grupoMuscularPrincipal: true,
+            sinergistas: true,
+            descricao: true,
+            execucaoTecnica: true,
+            errosComuns: true,
+            imagemUrl: true,
+            cargaInicialSugerida: true,
+            rpeSugerido: true,
+            equipamentoNecessario: true,
+            nivelDificuldade: true,
+            alternativas: true,
+            ativo: true,
+            createdAt: true,
+            updatedAt: true,
+            gruposMusculares: {
+              include: {
+                grupo: true
+              }
             }
           }
-        }
-      });
-    }
-    
-    // Se não encontrou e não é UUID, tentar buscar por nome
-    if (!exercicio && !isUuid) {
-      // Primeiro tentar busca exata pelo nome
-      exercicio = await prisma.exercicio.findFirst({
-        where: {
-          nome: { equals: id, mode: 'insensitive' as const }
-        },
-        select: {
-          id: true,
-          nome: true,
-          grupoMuscularPrincipal: true,
-          sinergistas: true,
-          descricao: true,
-          execucaoTecnica: true,
-          errosComuns: true,
-          imagemUrl: true,
-          cargaInicialSugerida: true,
-          rpeSugerido: true,
-          equipamentoNecessario: true,
-          nivelDificuldade: true,
-          alternativas: true,
-          ativo: true,
-          createdAt: true,
-          updatedAt: true,
-          gruposMusculares: {
-            include: {
-              grupo: true
-            }
-          }
-        }
-      });
-      
-      // Se ainda não encontrou e tem hífen, tentar converter slug para nome
-      if (!exercicio && id.includes('-')) {
-        const nomeAproximado = id
-          .split('-')
-          .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
-          .join(' ');
-        
+        });
+      } else {
+        // Se não é UUID, tentar buscar por nome (pode ser slug)
+        // Primeiro tentar busca exata pelo nome
         exercicio = await prisma.exercicio.findFirst({
           where: {
-            nome: { equals: nomeAproximado, mode: 'insensitive' as const }
+            nome: { equals: id.trim(), mode: 'insensitive' as const }
           },
           select: {
             id: true,
@@ -812,21 +781,72 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
             }
           }
         });
+        
+        // Se ainda não encontrou e tem hífen, tentar converter slug para nome
+        if (!exercicio && id.includes('-')) {
+          try {
+            const nomeAproximado = id
+              .split('-')
+              .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+              .join(' ');
+            
+            exercicio = await prisma.exercicio.findFirst({
+              where: {
+                nome: { equals: nomeAproximado, mode: 'insensitive' as const }
+              },
+              select: {
+                id: true,
+                nome: true,
+                grupoMuscularPrincipal: true,
+                sinergistas: true,
+                descricao: true,
+                execucaoTecnica: true,
+                errosComuns: true,
+                imagemUrl: true,
+                cargaInicialSugerida: true,
+                rpeSugerido: true,
+                equipamentoNecessario: true,
+                nivelDificuldade: true,
+                alternativas: true,
+                ativo: true,
+                createdAt: true,
+                updatedAt: true,
+                gruposMusculares: {
+                  include: {
+                    grupo: true
+                  }
+                }
+              }
+            });
+          } catch (searchError: any) {
+            // Log mas não falhar - continuar para retornar 404
+            if (process.env.NODE_ENV !== 'production') {
+              console.warn('[obterExercicio] Erro ao buscar por nome aproximado:', searchError.message);
+            }
+          }
+        }
       }
+    } catch (dbError: any) {
+      console.error('[obterExercicio] Erro ao buscar no banco:', dbError);
+      return res.status(500).json({
+        error: 'Erro ao buscar exercício no banco de dados',
+        message: dbError.message
+      });
     }
 
     if (!exercicio) {
       return res.status(404).json({
-        error: 'Exercício não encontrado'
+        error: 'Exercício não encontrado',
+        id: id.trim()
       });
     }
 
     res.json(exercicio);
   } catch (error: any) {
-    console.error('Erro ao obter exercício:', error);
+    console.error('[obterExercicio] Erro geral:', error);
     res.status(500).json({
       error: 'Erro ao obter exercício',
-      message: error.message
+      message: error.message || 'Erro desconhecido'
     });
   }
 };
