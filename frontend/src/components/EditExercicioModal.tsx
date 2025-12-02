@@ -190,8 +190,10 @@ export default function EditExercicioModal({
     }
   }
 
-  // Hook para mídia do exercício
+  // Hook para mídia do exercício (sem fallbacks que geram 404)
   const exercicioMedia = useExercicioMedia({
+    imagemUrl: exercicio?.imagemUrl || undefined,
+    fallbackChain: [], // Removido para evitar tentativas de carregar imagens inexistentes
     onError: () => {}
   })
 

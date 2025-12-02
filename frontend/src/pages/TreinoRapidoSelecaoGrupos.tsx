@@ -4,7 +4,6 @@ import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
 import { treinoRapidoService, GrupoMuscularCard } from '../services/treino-rapido.service'
-import { getImagemGrupoBanco } from '../utils/imagensBanco'
 
 // Imagens padrão do banco (fallback para Unsplash se não houver no banco)
 const DEFAULT_IMAGENS: Record<string, string> = {
@@ -75,13 +74,7 @@ export default function TreinoRapidoSelecaoGrupos() {
       return grupo.imagemUrl
     }
     
-    // Prioridade 2: imagem do banco para o grupo
-    const imagemBanco = getImagemGrupoBanco(grupo.slug)
-    if (imagemBanco) {
-      return imagemBanco
-    }
-    
-    // Prioridade 3: fallback para Unsplash
+    // Prioridade 2: fallback para Unsplash
     return DEFAULT_IMAGENS[grupo.slug as keyof typeof DEFAULT_IMAGENS] || DEFAULT_IMAGENS.peito
   }
 

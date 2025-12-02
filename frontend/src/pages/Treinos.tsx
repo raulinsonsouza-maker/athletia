@@ -6,7 +6,6 @@ import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
-import { getImagemPadraoBanco } from '../utils/imagensBanco'
 
 // ============================================================================
 // ÍCONES SVG
@@ -74,8 +73,7 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
       <div className="flex">
         <div className="w-28 h-28 bg-black/50 flex-shrink-0 relative overflow-hidden">
           {(() => {
-            const imagemPadrao = getImagemPadraoBanco('treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
-            const imagemFinal = item.imagem || imagemPadrao
+            const imagemFinal = item.imagem || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
             return (
               <img
                 key={`${item.id}-${imagemFinal}`}
@@ -215,7 +213,7 @@ export default function Treinos() {
           <section className="relative rounded-2xl overflow-hidden">
             <div className="h-48 relative">
               {(() => {
-                const imagemPadrao = getImagemPadraoBanco('treinos') || obterImagemPorGenero(genero, 'treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
+                const imagemPadrao = obterImagemPorGenero(genero, 'treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
                 const imagemFinal = treinoHoje.imagem || imagemPadrao
                 return (
                   <img

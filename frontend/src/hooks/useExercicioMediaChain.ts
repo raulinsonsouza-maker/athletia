@@ -1,40 +1,15 @@
 import { useMemo } from 'react'
-import { getImagemGrupoBanco, getImagemPadraoBanco } from '../utils/imagensBanco'
-import { resolveApiPath } from '../utils/api-url'
 import { useExercicioMedia } from './useExercicioMedia'
 import { PlanoAtualExercicio } from '../types/treino.types'
 
 /**
- * Normaliza nome de grupo para slug
- */
-function normalizarGrupo(grupo?: string | null): string {
-  if (!grupo) return ''
-  return grupo
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z]/g, '')
-}
-
-/**
  * Constrói cadeia de fallback para mídia do exercício
+ * Removidos fallbacks que geram erros 404 (imagens inexistentes)
  */
 function construirFallbackChain(exercicio: PlanoAtualExercicio | null): string[] {
-  const chain: string[] = []
-
-  if (exercicio?.id) {
-    const urlFromId = resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.jpg`)
-    if (urlFromId) chain.push(urlFromId)
-  }
-
-  const slug = normalizarGrupo(exercicio?.grupo)
-  const imagemGrupo = slug ? getImagemGrupoBanco(slug) : ''
-  if (imagemGrupo) chain.push(imagemGrupo)
-
-  const imagemPadrao = getImagemPadraoBanco('treino')
-  if (imagemPadrao) chain.push(imagemPadrao)
-
-  return chain
+  // Não usar fallbacks que geram erros 404
+  // Apenas usar imagemUrl se disponível
+  return []
 }
 
 /**

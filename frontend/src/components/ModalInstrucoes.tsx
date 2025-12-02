@@ -1,4 +1,3 @@
-import { getImagemPadraoBanco } from '../utils/imagensBanco'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
 interface Exercicio {
@@ -22,11 +21,10 @@ export default function ModalInstrucoes({
   onClose,
   formatarEquipamentos
 }: ModalInstrucoesProps) {
-  const fallbackUrl = getImagemPadraoBanco('treino')
-  
+  // Removido fallback que gera erro 404 (treino-padrao.jpg)
   const { url: mediaUrl, isVideo, handleError } = useExercicioMedia({
-    imagemUrl: exercicio.imagemUrl,
-    fallbackChain: [fallbackUrl]
+    imagemUrl: exercicio.imagemUrl || undefined,
+    fallbackChain: []
   })
 
   return (

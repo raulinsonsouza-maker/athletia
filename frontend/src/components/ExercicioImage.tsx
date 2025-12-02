@@ -1,6 +1,5 @@
 import { SyntheticEvent } from 'react'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
-import { resolveApiPath } from '../utils/api-url'
 
 interface ExercicioImageProps {
   exercicio: {
@@ -23,19 +22,10 @@ export default function ExercicioImage({
   onError,
   className = ''
 }: ExercicioImageProps) {
-  // Construir URL usando ID do exercício como fallback
-  // O backend vai tentar todas as extensões automaticamente
-  const fallbackUrl = exercicio.id 
-    ? resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.jpg`)
-    : null
-
-  // Usar hook unificado: imagemUrl do banco > URL construída com ID > imageChain (compatibilidade)
+  // Usar hook unificado: apenas imagemUrl do banco (sem fallbacks que geram 404)
   const { url: mediaUrl, isVideo, hasMedia, handleError } = useExercicioMedia({
     imagemUrl: exercicio.imagemUrl || undefined,
-    fallbackChain: [
-      ...(fallbackUrl ? [fallbackUrl] : []),
-      ...imageChain.filter(Boolean)
-    ],
+    fallbackChain: [], // Removido imageChain para evitar tentativas de carregar imagens inexistentes
     onError: () => {
       // Silenciosamente falhar - não mostrar erro no console para evitar spam de 404s
       if (onError) {

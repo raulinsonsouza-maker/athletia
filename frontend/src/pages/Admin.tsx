@@ -479,10 +479,10 @@ export default function Admin() {
 
   const previewModalTarget = exercicioPreview || exercicioEdit || null
   
-  // Usar hook unificado para preview modal
-  // O hook vai construir a URL usando o ID do exercício automaticamente
+  // Usar hook unificado para preview modal (sem fallbacks que geram 404)
   const previewModalMedia = useExercicioMedia({
     imagemUrl: previewModalTarget?.imagemUrl || undefined,
+    fallbackChain: [], // Removido para evitar tentativas de carregar imagens inexistentes
     onError: () => {
       // Silenciosamente falhar - não mostrar erro no console
     }
