@@ -189,7 +189,7 @@ export default function Admin() {
     } else if (activeTab === 'exercicios') {
       carregarExercicios()
     }
-  }, [activeTab, search, searchExercicio, filtroGrupo])
+  }, [activeTab, search])
 
   const verificarAdmin = async () => {
     try {
@@ -272,29 +272,7 @@ export default function Admin() {
       const todosExercicios = response.data.exercicios || []
       setGruposMusculares(response.data.gruposMusculares || [])
       
-      // Aplicar filtros no frontend
-      let exerciciosFiltrados = todosExercicios
-      
-      // Filtro por busca (nome)
-      if (searchExercicio) {
-        const searchLower = searchExercicio.toLowerCase()
-        exerciciosFiltrados = exerciciosFiltrados.filter((ex: any) =>
-          ex.nome.toLowerCase().includes(searchLower)
-        )
-      }
-      
-      // Filtro por grupo muscular
-      if (filtroGrupo) {
-        exerciciosFiltrados = exerciciosFiltrados.filter((ex: any) =>
-          ex.grupoMuscularPrincipal === filtroGrupo
-        )
-      }
-      
-      setExercicios(exerciciosFiltrados)
-      
-      if (exerciciosFiltrados.length === 0 && (searchExercicio || filtroGrupo)) {
-        setErrorExercicios(`Nenhum exercício encontrado${searchExercicio ? ` para "${searchExercicio}"` : ''}${filtroGrupo ? ` no grupo "${filtroGrupo}"` : ''}`)
-      }
+      setExercicios(todosExercicios)
     } catch (error: any) {
       if (import.meta.env.DEV) {
         console.error('Erro ao carregar exercícios:', error)
@@ -893,19 +871,12 @@ export default function Admin() {
 
         {activeTab === 'exercicios' && (
           <div className="card">
-            <ExerciciosList
+            <ExerciciosAdminList
               exercicios={exercicios}
               loading={loadingExercicios}
               error={errorExercicios}
               gruposMusculares={gruposMusculares}
-              searchTerm={searchExercicio}
-              filtroGrupo={filtroGrupo}
-              viewMode={viewModeExercicios}
-              onSearchChange={setSearchExercicio}
-              onFiltroChange={setFiltroGrupo}
-              onViewModeChange={handleViewModeExerciciosChange}
               onEdit={handleEditExercicio}
-              onPreview={handleShowMediaPreview}
               onCreate={handleCreateExercicio}
               onRetry={carregarExercicios}
             />

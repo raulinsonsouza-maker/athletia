@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { useExercicioMedia } from '../hooks/useExercicioMedia'
 import UploadExercicioMedia from './UploadExercicioMedia'
 
 interface Exercicio {

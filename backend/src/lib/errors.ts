@@ -70,9 +70,8 @@ export class ForbiddenError extends AppError {
  */
 export class InternalServerError extends AppError {
   constructor(message: string = 'Erro interno do servidor', code?: string) {
-    super(message, 500, code || 'INTERNAL_SERVER_ERROR');
+    super(message, 500, code || 'INTERNAL_SERVER_ERROR', false);
     this.name = 'InternalServerError';
-    this.isOperational = false;
   }
 }
 

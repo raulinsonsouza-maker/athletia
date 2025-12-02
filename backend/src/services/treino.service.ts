@@ -46,7 +46,7 @@ export async function buscarOuCriarExercicioAerobico(nome: string): Promise<any>
   });
 
   if (!exercicio) {
-    logDebug(`📝 Criando exercício aeróbico: ${nome}`);
+    logger.debug(`📝 Criando exercício aeróbico: ${nome}`, 'treino.service');
     exercicio = await prisma.exercicio.create({
       data: {
         nome,
@@ -136,7 +136,7 @@ export async function buscarOuCriarExercicioAlongamento(): Promise<any> {
   });
 
   if (!exercicio) {
-    logDebug(`📝 Criando exercício de alongamento`);
+    logger.debug(`📝 Criando exercício de alongamento`, 'treino.service');
     exercicio = await prisma.exercicio.create({
       data: {
         nome: 'Alongamento Geral',
@@ -167,7 +167,7 @@ export async function selecionarExercicioAerobicoDoDia(data: Date): Promise<any>
   const indice = diaDoAno % EXERCICIOS_AEROBICOS.length;
   const nomeExercicio = EXERCICIOS_AEROBICOS[indice];
   
-  logDebug(`🏃 Selecionando exercício aeróbico para ${data.toLocaleDateString('pt-BR')}: ${nomeExercicio}`);
+  logger.debug(`🏃 Selecionando exercício aeróbico para ${data.toLocaleDateString('pt-BR')}: ${nomeExercicio}`, 'treino.service');
   
   return await buscarOuCriarExercicioAerobico(nomeExercicio);
 }
@@ -177,7 +177,7 @@ export async function selecionarExercicioAerobicoDoDia(data: Date): Promise<any>
  * Adiciona os exercícios faltantes se necessário
  */
 export async function garantirCardioEAlongamento(treinoId: string, data: Date): Promise<{ cardioAdicionado: boolean; alongamentoAdicionado: boolean }> {
-  logDebug(`[INFO] Verificando cardio e alongamento para treino ${treinoId}...`);
+  logger.debug(`[INFO] Verificando cardio e alongamento para treino ${treinoId}...`, 'treino.service');
   
   // Buscar treino com exercícios
   const treino = await prisma.treino.findUnique({
@@ -228,12 +228,12 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
         }
       });
       cardioAdicionado = true;
-      logDebug(`[OK] Exercício de cardio adicionado: ${exercicioAerobico.nome}`);
+      logger.debug(`[OK] Exercício de cardio adicionado: ${exercicioAerobico.nome}`, 'treino.service');
     } catch (error: any) {
       console.error(`[ERROR] Erro ao adicionar exercício de cardio:`, error.message);
     }
   } else {
-    logDebug(`[OK] Treino já possui exercício de cardio`);
+    logger.debug(`[OK] Treino já possui exercício de cardio`, 'treino.service');
   }
 
   // Adicionar alongamento se não tiver (sempre último)
@@ -256,12 +256,12 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
         }
       });
       alongamentoAdicionado = true;
-      logDebug(`[OK] Exercício de alongamento adicionado`);
+      logger.debug(`[OK] Exercício de alongamento adicionado`, 'treino.service');
     } catch (error: any) {
       console.error(`[ERROR] Erro ao adicionar exercício de alongamento:`, error.message);
     }
   } else {
-    logDebug(`[OK] Treino já possui exercício de alongamento`);
+    logger.debug(`[OK] Treino já possui exercício de alongamento`, 'treino.service');
   }
 
   // Sempre reordenar exercícios: cardio = 0, força no meio, alongamento = último
@@ -319,7 +319,7 @@ export async function garantirCardioEAlongamento(treinoId: string, data: Date): 
  * Gera treino A: Peito + Ombro + Tríceps
  */
 async function gerarTreinoA(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  logDebug(`[INFO] Gerando Treino A (Peito + Ombro + Tríceps)...`);
+  logger.debug(`[INFO] Gerando Treino A (Peito + Ombro + Tríceps)...`, 'treino.service');
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -351,7 +351,7 @@ async function gerarTreinoA(perfil: any, ciclo: number, userId?: string): Promis
     exercicios.push(triceps);
   }
 
-  logDebug(`[OK] Treino A gerado com ${exercicios.length} exercícios`);
+  logger.debug(`[OK] Treino A gerado com ${exercicios.length} exercícios`, 'treino.service');
   return exercicios;
 }
 
@@ -359,7 +359,7 @@ async function gerarTreinoA(perfil: any, ciclo: number, userId?: string): Promis
  * Gera treino B: Costas + Bíceps
  */
 async function gerarTreinoB(perfil: any, ciclo: number, userId?: string): Promise<any[]> {
-  logDebug(`[INFO] Gerando Treino B (Costas + Bíceps)...`);
+  logger.debug(`[INFO] Gerando Treino B (Costas + Bíceps)...`, 'treino.service');
   
   const exercicios: any[] = [];
   const objetivo = perfil.objetivo || 'Hipertrofia';
@@ -561,7 +561,7 @@ export async function gerarTreinoABC(
   data: Date,
   tipoTreino: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
 ): Promise<any | null> {
-  logDebug(`[INFO] Gerando treino ${tipoTreino} para ${data.toLocaleDateString('pt-BR')}...`);
+  logger.debug(`[INFO] Gerando treino ${tipoTreino} para ${data.toLocaleDateString('pt-BR')}...`, 'treino.service');
 
   // 1. Buscar perfil
   const perfil = await prisma.perfil.findUnique({
@@ -734,7 +734,7 @@ export async function gerarTreinoABC(
     }
   });
 
-  logDebug(`[OK] Treino ${tipoTreino} criado: ${treinoCompleto?.exercicios.length} exercícios - ${tempoTotal} min`);
+  logger.debug(`[OK] Treino ${tipoTreino} criado: ${treinoCompleto?.exercicios.length} exercícios - ${tempoTotal} min`, 'treino.service');
   return treinoCompleto;
 }
 
@@ -855,10 +855,10 @@ async function buscarExerciciosSimples(
   equipamentos: string[],
   lesoes: string[]
 ): Promise<any[]> {
-  logDebug(`[INFO] Buscando exercícios para grupos: ${grupos.join(', ')}`);
-  logDebug(`📊 Experiência: ${experiencia}`);
-  logDebug(`[INFO] Equipamentos: ${equipamentos.join(', ') || 'Nenhum'}`);
-  logDebug(`⚠️ Lesões: ${lesoes.join(', ') || 'Nenhuma'}`);
+  logger.debug(`[INFO] Buscando exercícios para grupos: ${grupos.join(', ')}`, 'treino.service');
+  logger.debug(`📊 Experiência: ${experiencia}`, 'treino.service');
+  logger.debug(`[INFO] Equipamentos: ${equipamentos.join(', ') || 'Nenhum'}`, 'treino.service');
+  logger.debug(`⚠️ Lesões: ${lesoes.join(', ') || 'Nenhuma'}`, 'treino.service');
 
   const niveisPermitidos = experiencia === 'Iniciante' 
     ? ['Iniciante'] 
@@ -866,7 +866,7 @@ async function buscarExerciciosSimples(
     ? ['Iniciante', 'Intermediário']
     : ['Iniciante', 'Intermediário', 'Avançado'];
 
-  logDebug(`[INFO] Níveis permitidos: ${niveisPermitidos.join(', ')}`);
+  logger.debug(`[INFO] Níveis permitidos: ${niveisPermitidos.join(', ')}`, 'treino.service');
 
   // Otimização: Buscar todos os exercícios dos grupos de uma vez (evita queries N+1)
   // PRIMEIRA TENTATIVA: Buscar com todos os filtros
@@ -879,11 +879,11 @@ async function buscarExerciciosSimples(
     take: 100 // Buscar mais opções para todos os grupos
   });
 
-  logDebug(`📦 Encontrados ${todosExercicios.length} exercícios com filtro de nível`);
+  logger.debug(`📦 Encontrados ${todosExercicios.length} exercícios com filtro de nível`, 'treino.service');
 
   // Se não encontrou nada, tentar sem filtro de nível (mais flexível)
   if (todosExercicios.length === 0) {
-    logDebug(`⚠️ Nenhum exercício encontrado com nível ${niveisPermitidos.join(', ')}, buscando todos os níveis...`);
+    logger.debug(`⚠️ Nenhum exercício encontrado com nível ${niveisPermitidos.join(', ')}, buscando todos os níveis...`, 'treino.service');
     todosExercicios = await prisma.exercicio.findMany({
       where: {
         grupoMuscularPrincipal: { in: grupos },
@@ -891,7 +891,7 @@ async function buscarExerciciosSimples(
       },
       take: 100
     });
-    logDebug(`📦 Encontrados ${todosExercicios.length} exercícios (sem filtro de nível)`);
+    logger.debug(`📦 Encontrados ${todosExercicios.length} exercícios (sem filtro de nível)`, 'treino.service');
   }
 
   // Agrupar exercícios por grupo muscular
@@ -904,10 +904,10 @@ async function buscarExerciciosSimples(
 
   // Processar cada grupo (agora em memória, sem queries)
   for (const grupo of grupos) {
-    logDebug(`\n🔎 Processando exercícios para: ${grupo}`);
+    logger.debug(`\n🔎 Processando exercícios para: ${grupo}`, 'treino.service');
     let exerciciosGrupo = exerciciosPorGrupo[grupo] || [];
     
-    logDebug(`  📦 Encontrados ${exerciciosGrupo.length} exercícios inicialmente`);
+    logger.debug(`  📦 Encontrados ${exerciciosGrupo.length} exercícios inicialmente`, 'treino.service');
 
     // Se não encontrou nada para este grupo, tentar buscar sem filtros
     if (exerciciosGrupo.length === 0) {
@@ -927,7 +927,7 @@ async function buscarExerciciosSimples(
       }
       
       exerciciosGrupo = exerciciosEmergencia;
-      logDebug(`  🆘 MODO EMERGÊNCIA: Usando ${exerciciosGrupo.length} exercícios sem filtros`);
+      logger.debug(`  🆘 MODO EMERGÊNCIA: Usando ${exerciciosGrupo.length} exercícios sem filtros`, 'treino.service');
     }
 
     // Se há equipamentos, tentar filtrar (mas não bloquear se não encontrar)
@@ -939,13 +939,13 @@ async function buscarExerciciosSimples(
                equipamentos.some(eq => ex.equipamentoNecessario.includes(eq));
       });
       
-      logDebug(`  [INFO] Após filtro de equipamentos: ${exerciciosComEquipamento.length} exercícios`);
+      logger.debug(`  [INFO] Após filtro de equipamentos: ${exerciciosComEquipamento.length} exercícios`, 'treino.service');
       
       // Se encontrou exercícios com equipamentos, usar esses
       if (exerciciosComEquipamento.length > 0) {
         exerciciosGrupo = exerciciosComEquipamento;
       } else {
-        logDebug(`  ⚠️ Nenhum exercício com equipamentos disponíveis, usando todos (ignorando filtro de equipamento)`);
+        logger.debug(`  ⚠️ Nenhum exercício com equipamentos disponíveis, usando todos (ignorando filtro de equipamento)`, 'treino.service');
       }
     }
 
@@ -961,19 +961,19 @@ async function buscarExerciciosSimples(
       // Se não, usar os originais (melhor ter treino do que não ter)
       if (exerciciosSemLesao.length > 0) {
         exerciciosGrupo = exerciciosSemLesao;
-        logDebug(`  ⚠️ Após filtro de lesões: ${exerciciosGrupo.length} exercícios (${antesFiltroLesoes - exerciciosGrupo.length} removidos)`);
+        logger.debug(`  ⚠️ Após filtro de lesões: ${exerciciosGrupo.length} exercícios (${antesFiltroLesoes - exerciciosGrupo.length} removidos)`, 'treino.service');
       } else {
-        logDebug(`  ⚠️ Todos os exercícios foram removidos pelo filtro de lesões, mantendo todos (aviso: pode haver exercícios que mencionam lesões)`);
+        logger.debug(`  ⚠️ Todos os exercícios foram removidos pelo filtro de lesões, mantendo todos (aviso: pode haver exercícios que mencionam lesões)`, 'treino.service');
       }
     }
 
     // Adicionar 1-2 exercícios por grupo
     if (exerciciosGrupo.length > 0) {
       const selecionados = exerciciosGrupo.slice(0, 2);
-      logDebug(`  [OK] Selecionados ${selecionados.length} exercícios: ${selecionados.map(e => e.nome).join(', ')}`);
+      logger.debug(`  [OK] Selecionados ${selecionados.length} exercícios: ${selecionados.map(e => e.nome).join(', ')}`, 'treino.service');
       exercicios.push(...selecionados);
     } else {
-      logDebug(`  [ERROR] Nenhum exercício disponível para ${grupo} após todos os filtros`);
+      logger.debug(`  [ERROR] Nenhum exercício disponível para ${grupo} após todos os filtros`, 'treino.service');
     }
   }
 
@@ -982,7 +982,7 @@ async function buscarExerciciosSimples(
     index === self.findIndex(e => e.id === ex.id)
   );
 
-  logDebug(`\n[OK] Total de exercícios únicos selecionados: ${unicos.length}`);
+  logger.debug(`\n[OK] Total de exercícios únicos selecionados: ${unicos.length}`, 'treino.service');
   return unicos;
 }
 

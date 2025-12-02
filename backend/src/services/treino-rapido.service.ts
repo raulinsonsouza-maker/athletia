@@ -233,7 +233,7 @@ export async function gerarTreinoRapido(
           repeticoes
         );
 
-        if (carga > 0) {
+        if (carga && carga > 0) {
           await prisma.exercicioTreino.update({
             where: { id: exercicioTreino.id },
             data: { carga }

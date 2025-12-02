@@ -29,31 +29,32 @@ class Logger {
     return new Date().toISOString();
   }
 
-  private formatMessage(level: LogLevel, module: string | undefined, message: string, data?: any): string {
+  private formatMessage(level: LogLevel, module: string | undefined, message: string): string {
     const timestamp = this.formatTimestamp();
     const moduleStr = module ? `[${module}]` : '';
-    const dataStr = data ? ` ${JSON.stringify(data)}` : '';
-    return `[${timestamp}] [${level.toUpperCase()}] ${moduleStr} ${message}${dataStr}`;
+    return `[${timestamp}] [${level.toUpperCase()}] ${moduleStr} ${message}`;
   }
 
   private log(level: LogLevel, module: string | undefined, message: string, data?: any): void {
-    const formattedMessage = this.formatMessage(level, module, data ? undefined : module, message);
+    const moduleForFormat = data ? module : (module || undefined);
+    const formattedMessage = this.formatMessage(level, moduleForFormat, message);
+    const dataStr = data ? ` ${JSON.stringify(data)}` : '';
     
     switch (level) {
       case 'error':
-        console.error(formattedMessage, data || '');
+        console.error(formattedMessage + dataStr);
         break;
       case 'warn':
-        console.warn(formattedMessage, data || '');
+        console.warn(formattedMessage + dataStr);
         break;
       case 'debug':
         if (this.isDevelopment) {
-          console.log(formattedMessage, data || '');
+          console.log(formattedMessage + dataStr);
         }
         break;
       case 'info':
       default:
-        console.log(formattedMessage, data || '');
+        console.log(formattedMessage + dataStr);
         break;
     }
   }

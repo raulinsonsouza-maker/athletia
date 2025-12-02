@@ -468,7 +468,7 @@ export async function criarTreinoDoTemplate(
           ordem: ordem++, // Ordem 1, 2, 3... (após o aeróbico)
           series: templateEx.series || 3,
           repeticoes: templateEx.repeticoes || '10-12',
-          carga: carga > 0 ? carga : null,
+          carga: carga && carga > 0 ? carga : null,
           rpe: templateEx.rpeSugerido || perfil?.rpePreferido || null,
           descanso: templateEx.descanso || 60,
           concluido: false,
