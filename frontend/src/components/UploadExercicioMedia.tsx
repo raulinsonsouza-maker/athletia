@@ -35,12 +35,12 @@ export default function UploadExercicioMedia({
     if (!file) return
 
     // Validar tipo de arquivo
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm']
-    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.mp4', '.webm']
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm']
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm']
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase()
 
     if (!validTypes.includes(file.type) && !validExtensions.includes(fileExt)) {
-      showToast('Formato não suportado. Use JPEG, PNG, WebP, MP4 ou WebM.', 'error')
+      showToast('Formato não suportado. Use JPEG, PNG, WebP, GIF, MP4 ou WebM.', 'error')
       return
     }
 
@@ -188,10 +188,10 @@ export default function UploadExercicioMedia({
 
         {/* Input de Arquivo */}
         <div className="mb-4">
-          <input
+            <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+            accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
             onChange={handleFileSelect}
             className="hidden"
             id="media-upload"
@@ -213,7 +213,7 @@ export default function UploadExercicioMedia({
                 {selectedFile ? selectedFile.name : 'Clique para selecionar ou arraste um arquivo'}
               </p>
               <p className="text-xs text-light-muted">
-                Formatos aceitos: JPEG, PNG, WebP, MP4, WebM. Tamanho máximo: 5MB
+                Formatos aceitos: JPEG, PNG, WebP, GIF, MP4, WebM. Tamanho máximo: 5MB
               </p>
             </div>
           </label>

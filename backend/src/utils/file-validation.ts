@@ -14,13 +14,14 @@ export const ACCEPTED_MEDIA_TYPES = {
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'image/webp': ['.webp'],
+  'image/gif': ['.gif'],
   'video/mp4': ['.mp4'],
   'video/webm': ['.webm'],
 } as const;
 
 export const ACCEPTED_EXTENSIONS = Object.values(ACCEPTED_MEDIA_TYPES).flat() as readonly string[];
 
-export type AcceptedExtension = '.jpg' | '.jpeg' | '.png' | '.webp' | '.mp4' | '.webm';
+export type AcceptedExtension = '.jpg' | '.jpeg' | '.png' | '.webp' | '.gif' | '.mp4' | '.webm';
 
 /**
  * Verifica se uma extensão é aceita
@@ -53,6 +54,18 @@ export function validateMediaFile(buffer: Buffer): string | null {
   if (buffer.slice(0, 4).toString('ascii') === 'RIFF' && 
       buffer.slice(8, 12).toString('ascii') === 'WEBP') {
     return 'image/webp';
+  }
+
+  // GIF: 47 49 46 38 (GIF8) - pode ser GIF87a ou GIF89a
+  if (buffer.length >= 6) {
+    const gifSignature = buffer.slice(0, 6).toString('ascii');
+    if (gifSignature === 'GIF87a' || gifSignature === 'GIF89a') {
+      return 'image/gif';
+    }
+    // Também verificar apenas os primeiros 4 bytes (GIF8)
+    if (buffer.slice(0, 4).toString('ascii') === 'GIF8') {
+      return 'image/gif';
+    }
   }
 
   // MP4: ftyp box (vários tipos possíveis)
@@ -94,6 +107,7 @@ export function getExtensionFromMimeType(mimeType: string): string {
     'image/jpeg': '.jpg',
     'image/png': '.png',
     'image/webp': '.webp',
+    'image/gif': '.gif',
     'video/mp4': '.mp4',
     'video/webm': '.webm',
   };
@@ -110,6 +124,7 @@ export function getContentTypeFromExtension(filename: string): string {
     '.jpeg': 'image/jpeg',
     '.png': 'image/png',
     '.webp': 'image/webp',
+    '.gif': 'image/gif',
     '.mp4': 'video/mp4',
     '.webm': 'video/webm',
   };
