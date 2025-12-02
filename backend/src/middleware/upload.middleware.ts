@@ -99,6 +99,14 @@ const fileFilterMedia = (req: any, file: Express.Multer.File, cb: multer.FileFil
   return cb(new Error(`Formato não suportado. Extensão: ${ext || 'nenhuma'}, MIME: ${mimeType || 'nenhum'}. Formatos aceitos: ${ACCEPTED_EXTENSIONS.join(', ')}`));
 };
 
+// Exportar middleware de upload para mídia de exercícios
+export const uploadExercicioMedia = multer({
+  storage: storageExercicioMedia,
+  fileFilter: fileFilterMedia,
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
 
 // ============================================================================
 // UPLOAD DE IMAGEM DE GRUPO MUSCULAR VISUAL

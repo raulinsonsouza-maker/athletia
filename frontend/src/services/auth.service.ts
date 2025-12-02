@@ -144,5 +144,19 @@ export const authService = {
   }
 }
 
+// Método para upload de mídia de exercício
+export const uploadExercicioMedia = async (exercicioId: string, file: File) => {
+  const formData = new FormData()
+  formData.append('media', file)
+  
+  const response = await api.post(`/admin/exercicios/${exercicioId}/upload-media`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+  
+  return response.data
+}
+
 export default api
 

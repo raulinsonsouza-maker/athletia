@@ -15,6 +15,7 @@ import {
   obterExercicio,
   criarExercicio,
   atualizarExercicio,
+  uploadExercicioMedia,
   listarImagensBanco,
   limparTodasUrlsMidias
 } from '../controllers/admin.controller';
@@ -28,7 +29,7 @@ import {
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadImagemGrupo } from '../middleware/upload.middleware';
+import { uploadImagemGrupo, uploadExercicioMedia as uploadExercicioMediaMiddleware } from '../middleware/upload.middleware';
 
 const router = Router();
 
@@ -149,13 +150,21 @@ const atualizarExercicioValidation = [
     .isArray()
     .withMessage('Alternativas deve ser um array'),
   body('cargaInicialSugerida')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Carga inicial sugerida deve ser um número positivo'),
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true
+      const num = parseFloat(value)
+      return !isNaN(num) && num >= 0
+    })
+    .withMessage('Carga inicial sugerida deve ser um número positivo ou null'),
   body('rpeSugerido')
-    .optional()
-    .isInt({ min: 1, max: 10 })
-    .withMessage('RPE sugerido deve ser um número entre 1 e 10'),
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true
+      const num = parseInt(value)
+      return !isNaN(num) && num >= 1 && num <= 10
+    })
+    .withMessage('RPE sugerido deve ser um número entre 1 e 10 ou null'),
   body('ativo')
     .optional()
     .isBoolean()
@@ -222,6 +231,7 @@ router.get('/exercicios', listarExercicios);
 router.post('/exercicios', criarExercicioValidation, validateRequest, criarExercicio);
 router.get('/exercicios/:id', obterExercicio);
 router.put('/exercicios/:id', atualizarExercicioValidation, validateRequest, atualizarExercicio);
+router.post('/exercicios/:id/upload-media', uploadExercicioMediaMiddleware.single('media'), uploadExercicioMedia);
 
 // Grupos musculares (visuais)
 router.get('/grupos-musculares', listarGruposAdmin);

@@ -3,6 +3,7 @@ import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import ExercicioImage from './ExercicioImage'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
+import UploadExercicioMedia from './UploadExercicioMedia'
 
 interface EditExercicioModalProps {
   exercicio: any | null
@@ -169,22 +170,45 @@ export default function EditExercicioModal({
 
     setSaving(true)
     try {
+      // Preparar dados para envio, removendo campos null/undefined
+      const dataToSend: any = {
+        nome: formData.nome,
+        grupoMuscularPrincipal: formData.grupoMuscularPrincipal,
+        nivelDificuldade: formData.nivelDificuldade,
+        descricao: formData.descricao || null,
+        execucaoTecnica: formData.execucaoTecnica || null,
+        sinergistas: formData.sinergistas || [],
+        errosComuns: formData.errosComuns || [],
+        equipamentoNecessario: formData.equipamentoNecessario || [],
+        alternativas: formData.alternativas || [],
+        ativo: formData.ativo
+      }
+      
+      // Adicionar campos numéricos apenas se não forem null
+      if (formData.cargaInicialSugerida !== null && formData.cargaInicialSugerida !== undefined) {
+        dataToSend.cargaInicialSugerida = formData.cargaInicialSugerida
+      }
+      if (formData.rpeSugerido !== null && formData.rpeSugerido !== undefined) {
+        dataToSend.rpeSugerido = formData.rpeSugerido
+      }
+      
       if (isCreating) {
-        const response = await api.post('/admin/exercicios', formData)
+        const response = await api.post('/admin/exercicios', dataToSend)
         showToast('Exercício criado com sucesso!', 'success')
         // Chamar onSave passando o exercício criado para atualizar no componente pai
         onSave(response.data.exercicio || response.data)
         // Mudar para aba de mídia para permitir upload
         setActiveTab('midia')
       } else {
-        await api.put(`/admin/exercicios/${exercicio.id}`, formData)
+        await api.put(`/admin/exercicios/${exercicio.id}`, dataToSend)
         showToast('Exercício atualizado com sucesso!', 'success')
         onSave()
         onClose()
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao salvar exercício'
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.response?.data?.details?.[0]?.msg || 'Erro ao salvar exercício'
       showToast(errorMessage, 'error')
+      console.error('Erro ao salvar exercício:', error.response?.data)
     } finally {
       setSaving(false)
     }
@@ -601,17 +625,40 @@ export default function EditExercicioModal({
             {/* Tab: Mídia */}
             {activeTab === 'midia' && (
               <div className="space-y-6">
-                <div className="bg-dark-lighter rounded-lg p-8 border border-grey/30 text-center">
-                  <svg className="w-16 h-16 text-light-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-light-muted mb-2">
-                    Upload de mídia temporariamente indisponível
-                  </p>
-                  <p className="text-xs text-light-muted">
-                    A funcionalidade de upload de mídia está sendo atualizada. Em breve estará disponível novamente.
-                  </p>
-                </div>
+                {exercicio?.id ? (
+                  <UploadExercicioMedia
+                    exercicioId={exercicio.id}
+                    exercicioNome={formData.nome || exercicio.nome || 'Exercício'}
+                    imagemUrl={exercicio.imagemUrl}
+                    onUploadSuccess={async () => {
+                      // Recarregar dados do exercício após upload
+                      try {
+                        const response = await api.get(`/admin/exercicios/${exercicio.id}`)
+                        const updated = response.data
+                        // Atualizar exercício no estado do componente pai se necessário
+                        if (onSave) {
+                          onSave()
+                        }
+                      } catch (err) {
+                        if (import.meta.env.DEV) {
+                          console.error('[EditExercicioModal] Erro ao recarregar exercício:', err)
+                        }
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="bg-dark-lighter rounded-lg p-8 border border-grey/30 text-center">
+                    <svg className="w-16 h-16 text-light-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-light-muted mb-2">
+                      Salve o exercício primeiro para adicionar uma demonstração
+                    </p>
+                    <p className="text-xs text-light-muted">
+                      Após criar o exercício, você poderá fazer upload de uma mídia demonstrativa
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

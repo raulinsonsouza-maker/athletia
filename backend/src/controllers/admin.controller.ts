@@ -923,6 +923,100 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Upload de mídia para exercício
+export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({
+        error: 'Arquivo não fornecido',
+        message: 'É necessário enviar um arquivo de mídia'
+      });
+    }
+
+    // Verificar se exercício existe
+    const exercicioExistente = await prisma.exercicio.findUnique({
+      where: { id },
+      select: { id: true, nome: true }
+    });
+
+    if (!exercicioExistente) {
+      // Limpar arquivo temporário se exercício não existe
+      if (file.path && require('fs').existsSync(file.path)) {
+        require('fs').unlinkSync(file.path);
+      }
+      return res.status(404).json({
+        error: 'Exercício não encontrado'
+      });
+    }
+
+    // Processar arquivo usando serviço existente
+    const { processMediaFile } = await import('../services/exercicio-media.service');
+    const { finalPath, url, ext } = await processMediaFile(file.path, id);
+
+    // Atualizar campo imagemUrl no banco
+    const exercicioAtualizado = await prisma.exercicio.update({
+      where: { id },
+      data: {
+        imagemUrl: url
+      },
+      select: {
+        id: true,
+        nome: true,
+        grupoMuscularPrincipal: true,
+        nivelDificuldade: true,
+        imagemUrl: true,
+        descricao: true,
+        execucaoTecnica: true,
+        errosComuns: true,
+        cargaInicialSugerida: true,
+        rpeSugerido: true,
+        equipamentoNecessario: true,
+        alternativas: true,
+        ativo: true,
+        updatedAt: true
+      }
+    });
+
+    res.json({
+      message: 'Mídia enviada com sucesso',
+      exercicio: exercicioAtualizado,
+      mediaUrl: url,
+      fileExtension: ext
+    });
+  } catch (error: any) {
+    // Limpar arquivo temporário em caso de erro
+    if (req.file?.path && require('fs').existsSync(req.file.path)) {
+      try {
+        require('fs').unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        // Ignorar erro ao deletar arquivo temporário
+      }
+    }
+
+    console.error('Erro ao fazer upload de mídia:', error);
+    
+    // Erro de validação de arquivo
+    if (error.message && (
+      error.message.includes('não é um formato') ||
+      error.message.includes('muito pequeno') ||
+      error.message.includes('vazio')
+    )) {
+      return res.status(400).json({
+        error: 'Arquivo inválido',
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Erro ao fazer upload de mídia',
+      message: error.message
+    });
+  }
+};
+
 // Limpar todas as URLs de mídia de todos os exercícios
 export const limparTodasUrlsMidias = async (req: AuthRequest, res: Response) => {
   try {
