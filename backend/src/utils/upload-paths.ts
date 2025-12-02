@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import { logger } from '../lib/logger';
 
 /**
  * Função helper para obter o caminho de upload de exercícios
@@ -25,15 +26,15 @@ export function getUploadExerciciosPath(): string {
   try {
     if (!fs.existsSync(basePath)) {
       fs.mkdirSync(basePath, { recursive: true });
-      console.log(`[UPLOAD-PATHS] Diretório criado: ${basePath}`);
+      logger.info(`Diretório criado: ${basePath}`, 'upload-paths');
     }
   } catch (error: any) {
-    console.error(`[UPLOAD-PATHS] ERRO ao criar diretório ${basePath}:`, error.message);
+    logger.error(`ERRO ao criar diretório ${basePath}: ${error.message}`, 'upload-paths');
     // Em caso de erro, tentar fallback
     const fallbackPath = path.join(process.cwd(), 'upload', 'exercicios');
     if (!fs.existsSync(fallbackPath)) {
       fs.mkdirSync(fallbackPath, { recursive: true });
-      console.warn(`[UPLOAD-PATHS] Usando fallback: ${fallbackPath}`);
+      logger.warn(`Usando fallback: ${fallbackPath}`, 'upload-paths');
       return fallbackPath;
     }
     return fallbackPath;

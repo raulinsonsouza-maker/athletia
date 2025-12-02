@@ -10,6 +10,12 @@ const prisma = new PrismaClient();
  * /api/uploads/exercicios/{uuid}/exercicio.{ext} -> /api/exercicios/{uuid}/media.{ext}
  */
 
+/**
+ * Migra URL antiga para o novo formato
+ * 
+ * Padrão antigo: /api/uploads/exercicios/{slug|uuid}/exercicio.{ext}
+ * Padrão novo: /api/exercicios/{uuid}/media.{ext}
+ */
 export function migrateMediaUrl(oldUrl: string, exercicioId: string): string | null {
   if (!oldUrl) return null;
 
@@ -29,7 +35,17 @@ export function migrateMediaUrl(oldUrl: string, exercicioId: string): string | n
     return `/api/exercicios/${exercicioId}/media.${ext}`;
   }
 
-  // Se não corresponde ao padrão, retornar null (não migrar)
+  // Outros padrões antigos possíveis
+  // /api/uploads/exercicios/{id}/media.{ext} -> /api/exercicios/{uuid}/media.{ext}
+  const oldPattern2 = /^\/api\/uploads\/exercicios\/([^\/]+)\/media\.([a-z0-9]+)$/i;
+  const match2 = oldUrl.match(oldPattern2);
+  
+  if (match2) {
+    const [, , ext] = match2;
+    return `/api/exercicios/${exercicioId}/media.${ext}`;
+  }
+
+  // Se não corresponde a nenhum padrão conhecido, retornar null (não migrar)
   return null;
 }
 
@@ -65,7 +81,7 @@ export async function migrateAllMediaUrls(): Promise<{ updated: number; errors: 
             data: { imagemUrl: newUrl }
           });
           updated++;
-          console.log(`[Migrate] ${exercicio.id}: ${exercicio.imagemUrl} -> ${newUrl}`);
+          console.log(`[Migrate] ✅ ${exercicio.id}: ${exercicio.imagemUrl} -> ${newUrl}`);
         } catch (error) {
           errors++;
           console.error(`[Migrate] Erro ao atualizar ${exercicio.id}:`, error);

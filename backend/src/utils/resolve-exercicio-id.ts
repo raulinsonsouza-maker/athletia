@@ -8,6 +8,10 @@ const prisma = new PrismaClient();
  * @param exercicioId - Pode ser UUID, slug (ex: "abdominal-bicicleta") ou nome (ex: "Abdominal Bicicleta")
  * @returns UUID do exercício ou null se não encontrado
  */
+/**
+ * Resolve exercicioId para UUID real
+ * PASSO 8: Proteção contra path traversal - valida entrada
+ */
 export async function resolveExercicioId(exercicioId: string): Promise<string | null> {
   if (!exercicioId || typeof exercicioId !== 'string') {
     return null;
@@ -15,6 +19,11 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
 
   const trimmedId = exercicioId.trim();
   if (!trimmedId) {
+    return null;
+  }
+
+  // Proteção contra path traversal
+  if (trimmedId.includes('..') || trimmedId.includes('/') || trimmedId.includes('\\')) {
     return null;
   }
 

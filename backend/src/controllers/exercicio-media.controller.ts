@@ -3,51 +3,55 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { PrismaClient } from '@prisma/client';
 import { getMediaFilePath, saveMediaFile, deleteMediaFile, getContentType } from '../services/exercicio-media.service';
 import { resolveExercicioId, resolveExercicio } from '../utils/resolve-exercicio-id';
+import { logger } from '../lib/logger';
 import fs from 'fs';
 import path from 'path';
 
 const prisma = new PrismaClient();
 
 /**
- * Controller de mídia de exercícios - Versão 2 (Nova implementação limpa)
+ * Controller de mídia de exercícios
+ * 
+ * Padrão oficial:
+ * - Caminho físico: /opt/athletia/backend/uploads/exercicios/{exercicioId}/media.{ext}
+ * - URL pública: /api/exercicios/{exercicioId}/media.{ext}
+ * - exercicioId: UUID do exercício (sempre)
  */
 
 /**
  * Servir arquivo de mídia de um exercício
+ * PASSO 8: Protegido contra path traversal, exercício inexistente, arquivo inexistente
  */
 export const serveMedia = async (req: AuthRequest, res: Response) => {
   try {
     const { exercicioId } = req.params;
     const extension = req.path.split('.').pop() || undefined;
 
-    console.log(`[MediaController] Requisição: exercicioId=${exercicioId}, ext=${extension}, path=${req.path}`);
+    logger.debug(`Requisição: exercicioId=${exercicioId}, ext=${extension}`, 'exercicio-media.controller');
 
     if (!extension) {
-      console.warn(`[MediaController] Extensão não especificada na requisição`);
+      logger.warn(`Extensão não especificada`, 'exercicio-media.controller');
       return res.status(400).json({
         error: 'Extensão do arquivo não especificada',
         exercicioId
       });
     }
 
-    // Resolver exercicioId (pode ser UUID, slug ou nome) para UUID real
-    console.log(`[MediaController] Resolvendo exercicioId: ${exercicioId}`);
+    // Proteção contra path traversal: resolveExercicioId valida entrada
     const realExercicioId = await resolveExercicioId(exercicioId);
     
     if (!realExercicioId) {
-      console.warn(`[MediaController] Exercício não encontrado: ${exercicioId}`);
+      logger.warn(`Exercício não encontrado: ${exercicioId}`, 'exercicio-media.controller');
       return res.status(404).json({
         error: 'Exercício não encontrado',
         exercicioId
       });
     }
 
-    console.log(`[MediaController] UUID real do exercício: ${realExercicioId} (original: ${exercicioId})`);
-
     const filePath = await getMediaFilePath(realExercicioId, `.${extension}`);
 
     if (!filePath) {
-      console.warn(`[MediaController] Mídia não encontrada: exercicioId=${exercicioId}, realId=${realExercicioId}, ext=${extension}`);
+      logger.warn(`Mídia não encontrada: exercicioId=${exercicioId}, realId=${realExercicioId}`, 'exercicio-media.controller');
       return res.status(404).json({
         error: 'Mídia não encontrada',
         exercicioId,
@@ -56,9 +60,9 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Verificar se arquivo existe
+    // Verificar se arquivo existe (segurança adicional)
     if (!fs.existsSync(filePath)) {
-      console.error(`[MediaController] Arquivo não existe no sistema de arquivos: ${filePath}`);
+      logger.error(`Arquivo não existe no sistema de arquivos: ${filePath}`, 'exercicio-media.controller');
       return res.status(404).json({
         error: 'Arquivo não encontrado',
         filePath
@@ -67,7 +71,7 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
 
     const stats = fs.statSync(filePath);
     if (!stats.isFile() || stats.size === 0) {
-      console.error(`[MediaController] Arquivo inválido: ${filePath} (size: ${stats.size}, isFile: ${stats.isFile()})`);
+      logger.error(`Arquivo inválido: ${filePath}`, 'exercicio-media.controller', { size: stats.size, isFile: stats.isFile() });
       return res.status(404).json({
         error: 'Arquivo inválido',
         filePath
@@ -78,7 +82,7 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
     const ext = path.extname(filePath);
     const contentType = getContentType(ext);
 
-    // Headers
+    // Headers de segurança e cache
     res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -90,7 +94,7 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
     // Enviar arquivo
     const fileStream = fs.createReadStream(filePath);
     fileStream.on('error', (streamError) => {
-      console.error(`[MediaController] Erro ao ler arquivo ${filePath}:`, streamError);
+      logger.error(`Erro ao ler arquivo: ${filePath}`, 'exercicio-media.controller', streamError);
       if (!res.headersSent) {
         res.status(500).json({
           error: 'Erro ao ler arquivo',
@@ -100,10 +104,9 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
     });
     fileStream.pipe(res);
 
-    console.log(`[MediaController] ✅ Arquivo servido com sucesso: ${filePath} (${stats.size} bytes)`);
+    logger.info(`Arquivo servido com sucesso`, 'exercicio-media.controller', { filePath, size: stats.size, exercicioId: realExercicioId });
   } catch (error: any) {
-    console.error('[MediaController] ❌ Erro ao servir mídia:', error);
-    console.error('[MediaController] Stack:', error.stack);
+    logger.error('Erro ao servir mídia', 'exercicio-media.controller', error);
     if (!res.headersSent) {
       res.status(500).json({
         error: 'Erro ao servir mídia',
@@ -115,6 +118,7 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
 
 /**
  * Upload de mídia para exercício
+ * PASSO 3: Cria diretório automaticamente se não existir
  */
 export const uploadMedia = async (req: AuthRequest, res: Response) => {
   try {
@@ -127,9 +131,9 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    console.log(`[MediaController] Upload: exercicioId=${exercicioId}, file=${file.originalname}`);
+    logger.info(`Upload iniciado`, 'exercicio-media.controller', { exercicioId, filename: file.originalname });
 
-    // Resolver exercicioId (pode ser UUID, slug ou nome) para objeto do exercício
+    // Resolver exercicioId para UUID real
     const exercicio = await resolveExercicio(exercicioId, { id: true, nome: true });
 
     if (!exercicio) {
@@ -137,6 +141,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
       if (fs.existsSync(file.path)) {
         fs.unlinkSync(file.path);
       }
+      logger.warn(`Exercício não encontrado para upload: ${exercicioId}`, 'exercicio-media.controller');
       return res.status(404).json({
         error: 'Exercício não encontrado',
         exercicioId
@@ -151,6 +156,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
       if (fs.existsSync(file.path)) {
         fs.unlinkSync(file.path);
       }
+      logger.error(`Extensão não identificada`, 'exercicio-media.controller', { originalname: file.originalname, mimetype: file.mimetype });
       return res.status(400).json({
         error: 'Extensão do arquivo não identificada',
         originalname: file.originalname,
@@ -158,18 +164,17 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
       });
     }
     
-    console.log(`[MediaController] Salvando arquivo: exercicioId=${exercicio.id}, ext=${ext}, tempPath=${file.path}`);
-    
     let mediaUrl: string;
     try {
+      // PASSO 3: saveMediaFile cria o diretório automaticamente
       mediaUrl = await saveMediaFile(exercicio.id, file.path, ext);
-      console.log(`[MediaController] Arquivo salvo com sucesso: ${mediaUrl}`);
+      logger.info(`Arquivo salvo com sucesso`, 'exercicio-media.controller', { mediaUrl, exercicioId: exercicio.id });
     } catch (saveError: any) {
       // Limpar arquivo temporário
       if (fs.existsSync(file.path)) {
         fs.unlinkSync(file.path);
       }
-      console.error('[MediaController] Erro ao salvar arquivo:', saveError);
+      logger.error(`Erro ao salvar arquivo`, 'exercicio-media.controller', saveError);
       return res.status(500).json({
         error: 'Erro ao salvar arquivo',
         message: saveError.message || 'Erro desconhecido ao salvar'
@@ -192,7 +197,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    console.log(`[MediaController] Upload concluído: ${mediaUrl}`);
+    logger.info(`Upload concluído`, 'exercicio-media.controller', { exercicioId: exercicio.id, mediaUrl });
 
     res.json({
       message: 'Mídia enviada com sucesso',
@@ -200,7 +205,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
       mediaUrl
     });
   } catch (error: any) {
-    console.error('[MediaController] Erro ao fazer upload:', error);
+    logger.error('Erro ao fazer upload', 'exercicio-media.controller', error);
     
     // Limpar arquivo temporário
     if (req.file?.path && fs.existsSync(req.file.path)) {
@@ -225,12 +230,13 @@ export const removeMedia = async (req: AuthRequest, res: Response) => {
   try {
     const { exercicioId } = req.params;
 
-    console.log(`[MediaController] Remover: exercicioId=${exercicioId}`);
+    logger.info(`Remoção de mídia iniciada`, 'exercicio-media.controller', { exercicioId });
 
-    // Resolver exercicioId (pode ser UUID, slug ou nome) para objeto do exercício
+    // Resolver exercicioId para UUID real
     const exercicio = await resolveExercicio(exercicioId, { id: true, nome: true });
 
     if (!exercicio) {
+      logger.warn(`Exercício não encontrado para remoção: ${exercicioId}`, 'exercicio-media.controller');
       return res.status(404).json({
         error: 'Exercício não encontrado',
         exercicioId
@@ -253,18 +259,17 @@ export const removeMedia = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    console.log(`[MediaController] Mídia removida: exercicioId=${exercicioId}`);
+    logger.info(`Mídia removida com sucesso`, 'exercicio-media.controller', { exercicioId: exercicio.id });
 
     res.json({
       message: 'Mídia removida com sucesso',
       exercicio: exercicioAtualizado
     });
   } catch (error: any) {
-    console.error('[MediaController] Erro ao remover mídia:', error);
+    logger.error('Erro ao remover mídia', 'exercicio-media.controller', error);
     res.status(500).json({
       error: 'Erro ao remover mídia',
       message: error.message
     });
   }
 };
-
