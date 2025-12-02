@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { PrismaClient } from '@prisma/client';
 import { getMediaFilePath, saveMediaFile, deleteMediaFile, getContentType } from '../services/exercicio-media-v2.service';
+import { resolveExercicioId, resolveExercicio } from '../utils/resolve-exercicio-id';
 import fs from 'fs';
 import path from 'path';
 
@@ -28,42 +29,14 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Verificar se exercicioId é UUID ou slug/nome
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
+    // Resolver exercicioId (pode ser UUID, slug ou nome) para UUID real
+    const realExercicioId = await resolveExercicioId(exercicioId);
     
-    let realExercicioId = exercicioId;
-    
-    if (!isUuid) {
-      // Buscar exercício por nome/slug para obter UUID real
-      let exercicio = await prisma.exercicio.findFirst({
-        where: {
-          nome: { equals: exercicioId, mode: 'insensitive' as const }
-        },
-        select: { id: true }
+    if (!realExercicioId) {
+      return res.status(404).json({
+        error: 'Exercício não encontrado',
+        exercicioId
       });
-      
-      if (!exercicio && exercicioId.includes('-')) {
-        const nomeAproximado = exercicioId
-          .split('-')
-          .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
-          .join(' ');
-        
-        exercicio = await prisma.exercicio.findFirst({
-          where: {
-            nome: { equals: nomeAproximado, mode: 'insensitive' as const }
-          },
-          select: { id: true }
-        });
-      }
-      
-      if (!exercicio) {
-        return res.status(404).json({
-          error: 'Exercício não encontrado',
-          exercicioId
-        });
-      }
-      
-      realExercicioId = exercicio.id;
     }
 
     const filePath = await getMediaFilePath(realExercicioId, extension);
@@ -136,52 +109,8 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
 
     console.log(`[MediaController] Upload: exercicioId=${exercicioId}, file=${file.originalname}`);
 
-    // Verificar se exercício existe (pode ser UUID ou slug/nome)
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
-    
-    let exercicio = null;
-    
-    if (isUuid) {
-      // Buscar por UUID
-      exercicio = await prisma.exercicio.findUnique({
-        where: { id: exercicioId },
-        select: { id: true, nome: true }
-      });
-    } else {
-      // Buscar por nome (pode ser slug)
-      // Primeiro tentar busca exata
-      exercicio = await prisma.exercicio.findFirst({
-        where: {
-          nome: { equals: exercicioId, mode: 'insensitive' as const }
-        },
-        select: { id: true, nome: true }
-      });
-      
-      // Se não encontrou e tem hífen, tentar converter slug para nome
-      if (!exercicio && exercicioId.includes('-')) {
-        const nomeAproximado = exercicioId
-          .split('-')
-          .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
-          .join(' ');
-        
-        exercicio = await prisma.exercicio.findFirst({
-          where: {
-            nome: { equals: nomeAproximado, mode: 'insensitive' as const }
-          },
-          select: { id: true, nome: true }
-        });
-        
-        // Se ainda não encontrou, tentar busca parcial
-        if (!exercicio) {
-          exercicio = await prisma.exercicio.findFirst({
-            where: {
-              nome: { contains: exercicioId.replace(/-/g, ' '), mode: 'insensitive' as const }
-            },
-            select: { id: true, nome: true }
-          });
-        }
-      }
-    }
+    // Resolver exercicioId (pode ser UUID, slug ou nome) para objeto do exercício
+    const exercicio = await resolveExercicio(exercicioId, { id: true, nome: true });
 
     if (!exercicio) {
       // Limpar arquivo temporário
@@ -196,7 +125,36 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
 
     // Salvar arquivo usando o UUID real do exercício
     const ext = path.extname(file.originalname) || path.extname(file.path);
-    const mediaUrl = await saveMediaFile(exercicio.id, file.path, ext);
+    
+    if (!ext) {
+      // Limpar arquivo temporário
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+      return res.status(400).json({
+        error: 'Extensão do arquivo não identificada',
+        originalname: file.originalname,
+        mimetype: file.mimetype
+      });
+    }
+    
+    console.log(`[MediaController] Salvando arquivo: exercicioId=${exercicio.id}, ext=${ext}, tempPath=${file.path}`);
+    
+    let mediaUrl: string;
+    try {
+      mediaUrl = await saveMediaFile(exercicio.id, file.path, ext);
+      console.log(`[MediaController] Arquivo salvo com sucesso: ${mediaUrl}`);
+    } catch (saveError: any) {
+      // Limpar arquivo temporário
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+      console.error('[MediaController] Erro ao salvar arquivo:', saveError);
+      return res.status(500).json({
+        error: 'Erro ao salvar arquivo',
+        message: saveError.message || 'Erro desconhecido ao salvar'
+      });
+    }
 
     // Atualizar banco usando o UUID real
     const exercicioAtualizado = await prisma.exercicio.update({
@@ -249,41 +207,8 @@ export const removeMedia = async (req: AuthRequest, res: Response) => {
 
     console.log(`[MediaController] Remover: exercicioId=${exercicioId}`);
 
-    // Verificar se exercício existe (pode ser UUID ou slug/nome)
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
-    
-    let exercicio = null;
-    
-    if (isUuid) {
-      // Buscar por UUID
-      exercicio = await prisma.exercicio.findUnique({
-        where: { id: exercicioId },
-        select: { id: true, nome: true }
-      });
-    } else {
-      // Buscar por nome (pode ser slug)
-      exercicio = await prisma.exercicio.findFirst({
-        where: {
-          nome: { equals: exercicioId, mode: 'insensitive' as const }
-        },
-        select: { id: true, nome: true }
-      });
-      
-      // Se não encontrou e tem hífen, tentar converter slug para nome
-      if (!exercicio && exercicioId.includes('-')) {
-        const nomeAproximado = exercicioId
-          .split('-')
-          .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
-          .join(' ');
-        
-        exercicio = await prisma.exercicio.findFirst({
-          where: {
-            nome: { equals: nomeAproximado, mode: 'insensitive' as const }
-          },
-          select: { id: true, nome: true }
-        });
-      }
-    }
+    // Resolver exercicioId (pode ser UUID, slug ou nome) para objeto do exercício
+    const exercicio = await resolveExercicio(exercicioId, { id: true, nome: true });
 
     if (!exercicio) {
       return res.status(404).json({
