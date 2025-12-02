@@ -180,7 +180,17 @@ export async function resolveExercicioMedia(
  * Constrói URL de mídia para exercício
  */
 export function buildMediaUrl(exercicioId: string, fileExt: string): string {
-  return `/api/uploads/exercicios/${exercicioId}/exercicio${fileExt}`;
+  // Garantir que estamos usando o UUID real (não slug)
+  // Se receber um slug, isso será tratado em resolveExercicioMedia
+  const url = `/api/uploads/exercicios/${exercicioId}/exercicio${fileExt}`;
+  
+  // Log para debug (apenas em desenvolvimento)
+  if (process.env.NODE_ENV !== 'production') {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
+    console.log(`[BuildMediaUrl] exercicioId: ${exercicioId}, isUuid: ${isUuid}, URL: ${url}`);
+  }
+  
+  return url;
 }
 
 /**

@@ -710,32 +710,110 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    const exercicio = await prisma.exercicio.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        nome: true,
-        grupoMuscularPrincipal: true,
-        sinergistas: true,
-        descricao: true,
-        execucaoTecnica: true,
-        errosComuns: true,
-        imagemUrl: true,
-        cargaInicialSugerida: true,
-        rpeSugerido: true,
-        equipamentoNecessario: true,
-        nivelDificuldade: true,
-        alternativas: true,
-        ativo: true,
-        createdAt: true,
-        updatedAt: true,
-        gruposMusculares: {
-          include: {
-            grupo: true
+    // Verificar se é UUID
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    
+    let exercicio = null;
+    
+    if (isUuid) {
+      // Buscar por UUID
+      exercicio = await prisma.exercicio.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          nome: true,
+          grupoMuscularPrincipal: true,
+          sinergistas: true,
+          descricao: true,
+          execucaoTecnica: true,
+          errosComuns: true,
+          imagemUrl: true,
+          cargaInicialSugerida: true,
+          rpeSugerido: true,
+          equipamentoNecessario: true,
+          nivelDificuldade: true,
+          alternativas: true,
+          ativo: true,
+          createdAt: true,
+          updatedAt: true,
+          gruposMusculares: {
+            include: {
+              grupo: true
+            }
           }
         }
+      });
+    }
+    
+    // Se não encontrou e não é UUID, tentar buscar por nome
+    if (!exercicio && !isUuid) {
+      // Primeiro tentar busca exata pelo nome
+      exercicio = await prisma.exercicio.findFirst({
+        where: {
+          nome: { equals: id, mode: 'insensitive' as const }
+        },
+        select: {
+          id: true,
+          nome: true,
+          grupoMuscularPrincipal: true,
+          sinergistas: true,
+          descricao: true,
+          execucaoTecnica: true,
+          errosComuns: true,
+          imagemUrl: true,
+          cargaInicialSugerida: true,
+          rpeSugerido: true,
+          equipamentoNecessario: true,
+          nivelDificuldade: true,
+          alternativas: true,
+          ativo: true,
+          createdAt: true,
+          updatedAt: true,
+          gruposMusculares: {
+            include: {
+              grupo: true
+            }
+          }
+        }
+      });
+      
+      // Se ainda não encontrou e tem hífen, tentar converter slug para nome
+      if (!exercicio && id.includes('-')) {
+        const nomeAproximado = id
+          .split('-')
+          .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+          .join(' ');
+        
+        exercicio = await prisma.exercicio.findFirst({
+          where: {
+            nome: { equals: nomeAproximado, mode: 'insensitive' as const }
+          },
+          select: {
+            id: true,
+            nome: true,
+            grupoMuscularPrincipal: true,
+            sinergistas: true,
+            descricao: true,
+            execucaoTecnica: true,
+            errosComuns: true,
+            imagemUrl: true,
+            cargaInicialSugerida: true,
+            rpeSugerido: true,
+            equipamentoNecessario: true,
+            nivelDificuldade: true,
+            alternativas: true,
+            ativo: true,
+            createdAt: true,
+            updatedAt: true,
+            gruposMusculares: {
+              include: {
+                grupo: true
+              }
+            }
+          }
+        });
       }
-    });
+    }
 
     if (!exercicio) {
       return res.status(404).json({
@@ -945,12 +1023,39 @@ export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
 
     // Se não encontrou pelo ID, tentar buscar pelo nome (caso seja slug)
     if (!exercicioExistente) {
+      // Primeiro tentar busca exata pelo nome
       exercicioExistente = await prisma.exercicio.findFirst({
         where: {
           nome: { equals: id, mode: 'insensitive' as const }
         },
         select: { id: true, nome: true }
       });
+      
+      // Se ainda não encontrou, tentar converter slug para nome
+      if (!exercicioExistente && id.includes('-')) {
+        // Converter slug para nome aproximado (ex: "abdominal-bicicleta" -> "Abdominal Bicicleta")
+        const nomeAproximado = id
+          .split('-')
+          .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+          .join(' ');
+        
+        exercicioExistente = await prisma.exercicio.findFirst({
+          where: {
+            nome: { equals: nomeAproximado, mode: 'insensitive' as const }
+          },
+          select: { id: true, nome: true }
+        });
+        
+        // Se ainda não encontrou, tentar busca parcial
+        if (!exercicioExistente) {
+          exercicioExistente = await prisma.exercicio.findFirst({
+            where: {
+              nome: { contains: id.replace(/-/g, ' '), mode: 'insensitive' as const }
+            },
+            select: { id: true, nome: true }
+          });
+        }
+      }
     }
 
     if (!exercicioExistente) {
@@ -966,11 +1071,21 @@ export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
     // Usar sempre o UUID real do exercício para salvar o arquivo
     const exercicioIdReal = exercicioExistente.id;
 
+    // Log para debug (apenas em desenvolvimento)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[UploadMedia] ID recebido: ${id}, UUID real: ${exercicioIdReal}`);
+    }
+
     // Processar arquivo usando serviço existente (sempre com UUID real)
     const { processMediaFile } = await import('../services/exercicio-media.service');
     const { finalPath, url, ext } = await processMediaFile(file.path, exercicioIdReal);
 
-    // Atualizar campo imagemUrl no banco usando o ID original (pode ser slug ou UUID)
+    // Log da URL gerada (apenas em desenvolvimento)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[UploadMedia] URL gerada: ${url}`);
+    }
+
+    // Atualizar campo imagemUrl no banco usando o UUID real
     const exercicioAtualizado = await prisma.exercicio.update({
       where: { id: exercicioIdReal },
       data: {

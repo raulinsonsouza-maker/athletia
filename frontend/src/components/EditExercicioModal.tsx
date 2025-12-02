@@ -66,7 +66,8 @@ export default function EditExercicioModal({
         alternativas: Array.isArray(exercicio.alternativas) ? exercicio.alternativas : [],
         cargaInicialSugerida: exercicio.cargaInicialSugerida || null,
         rpeSugerido: exercicio.rpeSugerido || null,
-        ativo: exercicio.ativo !== undefined ? exercicio.ativo : true
+        ativo: exercicio.ativo !== undefined ? exercicio.ativo : true,
+        imagemUrl: exercicio.imagemUrl || null
       })
       setArrayInputs({
         sinergistas: Array.isArray(exercicio.sinergistas) ? exercicio.sinergistas.join('\n') : '',
@@ -629,14 +630,25 @@ export default function EditExercicioModal({
                   <UploadExercicioMedia
                     exercicioId={exercicio.id}
                     exercicioNome={formData.nome || exercicio.nome || 'Exercício'}
-                    imagemUrl={exercicio.imagemUrl}
+                    imagemUrl={exercicio.imagemUrl || formData.imagemUrl}
                     onUploadSuccess={async () => {
                       // Recarregar dados do exercício após upload
                       try {
-                        await api.get(`/admin/exercicios/${exercicio.id}`)
+                        // Usar o ID do exercício atual (pode ser slug ou UUID)
+                        const response = await api.get(`/admin/exercicios/${exercicio.id}`)
+                        const exercicioAtualizado = response.data
+                        
+                        // Atualizar o estado local do exercício com os dados atualizados
+                        if (exercicioAtualizado) {
+                          setFormData((prev: any) => ({
+                            ...prev,
+                            imagemUrl: exercicioAtualizado.imagemUrl
+                          }))
+                        }
+                        
                         // Atualizar exercício no estado do componente pai se necessário
                         if (onSave) {
-                          onSave()
+                          onSave(exercicioAtualizado)
                         }
                       } catch (err) {
                         if (import.meta.env.DEV) {

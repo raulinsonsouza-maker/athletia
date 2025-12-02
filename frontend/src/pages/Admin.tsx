@@ -1872,11 +1872,22 @@ export default function Admin() {
             // Se estiver editando, recarregar dados do exercício
             try {
               const response = await api.get(`/admin/exercicios/${selectedExercicioId}`)
-              setExercicioEdit(response.data)
+              const exercicioAtualizado = response.data
+              setExercicioEdit(exercicioAtualizado)
+              // Se o ID mudou (slug para UUID), atualizar selectedExercicioId
+              if (exercicioAtualizado?.id && exercicioAtualizado.id !== selectedExercicioId) {
+                setSelectedExercicioId(exercicioAtualizado.id)
+              }
             } catch (err) {
               if (import.meta.env.DEV) {
                 console.error('[Admin] Erro ao recarregar exercício:', err)
               }
+            }
+          } else if (createdExercicio && !isCreatingExercicio) {
+            // Se recebeu exercício atualizado (ex: após upload de mídia)
+            setExercicioEdit(createdExercicio)
+            if (createdExercicio.id && createdExercicio.id !== selectedExercicioId) {
+              setSelectedExercicioId(createdExercicio.id)
             }
           }
         }}
