@@ -30,8 +30,10 @@ const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // Configurar trust proxy para funcionar atrás de nginx/proxy reverso
+// Confiar apenas em 1 proxy (nginx) para segurança do rate limiting
 // Isso permite que express-rate-limit funcione corretamente com X-Forwarded-For
-app.set('trust proxy', true);
+// sem permitir bypass trivial do rate limiting
+app.set('trust proxy', 1);
 
 // Criar pasta de uploads se não existir
 const uploadDir = getUploadExerciciosPath();
@@ -101,9 +103,14 @@ app.options('/api/uploads/exercicios/:id/exercicio.*', (req, res) => {
 
 // Rota para servir mídias de exercícios (imagens, vídeos)
 // Aceita: /api/uploads/exercicios/:id/exercicio.jpg, exercicio.mp4, etc.
+// IMPORTANTE: O :id pode ser UUID ou slug - resolveExercicioMedia converte automaticamente
 app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
   const { id, ext } = req.params;
   const { resolveExercicioMedia } = await import('./services/exercicio-media.service');
+  
+  // Log para debug (sempre em produção também para identificar problemas)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
+  console.log(`[Media Route] Requisição: id=${id.trim()}, ext=${ext || 'none'}, isUuid=${isUuid}`);
   
   try {
     const resolved = await resolveExercicioMedia(id.trim(), ext);
@@ -113,11 +120,10 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
 
       // Verificar se arquivo ainda existe (pode ter sido deletado após resolução)
       if (!fs.existsSync(filePath)) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`[Media Route] Arquivo não encontrado após resolução: ${filePath}`);
-        }
+        console.warn(`[Media Route] Arquivo não encontrado após resolução: ${filePath}`);
         // Continuar para retornar placeholder
       } else {
+        console.log(`[Media Route] Servindo arquivo: ${filePath}`);
         // Configurar headers para arquivos reais
         res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -129,9 +135,7 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
         const fileStream = fs.createReadStream(filePath);
         
         fileStream.on('error', (err) => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error(`[Media Route] Erro ao ler arquivo ${filePath}:`, err);
-          }
+          console.error(`[Media Route] Erro ao ler arquivo ${filePath}:`, err);
           if (!res.headersSent) {
             res.status(500).send('Internal Server Error');
           }
@@ -140,9 +144,7 @@ app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
         return fileStream.pipe(res);
       }
     } else {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`[Media Route] Mídia não encontrada para exercício: ${id}${ext ? ` (ext: ${ext})` : ''}`);
-      }
+      console.warn(`[Media Route] Mídia não encontrada para exercício: ${id}${ext ? ` (ext: ${ext})` : ''}`);
     }
   } catch (error: any) {
     console.error(`[Media Route] Erro ao resolver mídia para ${id}:`, error);

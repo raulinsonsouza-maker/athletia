@@ -39,7 +39,7 @@ export async function resolveExercicioMedia(
       
       // Se não encontrou pelo ID, tentar pelo nome (pode ser slug convertido)
       if (!exercicio) {
-        // Primeiro tentar busca exata pelo nome
+        // Primeiro tentar busca exata pelo nome (slug pode ser igual ao nome)
         exercicio = await prisma.exercicio.findFirst({
           where: {
             nome: { equals: exercicioId, mode: 'insensitive' as const }
@@ -47,8 +47,8 @@ export async function resolveExercicioMedia(
           select: { id: true }
         });
         
-        // Se ainda não encontrou, tentar busca parcial (slug pode ser parte do nome)
-        if (!exercicio) {
+        // Se ainda não encontrou, tentar converter slug para nome
+        if (!exercicio && exercicioId.includes('-')) {
           // Converter slug para nome aproximado (ex: "abdominal-bicicleta" -> "Abdominal Bicicleta")
           const nomeAproximado = exercicioId
             .split('-')
@@ -71,19 +71,32 @@ export async function resolveExercicioMedia(
               select: { id: true }
             });
           }
+          
+          // Última tentativa: buscar por palavras individuais do slug
+          if (!exercicio) {
+            const palavras = exercicioId.split('-').filter(p => p.length > 0);
+            if (palavras.length > 0) {
+              exercicio = await prisma.exercicio.findFirst({
+                where: {
+                  AND: palavras.map(palavra => ({
+                    nome: { contains: palavra, mode: 'insensitive' as const }
+                  }))
+                },
+                select: { id: true }
+              });
+            }
+          }
         }
       }
       
       if (!exercicio) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.warn(`[ExercicioMedia] Exercício não encontrado no banco: ${exercicioId}`);
-        }
+        console.warn(`[ExercicioMedia] Exercício não encontrado no banco: ${exercicioId}`);
         return null;
       }
       
       realExercicioId = exercicio.id;
       
-      if (process.env.NODE_ENV !== 'production' && realExercicioId !== exercicioId) {
+      if (realExercicioId !== exercicioId) {
         console.log(`[ExercicioMedia] ID convertido: ${exercicioId} -> ${realExercicioId}`);
       }
     } catch (error) {
@@ -97,9 +110,7 @@ export async function resolveExercicioMedia(
   const uploadBasePath = getUploadExerciciosPath();
   const exercicioDir = path.join(uploadBasePath, realExercicioId);
   
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[ExercicioMedia] Procurando arquivo em: ${exercicioDir}`);
-  }
+  console.log(`[ExercicioMedia] Procurando arquivo em: ${exercicioDir} (exercicioId original: ${exercicioId}, UUID real: ${realExercicioId})`);
 
   // Se extensão foi especificada, tentar apenas ela primeiro
   const normalizedExt = requestedExt ? (requestedExt.startsWith('.') ? requestedExt : `.${requestedExt}`) : null;
@@ -109,9 +120,7 @@ export async function resolveExercicioMedia(
 
   // Verificar se diretório existe
   if (!fs.existsSync(exercicioDir)) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn(`[ExercicioMedia] Diretório não existe: ${exercicioDir}`);
-    }
+    console.warn(`[ExercicioMedia] Diretório não existe: ${exercicioDir}`);
     return null;
   }
 
@@ -169,9 +178,7 @@ export async function resolveExercicioMedia(
     }
   }
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(`[ExercicioMedia] Nenhum arquivo encontrado para exercício ${exercicioId} (ID real: ${realExercicioId})`);
-  }
+  console.warn(`[ExercicioMedia] Nenhum arquivo encontrado para exercício ${exercicioId} (ID real: ${realExercicioId})`);
 
   return null;
 }
@@ -180,14 +187,16 @@ export async function resolveExercicioMedia(
  * Constrói URL de mídia para exercício
  */
 export function buildMediaUrl(exercicioId: string, fileExt: string): string {
-  // Garantir que estamos usando o UUID real (não slug)
-  // Se receber um slug, isso será tratado em resolveExercicioMedia
+  // IMPORTANTE: Esta função deve SEMPRE receber UUID real, nunca slug
+  // O exercicioId passado aqui já deve ser o UUID real do exercício
   const url = `/api/uploads/exercicios/${exercicioId}/exercicio${fileExt}`;
   
-  // Log para debug (apenas em desenvolvimento)
-  if (process.env.NODE_ENV !== 'production') {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
-    console.log(`[BuildMediaUrl] exercicioId: ${exercicioId}, isUuid: ${isUuid}, URL: ${url}`);
+  // Log para debug (sempre, para identificar problemas)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId);
+  if (!isUuid) {
+    console.warn(`[BuildMediaUrl] AVISO: exercicioId não é UUID! exercicioId: ${exercicioId}, URL: ${url}`);
+  } else {
+    console.log(`[BuildMediaUrl] URL construída: ${url} (UUID válido)`);
   }
   
   return url;

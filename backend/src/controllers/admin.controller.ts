@@ -1091,19 +1091,15 @@ export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
     // Usar sempre o UUID real do exercício para salvar o arquivo
     const exercicioIdReal = exercicioExistente.id;
 
-    // Log para debug (apenas em desenvolvimento)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[UploadMedia] ID recebido: ${id}, UUID real: ${exercicioIdReal}`);
-    }
+    // Log para debug (sempre para identificar problemas)
+    console.log(`[UploadMedia] ID recebido: ${id}, UUID real: ${exercicioIdReal}`);
 
     // Processar arquivo usando serviço existente (sempre com UUID real)
     const { processMediaFile } = await import('../services/exercicio-media.service');
     const { finalPath, url, ext } = await processMediaFile(file.path, exercicioIdReal);
 
-    // Log da URL gerada (apenas em desenvolvimento)
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`[UploadMedia] URL gerada: ${url}`);
-    }
+    // Log da URL gerada (sempre para identificar problemas)
+    console.log(`[UploadMedia] URL gerada para o banco: ${url}`);
 
     // Atualizar campo imagemUrl no banco usando o UUID real
     const exercicioAtualizado = await prisma.exercicio.update({
