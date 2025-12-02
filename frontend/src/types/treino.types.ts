@@ -22,7 +22,6 @@ export interface ExercicioTreino {
     descricao?: string | null
     execucaoTecnica?: string | null
     errosComuns?: string[]
-    gifUrl?: string | null
     imagemUrl?: string | null
     equipamentoNecessario?: string[]
   }

@@ -7,7 +7,6 @@ interface Exercicio {
   descricao: string | null
   execucaoTecnica: string | null
   errosComuns: string[]
-  gifUrl: string | null
   imagemUrl: string | null
   equipamentoNecessario: string[]
 }
@@ -26,7 +25,6 @@ export default function ModalInstrucoes({
   const fallbackUrl = getImagemPadraoBanco('treino')
   
   const { url: mediaUrl, isVideo, handleError } = useExercicioMedia({
-    gifUrl: exercicio.gifUrl,
     imagemUrl: exercicio.imagemUrl,
     fallbackChain: [fallbackUrl]
   })

@@ -8,7 +8,6 @@ interface Exercicio {
   nivelDificuldade: string
   descricao?: string
   ativo: boolean
-  gifUrl?: string | null
   imagemUrl?: string | null
 }
 
@@ -50,7 +49,7 @@ export default function ExerciciosList({
     const total = exercicios.length
     const ativos = exercicios.filter(e => e.ativo).length
     const inativos = total - ativos
-    const comMidia = exercicios.filter(e => e.gifUrl || e.imagemUrl).length
+    const comMidia = exercicios.filter(e => e.imagemUrl).length
     return { total, ativos, inativos, comMidia }
   }, [exercicios])
 
@@ -276,7 +275,7 @@ export default function ExerciciosList({
                       </svg>
                       Editar
                     </button>
-                    {(exercicio.gifUrl || exercicio.imagemUrl) && (
+                    {exercicio.imagemUrl && (
                       <button
                         onClick={() => onPreview(exercicio)}
                         className="btn-secondary btn-sm flex items-center justify-center gap-2 px-3"
@@ -329,7 +328,7 @@ export default function ExerciciosList({
                     )}
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
-                    {(exercicio.gifUrl || exercicio.imagemUrl) && (
+                    {exercicio.imagemUrl && (
                       <button
                         onClick={() => onPreview(exercicio)}
                         className="btn-secondary btn-sm p-2"
@@ -406,7 +405,7 @@ export default function ExerciciosList({
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
-                          {(exercicio.gifUrl || exercicio.imagemUrl) && (
+                          {exercicio.imagemUrl && (
                             <button
                               onClick={() => onPreview(exercicio)}
                               className="btn-secondary text-xs p-1.5"

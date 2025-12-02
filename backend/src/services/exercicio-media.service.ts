@@ -204,7 +204,7 @@ export async function processMediaFile(
     if (fs.existsSync(tempFilePath)) {
       fs.unlinkSync(tempFilePath);
     }
-    throw new Error('Arquivo não é um formato de mídia válido. Formatos aceitos: GIF, JPEG, PNG, WebP, MP4, WebM.');
+    throw new Error('Arquivo não é um formato de mídia válido. Formatos aceitos: JPEG, PNG, WebP, MP4, WebM.');
   }
 
   // Obter extensão do MIME type detectado

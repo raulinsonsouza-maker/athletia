@@ -99,47 +99,6 @@ const fileFilterMedia = (req: any, file: Express.Multer.File, cb: multer.FileFil
   return cb(new Error(`Formato não suportado. Extensão: ${ext || 'nenhuma'}, MIME: ${mimeType || 'nenhum'}. Formatos aceitos: ${ACCEPTED_EXTENSIONS.join(', ')}`));
 };
 
-export const uploadGif = multer({
-  storage: storageExercicioMedia,
-  fileFilter: fileFilterMedia,
-  limits: {
-    fileSize: MAX_FILE_SIZE
-  }
-});
-
-// Configurar multer para upload múltiplo (bulk)
-// CORREÇÃO PROBLEMA 6: Sanitizar filename para prevenir path traversal
-// CORREÇÃO PROBLEMA 7: Usar caminho absoluto baseado em getUploadExerciciosPath
-export const uploadGifsBulk = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      try {
-        // CORREÇÃO PROBLEMA 8: Usar estrutura padronizada
-        const basePath = getUploadExerciciosPath();
-        const tempPath = path.join(path.dirname(basePath), 'temp');
-        if (!fs.existsSync(tempPath)) {
-          fs.mkdirSync(tempPath, { recursive: true });
-        }
-        cb(null, tempPath);
-      } catch (error: any) {
-        cb(new Error(`Erro ao criar diretório temporário: ${error.message}`), undefined as any);
-      }
-    },
-    filename: (req, file, cb) => {
-      // CORREÇÃO PROBLEMA 6: Sanitizar filename para prevenir path traversal
-      const sanitized = sanitizeFilename(file.originalname);
-      const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).substring(2, 9);
-      const ext = path.extname(sanitized).toLowerCase() || path.extname(file.originalname).toLowerCase() || '.tmp';
-      cb(null, `bulk.${timestamp}.${randomSuffix}${ext}`);
-    }
-  }),
-  fileFilter: fileFilterMedia,
-  limits: {
-    fileSize: MAX_FILE_SIZE,
-    files: 50 // Máximo 50 arquivos
-  }
-});
 
 // ============================================================================
 // UPLOAD DE IMAGEM DE GRUPO MUSCULAR VISUAL

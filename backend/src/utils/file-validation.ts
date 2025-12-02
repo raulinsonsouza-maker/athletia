@@ -11,7 +11,6 @@ export const MAX_BULK_TOTAL_SIZE = 250 * 1024 * 1024; // 250MB total
  * Formatos de mídia aceitos para exercícios
  */
 export const ACCEPTED_MEDIA_TYPES = {
-  'image/gif': ['.gif'],
   'image/jpeg': ['.jpg', '.jpeg'],
   'image/png': ['.png'],
   'image/webp': ['.webp'],
@@ -21,7 +20,7 @@ export const ACCEPTED_MEDIA_TYPES = {
 
 export const ACCEPTED_EXTENSIONS = Object.values(ACCEPTED_MEDIA_TYPES).flat() as readonly string[];
 
-export type AcceptedExtension = '.gif' | '.jpg' | '.jpeg' | '.png' | '.webp' | '.mp4' | '.webm';
+export type AcceptedExtension = '.jpg' | '.jpeg' | '.png' | '.webp' | '.mp4' | '.webm';
 
 /**
  * Verifica se uma extensão é aceita
@@ -37,14 +36,6 @@ export function isAcceptedExtension(ext: string): ext is AcceptedExtension {
 export function validateMediaFile(buffer: Buffer): string | null {
   if (buffer.length < 12) {
     return null;
-  }
-
-  // GIF: GIF87a ou GIF89a
-  const gif87a = Buffer.from('GIF87a', 'ascii');
-  const gif89a = Buffer.from('GIF89a', 'ascii');
-  const gifHeader = buffer.slice(0, 6);
-  if (gifHeader.equals(gif87a) || gifHeader.equals(gif89a)) {
-    return 'image/gif';
   }
 
   // JPEG: FF D8 FF
@@ -100,14 +91,13 @@ export function validateMediaFile(buffer: Buffer): string | null {
  */
 export function getExtensionFromMimeType(mimeType: string): string {
   const extMap: Record<string, string> = {
-    'image/gif': '.gif',
     'image/jpeg': '.jpg',
     'image/png': '.png',
     'image/webp': '.webp',
     'video/mp4': '.mp4',
     'video/webm': '.webm',
   };
-  return extMap[mimeType] || '.gif';
+  return extMap[mimeType] || '.jpg';
 }
 
 /**
@@ -116,7 +106,6 @@ export function getExtensionFromMimeType(mimeType: string): string {
 export function getContentTypeFromExtension(filename: string): string {
   const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
   const mimeMap: Record<string, string> = {
-    '.gif': 'image/gif',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
     '.png': 'image/png',

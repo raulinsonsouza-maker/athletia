@@ -23,7 +23,7 @@ function construirFallbackChain(exercicio: PlanoAtualExercicio | null): string[]
   const chain: string[] = []
 
   if (exercicio?.id) {
-    const urlFromId = resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.gif`)
+    const urlFromId = resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.jpg`)
     if (urlFromId) chain.push(urlFromId)
   }
 
@@ -47,7 +47,7 @@ export function useExercicioMediaChain(exercicio: PlanoAtualExercicio | null) {
   )
 
   const media = useExercicioMedia({
-    gifUrl: exercicio?.gifUrl || undefined,
+    imagemUrl: exercicio?.imagemUrl || undefined,
     fallbackChain,
     onError: () => {
       // Silenciosamente falhar - não mostrar erro no console

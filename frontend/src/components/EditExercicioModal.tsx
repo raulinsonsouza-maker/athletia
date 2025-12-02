@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import UploadGif from './UploadGif'
 import ExercicioImage from './ExercicioImage'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 
@@ -193,7 +192,6 @@ export default function EditExercicioModal({
 
   // Hook para mídia do exercício
   const exercicioMedia = useExercicioMedia({
-    gifUrl: exercicio?.gifUrl || undefined,
     onError: () => {}
   })
 

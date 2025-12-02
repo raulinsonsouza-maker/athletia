@@ -15,12 +15,6 @@ import {
   obterExercicio,
   criarExercicio,
   atualizarExercicio,
-  uploadGifExercicio,
-  deletarGifExercicio,
-  verificarStatusGifs,
-  bulkUploadGifs,
-  corrigirUrlsGifs,
-  listarArquivosGifs,
   listarImagensBanco,
   limparTodasUrlsMidias
 } from '../controllers/admin.controller';
@@ -34,7 +28,7 @@ import {
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadGif, uploadGifsBulk, uploadImagemGrupo } from '../middleware/upload.middleware';
+import { uploadImagemGrupo } from '../middleware/upload.middleware';
 
 const router = Router();
 
@@ -228,21 +222,6 @@ router.get('/exercicios', listarExercicios);
 router.post('/exercicios', criarExercicioValidation, validateRequest, criarExercicio);
 router.get('/exercicios/:id', obterExercicio);
 router.put('/exercicios/:id', atualizarExercicioValidation, validateRequest, atualizarExercicio);
-router.post('/exercicios/:id/gif', (req, res, next) => {
-  uploadGif.single('gif')(req, res, (err: any) => {
-    if (err) {
-      if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-          return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
-        }
-        return res.status(400).json({ error: err.message });
-      }
-      return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
-    }
-    next();
-  });
-}, uploadGifExercicio);
-router.delete('/exercicios/:id/gif', deletarGifExercicio);
 
 // Grupos musculares (visuais)
 router.get('/grupos-musculares', listarGruposAdmin);
@@ -275,12 +254,6 @@ router.post(
   uploadImagemGrupoAdmin
 );
 
-// Endpoint para verificar status de todos os GIFs
-router.get('/gifs/status', verificarStatusGifs);
-router.get('/gifs/arquivos', listarArquivosGifs);
-
-// Endpoint para corrigir URLs de GIFs no banco de dados
-router.post('/gifs/corrigir-urls', corrigirUrlsGifs);
 
 // Endpoint para limpar todas as URLs de mídia de todos os exercícios
 router.delete('/exercicios/midias/limpar-todas', limparTodasUrlsMidias);
@@ -288,115 +261,7 @@ router.delete('/exercicios/midias/limpar-todas', limparTodasUrlsMidias);
 // Endpoint para listar imagens do banco
 router.get('/imagens-banco/arquivos', listarImagensBanco);
 
-// Endpoint para upload em lote de GIFs
-router.post('/gifs/bulk-upload', 
-  (req: AuthRequest, res: Response, next: NextFunction) => {
-    uploadGifsBulk.array('gifs', 50)(req as any, res, (err: any) => {
-      if (err) {
-        if (err instanceof multer.MulterError) {
-          if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB por arquivo' });
-          }
-          if (err.code === 'LIMIT_FILE_COUNT') {
-            return res.status(400).json({ error: 'Muitos arquivos. Máximo: 50 arquivos por vez' });
-          }
-          return res.status(400).json({ error: err.message });
-        }
-        return res.status(400).json({ error: err.message || 'Erro ao processar arquivos' });
-      }
-      next();
-    });
-  },
-  (req: AuthRequest, res: Response) => {
-    return bulkUploadGifs(req as any, res);
-  }
-);
 
-// Endpoint para verificar se o GIF existe
-router.get('/exercicios/:id/gif/verify', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { getUploadExerciciosPath } = await import('../utils/upload-paths');
-    const uploadBasePath = getUploadExerciciosPath();
-    const filePath = path.join(uploadBasePath, id, 'exercicio.gif');
-    const exists = fs.existsSync(filePath);
-    
-    // Buscar informações do exercício no banco
-    const { prisma } = await import('../lib/prisma');
-    const exercicio = await prisma.exercicio.findUnique({
-      where: { id },
-      select: { id: true, nome: true, gifUrl: true }
-    });
-    
-    // Verificar se há arquivos na pasta base
-    let dirContents: string[] = [];
-    try {
-      dirContents = fs.readdirSync(uploadBasePath);
-    } catch (err) {
-      // Ignorar erro ao ler diretório
-    }
-    
-    if (exists) {
-      const stats = fs.statSync(filePath);
-      res.json({
-        exists: true,
-        path: filePath,
-        size: stats.size,
-        url: `/api/uploads/exercicios/${id}/exercicio.gif`,
-        exercicio: exercicio ? {
-          id: exercicio.id,
-          nome: exercicio.nome,
-          gifUrl: exercicio.gifUrl
-        } : null,
-        uploadBasePath,
-        dirContents: dirContents.slice(0, 20) // Primeiros 20 itens para não sobrecarregar
-      });
-    } else {
-      // Tentar encontrar arquivo com UUID correto se exercício existe
-      let correctPath = filePath;
-      if (exercicio && exercicio.id !== id) {
-        correctPath = path.join(uploadBasePath, exercicio.id, 'exercicio.gif');
-        const correctExists = fs.existsSync(correctPath);
-        if (correctExists) {
-          const stats = fs.statSync(correctPath);
-          return res.json({
-            exists: true,
-            path: correctPath,
-            size: stats.size,
-            url: `/api/uploads/exercicios/${exercicio.id}/exercicio.gif`,
-            exercicio: {
-              id: exercicio.id,
-              nome: exercicio.nome,
-              gifUrl: exercicio.gifUrl
-            },
-            uploadBasePath,
-            dirContents: dirContents.slice(0, 20),
-            note: `Arquivo encontrado com UUID correto do exercício (${exercicio.id})`
-          });
-        }
-      }
-      
-      res.json({
-        exists: false,
-        path: filePath,
-        url: `/api/uploads/exercicios/${id}/exercicio.gif`,
-        exercicio: exercicio ? {
-          id: exercicio.id,
-          nome: exercicio.nome,
-          gifUrl: exercicio.gifUrl
-        } : null,
-        uploadBasePath,
-        dirContents: dirContents.slice(0, 20),
-        message: exercicio ? 'Exercício encontrado no banco, mas arquivo não existe' : 'Exercício não encontrado no banco'
-      });
-    }
-  } catch (error: any) {
-    res.status(500).json({
-      error: 'Erro ao verificar arquivo',
-      message: error.message
-    });
-  }
-});
 
 export default router;
 

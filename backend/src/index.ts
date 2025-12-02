@@ -84,7 +84,7 @@ app.use('/api/uploads/exercicios', (req, res, next) => {
   next();
 });
 
-// Rota específica para servir GIFs de exercícios (DEVE estar antes do express.static)
+// Rota específica para servir mídias de exercícios (DEVE estar antes do express.static)
 // Baseado na implementação do fitnessprogramer.com para servir mídias de exercícios de forma confiável
 
 // Suporte para requisições OPTIONS (CORS preflight) - aceita qualquer extensão
@@ -95,8 +95,8 @@ app.options('/api/uploads/exercicios/:id/exercicio.*', (req, res) => {
   res.status(204).send();
 });
 
-// Rota para servir mídias de exercícios (GIF, imagens, vídeos)
-// Aceita: /api/uploads/exercicios/:id/exercicio.gif, exercicio.jpg, exercicio.mp4, etc.
+// Rota para servir mídias de exercícios (imagens, vídeos)
+// Aceita: /api/uploads/exercicios/:id/exercicio.jpg, exercicio.mp4, etc.
 app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
   const { id, ext } = req.params;
   const { resolveExercicioMedia } = await import('./services/exercicio-media.service');
@@ -174,12 +174,6 @@ app.use('/api/uploads/exercicios', express.static(uploadExerciciosPath, {
     res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    // Cache control para GIFs
-    if (filePath.endsWith('.gif')) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-      res.setHeader('Content-Type', 'image/gif');
-      res.setHeader('Accept-Ranges', 'bytes');
-    }
   }
 }));
 
@@ -272,7 +266,6 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
   const ext = path.extname(nomeArquivo).toLowerCase();
   let contentType = 'image/jpeg'; // padrão
   if (ext === '.png') contentType = 'image/png';
-  else if (ext === '.gif') contentType = 'image/gif';
   else if (ext === '.webp') contentType = 'image/webp';
   else if (ext === '.svg') contentType = 'image/svg+xml';
 

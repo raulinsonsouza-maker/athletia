@@ -482,7 +482,6 @@ export default function Admin() {
   // Usar hook unificado para preview modal
   // O hook vai construir a URL usando o ID do exercício automaticamente
   const previewModalMedia = useExercicioMedia({
-    gifUrl: previewModalTarget?.gifUrl || undefined,
     imagemUrl: previewModalTarget?.imagemUrl || undefined,
     onError: () => {
       // Silenciosamente falhar - não mostrar erro no console

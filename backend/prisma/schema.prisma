@@ -123,7 +123,6 @@ model Exercicio {
   execucaoTecnica        String?  @map("execucao_tecnica") @db.Text
   errosComuns            String[] @map("erros_comuns")
   imagemUrl              String?  @map("imagem_url")
-  gifUrl                 String?  @map("gif_url")
   cargaInicialSugerida   Float?   @map("carga_inicial_sugerida")
   rpeSugerido            Int?     @map("rpe_sugerido")
   equipamentoNecessario  String[] @map("equipamento_necessario")

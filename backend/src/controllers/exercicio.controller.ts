@@ -38,7 +38,6 @@ export const listarExercicios = async (req: AuthRequest, res: Response) => {
         execucaoTecnica: true,
         errosComuns: true,
         imagemUrl: true,
-        gifUrl: true,
         cargaInicialSugerida: true,
         rpeSugerido: true,
         equipamentoNecessario: true,

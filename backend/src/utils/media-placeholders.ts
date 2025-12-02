@@ -5,7 +5,7 @@ interface PlaceholderMedia {
   contentType: string;
 }
 
-const IMAGE_EXTENSIONS = new Set(['gif', 'png', 'jpg', 'jpeg', 'webp']);
+const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp']);
 
 /**
  * Retorna uma mídia placeholder para evitar erros de layout quando

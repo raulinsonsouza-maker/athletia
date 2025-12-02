@@ -6,7 +6,6 @@ interface ExercicioImageProps {
   exercicio: {
     id: string
     nome: string
-    gifUrl?: string | null
     imagemUrl?: string | null
   }
   imageChain?: string[] // Opcional - mantido para compatibilidade, mas não usado mais
@@ -27,12 +26,11 @@ export default function ExercicioImage({
   // Construir URL usando ID do exercício como fallback
   // O backend vai tentar todas as extensões automaticamente
   const fallbackUrl = exercicio.id 
-    ? resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.gif`)
+    ? resolveApiPath(`/api/uploads/exercicios/${exercicio.id}/exercicio.jpg`)
     : null
 
-  // Usar hook unificado: gifUrl do banco > URL construída com ID > imageChain (compatibilidade)
+  // Usar hook unificado: imagemUrl do banco > URL construída com ID > imageChain (compatibilidade)
   const { url: mediaUrl, isVideo, hasMedia, handleError } = useExercicioMedia({
-    gifUrl: exercicio.gifUrl || undefined,
     imagemUrl: exercicio.imagemUrl || undefined,
     fallbackChain: [
       ...(fallbackUrl ? [fallbackUrl] : []),

@@ -10,7 +10,6 @@ export interface Exercicio {
   execucaoTecnica?: string
   errosComuns: string[]
   imagemUrl?: string
-  gifUrl?: string
   cargaInicialSugerida?: number
   rpeSugerido?: number
   equipamentoNecessario: string[]
