@@ -3,7 +3,7 @@ import { GRUPOS_ESPECIFICOS_LISTA } from './inteligencia-treinos.service'
 import { buscarVisuaisAtivos, gerarSlugGrupo } from './grupo-muscular-visual.service'
 import { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } from './treino.service'
 import { calcularParametrosTreino } from './workout-intelligence.service'
-import { calcularCargaInicial } from './template.service'
+import { calcularCargaExercicio } from './workout-intelligence.service'
 
 /**
  * Gera treino rápido baseado nas escolhas do usuário
@@ -224,11 +224,12 @@ export async function gerarTreinoRapido(
     if (exercicioTreino.exercicio.grupoMuscularPrincipal !== 'Cardio' && 
         exercicioTreino.exercicio.grupoMuscularPrincipal !== 'Flexibilidade') {
       try {
-        const carga = await calcularCargaInicial(
-          exercicioTreino.exercicio,
-          perfil.pesoAtual || undefined,
-          data.dificuldade,
+        const carga = await calcularCargaExercicio(
           userId,
+          exercicioTreino.exercicio.id,
+          perfil.pesoAtual || 70,
+          exercicioTreino.exercicio.grupoMuscularPrincipal || '',
+          data.dificuldade || 'Iniciante',
           repeticoes
         );
 

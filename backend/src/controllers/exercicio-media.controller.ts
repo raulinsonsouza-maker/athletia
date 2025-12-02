@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { PrismaClient } from '@prisma/client';
-import { getMediaFilePath, saveMediaFile, deleteMediaFile, getContentType } from '../services/exercicio-media-v2.service';
+import { getMediaFilePath, saveMediaFile, deleteMediaFile, getContentType } from '../services/exercicio-media.service';
 import { resolveExercicioId, resolveExercicio } from '../utils/resolve-exercicio-id';
 import fs from 'fs';
 import path from 'path';

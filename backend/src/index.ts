@@ -16,7 +16,7 @@ import pesoRoutes from './routes/peso.routes';
 import aiRoutes from './routes/ai.routes';
 import adminRoutes from './routes/admin.routes';
 import exercicioRoutes from './routes/exercicio.routes';
-import exercicioMediaRoutes from './routes/exercicio-media-v2.routes';
+import exercicioMediaRoutes from './routes/exercicio-media.routes';
 import userRoutes from './routes/user.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';

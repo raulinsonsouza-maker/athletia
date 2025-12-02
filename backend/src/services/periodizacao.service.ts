@@ -168,17 +168,7 @@ function calcularParametrosTreinoLocal(
   return { series, repeticoes, rpe, descanso };
 }
 
-/**
- * Calcula séries e repetições baseado no objetivo
- * @deprecated Use calcularParametrosTreino de workout-intelligence.service.ts
- */
-export function calcularSeriesRepeticoes(
-  objetivo?: string,
-  experiencia?: string
-): { series: number; repeticoes: string; rpe: number; descanso: number } {
-  // Usar função local para evitar dependência circular
-  return calcularParametrosTreinoLocal(objetivo || 'Hipertrofia', experiencia || 'Iniciante');
-}
+// Função calcularSeriesRepeticoes removida - usar calcularParametrosTreino de workout-intelligence.service.ts
 
 /**
  * Calcula carga inicial baseada no peso do usuário e experiência

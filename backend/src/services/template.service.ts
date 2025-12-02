@@ -379,43 +379,7 @@ export async function adaptarTemplate(
   return exerciciosAdaptados;
 }
 
-/**
- * Calcula carga inicial para um exercício usando o serviço centralizado de inteligência
- * @deprecated Use calcularCargaExercicio de workout-intelligence.service.ts diretamente
- */
-export async function calcularCargaInicial(
-  exercicio: any,
-  pesoAtual?: number,
-  experiencia?: string,
-  userId?: string,
-  repeticoes: string = '8-12'
-): Promise<number> {
-  // Se não tem peso ou userId, usar método antigo simplificado
-  if (!pesoAtual || pesoAtual <= 0 || !userId) {
-    const cargaSugerida = exercicio.cargaInicialSugerida || 0;
-    if (cargaSugerida > 0) {
-      // Aplicar validação mesmo para carga sugerida
-      const equipment = getEquipmentStep(exercicio.equipamentoNecessario || []);
-      if (equipment.stepTotal > 0) {
-        return nearestAllowedWeight(cargaSugerida, [equipment.stepTotal]);
-      }
-      return Math.round(cargaSugerida);
-    }
-    return 0;
-  }
-
-  // Usar serviço centralizado de inteligência
-  const carga = await calcularCargaExercicio(
-    userId,
-    exercicio.id || '',
-    pesoAtual,
-    exercicio.grupoMuscularPrincipal || '',
-    experiencia || 'Iniciante',
-    repeticoes
-  );
-
-  return carga || 0;
-}
+// Função calcularCargaInicial removida - usar calcularCargaExercicio de workout-intelligence.service.ts diretamente
 
 /**
  * Cria um treino a partir de um template adaptado
@@ -486,11 +450,13 @@ export async function criarTreinoDoTemplate(
       continue;
     }
 
-    const carga = await calcularCargaInicial(
-      exercicio,
-      perfil?.pesoAtual || undefined,
-      perfil?.experiencia || undefined,
+    // Usar calcularCargaExercicio diretamente
+    const carga = await calcularCargaExercicio(
       userId,
+      exercicio.id,
+      perfil?.pesoAtual || 70,
+      exercicio.grupoMuscularPrincipal || '',
+      perfil?.experiencia || 'Iniciante',
       templateEx.repeticoes || '10-12'
     );
 

@@ -15,10 +15,7 @@
     "prisma:reset": "prisma migrate reset",
     "tornar-admin": "tsx scripts/tornar-admin.ts",
     "criar-admin": "tsx scripts/criar-admin.ts",
-    "testar-banco": "tsx scripts/testar-banco.ts",
-    "migrar-treinos": "tsx scripts/migrar-treinos-motor-centralizado.ts",
-    "diagnosticar-imagens": "tsx scripts/diagnosticar-imagens-exercicios.ts",
-    "corrigir-imagens": "tsx scripts/corrigir-imagens-exercicios.ts"
+    "migrar-treinos": "tsx scripts/migrar-treinos-motor-centralizado.ts"
   },
   "keywords": [
     "fitness",
