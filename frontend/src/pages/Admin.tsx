@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { useExercicioMedia } from '../hooks/useExercicioMedia'
-import EditExercicioModal from '../components/EditExercicioModal'
-import ExerciciosList from '../components/ExerciciosList'
+import ExerciciosAdminList from '../components/ExerciciosAdminList'
+import ExercicioFormModal from '../components/ExercicioFormModal'
 
 interface User {
   id: string
@@ -155,8 +154,6 @@ export default function Admin() {
   const [gruposMusculares, setGruposMusculares] = useState<string[]>([])
   const [loadingExercicios, setLoadingExercicios] = useState(false)
   const [errorExercicios, setErrorExercicios] = useState<string | null>(null)
-  const [searchExercicio, setSearchExercicio] = useState('')
-  const [filtroGrupo, setFiltroGrupo] = useState<string>('')
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'table'>(() => {
     const saved = localStorage.getItem('adminViewMode')
     return (saved as 'cards' | 'list' | 'table') || 'cards'
@@ -170,21 +167,15 @@ export default function Admin() {
     role: 'USER' as 'USER' | 'ADMIN'
   })
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [, setSelectedUserId] = useState<string | null>(null) // Usado apenas para setter
+  const [, setSelectedUserId] = useState<string | null>(null)
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [detailsTab, setDetailsTab] = useState<'basicas' | 'onboarding' | 'treinos' | 'historico'>('basicas')
-  const [viewModeExercicios, setViewModeExercicios] = useState<'cards' | 'list' | 'table'>(() => {
-    const saved = localStorage.getItem('adminViewModeExercicios')
-    return (saved as 'cards' | 'list' | 'table') || 'list'
-  })
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedExercicioId, setSelectedExercicioId] = useState<string | null>(null)
   const [exercicioEdit, setExercicioEdit] = useState<any>(null)
   const [loadingExercicioEdit, setLoadingExercicioEdit] = useState(false)
   const [isCreatingExercicio, setIsCreatingExercicio] = useState(false)
-  const [showMediaPreview, setShowMediaPreview] = useState(false)
-  const [exercicioPreview, setExercicioPreview] = useState<any>(null)
 
   useEffect(() => {
     verificarAdmin()
@@ -408,10 +399,6 @@ export default function Admin() {
     localStorage.setItem('adminViewMode', mode)
   }
 
-  const handleViewModeExerciciosChange = (mode: 'cards' | 'list' | 'table') => {
-    setViewModeExercicios(mode)
-    localStorage.setItem('adminViewModeExercicios', mode)
-  }
 
   const handleCreateExercicio = () => {
     setIsCreatingExercicio(true)
@@ -447,11 +434,6 @@ export default function Admin() {
   }
 
 
-  // Função para abrir preview da mídia
-  const handleShowMediaPreview = (exercicio: any) => {
-    setExercicioPreview(exercicio)
-    setShowMediaPreview(true)
-  }
 
   const handleCriarUsuario = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -476,18 +458,6 @@ export default function Admin() {
       setCreating(false)
     }
   }
-
-  const previewModalTarget = exercicioPreview || exercicioEdit || null
-  
-  // Usar hook unificado para preview modal (sem fallbacks que geram 404)
-  const previewModalMedia = useExercicioMedia({
-    imagemUrl: previewModalTarget?.imagemUrl || undefined,
-    fallbackChain: [], // Removido para evitar tentativas de carregar imagens inexistentes
-    onError: () => {
-      // Silenciosamente falhar - não mostrar erro no console
-    }
-  })
-
 
   if (loading) {
     return (
@@ -1854,99 +1824,30 @@ export default function Admin() {
         </div>
       )}
 
-      {/* Modal de Edição de Exercício */}
-      <EditExercicioModal
+      {/* Modal de Cadastro/Edição de Exercício */}
+      <ExercicioFormModal
         exercicio={loadingExercicioEdit ? null : exercicioEdit}
         isOpen={showEditModal}
         isCreating={isCreatingExercicio}
         gruposMusculares={gruposMusculares}
         onClose={handleCloseEditModal}
-        onSave={async (createdExercicio?: any) => {
+        onSave={async (savedExercicio) => {
           await carregarExercicios()
           // Se criou um exercício, atualizar estado para modo edição
-          if (createdExercicio && isCreatingExercicio) {
-            setSelectedExercicioId(createdExercicio.id)
-            setExercicioEdit(createdExercicio)
+          if (savedExercicio && isCreatingExercicio) {
+            setSelectedExercicioId(savedExercicio.id)
+            setExercicioEdit(savedExercicio)
             setIsCreatingExercicio(false)
-          } else if (selectedExercicioId && !isCreatingExercicio) {
-            // Se estiver editando, recarregar dados do exercício
-            try {
-              const response = await api.get(`/admin/exercicios/${selectedExercicioId}`)
-              const exercicioAtualizado = response.data
-              setExercicioEdit(exercicioAtualizado)
-              // Se o ID mudou (slug para UUID), atualizar selectedExercicioId
-              if (exercicioAtualizado?.id && exercicioAtualizado.id !== selectedExercicioId) {
-                setSelectedExercicioId(exercicioAtualizado.id)
-              }
-            } catch (err) {
-              if (import.meta.env.DEV) {
-                console.error('[Admin] Erro ao recarregar exercício:', err)
-              }
-            }
-          } else if (createdExercicio && !isCreatingExercicio) {
-            // Se recebeu exercício atualizado (ex: após upload de mídia)
-            setExercicioEdit(createdExercicio)
-            if (createdExercicio.id && createdExercicio.id !== selectedExercicioId) {
-              setSelectedExercicioId(createdExercicio.id)
+          } else if (savedExercicio && !isCreatingExercicio) {
+            // Atualizar exercício editado
+            setExercicioEdit(savedExercicio)
+            if (savedExercicio.id && savedExercicio.id !== selectedExercicioId) {
+              setSelectedExercicioId(savedExercicio.id)
             }
           }
         }}
-        onShowPreview={handleShowMediaPreview}
       />
 
-      {/* Modal de Preview da Demonstração em Tamanho Maior */}
-      {showMediaPreview && previewModalTarget && (
-        <div
-          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
-          onClick={() => {
-            setShowMediaPreview(false)
-            setExercicioPreview(null)
-          }}
-        >
-          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => {
-                setShowMediaPreview(false)
-                setExercicioPreview(null)
-              }}
-              className="absolute top-4 right-4 btn-secondary p-2 z-10"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            {previewModalMedia.url ? (
-              previewModalMedia.isVideo ? (
-                <video
-                  src={previewModalMedia.url}
-                  className="w-full h-auto rounded-lg"
-                  controls
-                  autoPlay
-                  loop
-                  onError={previewModalMedia.handleError}
-                />
-              ) : (
-                <img
-                  src={previewModalMedia.url}
-                  alt={`Demonstração de execução de ${previewModalTarget?.nome || 'Exercício'}`}
-                  className="w-full h-auto rounded-lg"
-                  onError={previewModalMedia.handleError}
-                />
-              )
-            ) : (
-              <div className="w-full h-96 bg-dark-lighter rounded-lg flex items-center justify-center border border-grey/30">
-                <div className="text-center">
-                  <svg className="w-24 h-24 text-primary/30 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p className="text-light-muted">Nenhuma demonstração disponível</p>
-                </div>
-              </div>
-            )}
-            <p className="text-center text-light-muted mt-4">{previewModalTarget.nome || 'Exercício'}</p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
