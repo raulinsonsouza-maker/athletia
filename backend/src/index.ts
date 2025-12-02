@@ -29,6 +29,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// Configurar trust proxy para funcionar atrás de nginx/proxy reverso
+// Isso permite que express-rate-limit funcione corretamente com X-Forwarded-For
+app.set('trust proxy', true);
+
 // Criar pasta de uploads se não existir
 const uploadDir = getUploadExerciciosPath();
 if (!fs.existsSync(uploadDir)) {
