@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
  * /api/uploads/exercicios/{uuid}/exercicio.{ext} -> /api/exercicios/{uuid}/media.{ext}
  */
 
-export async function migrateMediaUrl(oldUrl: string, exercicioId: string): Promise<string | null> {
+export function migrateMediaUrl(oldUrl: string, exercicioId: string): string | null {
   if (!oldUrl) return null;
 
   // Se já está no formato novo, retornar como está

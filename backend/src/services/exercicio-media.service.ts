@@ -184,7 +184,7 @@ export async function resolveExercicioMedia(
     }
   }
 
-  console.warn(`[ExercicioMedia] Nenhum arquivo encontrado para exercício ${exercicioId} (ID real: ${realExercicioId})`);
+  console.warn(`[ExercicioMedia] Nenhum arquivo encontrado para exercício ${exercicioId}`);
 
   return null;
 }

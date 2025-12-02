@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import api, { uploadExercicioMedia, removeExercicioMedia } from '../services/auth.service'
+import { uploadExercicioMedia, removeExercicioMedia } from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 import { resolveApiPath } from '../utils/api-url'

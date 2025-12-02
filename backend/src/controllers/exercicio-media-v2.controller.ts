@@ -17,9 +17,16 @@ const prisma = new PrismaClient();
 export const serveMedia = async (req: AuthRequest, res: Response) => {
   try {
     const { exercicioId } = req.params;
-    const extension = req.path.split('.').pop() || null;
+    const extension = req.path.split('.').pop() || undefined;
 
     console.log(`[MediaController] Requisição: exercicioId=${exercicioId}, ext=${extension}`);
+
+    if (!extension) {
+      return res.status(400).json({
+        error: 'Extensão do arquivo não especificada',
+        exercicioId
+      });
+    }
 
     const filePath = await getMediaFilePath(exercicioId, extension);
 
