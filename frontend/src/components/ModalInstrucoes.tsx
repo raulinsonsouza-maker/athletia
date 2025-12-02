@@ -49,7 +49,7 @@ export default function ModalInstrucoes({
         {/* Nome do Exercício */}
         <h4 className="text-xl font-bold text-light mb-4">{exercicio.nome}</h4>
 
-        {/* Imagem/GIF Grande */}
+        {/* Imagem/Vídeo Grande */}
         <div className="w-full mb-6 rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/20 flex items-center justify-center min-h-[200px] max-h-[500px]">
           {mediaUrl ? (
             isVideo ? (

@@ -183,7 +183,7 @@ export default function Admin() {
   const [exercicioEdit, setExercicioEdit] = useState<any>(null)
   const [loadingExercicioEdit, setLoadingExercicioEdit] = useState(false)
   const [isCreatingExercicio, setIsCreatingExercicio] = useState(false)
-  const [showGifPreview, setShowGifPreview] = useState(false)
+  const [showMediaPreview, setShowMediaPreview] = useState(false)
   const [exercicioPreview, setExercicioPreview] = useState<any>(null)
 
   useEffect(() => {
@@ -447,10 +447,10 @@ export default function Admin() {
   }
 
 
-  // Função para abrir preview do GIF
-  const handleShowGifPreview = (exercicio: any) => {
+  // Função para abrir preview da mídia
+  const handleShowMediaPreview = (exercicio: any) => {
     setExercicioPreview(exercicio)
-    setShowGifPreview(true)
+    setShowMediaPreview(true)
   }
 
   const handleCriarUsuario = async (e: React.FormEvent) => {
@@ -935,7 +935,7 @@ export default function Admin() {
               onFiltroChange={setFiltroGrupo}
               onViewModeChange={handleViewModeExerciciosChange}
               onEdit={handleEditExercicio}
-              onPreview={handleShowGifPreview}
+              onPreview={handleShowMediaPreview}
               onCreate={handleCreateExercicio}
               onRetry={carregarExercicios}
             />
@@ -1880,11 +1880,11 @@ export default function Admin() {
             }
           }
         }}
-        onShowPreview={handleShowGifPreview}
+        onShowPreview={handleShowMediaPreview}
       />
 
       {/* Modal de Preview da Demonstração em Tamanho Maior */}
-      {showGifPreview && previewModalTarget && (
+      {showMediaPreview && previewModalTarget && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
           onClick={() => {
@@ -1895,7 +1895,7 @@ export default function Admin() {
           <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => {
-                setShowGifPreview(false)
+                setShowMediaPreview(false)
                 setExercicioPreview(null)
               }}
               className="absolute top-4 right-4 btn-secondary p-2 z-10"

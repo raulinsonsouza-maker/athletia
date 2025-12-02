@@ -151,7 +151,7 @@ export interface PlanoAtualExercicio {
   descricao?: string | null
   execucao?: string | null
   errosComuns?: string[]
-  gifUrl?: string | null
+  imagemUrl?: string | null
   equipamentos?: string[]
 }
 

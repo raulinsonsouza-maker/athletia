@@ -425,6 +425,7 @@ export async function buscarPlanoAtual(userId: string) {
           descricao: ex.exercicio.descricao,
           execucao: ex.exercicio.execucaoTecnica,
           errosComuns: ex.exercicio.errosComuns,
+          imagemUrl: ex.exercicio.imagemUrl,
           equipamentos: ex.exercicio.equipamentoNecessario
         }))
       };
