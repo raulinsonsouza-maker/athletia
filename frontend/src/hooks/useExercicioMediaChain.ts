@@ -3,23 +3,13 @@ import { useExercicioMedia } from './useExercicioMedia'
 import { PlanoAtualExercicio } from '../types/treino.types'
 
 /**
- * Constrói cadeia de fallback para mídia do exercício
+ * Hook para gerenciar mídia do exercício com fallback chain
  * Removidos fallbacks que geram erros 404 (imagens inexistentes)
  */
-function construirFallbackChain(exercicio: PlanoAtualExercicio | null): string[] {
+export function useExercicioMediaChain(exercicio: PlanoAtualExercicio | null) {
   // Não usar fallbacks que geram erros 404
   // Apenas usar imagemUrl se disponível
-  return []
-}
-
-/**
- * Hook para gerenciar mídia do exercício com fallback chain
- */
-export function useExercicioMediaChain(exercicio: PlanoAtualExercicio | null) {
-  const fallbackChain = useMemo(
-    () => construirFallbackChain(exercicio),
-    [exercicio?.id, exercicio?.grupo]
-  )
+  const fallbackChain = useMemo(() => [], [])
 
   const media = useExercicioMedia({
     imagemUrl: exercicio?.imagemUrl || undefined,

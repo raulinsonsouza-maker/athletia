@@ -16,7 +16,6 @@ interface ExercicioImageProps {
 
 export default function ExercicioImage({
   exercicio,
-  imageChain = [],
   size = 'medium',
   onPreview,
   onError,
