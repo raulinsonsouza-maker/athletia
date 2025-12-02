@@ -104,15 +104,30 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
 /**
  * Resolve exercicioId e retorna o objeto completo do exercício
  */
-export async function resolveExercicio(exercicioId: string, select?: any) {
+export async function resolveExercicio(
+  exercicioId: string, 
+  select: { id: true; nome: true } = { id: true, nome: true }
+): Promise<{ id: string; nome: string } | null> {
   const uuid = await resolveExercicioId(exercicioId);
   if (!uuid) {
     return null;
   }
 
-  return await prisma.exercicio.findUnique({
+  const exercicio = await prisma.exercicio.findUnique({
     where: { id: uuid },
-    select: select || { id: true, nome: true }
+    select: {
+      id: true,
+      nome: true
+    }
   });
+
+  if (!exercicio) {
+    return null;
+  }
+
+  return {
+    id: exercicio.id,
+    nome: exercicio.nome
+  };
 }
 
