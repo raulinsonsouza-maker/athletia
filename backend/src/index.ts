@@ -16,6 +16,7 @@ import pesoRoutes from './routes/peso.routes';
 import aiRoutes from './routes/ai.routes';
 import adminRoutes from './routes/admin.routes';
 import exercicioRoutes from './routes/exercicio.routes';
+import exercicioMediaRoutes from './routes/exercicio-media-v2.routes';
 import userRoutes from './routes/user.routes';
 import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
@@ -79,120 +80,9 @@ console.log(`[CONFIG] Caminho de upload de exercícios: ${uploadExerciciosPath}`
 console.log(`[CONFIG] Rota virtual: /api/uploads/exercicios`);
 console.log(`[CONFIG] Mapeamento: /api/uploads/exercicios -> ${uploadExerciciosPath}`);
 
-// Middleware CORS específico para arquivos estáticos (ANTES das rotas)
-app.use('/api/uploads/exercicios', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') {
-    return res.status(204).send();
-  }
-  next();
-});
-
-// Rota específica para servir mídias de exercícios (DEVE estar antes do express.static)
-// Baseado na implementação do fitnessprogramer.com para servir mídias de exercícios de forma confiável
-
-// Suporte para requisições OPTIONS (CORS preflight) - aceita qualquer extensão
-app.options('/api/uploads/exercicios/:id/exercicio.*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.status(204).send();
-});
-
-// Rota para servir mídias de exercícios (imagens, vídeos)
-// Aceita: /api/uploads/exercicios/:id/exercicio.jpg, exercicio.mp4, etc.
-// IMPORTANTE: O :id pode ser UUID ou slug - resolveExercicioMedia converte automaticamente
-app.get('/api/uploads/exercicios/:id/exercicio.:ext?', async (req, res) => {
-  const { id, ext } = req.params;
-  const { resolveExercicioMedia } = await import('./services/exercicio-media.service');
-  
-  // Log para debug (sempre em produção também para identificar problemas)
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
-  console.log(`[Media Route] Requisição: id=${id.trim()}, ext=${ext || 'none'}, isUuid=${isUuid}`);
-  
-  try {
-    const resolved = await resolveExercicioMedia(id.trim(), ext);
-    
-    if (resolved) {
-      const { filePath, contentType } = resolved;
-
-      // Verificar se arquivo ainda existe (pode ter sido deletado após resolução)
-      if (!fs.existsSync(filePath)) {
-        console.warn(`[Media Route] Arquivo não encontrado após resolução: ${filePath}`);
-        // Continuar para retornar placeholder
-      } else {
-        console.log(`[Media Route] Servindo arquivo: ${filePath}`);
-        // Configurar headers para arquivos reais
-        res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
-        res.setHeader('Content-Type', contentType);
-        res.setHeader('Accept-Ranges', 'bytes');
-        
-        const fileStream = fs.createReadStream(filePath);
-        
-        fileStream.on('error', (err) => {
-          console.error(`[Media Route] Erro ao ler arquivo ${filePath}:`, err);
-          if (!res.headersSent) {
-            res.status(500).send('Internal Server Error');
-          }
-        });
-
-        return fileStream.pipe(res);
-      }
-    } else {
-      console.warn(`[Media Route] Mídia não encontrada para exercício: ${id}${ext ? ` (ext: ${ext})` : ''}`);
-    }
-  } catch (error: any) {
-    console.error(`[Media Route] Erro ao resolver mídia para ${id}:`, error);
-    // Não retornar erro 500 aqui - retornar placeholder ou 404
-    if (!res.headersSent) {
-      // Tentar retornar placeholder mesmo em caso de erro
-      const placeholder = getPlaceholderMedia(ext);
-      if (placeholder) {
-        res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-        res.setHeader('Content-Type', placeholder.contentType);
-        return res.status(200).send(placeholder.buffer);
-      }
-    }
-  }
-
-  // Retornar placeholder se arquivo não foi encontrado
-  const placeholder = getPlaceholderMedia(ext);
-  if (placeholder) {
-    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    res.setHeader('Content-Type', placeholder.contentType);
-    res.setHeader('Accept-Ranges', 'none');
-
-    return res.status(200).send(placeholder.buffer);
-  }
-
-  // Se não há placeholder, retornar 404
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(`[Media Route] 404 - Mídia não encontrada e sem placeholder para: ${id}${ext ? `.${ext}` : ''}`);
-  }
-  return res.status(404).send('Not Found');
-});
-
-
-// Servir outros arquivos estáticos (fallback)
-app.use('/api/uploads/exercicios', express.static(uploadExerciciosPath, {
-  setHeaders: (res, filePath) => {
-    // Headers CORS (sem credentials para arquivos estáticos)
-    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  }
-}));
+// NOVA ROTA DE MÍDIA DE EXERCÍCIOS (Versão 2 - Implementação limpa)
+// Estrutura: /api/exercicios/:exercicioId/media.*
+app.use('/api/exercicios', exercicioMediaRoutes);
 
 // Servir imagens de grupos musculares (PNG/JPG/WEBP)
 app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {

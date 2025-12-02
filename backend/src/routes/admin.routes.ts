@@ -15,7 +15,6 @@ import {
   obterExercicio,
   criarExercicio,
   atualizarExercicio,
-  uploadExercicioMedia,
   listarImagensBanco,
   limparTodasUrlsMidias
 } from '../controllers/admin.controller';
@@ -29,13 +28,16 @@ import {
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadImagemGrupo, uploadExercicioMedia as uploadExercicioMediaMiddleware } from '../middleware/upload.middleware';
+import { uploadImagemGrupo } from '../middleware/upload.middleware';
+import { normalizeMediaUrls } from '../middleware/normalize-media-urls.middleware';
 
 const router = Router();
 
 // Todas as rotas requerem autenticação e ser admin
 router.use(authenticate);
 router.use(requireAdmin);
+// Normalizar URLs de mídia em todas as respostas
+router.use(normalizeMediaUrls);
 
 // Validações
 const criarUsuarioValidation = [
@@ -231,7 +233,7 @@ router.get('/exercicios', listarExercicios);
 router.post('/exercicios', criarExercicioValidation, validateRequest, criarExercicio);
 router.get('/exercicios/:id', obterExercicio);
 router.put('/exercicios/:id', atualizarExercicioValidation, validateRequest, atualizarExercicio);
-router.post('/exercicios/:id/upload-media', uploadExercicioMediaMiddleware.single('media'), uploadExercicioMedia);
+// Upload de mídia movido para /api/exercicios/:exercicioId/media (nova rota)
 
 // Grupos musculares (visuais)
 router.get('/grupos-musculares', listarGruposAdmin);

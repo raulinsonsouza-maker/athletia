@@ -145,16 +145,39 @@ export const authService = {
 }
 
 // Método para upload de mídia de exercício
-export const uploadExercicioMedia = async (exercicioId: string, file: File) => {
+// Nova função de upload usando a nova rota
+export const uploadExercicioMedia = async (exercicioId: string, file: File, onUploadProgress?: (progress: number) => void) => {
   const formData = new FormData()
   formData.append('media', file)
-  
-  const response = await api.post(`/admin/exercicios/${exercicioId}/upload-media`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
+
+  // Usar token admin para upload
+  const adminToken = localStorage.getItem('adminAccessToken')
+  const headers: any = {}
+  if (adminToken) {
+    headers.Authorization = `Bearer ${adminToken}`
+  }
+
+  const response = await api.post(`/exercicios/${exercicioId}/media`, formData, {
+    headers,
+    onUploadProgress: (progressEvent) => {
+      if (onUploadProgress && progressEvent.total) {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        onUploadProgress(percentCompleted)
+      }
     }
   })
-  
+  return response.data
+}
+
+// Nova função para remover mídia
+export const removeExercicioMedia = async (exercicioId: string) => {
+  const adminToken = localStorage.getItem('adminAccessToken')
+  const headers: any = {}
+  if (adminToken) {
+    headers.Authorization = `Bearer ${adminToken}`
+  }
+
+  const response = await api.delete(`/exercicios/${exercicioId}/media`, { headers })
   return response.data
 }
 

@@ -1021,8 +1021,9 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Upload de mídia para exercício
-export const uploadExercicioMedia = async (req: AuthRequest, res: Response) => {
+// Upload de mídia para exercício - REMOVIDO (usar /api/exercicios/:exercicioId/media)
+// Esta função foi movida para exercicio-media-v2.controller.ts
+export const uploadExercicioMedia_DEPRECATED = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const file = req.file;

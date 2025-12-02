@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import api, { uploadExercicioMedia } from '../services/auth.service'
+import api, { uploadExercicioMedia, removeExercicioMedia } from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
 import { resolveApiPath } from '../utils/api-url'
@@ -125,23 +125,8 @@ export default function UploadExercicioMedia({
     }
 
     try {
-      // Primeiro, buscar o exercício para obter o UUID real se necessário
-      let exercicioIdReal = exercicioId
-      
-      // Se não for UUID, buscar pelo ID para obter o UUID real
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(exercicioId)
-      if (!isUuid) {
-        try {
-          const response = await api.get(`/admin/exercicios/${exercicioId}`)
-          exercicioIdReal = response.data.id
-        } catch (err: any) {
-          console.error('Erro ao buscar exercício:', err)
-          // Continuar com o ID original se não conseguir buscar
-        }
-      }
-
-      // Atualizar exercício removendo imagemUrl usando UUID real
-      await api.put(`/admin/exercicios/${exercicioIdReal}`, { imagemUrl: null })
+      // Usar nova função de remoção
+      await removeExercicioMedia(exercicioId)
 
       showToast('Mídia removida com sucesso!', 'success')
       if (onUploadSuccess) {
