@@ -1888,7 +1888,7 @@ export default function Admin() {
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
           onClick={() => {
-            setShowGifPreview(false)
+            setShowMediaPreview(false)
             setExercicioPreview(null)
           }}
         >
