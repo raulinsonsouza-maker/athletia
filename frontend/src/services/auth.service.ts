@@ -22,8 +22,11 @@ api.interceptors.request.use((config) => {
     return config
   }
 
-  // Verificar se é rota de admin (verificar se URL contém '/admin')
-  const isAdminRoute = config.url?.includes('/admin') || false
+  // Verificar se é rota de admin (verificar se URL contém '/admin' ou é rota de mídia de exercício)
+  // Rotas de mídia (/exercicios/:id/media) são protegidas e requerem admin para POST/DELETE
+  const isAdminRoute = config.url?.includes('/admin') ||
+    (config.url?.includes('/exercicios/') && config.url?.includes('/media') && config.method?.toLowerCase() !== 'get') ||
+    false
 
   if (isAdminRoute) {
     const adminToken = localStorage.getItem('adminAccessToken')
@@ -49,7 +52,9 @@ api.interceptors.response.use(
     // Tratamento de erros de rede (backend offline) e 502/503
     if (!error.response && error.request) {
       // Erro de rede - backend não está respondendo
-      const isAdminRoute = originalRequest?.url?.includes('/admin') || false
+      const isAdminRoute = originalRequest?.url?.includes('/admin') ||
+        (originalRequest?.url?.includes('/exercicios/') && originalRequest?.url?.includes('/media') && originalRequest?.method?.toLowerCase() !== 'get') ||
+        false
       if (isAdminRoute) {
         // Para rotas admin, não fazer nada aqui - deixar o componente tratar
         return Promise.reject({
@@ -78,7 +83,9 @@ api.interceptors.response.use(
       originalRequest._retry = true
 
       // Se for rota de admin, usar refresh token admin
-      const isAdminRoute = originalRequest.url?.includes('/admin') || false
+      const isAdminRoute = originalRequest.url?.includes('/admin') ||
+        (originalRequest.url?.includes('/exercicios/') && originalRequest.url?.includes('/media') && originalRequest.method?.toLowerCase() !== 'get') ||
+        false
       if (isAdminRoute) {
         try {
           const refreshToken = localStorage.getItem('adminRefreshToken')

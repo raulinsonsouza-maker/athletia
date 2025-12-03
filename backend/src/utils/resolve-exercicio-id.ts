@@ -29,14 +29,23 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
 
   // Verificar se é UUID
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedId);
-  
-  if (isUuid) {
-    // Buscar por UUID
+
+  // Tentar buscar pelo ID diretamente (seja UUID ou legado)
+  try {
     const exercicio = await prisma.exercicio.findUnique({
       where: { id: trimmedId },
       select: { id: true }
     });
-    return exercicio?.id || null;
+    if (exercicio) {
+      return exercicio.id;
+    }
+  } catch (error) {
+    // Ignorar erro se ID for inválido para o banco (ex: muito longo)
+  }
+
+  if (isUuid) {
+    // Se era pra ser UUID e não achou, retorna null (não tenta buscar por nome)
+    return null;
   }
 
   // Não é UUID, buscar por nome/slug
@@ -59,7 +68,7 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
       .split('-')
       .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
       .join(' ');
-    
+
     exercicio = await prisma.exercicio.findFirst({
       where: {
         nome: { equals: nomeAproximado, mode: 'insensitive' as const }
@@ -114,7 +123,7 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
  * Resolve exercicioId e retorna o objeto completo do exercício
  */
 export async function resolveExercicio(
-  exercicioId: string, 
+  exercicioId: string,
   select: { id: true; nome: true } = { id: true, nome: true }
 ): Promise<{ id: string; nome: string } | null> {
   const uuid = await resolveExercicioId(exercicioId);
