@@ -8,13 +8,28 @@ import { logger } from '../lib/logger';
  * Obtém o caminho do arquivo de mídia para um exercício
  * IMPORTANTE: exercicioId deve ser o UUID do exercício (não slug)
  */
-export async function getMediaFilePath(exercicioId: string, extension?: string): Promise<string | null> {
+export async function getMediaFilePath(exercicioId: string, extension?: string, alternativeId?: string): Promise<string | null> {
   const basePath = getUploadExerciciosPath();
-  const exercicioPath = path.join(basePath, exercicioId);
   
-  // Verificar se o diretório do exercício existe
-  if (!fs.existsSync(exercicioPath)) {
-    logger.warn(`Diretório do exercício não existe: ${exercicioPath}`, 'exercicio-media.service');
+  // Tentar primeiro pelo ID (UUID)
+  let exercicioPath = path.join(basePath, exercicioId);
+  let foundPath = false;
+  
+  // Verificar se o diretório do exercício existe pelo ID
+  if (fs.existsSync(exercicioPath)) {
+    foundPath = true;
+  } else if (alternativeId) {
+    // Se não encontrou pelo ID, tentar pelo ID alternativo (slug/nome antigo)
+    const altPath = path.join(basePath, alternativeId);
+    if (fs.existsSync(altPath)) {
+      exercicioPath = altPath;
+      foundPath = true;
+      logger.debug(`Diretório encontrado pelo ID alternativo: ${alternativeId}`, 'exercicio-media.service');
+    }
+  }
+  
+  if (!foundPath) {
+    logger.warn(`Diretório do exercício não existe: ${exercicioId} (alt: ${alternativeId})`, 'exercicio-media.service');
     return null;
   }
   

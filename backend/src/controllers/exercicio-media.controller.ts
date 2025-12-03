@@ -39,7 +39,7 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
 
     // Proteção contra path traversal: resolveExercicioId valida entrada
     const realExercicioId = await resolveExercicioId(exercicioId);
-    
+
     if (!realExercicioId) {
       logger.warn(`Exercício não encontrado: ${exercicioId}`, 'exercicio-media.controller');
       return res.status(404).json({
@@ -48,7 +48,7 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const filePath = await getMediaFilePath(realExercicioId, `.${extension}`);
+    const filePath = await getMediaFilePath(realExercicioId, `.${extension}`, exercicioId);
 
     if (!filePath) {
       logger.warn(`Mídia não encontrada: exercicioId=${exercicioId}, realId=${realExercicioId}`, 'exercicio-media.controller');
@@ -150,7 +150,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
 
     // Salvar arquivo usando o UUID real do exercício
     const ext = path.extname(file.originalname) || path.extname(file.path);
-    
+
     if (!ext) {
       // Limpar arquivo temporário
       if (fs.existsSync(file.path)) {
@@ -163,7 +163,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
         mimetype: file.mimetype
       });
     }
-    
+
     let mediaUrl: string;
     try {
       // PASSO 3: saveMediaFile cria o diretório automaticamente
@@ -206,7 +206,7 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     logger.error('Erro ao fazer upload', 'exercicio-media.controller', error);
-    
+
     // Limpar arquivo temporário
     if (req.file?.path && fs.existsSync(req.file.path)) {
       try {

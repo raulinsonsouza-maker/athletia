@@ -16,10 +16,15 @@ api.interceptors.request.use((config) => {
   if (config.data instanceof FormData) {
     delete config.headers['Content-Type']
   }
-  
+
+  // Verificar se já existe header de autorização (ex: upload manual)
+  if (config.headers.Authorization) {
+    return config
+  }
+
   // Verificar se é rota de admin (verificar se URL contém '/admin')
   const isAdminRoute = config.url?.includes('/admin') || false
-  
+
   if (isAdminRoute) {
     const adminToken = localStorage.getItem('adminAccessToken')
     if (adminToken) {
