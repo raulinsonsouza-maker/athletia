@@ -1,6 +1,6 @@
 # DEPLOY NA VPS - COMANDO ÚNICO
 
-cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh && bash scripts/criar-estrutura-upload.sh && pm2 restart backend
+cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh && npm install && npm run build && bash scripts/criar-estrutura-upload.sh && pm2 restart backend
 
 # Isso vai:
 # 1. Fazer pull das alterações
