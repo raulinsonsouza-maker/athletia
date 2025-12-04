@@ -133,7 +133,7 @@ export default function ExerciciosAdminList({
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Nome do exercício..."
-                className="input w-full pl-10"
+                className="input-field w-full pl-10"
               />
               <svg className="w-5 h-5 text-light-muted absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -147,7 +147,7 @@ export default function ExerciciosAdminList({
             <select
               value={filtroGrupo}
               onChange={(e) => setFiltroGrupo(e.target.value)}
-              className="input w-full"
+              className="input-field w-full"
             >
               <option value="">Todos</option>
               {gruposMusculares.map(grupo => (
@@ -162,7 +162,7 @@ export default function ExerciciosAdminList({
             <select
               value={filtroDificuldade}
               onChange={(e) => setFiltroDificuldade(e.target.value)}
-              className="input w-full"
+              className="input-field w-full"
             >
               <option value="">Todas</option>
               {niveisDificuldade.map(nivel => (
@@ -177,7 +177,7 @@ export default function ExerciciosAdminList({
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value as 'todos' | 'ativos' | 'inativos')}
-              className="input w-full"
+              className="input-field w-full"
             >
               <option value="todos">Todos</option>
               <option value="ativos">Ativos</option>

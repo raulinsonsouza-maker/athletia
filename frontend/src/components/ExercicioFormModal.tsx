@@ -311,7 +311,7 @@ export default function ExercicioFormModal({
                     value={formData.descricao}
                     onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
                     rows={4}
-                    className="input w-full"
+                    className="input-field w-full"
                     placeholder="Descrição do exercício..."
                   />
                 </div>
@@ -322,7 +322,7 @@ export default function ExercicioFormModal({
                     value={formData.execucaoTecnica}
                     onChange={(e) => setFormData(prev => ({ ...prev, execucaoTecnica: e.target.value }))}
                     rows={6}
-                    className="input w-full"
+                    className="input-field w-full"
                     placeholder="Como executar o exercício corretamente..."
                   />
                 </div>
@@ -333,7 +333,7 @@ export default function ExercicioFormModal({
                     value={arrayInputs.errosComuns}
                     onChange={(e) => handleArrayInputChange('errosComuns', e.target.value)}
                     rows={4}
-                    className="input w-full"
+                    className="input-field w-full"
                     placeholder="Um erro por linha..."
                   />
                   <p className="text-xs text-light-muted mt-1">Um item por linha</p>
@@ -351,7 +351,7 @@ export default function ExercicioFormModal({
                       type="number"
                       value={formData.cargaInicialSugerida || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, cargaInicialSugerida: e.target.value ? parseFloat(e.target.value) : null }))}
-                      className="input w-full"
+                      className="input-field w-full"
                       placeholder="Ex: 20"
                       min="0"
                       step="0.5"
@@ -364,7 +364,7 @@ export default function ExercicioFormModal({
                       type="number"
                       value={formData.rpeSugerido || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, rpeSugerido: e.target.value ? parseFloat(e.target.value) : null }))}
-                      className="input w-full"
+                      className="input-field w-full"
                       placeholder="Ex: 7"
                       min="1"
                       max="10"
@@ -379,7 +379,7 @@ export default function ExercicioFormModal({
                     value={arrayInputs.equipamentoNecessario}
                     onChange={(e) => handleArrayInputChange('equipamentoNecessario', e.target.value)}
                     rows={3}
-                    className="input w-full"
+                    className="input-field w-full"
                     placeholder="Um equipamento por linha..."
                   />
                   <p className="text-xs text-light-muted mt-1">Um item por linha</p>
@@ -391,7 +391,7 @@ export default function ExercicioFormModal({
                     value={arrayInputs.sinergistas}
                     onChange={(e) => handleArrayInputChange('sinergistas', e.target.value)}
                     rows={3}
-                    className="input w-full"
+                    className="input-field w-full"
                     placeholder="Um músculo por linha..."
                   />
                   <p className="text-xs text-light-muted mt-1">Um item por linha</p>
@@ -403,7 +403,7 @@ export default function ExercicioFormModal({
                     value={arrayInputs.alternativas}
                     onChange={(e) => handleArrayInputChange('alternativas', e.target.value)}
                     rows={3}
-                    className="input w-full"
+                    className="input-field w-full"
                     placeholder="Um exercício alternativo por linha..."
                   />
                   <p className="text-xs text-light-muted mt-1">Um item por linha</p>

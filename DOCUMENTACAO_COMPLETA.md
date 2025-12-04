@@ -1173,5 +1173,78 @@ cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh 
 
 ---
 
+## 🛠️ PROBLEMAS RESOLVIDOS E SOLUÇÕES (Histórico)
+
+### 1. Sistema de Mídia de Exercícios (Dez/2025)
+**Problema:** Arquivos de mídia (GIFs/Vídeos) retornando 404 em produção e erros 401/403 no upload.
+**Causa:**
+- Nomes de arquivos inconsistentes (`exercicio.gif` vs `media.gif`).
+- Configuração do Nginx com prioridade incorreta (Regex `~*` ganhando de prefixo `/api`).
+- Diretório de upload incorreto (`upload/` vs `uploads/`).
+**Solução Aplicada:**
+- **Padronização:** Todos os arquivos agora são salvos como `media.{extensão}`.
+- **Nginx:** Ajuste na regra de location para `location ^~ /api` para garantir prioridade.
+- **Frontend:** Componentes atualizados para buscar `media.{ext}`.
+- **Estilo:** Correção de inputs no admin para usar classe `input-field` (Dark Mode).
+
+---
+
+## 🚀 DEPLOY E PRODUÇÃO
+
+### Comandos Essenciais (VPS)
+```bash
+# Acessar diretório
+cd /opt/athletia
+
+# Atualizar código
+git pull origin main
+
+# Instalar dependências (se necessário)
+cd backend && npm install && cd ../frontend && npm install
+
+# Build Frontend
+cd frontend
+npm run build
+
+# Build Backend
+cd ../backend
+npm run build
+
+# Reiniciar Serviços
+pm2 restart athletia-backend
+sudo systemctl reload nginx
+```
+
+### Estrutura de Diretórios em Produção
+- **Root:** `/opt/athletia`
+- **Backend:** `/opt/athletia/backend`
+- **Frontend Build:** `/opt/athletia/frontend/dist`
+- **Uploads:** `/opt/athletia/backend/uploads` (Persistente)
+- **Logs:** `~/.pm2/logs/`
+
+---
+
+## 💻 SCRIPTS ÚTEIS DISPONÍVEIS
+
+Localizados em `backend/scripts/`:
+
+1.  **`criar-admin.ts`**
+    - *Uso:* `npx ts-node scripts/criar-admin.ts`
+    - *Função:* Cria um usuário administrador inicial via linha de comando.
+
+2.  **`tornar-admin.ts`**
+    - *Uso:* `npx ts-node scripts/tornar-admin.ts <email>`
+    - *Função:* Promove um usuário existente para ADMIN.
+
+3.  **`renomear-media-producao.sh`**
+    - *Uso:* `./scripts/renomear-media-producao.sh`
+    - *Função:* Utilitário para padronizar nomes de arquivos de mídia antigos (de `exercicio.*` para `media.*`).
+
+4.  **`ensure-upload-dirs.sh`**
+    - *Uso:* `./scripts/ensure-upload-dirs.sh`
+    - *Função:* Garante que a estrutura de pastas de upload exista e tenha permissões corretas.
+
+---
+
 **Fim da Documentação**
 
