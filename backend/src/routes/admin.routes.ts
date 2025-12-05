@@ -27,12 +27,13 @@ import {
 } from '../controllers/grupo-muscular.controller';
 import {
   listarImagensPadrao,
-  salvarImagemPadrao
+  salvarImagemPadrao,
+  uploadImagemTreinoPadrao
 } from '../controllers/treino-imagem-padrao.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadImagemGrupo } from '../middleware/upload.middleware';
+import { uploadImagemGrupo, uploadTreinoImagem } from '../middleware/upload.middleware';
 import { normalizeMediaUrls } from '../middleware/normalize-media-urls.middleware';
 
 const router = Router();
@@ -280,6 +281,24 @@ router.get('/imagens-banco/arquivos', listarImagensBanco);
 // Imagens Padrão de Treino (A-G)
 router.get('/treino-imagens', listarImagensPadrao);
 router.post('/treino-imagens', salvarImagemPadrao);
+router.post(
+  '/treino-imagens/:letra/imagem',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    uploadTreinoImagem.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  uploadImagemTreinoPadrao
+);
 
 
 

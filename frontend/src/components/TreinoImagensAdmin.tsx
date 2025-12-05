@@ -12,6 +12,7 @@ export default function TreinoImagensAdmin() {
     const { showToast } = useToast()
     const [imagens, setImagens] = useState<Record<string, string>>({})
     const [loading, setLoading] = useState(true)
+    const [uploading, setUploading] = useState<string | null>(null)
 
     const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
@@ -49,6 +50,42 @@ export default function TreinoImagensAdmin() {
         }
     }
 
+    const handleFileUpload = async (letra: string, file: File) => {
+        if (!file) return
+
+        // Validar tipo e tamanho
+        if (!file.type.startsWith('image/')) {
+            showToast('Selecione apenas arquivos de imagem', 'error')
+            return
+        }
+
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            showToast('A imagem deve ter no máximo 5MB', 'error')
+            return
+        }
+
+        setUploading(letra)
+        const formData = new FormData()
+        formData.append('imagem', file)
+
+        try {
+            const response = await api.post(`/admin/treino-imagens/${letra}/imagem`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+            const novaUrl = response.data.imagemUrl
+            setImagens(prev => ({ ...prev, [letra]: novaUrl }))
+            showToast(`Upload da imagem do Treino ${letra} realizado com sucesso!`, 'success')
+        } catch (error) {
+            console.error('Erro ao fazer upload:', error)
+            showToast('Erro ao fazer upload da imagem', 'error')
+        } finally {
+            setUploading(null)
+        }
+    }
+
     if (loading) {
         return <div className="p-8 text-center text-light-muted">Carregando imagens...</div>
     }
@@ -64,6 +101,7 @@ export default function TreinoImagensAdmin() {
                     <div key={letra} className="card bg-dark-lighter border border-grey/30 p-4">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold text-primary">Treino {letra}</h3>
+                            {uploading === letra && <span className="text-xs text-primary animate-pulse">Enviando...</span>}
                         </div>
 
                         <div className="aspect-video bg-black/50 rounded-lg overflow-hidden mb-4 relative group">
@@ -78,6 +116,26 @@ export default function TreinoImagensAdmin() {
                                     <span className="text-sm">Sem imagem definida</span>
                                 </div>
                             )}
+
+                            {/* Overlay de Upload */}
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <label className="cursor-pointer p-2 bg-primary text-dark rounded-full hover:bg-primary-dark transition-colors" title="Fazer Upload">
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            if (e.target.files?.[0]) {
+                                                handleFileUpload(letra, e.target.files[0])
+                                            }
+                                        }}
+                                        disabled={uploading === letra}
+                                    />
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                    </svg>
+                                </label>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -96,7 +154,7 @@ export default function TreinoImagensAdmin() {
                                 />
                             </div>
                             <p className="text-xs text-light-muted/50">
-                                Cole a URL da imagem e clique fora para salvar.
+                                Faça upload ou cole a URL da imagem.
                             </p>
                         </div>
                     </div>

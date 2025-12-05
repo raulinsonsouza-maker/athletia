@@ -22,14 +22,12 @@ function isValidId(id: string): boolean {
 const storageGrupoImagem = multer.diskStorage({
   destination: (req, file, cb) => {
     const grupoId = req.params.id;
-    
-    // CORREÇÃO PROBLEMA 1: Não passar string vazia no callback de erro
+
     if (!grupoId || !isValidId(grupoId)) {
       return cb(new Error('ID do grupo é obrigatório e deve ser válido'), undefined as any);
     }
 
     try {
-      // CORREÇÃO PROBLEMA 7 e 8: Usar estrutura padronizada baseada em getUploadExerciciosPath
       const basePath = getUploadExerciciosPath();
       const uploadPath = path.join(path.dirname(basePath), 'grupos-musculares', grupoId);
       if (!fs.existsSync(uploadPath)) {
@@ -42,7 +40,6 @@ const storageGrupoImagem = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    // Validar extensão
     const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
     const finalExt = validExts.includes(ext) ? ext : '.jpg';
     cb(null, `capa${finalExt}`);
@@ -70,3 +67,39 @@ export const uploadImagemGrupo = multer({
   }
 });
 
+// ============================================================================
+// UPLOAD DE IMAGEM PADRÃO DE TREINO (A-G)
+// ============================================================================
+
+const storageTreinoImagem = multer.diskStorage({
+  destination: (req, file, cb) => {
+    try {
+      const basePath = getUploadExerciciosPath();
+      const uploadPath = path.join(path.dirname(basePath), 'treino-imagens');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    } catch (error: any) {
+      cb(new Error(`Erro ao criar diretório de upload: ${error.message}`), undefined as any);
+    }
+  },
+  filename: (req, file, cb) => {
+    const letra = req.params.letra;
+    if (!letra) {
+      return cb(new Error('Letra do treino é obrigatória'), undefined as any);
+    }
+    const ext = path.extname(file.originalname).toLowerCase();
+    const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+    const finalExt = validExts.includes(ext) ? ext : '.jpg';
+    cb(null, `${letra.toUpperCase()}${finalExt}`);
+  }
+});
+
+export const uploadTreinoImagem = multer({
+  storage: storageTreinoImagem,
+  fileFilter: fileFilterImagemGrupo, // Reutilizando filtro de imagem
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});

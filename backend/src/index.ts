@@ -96,6 +96,20 @@ app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
   }
 }));
 
+// Servir imagens padrão de treino (A-G)
+const uploadTreinoImagensPath = path.join(path.dirname(uploadExerciciosPath), 'treino-imagens');
+app.use('/api/uploads/treino-imagens', express.static(uploadTreinoImagensPath, {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.webp')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
+
 // Servir imagens do banco com múltiplos caminhos candidatos
 const imagensBancoCandidates = getImagensBancoPathCandidates();
 const resolveImagemBancoArquivo = (nomeArquivo: string): { filePath: string; basePath: string } | null => {
@@ -130,7 +144,7 @@ app.use('/api/imagens-banco', (req, res, next) => {
 // Rota para servir imagens do banco
 app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
   const { nomeArquivo } = req.params;
-  
+
   // Validar nome do arquivo (prevenir path traversal)
   if (nomeArquivo.includes('..') || nomeArquivo.includes('/') || nomeArquivo.includes('\\')) {
     return res.status(400).json({ error: 'Nome de arquivo inválido' });
@@ -179,7 +193,7 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   // Cache headers otimizados para imagens estáticas (1 ano)
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   res.setHeader('Expires', new Date(Date.now() + 31536000000).toUTCString());
@@ -189,7 +203,7 @@ app.get('/api/imagens-banco/:nomeArquivo', (req, res) => {
 
   // Enviar arquivo usando stream
   const fileStream = fs.createReadStream(filePath);
-  
+
   fileStream.on('error', (err) => {
     console.error(`[Imagens Banco] Erro ao ler arquivo:`, err);
     if (!res.headersSent) {
@@ -219,8 +233,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     message: 'AthletIA API está funcionando!',
     timestamp: new Date().toISOString()
   });
@@ -241,9 +255,9 @@ app.use('/api/payment', paymentRoutes);
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
     error: 'Rota não encontrada',
-    path: req.path 
+    path: req.path
   });
 });
 

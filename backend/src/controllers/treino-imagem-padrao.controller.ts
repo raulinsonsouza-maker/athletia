@@ -56,3 +56,55 @@ export const salvarImagemPadrao = async (req: AuthRequest, res: Response) => {
         });
     }
 };
+
+export const uploadImagemTreinoPadrao = async (req: AuthRequest, res: Response) => {
+    try {
+        const { letra } = req.params;
+        const file = req.file;
+
+        if (!letra) {
+            return res.status(400).json({
+                error: 'Letra do treino é obrigatória'
+            });
+        }
+
+        if (!file) {
+            return res.status(400).json({
+                error: 'Arquivo de imagem é obrigatório'
+            });
+        }
+
+        const letraNormalizada = letra.toUpperCase();
+        const letrasValidas = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+
+        if (!letrasValidas.includes(letraNormalizada)) {
+            return res.status(400).json({
+                error: 'Letra inválida',
+                message: 'A letra deve ser entre A e G'
+            });
+        }
+
+        // Construir URL pública
+        // O middleware já salvou o arquivo com o nome correto (ex: A.jpg)
+        // Usar variável de ambiente para URL base se disponível, senão fallback
+        const baseUrl = process.env.API_URL || 'http://localhost:3001';
+        const imagemUrl = `${baseUrl}/api/uploads/treino-imagens/${file.filename}`;
+
+        const imagem = await (prisma as any).treinoImagemPadrao.upsert({
+            where: { letra: letraNormalizada },
+            update: { imagemUrl },
+            create: {
+                letra: letraNormalizada,
+                imagemUrl
+            }
+        });
+
+        return res.json(imagem);
+    } catch (error: any) {
+        console.error('Erro ao fazer upload da imagem padrão:', error);
+        return res.status(500).json({
+            error: 'Erro ao fazer upload da imagem padrão',
+            message: error.message
+        });
+    }
+};
