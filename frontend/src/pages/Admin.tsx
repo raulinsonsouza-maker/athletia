@@ -4,6 +4,9 @@ import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import ExerciciosAdminList from '../components/ExerciciosAdminList'
 import ExercicioFormModal from '../components/ExercicioFormModal'
+import GruposMuscularesAdminList from '../components/GruposMuscularesAdminList'
+import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
+import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
 
 interface User {
   id: string
@@ -146,7 +149,7 @@ export default function Admin() {
   const [loadingEstatisticas, setLoadingEstatisticas] = useState(false)
   const [errorUsuarios, setErrorUsuarios] = useState<string | null>(null)
   const [errorEstatisticas, setErrorEstatisticas] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas'>('estatisticas')
+  const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas' | 'grupos'>('estatisticas')
   const [usuarios, setUsuarios] = useState<User[]>([])
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [search, setSearch] = useState('')
@@ -177,6 +180,12 @@ export default function Admin() {
   const [loadingExercicioEdit, setLoadingExercicioEdit] = useState(false)
   const [isCreatingExercicio, setIsCreatingExercicio] = useState(false)
 
+  // Estados para Grupos Musculares
+  const [gruposList, setGruposList] = useState<GrupoMuscularVisual[]>([])
+  const [loadingGrupos, setLoadingGrupos] = useState(false)
+  const [showGrupoModal, setShowGrupoModal] = useState(false)
+  const [selectedGrupoId, setSelectedGrupoId] = useState<string | null>(null)
+
   useEffect(() => {
     verificarAdmin()
   }, [])
@@ -188,8 +197,23 @@ export default function Admin() {
       carregarEstatisticas()
     } else if (activeTab === 'exercicios') {
       carregarExercicios()
+    } else if (activeTab === 'grupos') {
+      carregarGruposMusculares()
     }
   }, [activeTab, search])
+
+  const carregarGruposMusculares = async () => {
+    setLoadingGrupos(true)
+    try {
+      const grupos = await grupoMuscularAdminService.listar()
+      setGruposList(grupos)
+    } catch (error) {
+      console.error('Erro ao carregar grupos:', error)
+      showToast('Erro ao carregar grupos musculares', 'error')
+    } finally {
+      setLoadingGrupos(false)
+    }
+  }
 
   const verificarAdmin = async () => {
     try {
@@ -207,7 +231,7 @@ export default function Admin() {
       if (import.meta.env.DEV) {
         console.error('Erro ao verificar admin:', error)
       }
-      
+
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
         localStorage.removeItem('adminRefreshToken')
@@ -228,12 +252,12 @@ export default function Admin() {
   const carregarUsuarios = async () => {
     setLoadingUsuarios(true)
     setErrorUsuarios(null)
-    
+
     try {
       const params = search ? `?search=${encodeURIComponent(search)}` : ''
       const response = await api.get(`/admin/usuarios${params}`)
       setUsuarios(response.data.usuarios || [])
-      
+
       if (response.data.usuarios && response.data.usuarios.length === 0 && search) {
         setErrorUsuarios(`Nenhum usuário encontrado para "${search}"`)
       }
@@ -241,7 +265,7 @@ export default function Admin() {
       if (import.meta.env.DEV) {
         console.error('Erro ao carregar usuários:', error)
       }
-      
+
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
         localStorage.removeItem('adminRefreshToken')
@@ -265,19 +289,19 @@ export default function Admin() {
   const carregarExercicios = async () => {
     setLoadingExercicios(true)
     setErrorExercicios(null)
-    
+
     try {
       // Buscar todos os exercícios (filtros aplicados no frontend)
       const response = await api.get('/admin/exercicios')
       const todosExercicios = response.data.exercicios || []
       setGruposMusculares(response.data.gruposMusculares || [])
-      
+
       setExercicios(todosExercicios)
     } catch (error: any) {
       if (import.meta.env.DEV) {
         console.error('Erro ao carregar exercícios:', error)
       }
-      
+
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
         localStorage.removeItem('adminRefreshToken')
@@ -301,7 +325,7 @@ export default function Admin() {
   const carregarEstatisticas = async () => {
     setLoadingEstatisticas(true)
     setErrorEstatisticas(null)
-    
+
     try {
       const response = await api.get('/admin/estatisticas')
       setEstatisticas(response.data)
@@ -309,7 +333,7 @@ export default function Admin() {
       if (import.meta.env.DEV) {
         console.error('Erro ao carregar estatísticas:', error)
       }
-      
+
       if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.removeItem('adminAccessToken')
         localStorage.removeItem('adminRefreshToken')
@@ -391,7 +415,7 @@ export default function Admin() {
     setShowEditModal(true)
     setLoadingExercicioEdit(true)
     setExercicioEdit(null)
-    
+
     try {
       const response = await api.get(`/admin/exercicios/${exercicioId}`)
       setExercicioEdit(response.data)
@@ -482,19 +506,19 @@ export default function Admin() {
           </div>
         </div>
       </nav>
-      
+
       <main className="container-custom section">
+        {/* Tabs */}
         {/* Tabs */}
         <div className="card mb-6">
           <div className="border-b border-grey/30">
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab('estatisticas')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-                  activeTab === 'estatisticas'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                }`}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'estatisticas'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -503,11 +527,10 @@ export default function Admin() {
               </button>
               <button
                 onClick={() => setActiveTab('usuarios')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-                  activeTab === 'usuarios'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                }`}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'usuarios'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -516,720 +539,607 @@ export default function Admin() {
               </button>
               <button
                 onClick={() => setActiveTab('exercicios')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-                  activeTab === 'exercicios'
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                }`}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'exercicios'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                  }`}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Exercícios
               </button>
+              <button
+                onClick={() => setActiveTab('grupos')}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'grupos'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                  }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Grupos Musculares
+              </button>
             </nav>
           </div>
         </div>
 
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => navigate('/admin/grupos')}
-            className="btn-primary flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16.5 10.5V6a4.5 4.5 0 10-9 0v4.5m12 0H4.5m12 0l1.5 10.5h-15L6 10.5"
-              />
-            </svg>
-            Gerenciar grupos musculares
-          </button>
-        </div>
+        {
+          activeTab === 'usuarios' && (
+            <div className="space-y-6">
+              {/* Busca */}
+              <div className="mb-6">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="input-field"
+                  placeholder="Buscar por email ou nome..."
+                />
+              </div>
 
-        {/* Conteúdo das Tabs */}
-        {activeTab === 'usuarios' && (
-          <div className="card">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-display font-bold text-light">Gerenciar Usuários</h2>
-              <div className="flex items-center gap-3">
-                {/* Botões de Visualização */}
-                <div className="flex items-center gap-1 bg-dark-lighter rounded-lg p-1 border border-grey/30">
-                  <button
-                    onClick={() => handleViewModeChange('cards')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'cards'
-                        ? 'bg-primary text-dark'
-                        : 'text-light-muted hover:text-light'
-                    }`}
-                    title="Visualização em Cards"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange('list')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-primary text-dark'
-                        : 'text-light-muted hover:text-light'
-                    }`}
-                    title="Visualização em Lista"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleViewModeChange('table')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'table'
-                        ? 'bg-primary text-dark'
-                        : 'text-light-muted hover:text-light'
-                    }`}
-                    title="Visualização em Tabela"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
+              {/* Lista de Usuários */}
+              {loadingUsuarios ? (
+                <div className="text-center py-12">
+                  <div className="spinner h-8 w-8 mx-auto"></div>
+                  <p className="mt-4 text-light-muted">Carregando usuários...</p>
                 </div>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="btn-primary flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Criar Usuário
-                </button>
-              </div>
-            </div>
-
-            {/* Busca */}
-            <div className="mb-6">
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="input-field"
-                placeholder="Buscar por email ou nome..."
-              />
-            </div>
-
-            {/* Lista de Usuários */}
-            {loadingUsuarios ? (
-              <div className="text-center py-12">
-                <div className="spinner h-8 w-8 mx-auto"></div>
-                <p className="mt-4 text-light-muted">Carregando usuários...</p>
-              </div>
-            ) : errorUsuarios ? (
-              <div className="text-center py-12">
-                <div className="text-red-400 mb-2">
-                  <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-red-400 mb-2">{errorUsuarios}</p>
-                <button onClick={carregarUsuarios} className="btn-secondary text-sm mt-4">
-                  Tentar Novamente
-                </button>
-              </div>
-            ) : (
-              <>
-                {usuarios.length > 0 && (
-                  <div className="mb-4 text-sm text-light-muted">
-                    {usuarios.length} {usuarios.length === 1 ? 'usuário encontrado' : 'usuários encontrados'}
-                  </div>
-                )}
-                
-                {/* Visualização em Cards */}
-                {viewMode === 'cards' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {usuarios.map((user) => (
-                      <div
-                        key={user.id}
-                        onClick={() => handleShowDetails(user.id)}
-                        className="card-hover cursor-pointer transition-all"
-                      >
-                        <div className="flex flex-col">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-light mb-1">
-                                {user.nome || 'Sem nome'}
-                              </h3>
-                              <p className="text-light-muted text-sm truncate">{user.email}</p>
-                              {user.telefone && (
-                                <p className="text-light-muted text-sm mt-1">{user.telefone}</p>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {user.role === 'ADMIN' ? (
-                              <span className="badge-primary text-xs">Admin</span>
-                            ) : (
-                              <span className="badge-secondary text-xs">User</span>
-                            )}
-                            {user.planoAtivo ? (
-                              <span className="badge-success text-xs">Plano Ativo</span>
-                            ) : (
-                              <span className="badge-error text-xs">Sem Plano</span>
-                            )}
-                            {user.perfil ? (
-                              <span className="badge-success text-xs">Perfil Completo</span>
-                            ) : (
-                              <span className="badge-warning text-xs">Sem Perfil</span>
-                            )}
-                            {user.plano && (
-                              <span className="badge-primary text-xs">{user.plano}</span>
-                            )}
-                          </div>
-
-                          {user.perfil && (
-                            <div className="mb-3 space-y-1">
-                              {user.perfil.objetivo && (
-                                <p className="text-light-muted text-xs">
-                                  <span className="font-medium">Objetivo:</span> {user.perfil.objetivo}
-                                </p>
-                              )}
-                              {user.perfil.experiencia && (
-                                <p className="text-light-muted text-xs">
-                                  <span className="font-medium">Experiência:</span> {user.perfil.experiencia}
-                                </p>
-                              )}
-                            </div>
-                          )}
-
-                          <div className="mt-auto pt-3 border-t border-grey/30">
-                            <p className="text-light-muted text-xs">
-                              Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                            </p>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleShowDetails(user.id)
-                              }}
-                              className="btn-secondary text-xs w-full mt-2"
-                            >
-                              Ver Detalhes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Visualização em Lista Compacta */}
-                {viewMode === 'list' && (
-                  <div className="space-y-2">
-                    {usuarios.map((user) => (
-                      <div
-                        key={user.id}
-                        onClick={() => handleShowDetails(user.id)}
-                        className="card-hover cursor-pointer p-4 flex items-center justify-between hover:bg-dark-lighter transition-colors"
-                      >
-                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-base font-semibold text-light truncate">
-                              {user.nome || 'Sem nome'}
-                            </h3>
-                            <p className="text-light-muted text-sm truncate">{user.email}</p>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {user.role === 'ADMIN' ? (
-                              <span className="badge-primary text-xs">Admin</span>
-                            ) : (
-                              <span className="badge-secondary text-xs">User</span>
-                            )}
-                            {user.planoAtivo ? (
-                              <span className="badge-success text-xs">Plano Ativo</span>
-                            ) : (
-                              <span className="badge-error text-xs">Sem Plano</span>
-                            )}
-                            {user.perfil ? (
-                              <span className="badge-success text-xs">Perfil</span>
-                            ) : (
-                              <span className="badge-warning text-xs">Sem Perfil</span>
-                            )}
-                            {user.plano && (
-                              <span className="badge-primary text-xs">{user.plano}</span>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleShowDetails(user.id)
-                          }}
-                          className="btn-secondary text-xs ml-4"
-                        >
-                          Ver Detalhes
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Visualização em Tabela */}
-                {viewMode === 'table' && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-grey/30">
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Nome</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Email</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Telefone</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Plano</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Status</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Perfil</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Cadastro</th>
-                          <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Ações</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {usuarios.map((user) => (
-                          <tr
-                            key={user.id}
-                            onClick={() => handleShowDetails(user.id)}
-                            className="border-b border-grey/10 hover:bg-dark-lighter cursor-pointer transition-colors"
-                          >
-                            <td className="py-3 px-4 text-sm text-light font-medium">
-                              {user.nome || 'Sem nome'}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-light-muted">{user.email}</td>
-                            <td className="py-3 px-4 text-sm text-light-muted">
-                              {user.telefone || '-'}
-                            </td>
-                            <td className="py-3 px-4">
-                              {user.plano ? (
-                                <span className="badge-primary text-xs">{user.plano}</span>
-                              ) : (
-                                <span className="text-light-muted text-xs">-</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4">
-                              {user.planoAtivo ? (
-                                <span className="badge-success text-xs">Ativo</span>
-                              ) : (
-                                <span className="badge-error text-xs">Inativo</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4">
-                              {user.perfil ? (
-                                <span className="badge-success text-xs">Completo</span>
-                              ) : (
-                                <span className="badge-warning text-xs">Incompleto</span>
-                              )}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-light-muted">
-                              {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                            </td>
-                            <td className="py-3 px-4">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleShowDetails(user.id)
-                                }}
-                                className="btn-secondary text-xs"
-                              >
-                                Ver Detalhes
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-                
-                {usuarios.length === 0 && !search && (
-                  <div className="text-center py-12 text-light-muted">
-                    <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <p className="text-lg mb-2">Nenhum usuário cadastrado</p>
-                    <p className="text-sm">Clique em "Criar Usuário" para começar</p>
-                  </div>
-                )}
-                {usuarios.length === 0 && search && (
-                  <div className="text-center py-12 text-light-muted">
-                    <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    <p className="text-lg mb-2">Nenhum usuário encontrado</p>
-                    <p className="text-sm">Tente buscar com outro termo</p>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'exercicios' && (
-          <div className="card">
-            <ExerciciosAdminList
-              exercicios={exercicios}
-              loading={loadingExercicios}
-              error={errorExercicios}
-              gruposMusculares={gruposMusculares}
-              onEdit={handleEditExercicio}
-              onCreate={handleCreateExercicio}
-              onRetry={carregarExercicios}
-            />
-          </div>
-        )}
-
-        {activeTab === 'estatisticas' && (
-          <div className="space-y-6">
-            {loadingEstatisticas ? (
-              <div className="card">
-                <div className="flex items-center justify-center py-12">
-                  <div className="spinner h-8 w-8"></div>
-                  <p className="ml-4 text-light-muted">Carregando estatísticas...</p>
-                </div>
-              </div>
-            ) : errorEstatisticas ? (
-              <div className="card">
+              ) : errorUsuarios ? (
                 <div className="text-center py-12">
                   <div className="text-red-400 mb-2">
                     <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-red-400 mb-2">{errorEstatisticas}</p>
-                  <button onClick={carregarEstatisticas} className="btn-secondary text-sm mt-4">
+                  <p className="text-red-400 mb-2">{errorUsuarios}</p>
+                  <button onClick={carregarUsuarios} className="btn-secondary text-sm mt-4">
                     Tentar Novamente
                   </button>
                 </div>
-              </div>
-            ) : estatisticas ? (
-              <>
-                {/* Resumo Geral */}
+              ) : (
+                <>
+                  {usuarios.length > 0 && (
+                    <div className="mb-4 text-sm text-light-muted">
+                      {usuarios.length} {usuarios.length === 1 ? 'usuário encontrado' : 'usuários encontrados'}
+                    </div>
+                  )}
+
+                  {/* Visualização em Cards */}
+                  {viewMode === 'cards' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {usuarios.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleShowDetails(user.id)}
+                          className="card-hover cursor-pointer transition-all"
+                        >
+                          <div className="flex flex-col">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-light mb-1">
+                                  {user.nome || 'Sem nome'}
+                                </h3>
+                                <p className="text-light-muted text-sm truncate">{user.email}</p>
+                                {user.telefone && (
+                                  <p className="text-light-muted text-sm mt-1">{user.telefone}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {user.role === 'ADMIN' ? (
+                                <span className="badge-primary text-xs">Admin</span>
+                              ) : (
+                                <span className="badge-secondary text-xs">User</span>
+                              )}
+                              {user.planoAtivo ? (
+                                <span className="badge-success text-xs">Plano Ativo</span>
+                              ) : (
+                                <span className="badge-error text-xs">Sem Plano</span>
+                              )}
+                              {user.perfil ? (
+                                <span className="badge-success text-xs">Perfil Completo</span>
+                              ) : (
+                                <span className="badge-warning text-xs">Sem Perfil</span>
+                              )}
+                              {user.plano && (
+                                <span className="badge-primary text-xs">{user.plano}</span>
+                              )}
+                            </div>
+
+                            {user.perfil && (
+                              <div className="mb-3 space-y-1">
+                                {user.perfil.objetivo && (
+                                  <p className="text-light-muted text-xs">
+                                    <span className="font-medium">Objetivo:</span> {user.perfil.objetivo}
+                                  </p>
+                                )}
+                                {user.perfil.experiencia && (
+                                  <p className="text-light-muted text-xs">
+                                    <span className="font-medium">Experiência:</span> {user.perfil.experiencia}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+
+                            <div className="mt-auto pt-3 border-t border-grey/30">
+                              <p className="text-light-muted text-xs">
+                                Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                              </p>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleShowDetails(user.id)
+                                }}
+                                className="btn-secondary text-xs w-full mt-2"
+                              >
+                                Ver Detalhes
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Visualização em Lista Compacta */}
+                  {viewMode === 'list' && (
+                    <div className="space-y-2">
+                      {usuarios.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleShowDetails(user.id)}
+                          className="card-hover cursor-pointer p-4 flex items-center justify-between hover:bg-dark-lighter transition-colors"
+                        >
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-base font-semibold text-light truncate">
+                                {user.nome || 'Sem nome'}
+                              </h3>
+                              <p className="text-light-muted text-sm truncate">{user.email}</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {user.role === 'ADMIN' ? (
+                                <span className="badge-primary text-xs">Admin</span>
+                              ) : (
+                                <span className="badge-secondary text-xs">User</span>
+                              )}
+                              {user.planoAtivo ? (
+                                <span className="badge-success text-xs">Plano Ativo</span>
+                              ) : (
+                                <span className="badge-error text-xs">Sem Plano</span>
+                              )}
+                              {user.perfil ? (
+                                <span className="badge-success text-xs">Perfil</span>
+                              ) : (
+                                <span className="badge-warning text-xs">Sem Perfil</span>
+                              )}
+                              {user.plano && (
+                                <span className="badge-primary text-xs">{user.plano}</span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleShowDetails(user.id)
+                            }}
+                            className="btn-secondary text-xs ml-4"
+                          >
+                            Ver Detalhes
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Visualização em Tabela */}
+                  {viewMode === 'table' && (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-grey/30">
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Nome</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Email</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Telefone</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Plano</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Status</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Perfil</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Cadastro</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {usuarios.map((user) => (
+                            <tr
+                              key={user.id}
+                              onClick={() => handleShowDetails(user.id)}
+                              className="border-b border-grey/10 hover:bg-dark-lighter cursor-pointer transition-colors"
+                            >
+                              <td className="py-3 px-4 text-sm text-light font-medium">
+                                {user.nome || 'Sem nome'}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-light-muted">{user.email}</td>
+                              <td className="py-3 px-4 text-sm text-light-muted">
+                                {user.telefone || '-'}
+                              </td>
+                              <td className="py-3 px-4">
+                                {user.plano ? (
+                                  <span className="badge-primary text-xs">{user.plano}</span>
+                                ) : (
+                                  <span className="text-light-muted text-xs">-</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4">
+                                {user.planoAtivo ? (
+                                  <span className="badge-success text-xs">Ativo</span>
+                                ) : (
+                                  <span className="badge-error text-xs">Inativo</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4">
+                                {user.perfil ? (
+                                  <span className="badge-success text-xs">Completo</span>
+                                ) : (
+                                  <span className="badge-warning text-xs">Incompleto</span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-sm text-light-muted">
+                                {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                              </td>
+                              <td className="py-3 px-4">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleShowDetails(user.id)
+                                  }}
+                                  className="btn-secondary text-xs"
+                                >
+                                  Ver Detalhes
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {usuarios.length === 0 && !search && (
+                    <div className="text-center py-12 text-light-muted">
+                      <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <p className="text-lg mb-2">Nenhum usuário cadastrado</p>
+                      <p className="text-sm">Clique em "Criar Usuário" para começar</p>
+                    </div>
+                  )}
+                  {usuarios.length === 0 && search && (
+                    <div className="text-center py-12 text-light-muted">
+                      <svg className="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <p className="text-lg mb-2">Nenhum usuário encontrado</p>
+                      <p className="text-sm">Tente buscar com outro termo</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )
+        }
+
+        {
+          activeTab === 'exercicios' && (
+            <div className="card">
+              <ExerciciosAdminList
+                exercicios={exercicios}
+                loading={loadingExercicios}
+                error={errorExercicios}
+                gruposMusculares={gruposMusculares}
+                onEdit={handleEditExercicio}
+                onCreate={handleCreateExercicio}
+                onRetry={carregarExercicios}
+              />
+            </div>
+          )
+        }
+
+        {
+          activeTab === 'grupos' && (
+            <div className="card">
+              <GruposMuscularesAdminList
+                grupos={gruposList}
+                loading={loadingGrupos}
+                onEdit={(grupo) => {
+                  setSelectedGrupoId(grupo.id)
+                  setShowGrupoModal(true)
+                }}
+                onCreate={() => {
+                  setSelectedGrupoId(null)
+                  setShowGrupoModal(true)
+                }}
+                onDelete={async (id) => {
+                  if (window.confirm('Tem certeza que deseja excluir este grupo?')) {
+                    try {
+                      await grupoMuscularAdminService.remover(id)
+                      showToast('Grupo removido com sucesso', 'success')
+                      carregarGruposMusculares()
+                    } catch (error) {
+                      showToast('Erro ao remover grupo', 'error')
+                    }
+                  }
+                }}
+              />
+            </div>
+          )
+        }
+
+        {
+          activeTab === 'estatisticas' && (
+            <div className="space-y-6">
+              {loadingEstatisticas ? (
                 <div className="card">
-                  <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
-                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    Resumo Geral
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="card-hover p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-light-muted">Total de Usuários</p>
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <p className="text-3xl font-bold text-primary">{estatisticas.usuarios.total}</p>
-                      <p className="text-xs text-light-muted mt-1">
-                        {estatisticas.usuarios.admins} admins, {estatisticas.usuarios.usuarios} usuários
-                      </p>
-                    </div>
-                    <div className="card-hover p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-light-muted">Usuários com Plano Ativo</p>
-                        <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <p className="text-3xl font-bold text-success">{estatisticas.usuarios.comPlanoAtivo || 0}</p>
-                      <p className="text-xs text-light-muted mt-1">
-                        {estatisticas.metricas?.taxaConversao ? `${estatisticas.metricas.taxaConversao}% de conversão` : 'N/A'}
-                      </p>
-                    </div>
-                    <div className="card-hover p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-light-muted">Total de Treinos</p>
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                      <p className="text-3xl font-bold text-primary">{estatisticas.treinos.total}</p>
-                      <p className="text-xs text-light-muted mt-1">
-                        {estatisticas.treinos.concluidos || 0} concluídos ({estatisticas.treinos.taxaConclusao || 0}%)
-                      </p>
-                    </div>
-                    <div className="card-hover p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm text-light-muted">Total de Exercícios</p>
-                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                      </div>
-                      <p className="text-3xl font-bold text-primary">{estatisticas.exercicios.total}</p>
-                      <p className="text-xs text-light-muted mt-1">Exercícios cadastrados</p>
-                    </div>
+                  <div className="flex items-center justify-center py-12">
+                    <div className="spinner h-8 w-8"></div>
+                    <p className="ml-4 text-light-muted">Carregando estatísticas...</p>
                   </div>
                 </div>
-
-                {/* Dados Financeiros */}
-                {estatisticas.financeiro && (
-                  <div className="card">
-                    <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
-                      <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              ) : errorEstatisticas ? (
+                <div className="card">
+                  <div className="text-center py-12">
+                    <div className="text-red-400 mb-2">
+                      <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Dados Financeiros
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                      <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-light-muted">Receita Total</p>
-                          <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <p className="text-3xl font-bold text-success">
-                          R$ {estatisticas.financeiro.receitaTotal.toFixed(2).replace('.', ',')}
-                        </p>
-                        <p className="text-xs text-light-muted mt-1">Soma de todos os planos ativos</p>
-                      </div>
-                      <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-light-muted">Receita Mensal</p>
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        <p className="text-3xl font-bold text-primary">
-                          R$ {estatisticas.financeiro.receitaMensal.toFixed(2).replace('.', ',')}
-                        </p>
-                        <p className="text-xs text-light-muted mt-1">Mês atual</p>
-                      </div>
-                      <div className="card-hover p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-light-muted">Planos Ativos</p>
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                        </div>
-                        <p className="text-3xl font-bold text-primary">{estatisticas.financeiro.planosAtivos.total}</p>
-                        <p className="text-xs text-light-muted mt-1">Total de assinaturas ativas</p>
-                      </div>
-                      <div className="card-hover p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-light-muted">Taxa de Conversão</p>
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                          </svg>
-                        </div>
-                        <p className="text-3xl font-bold text-primary">
-                          {estatisticas.metricas?.taxaConversao || 0}%
-                        </p>
-                        <p className="text-xs text-light-muted mt-1">Onboarding / Pagamento</p>
-                      </div>
                     </div>
-
-                    {/* Receita por Plano */}
-                    <div className="mt-6">
-                      <h3 className="text-lg font-semibold text-light mb-4">Receita por Tipo de Plano</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="card-hover p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-light">Mensal</p>
-                            <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.mensal} ativos</span>
-                          </div>
-                          <p className="text-2xl font-bold text-primary">
-                            R$ {estatisticas.financeiro.receitaPorPlano.mensal.toFixed(2).replace('.', ',')}
-                          </p>
-                          <p className="text-xs text-light-muted mt-1">
-                            R$ {estatisticas.financeiro.precos.MENSAL.toFixed(2).replace('.', ',')} por assinatura
-                          </p>
-                        </div>
-                        <div className="card-hover p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-light">Trimestral</p>
-                            <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.trimestral} ativos</span>
-                          </div>
-                          <p className="text-2xl font-bold text-primary">
-                            R$ {estatisticas.financeiro.receitaPorPlano.trimestral.toFixed(2).replace('.', ',')}
-                          </p>
-                          <p className="text-xs text-light-muted mt-1">
-                            R$ {estatisticas.financeiro.precos.TRIMESTRAL.toFixed(2).replace('.', ',')} por assinatura
-                          </p>
-                        </div>
-                        <div className="card-hover p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-light">Semestral</p>
-                            <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.semestral} ativos</span>
-                          </div>
-                          <p className="text-2xl font-bold text-primary">
-                            R$ {estatisticas.financeiro.receitaPorPlano.semestral.toFixed(2).replace('.', ',')}
-                          </p>
-                          <p className="text-xs text-light-muted mt-1">
-                            R$ {estatisticas.financeiro.precos.SEMESTRAL.toFixed(2).replace('.', ',')} por assinatura
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-red-400 mb-2">{errorEstatisticas}</p>
+                    <button onClick={carregarEstatisticas} className="btn-secondary text-sm mt-4">
+                      Tentar Novamente
+                    </button>
                   </div>
-                )}
-
-                {/* Métricas de Conversão */}
-                {estatisticas.metricas && (
+                </div>
+              ) : estatisticas ? (
+                <>
+                  {/* Resumo Geral */}
                   <div className="card">
                     <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
                       <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
-                      Métricas de Conversão e Engajamento
+                      Resumo Geral
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="card-hover p-4">
-                        <p className="text-sm text-light-muted mb-2">Taxa de Conversão</p>
-                        <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConversao}%</p>
-                        <p className="text-xs text-light-muted mt-1">Usuários com plano ativo</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-light-muted">Total de Usuários</p>
+                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        <p className="text-3xl font-bold text-primary">{estatisticas.usuarios.total}</p>
+                        <p className="text-xs text-light-muted mt-1">
+                          {estatisticas.usuarios.admins} admins, {estatisticas.usuarios.usuarios} usuários
+                        </p>
                       </div>
                       <div className="card-hover p-4">
-                        <p className="text-sm text-light-muted mb-2">Taxa de Conclusão de Treinos</p>
-                        <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConclusaoTreinos}%</p>
-                        <p className="text-xs text-light-muted mt-1">Média geral</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-light-muted">Usuários com Plano Ativo</p>
+                          <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <p className="text-3xl font-bold text-success">{estatisticas.usuarios.comPlanoAtivo || 0}</p>
+                        <p className="text-xs text-light-muted mt-1">
+                          {estatisticas.metricas?.taxaConversao ? `${estatisticas.metricas.taxaConversao}% de conversão` : 'N/A'}
+                        </p>
                       </div>
                       <div className="card-hover p-4">
-                        <p className="text-sm text-light-muted mb-2">Perfis Completos</p>
-                        <p className="text-3xl font-bold text-success">{estatisticas.metricas.perfilCompleto}</p>
-                        <p className="text-xs text-light-muted mt-1">Onboarding completo</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-light-muted">Total de Treinos</p>
+                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                          </svg>
+                        </div>
+                        <p className="text-3xl font-bold text-primary">{estatisticas.treinos.total}</p>
+                        <p className="text-xs text-light-muted mt-1">
+                          {estatisticas.treinos.concluidos || 0} concluídos ({estatisticas.treinos.taxaConclusao || 0}%)
+                        </p>
                       </div>
                       <div className="card-hover p-4">
-                        <p className="text-sm text-light-muted mb-2">Perfis Incompletos</p>
-                        <p className="text-3xl font-bold text-warning">{estatisticas.metricas.perfilIncompleto}</p>
-                        <p className="text-xs text-light-muted mt-1">Onboarding incompleto</p>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-light-muted">Total de Exercícios</p>
+                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                          </svg>
+                        </div>
+                        <p className="text-3xl font-bold text-primary">{estatisticas.exercicios.total}</p>
+                        <p className="text-xs text-light-muted mt-1">Exercícios cadastrados</p>
                       </div>
                     </div>
                   </div>
-                )}
 
-                {/* Distribuição de Usuários */}
-                <div className="card">
-                  <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
-                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    Distribuição de Usuários
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="card-hover p-4">
-                      <p className="text-sm text-light-muted mb-2">Com Perfil Completo</p>
-                      <p className="text-2xl font-bold text-success">{estatisticas.usuarios.comPerfil}</p>
+                  {/* Dados Financeiros */}
+                  {estatisticas.financeiro && (
+                    <div className="card">
+                      <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Dados Financeiros
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Receita Total</p>
+                            <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-success">
+                            R$ {estatisticas.financeiro.receitaTotal.toFixed(2).replace('.', ',')}
+                          </p>
+                          <p className="text-xs text-light-muted mt-1">Soma de todos os planos ativos</p>
+                        </div>
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Receita Mensal</p>
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-primary">
+                            R$ {estatisticas.financeiro.receitaMensal.toFixed(2).replace('.', ',')}
+                          </p>
+                          <p className="text-xs text-light-muted mt-1">Mês atual</p>
+                        </div>
+                        <div className="card-hover p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Planos Ativos</p>
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-primary">{estatisticas.financeiro.planosAtivos.total}</p>
+                          <p className="text-xs text-light-muted mt-1">Total de assinaturas ativas</p>
+                        </div>
+                        <div className="card-hover p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Taxa de Conversão</p>
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-primary">
+                            {estatisticas.metricas?.taxaConversao || 0}%
+                          </p>
+                          <p className="text-xs text-light-muted mt-1">Onboarding / Pagamento</p>
+                        </div>
+                      </div>
+
+                      {/* Receita por Plano */}
+                      <div className="mt-6">
+                        <h3 className="text-lg font-semibold text-light mb-4">Receita por Tipo de Plano</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="card-hover p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm font-medium text-light">Mensal</p>
+                              <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.mensal} ativos</span>
+                            </div>
+                            <p className="text-2xl font-bold text-primary">
+                              R$ {estatisticas.financeiro.receitaPorPlano.mensal.toFixed(2).replace('.', ',')}
+                            </p>
+                            <p className="text-xs text-light-muted mt-1">
+                              R$ {estatisticas.financeiro.precos.MENSAL.toFixed(2).replace('.', ',')} por assinatura
+                            </p>
+                          </div>
+                          <div className="card-hover p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm font-medium text-light">Trimestral</p>
+                              <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.trimestral} ativos</span>
+                            </div>
+                            <p className="text-2xl font-bold text-primary">
+                              R$ {estatisticas.financeiro.receitaPorPlano.trimestral.toFixed(2).replace('.', ',')}
+                            </p>
+                            <p className="text-xs text-light-muted mt-1">
+                              R$ {estatisticas.financeiro.precos.TRIMESTRAL.toFixed(2).replace('.', ',')} por assinatura
+                            </p>
+                          </div>
+                          <div className="card-hover p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm font-medium text-light">Semestral</p>
+                              <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.semestral} ativos</span>
+                            </div>
+                            <p className="text-2xl font-bold text-primary">
+                              R$ {estatisticas.financeiro.receitaPorPlano.semestral.toFixed(2).replace('.', ',')}
+                            </p>
+                            <p className="text-xs text-light-muted mt-1">
+                              R$ {estatisticas.financeiro.precos.SEMESTRAL.toFixed(2).replace('.', ',')} por assinatura
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="card-hover p-4">
-                      <p className="text-sm text-light-muted mb-2">Sem Perfil</p>
-                      <p className="text-2xl font-bold text-warning">{estatisticas.usuarios.semPerfil || 0}</p>
+                  )}
+
+                  {/* Métricas de Conversão */}
+                  {estatisticas.metricas && (
+                    <div className="card">
+                      <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Métricas de Conversão e Engajamento
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="card-hover p-4">
+                          <p className="text-sm text-light-muted mb-2">Taxa de Conversão</p>
+                          <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConversao}%</p>
+                          <p className="text-xs text-light-muted mt-1">Usuários com plano ativo</p>
+                        </div>
+                        <div className="card-hover p-4">
+                          <p className="text-sm text-light-muted mb-2">Taxa de Conclusão de Treinos</p>
+                          <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConclusaoTreinos}%</p>
+                          <p className="text-xs text-light-muted mt-1">Média geral</p>
+                        </div>
+                        <div className="card-hover p-4">
+                          <p className="text-sm text-light-muted mb-2">Perfis Completos</p>
+                          <p className="text-3xl font-bold text-success">{estatisticas.metricas.perfilCompleto}</p>
+                          <p className="text-xs text-light-muted mt-1">Onboarding completo</p>
+                        </div>
+                        <div className="card-hover p-4">
+                          <p className="text-sm text-light-muted mb-2">Perfis Incompletos</p>
+                          <p className="text-3xl font-bold text-warning">{estatisticas.metricas.perfilIncompleto}</p>
+                          <p className="text-xs text-light-muted mt-1">Onboarding incompleto</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="card-hover p-4">
-                      <p className="text-sm text-light-muted mb-2">Com Plano mas Sem Perfil</p>
-                      <p className="text-2xl font-bold text-error">{estatisticas.usuarios.comPlanoSemPerfil || 0}</p>
-                    </div>
-                    <div className="card-hover p-4">
-                      <p className="text-sm text-light-muted mb-2">Com Perfil mas Sem Plano</p>
-                      <p className="text-2xl font-bold text-warning">{estatisticas.usuarios.comPerfilSemPlano || 0}</p>
+                  )}
+
+                  {/* Distribuição de Usuários */}
+                  <div className="card">
+                    <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Distribuição de Usuários
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="card-hover p-4">
+                        <p className="text-sm text-light-muted mb-2">Com Perfil Completo</p>
+                        <p className="text-2xl font-bold text-success">{estatisticas.usuarios.comPerfil}</p>
+                      </div>
+                      <div className="card-hover p-4">
+                        <p className="text-sm text-light-muted mb-2">Sem Perfil</p>
+                        <p className="text-2xl font-bold text-warning">{estatisticas.usuarios.semPerfil || 0}</p>
+                      </div>
+                      <div className="card-hover p-4">
+                        <p className="text-sm text-light-muted mb-2">Com Plano mas Sem Perfil</p>
+                        <p className="text-2xl font-bold text-error">{estatisticas.usuarios.comPlanoSemPerfil || 0}</p>
+                      </div>
+                      <div className="card-hover p-4">
+                        <p className="text-sm text-light-muted mb-2">Com Perfil mas Sem Plano</p>
+                        <p className="text-2xl font-bold text-warning">{estatisticas.usuarios.comPerfilSemPlano || 0}</p>
+                      </div>
                     </div>
                   </div>
+                </>
+              ) : (
+                <div className="card">
+                  <div className="text-center py-12 text-light-muted">
+                    <p>Nenhuma estatística disponível</p>
+                  </div>
                 </div>
-              </>
-            ) : (
-              <div className="card">
-                <div className="text-center py-12 text-light-muted">
-                  <p>Nenhuma estatística disponível</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )
+        }
       </main>
 
-      {/* Modal Criar Usuário */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="card max-w-md w-full animate-scale-in border border-primary/30">
-            <h3 className="text-xl font-display font-bold text-light mb-6">Criar Novo Usuário</h3>
-            <form onSubmit={handleCriarUsuario} className="space-y-4">
-              <div>
-                <label className="label-field">Email *</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-field"
-                  placeholder="usuario@exemplo.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="label-field">Senha *</label>
-                <input
-                  type="password"
-                  value={formData.senha}
-                  onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                  className="input-field"
-                  placeholder="Mínimo 6 caracteres"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div>
-                <label className="label-field">Nome (opcional)</label>
-                <input
-                  type="text"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="input-field"
-                  placeholder="Nome do usuário"
-                />
-              </div>
-              <div>
-                <label className="label-field">Tipo de Usuário</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'USER' | 'ADMIN' })}
-                  className="input-field"
-                >
-                  <option value="USER">Usuário</option>
-                  <option value="ADMIN">Administrador</option>
-                </select>
-              </div>
-              <div className="flex space-x-3">
-                <button
-                  type="submit"
-                  className="btn-primary flex-1"
-                  disabled={creating}
-                >
-                  {creating ? (
-                    <>
-                      <div className="spinner h-4 w-4 mr-2"></div>
-                      Criando...
-                    </>
-                  ) : (
-                    'Criar Usuário'
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCreateModal(false)
-                    setFormData({ email: '', senha: '', nome: '', role: 'USER' })
-                  }}
-                  className="btn-secondary"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Detalhes do Usuário */}
-      {showDetailsModal && (
-        <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={handleCloseDetails}
-        >
-          <div 
+      {
+        showDetailsModal && (
+          <div
             className="card max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in border border-primary/30"
             onClick={(e) => e.stopPropagation()}
           >
@@ -1272,11 +1182,10 @@ export default function Admin() {
                         <button
                           key={tab}
                           onClick={() => setDetailsTab(tab)}
-                          className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
-                            detailsTab === tab
-                              ? 'border-primary text-primary'
-                              : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                          }`}
+                          className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${detailsTab === tab
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                            }`}
                         >
                           {labels[tab]}
                         </button>
@@ -1313,7 +1222,7 @@ export default function Admin() {
                           <div className="space-y-1">
                             <label className="text-xs font-medium text-light-muted uppercase tracking-wide">Data de Nascimento</label>
                             <p className="text-base text-light">
-                              {userDetails.usuario.dataNascimento 
+                              {userDetails.usuario.dataNascimento
                                 ? new Date(userDetails.usuario.dataNascimento).toLocaleDateString('pt-BR')
                                 : 'Não informado'}
                             </p>
@@ -1476,64 +1385,64 @@ export default function Admin() {
                           </div>
 
                           {/* Informações Adicionais */}
-                          {(userDetails.perfil.lesoes.length > 0 || 
-                            userDetails.perfil.preferencias.length > 0 || 
-                            userDetails.perfil.problemasAnteriores.length > 0 || 
+                          {(userDetails.perfil.lesoes.length > 0 ||
+                            userDetails.perfil.preferencias.length > 0 ||
+                            userDetails.perfil.problemasAnteriores.length > 0 ||
                             userDetails.perfil.objetivosAdicionais.length > 0) && (
-                            <div className="card-hover p-5">
-                              <h4 className="text-lg font-semibold text-light mb-4 flex items-center gap-2">
-                                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Informações Adicionais
-                              </h4>
-                              <div className="space-y-4">
-                                {userDetails.perfil.lesoes.length > 0 && (
-                                  <div>
-                                    <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Lesões</label>
-                                    <div className="flex flex-wrap gap-2">
-                                      {userDetails.perfil.lesoes.map((lesao, idx) => (
-                                        <span key={idx} className="badge-warning">{lesao}</span>
-                                      ))}
+                              <div className="card-hover p-5">
+                                <h4 className="text-lg font-semibold text-light mb-4 flex items-center gap-2">
+                                  <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  Informações Adicionais
+                                </h4>
+                                <div className="space-y-4">
+                                  {userDetails.perfil.lesoes.length > 0 && (
+                                    <div>
+                                      <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Lesões</label>
+                                      <div className="flex flex-wrap gap-2">
+                                        {userDetails.perfil.lesoes.map((lesao, idx) => (
+                                          <span key={idx} className="badge-warning">{lesao}</span>
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
-                                {userDetails.perfil.preferencias.length > 0 && (
-                                  <div>
-                                    <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Preferências</label>
-                                    <div className="flex flex-wrap gap-2">
-                                      {userDetails.perfil.preferencias.map((pref, idx) => (
-                                        <span key={idx} className="badge-primary">{pref}</span>
-                                      ))}
+                                  {userDetails.perfil.preferencias.length > 0 && (
+                                    <div>
+                                      <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Preferências</label>
+                                      <div className="flex flex-wrap gap-2">
+                                        {userDetails.perfil.preferencias.map((pref, idx) => (
+                                          <span key={idx} className="badge-primary">{pref}</span>
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
-                                {userDetails.perfil.problemasAnteriores.length > 0 && (
-                                  <div>
-                                    <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Problemas Anteriores</label>
-                                    <div className="flex flex-wrap gap-2">
-                                      {userDetails.perfil.problemasAnteriores.map((prob, idx) => (
-                                        <span key={idx} className="badge-error">{prob}</span>
-                                      ))}
+                                  {userDetails.perfil.problemasAnteriores.length > 0 && (
+                                    <div>
+                                      <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Problemas Anteriores</label>
+                                      <div className="flex flex-wrap gap-2">
+                                        {userDetails.perfil.problemasAnteriores.map((prob, idx) => (
+                                          <span key={idx} className="badge-error">{prob}</span>
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
 
-                                {userDetails.perfil.objetivosAdicionais.length > 0 && (
-                                  <div>
-                                    <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Objetivos Adicionais</label>
-                                    <div className="flex flex-wrap gap-2">
-                                      {userDetails.perfil.objetivosAdicionais.map((obj, idx) => (
-                                        <span key={idx} className="badge-success">{obj}</span>
-                                      ))}
+                                  {userDetails.perfil.objetivosAdicionais.length > 0 && (
+                                    <div>
+                                      <label className="text-xs font-medium text-light-muted uppercase tracking-wide mb-2 block">Objetivos Adicionais</label>
+                                      <div className="flex flex-wrap gap-2">
+                                        {userDetails.perfil.objetivosAdicionais.map((obj, idx) => (
+                                          <span key={idx} className="badge-success">{obj}</span>
+                                        ))}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
                         </>
                       ) : (
                         <div className="text-center py-12 text-light-muted">
@@ -1716,15 +1625,14 @@ export default function Admin() {
                           </div>
                           <div className="space-y-1">
                             <p className="text-xs font-medium text-light-muted uppercase tracking-wide">Variação</p>
-                            <p className={`text-2xl font-bold ${
-                              userDetails.estatisticas.variacaoPeso !== null
-                                ? userDetails.estatisticas.variacaoPeso > 0
-                                  ? 'text-success'
-                                  : userDetails.estatisticas.variacaoPeso < 0
+                            <p className={`text-2xl font-bold ${userDetails.estatisticas.variacaoPeso !== null
+                              ? userDetails.estatisticas.variacaoPeso > 0
+                                ? 'text-success'
+                                : userDetails.estatisticas.variacaoPeso < 0
                                   ? 'text-error'
                                   : 'text-primary'
-                                : 'text-light-muted'
-                            }`}>
+                              : 'text-light-muted'
+                              }`}>
                               {userDetails.estatisticas.variacaoPeso !== null
                                 ? `${userDetails.estatisticas.variacaoPeso > 0 ? '+' : ''}${userDetails.estatisticas.variacaoPeso.toFixed(2)} kg`
                                 : 'N/A'}
@@ -1744,7 +1652,7 @@ export default function Admin() {
                           </h4>
                           <div className="space-y-2 max-h-96 overflow-y-auto">
                             {userDetails.historicoPeso.map((registro, idx) => {
-                              const variacao = idx > 0 
+                              const variacao = idx > 0
                                 ? registro.peso - userDetails.historicoPeso[idx - 1].peso
                                 : null
                               return (
@@ -1761,9 +1669,8 @@ export default function Admin() {
                                       </p>
                                     </div>
                                     {variacao !== null && (
-                                      <span className={`badge ${
-                                        variacao > 0 ? 'badge-success' : variacao < 0 ? 'badge-error' : 'badge-secondary'
-                                      }`}>
+                                      <span className={`badge ${variacao > 0 ? 'badge-success' : variacao < 0 ? 'badge-error' : 'badge-secondary'
+                                        }`}>
                                         {variacao > 0 ? '+' : ''}{variacao.toFixed(2)} kg
                                       </span>
                                     )}
@@ -1792,33 +1699,45 @@ export default function Admin() {
               </div>
             )}
           </div>
-        </div>
-      )}
+    </div >
+  )
+}
 
-      {/* Modal de Cadastro/Edição de Exercício */}
-      <ExercicioFormModal
-        exercicio={loadingExercicioEdit ? null : exercicioEdit}
-        isOpen={showEditModal}
-        isCreating={isCreatingExercicio}
-        gruposMusculares={gruposMusculares}
-        onClose={handleCloseEditModal}
-        onSave={async (savedExercicio) => {
-          await carregarExercicios()
-          // Se criou um exercício, atualizar estado para modo edição
-          if (savedExercicio && isCreatingExercicio) {
-            setSelectedExercicioId(savedExercicio.id)
-            setExercicioEdit(savedExercicio)
-            setIsCreatingExercicio(false)
-          } else if (savedExercicio && !isCreatingExercicio) {
-            // Atualizar exercício editado
-            setExercicioEdit(savedExercicio)
-            if (savedExercicio.id && savedExercicio.id !== selectedExercicioId) {
-              setSelectedExercicioId(savedExercicio.id)
-            }
-          }
-        }}
-      />
+{/* Modal de Cadastro/Edição de Exercício */ }
+<ExercicioFormModal
+  exercicio={loadingExercicioEdit ? null : exercicioEdit}
+  isOpen={showEditModal}
+  isCreating={isCreatingExercicio}
+  gruposMusculares={gruposMusculares}
+  onClose={handleCloseEditModal}
+  onSave={async (savedExercicio) => {
+    await carregarExercicios()
+    // Se criou um exercício, atualizar estado para modo edição
+    if (savedExercicio && isCreatingExercicio) {
+      setSelectedExercicioId(savedExercicio.id)
+      setExercicioEdit(savedExercicio)
+      setIsCreatingExercicio(false)
+    } else if (savedExercicio && !isCreatingExercicio) {
+      // Atualizar exercício editado
+      setExercicioEdit(savedExercicio)
+      if (savedExercicio.id && savedExercicio.id !== selectedExercicioId) {
+        setSelectedExercicioId(savedExercicio.id)
+      }
+    }
+  }}
+/>
 
-    </div>
+{/* Modal de Grupo Muscular */ }
+<GrupoMuscularFormModal
+  isOpen={showGrupoModal}
+  onClose={() => setShowGrupoModal(false)}
+  grupoId={selectedGrupoId}
+  onSuccess={() => {
+    setShowGrupoModal(false)
+    carregarGruposMusculares()
+  }}
+/>
+
+    </div >
   )
 }

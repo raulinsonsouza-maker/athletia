@@ -16,6 +16,11 @@ export const grupoMuscularAdminService = {
     return response.data
   },
 
+  async buscarPorId(id: string): Promise<GrupoMuscularVisual> {
+    const response = await api.get(`/admin/grupos-musculares/${id}`)
+    return response.data
+  },
+
   async criar(payload: {
     nome: string
     descricao?: string

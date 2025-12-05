@@ -35,6 +35,7 @@ export default function ExerciciosAdminList({
   const [filtroGrupo, setFiltroGrupo] = useState<string>('')
   const [filtroDificuldade, setFiltroDificuldade] = useState<string>('')
   const [filtroStatus, setFiltroStatus] = useState<'todos' | 'ativos' | 'inativos'>('ativos')
+  const [viewMode, setViewMode] = useState<'cards' | 'list' | 'table'>('cards')
 
   const exerciciosFiltrados = useMemo(() => {
     return exercicios.filter(ex => {
@@ -113,12 +114,49 @@ export default function ExerciciosAdminList({
             {exerciciosFiltrados.length} de {exercicios.length} exercícios
           </p>
         </div>
-        <button onClick={onCreate} className="btn-primary flex items-center gap-2">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Novo Exercício
-        </button>
+
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 bg-dark-lighter rounded-lg p-1 border border-grey/30">
+            <button
+              onClick={() => setViewMode('cards')}
+              className={`p-2 rounded transition-colors ${viewMode === 'cards' ? 'bg-primary text-dark' : 'text-light-muted hover:text-light'
+                }`}
+              title="Visualização em Cards"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-primary text-dark' : 'text-light-muted hover:text-light'
+                }`}
+              title="Visualização em Lista"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`p-2 rounded transition-colors ${viewMode === 'table' ? 'bg-primary text-dark' : 'text-light-muted hover:text-light'
+                }`}
+              title="Visualização em Tabela"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+
+          <button onClick={onCreate} className="btn-primary flex items-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Exercício
+          </button>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -201,15 +239,62 @@ export default function ExerciciosAdminList({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {exerciciosFiltrados.map(exercicio => (
-            <ExercicioCard
-              key={exercicio.id}
-              exercicio={exercicio}
-              onEdit={onEdit}
-            />
-          ))}
-        </div>
+        <>
+          {/* Visualização: Cards */}
+          {viewMode === 'cards' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {exerciciosFiltrados.map(exercicio => (
+                <ExercicioCard
+                  key={exercicio.id}
+                  exercicio={exercicio}
+                  onEdit={onEdit}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Visualização: Lista */}
+          {viewMode === 'list' && (
+            <div className="space-y-2">
+              {exerciciosFiltrados.map(exercicio => (
+                <ExercicioListItem
+                  key={exercicio.id}
+                  exercicio={exercicio}
+                  onEdit={onEdit}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Visualização: Tabela */}
+          {viewMode === 'table' && (
+            <div className="card overflow-hidden p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-grey/30 bg-dark-lighter">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted w-16">Img</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Nome</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Grupo</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Dificuldade</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold text-light-muted w-24">Status</th>
+                      <th className="text-right py-3 px-4 text-sm font-semibold text-light-muted w-32">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {exerciciosFiltrados.map(exercicio => (
+                      <ExercicioTableRow
+                        key={exercicio.id}
+                        exercicio={exercicio}
+                        onEdit={onEdit}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
@@ -276,6 +361,117 @@ function ExercicioCard({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (i
         </button>
       </div>
     </div>
+  )
+}
+
+function ExercicioListItem({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (id: string) => void }) {
+  const { url: mediaUrl, isVideo, hasMedia } = useExercicioMedia({
+    imagemUrl: exercicio.imagemUrl || undefined,
+    fallbackChain: []
+  })
+
+  return (
+    <div
+      className="card-hover p-3 flex items-center gap-4 cursor-pointer"
+      onClick={() => onEdit(exercicio.id)}
+    >
+      <div className="w-12 h-12 rounded bg-dark-lighter flex-shrink-0 overflow-hidden">
+        {hasMedia && mediaUrl ? (
+          isVideo ? (
+            <video src={mediaUrl} className="w-full h-full object-cover" muted loop />
+          ) : (
+            <img src={mediaUrl} alt={exercicio.nome} className="w-full h-full object-cover" />
+          )
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg className="w-6 h-6 text-light-muted opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <h3 className="text-base font-bold text-light truncate">{exercicio.nome}</h3>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${exercicio.ativo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+            {exercicio.ativo ? 'Ativo' : 'Inativo'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-light-muted">
+          <span>{exercicio.grupoMuscularPrincipal}</span>
+          <span>•</span>
+          <span>{exercicio.nivelDificuldade}</span>
+        </div>
+      </div>
+
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          onEdit(exercicio.id)
+        }}
+        className="p-2 text-light-muted hover:text-primary transition-colors"
+        title="Editar"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+function ExercicioTableRow({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (id: string) => void }) {
+  const { url: mediaUrl, isVideo, hasMedia } = useExercicioMedia({
+    imagemUrl: exercicio.imagemUrl || undefined,
+    fallbackChain: []
+  })
+
+  return (
+    <tr
+      className="border-b border-grey/10 hover:bg-dark-lighter/50 transition-colors cursor-pointer"
+      onClick={() => onEdit(exercicio.id)}
+    >
+      <td className="py-2 px-4">
+        <div className="w-10 h-10 rounded bg-dark-lighter overflow-hidden">
+          {hasMedia && mediaUrl ? (
+            isVideo ? (
+              <video src={mediaUrl} className="w-full h-full object-cover" muted loop />
+            ) : (
+              <img src={mediaUrl} alt={exercicio.nome} className="w-full h-full object-cover" />
+            )
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <svg className="w-5 h-5 text-light-muted opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          )}
+        </div>
+      </td>
+      <td className="py-2 px-4 text-sm font-medium text-light">{exercicio.nome}</td>
+      <td className="py-2 px-4 text-sm text-light-muted">{exercicio.grupoMuscularPrincipal}</td>
+      <td className="py-2 px-4 text-sm text-light-muted">{exercicio.nivelDificuldade}</td>
+      <td className="py-2 px-4 text-center">
+        <span className={`px-2 py-0.5 rounded text-xs font-medium ${exercicio.ativo ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+          {exercicio.ativo ? 'Ativo' : 'Inativo'}
+        </span>
+      </td>
+      <td className="py-2 px-4 text-right">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit(exercicio.id)
+          }}
+          className="p-1.5 text-light-muted hover:text-primary transition-colors"
+          title="Editar"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+      </td>
+    </tr>
   )
 }
 
