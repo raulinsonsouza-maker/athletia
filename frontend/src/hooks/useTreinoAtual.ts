@@ -151,6 +151,21 @@ export function useTreinoAtual() {
       dispatch({ type: 'SET_LOADING', payload: true })
       const response = await treinoGateway.carregarPlano()
 
+      // Debug: verificar estrutura dos exercícios
+      if (response?.blocos) {
+        response.blocos.forEach((bloco: any, idx: number) => {
+          console.log(`[useTreinoAtual] Bloco ${idx + 1}:`, {
+            id: bloco.id,
+            titulo: bloco.titulo,
+            totalExercicios: bloco.exercicios?.length || 0,
+            primeiroExercicio: bloco.exercicios?.[0] ? {
+              nome: bloco.exercicios[0].nome,
+              imagemUrl: bloco.exercicios[0].imagemUrl
+            } : null
+          })
+        })
+      }
+
       // Processar bloco da URL se existir
       const treinoIdParam = searchParams.get('treino')
       if (treinoIdParam) {
@@ -168,8 +183,11 @@ export function useTreinoAtual() {
       }
 
       dispatch({ type: 'SET_PLANO', payload: response })
-    } catch (error) {
-      console.error(error)
+    } catch (error: any) {
+      console.error('[useTreinoAtual] Erro ao carregar plano:', error)
+      if (error.response?.status === 401) {
+        console.error('[useTreinoAtual] Erro 401 - Token pode estar expirado ou inválido')
+      }
       showToast('Não foi possível carregar seu treino.', 'error')
       dispatch({ type: 'SET_LOADING', payload: false })
     }

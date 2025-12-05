@@ -439,7 +439,7 @@ export async function buscarPlanoAtual(userId: string) {
         cardio,
         exercicios: exerciciosValidos.map(ex => {
           // Normalizar URL de mídia do formato antigo para o novo formato
-          let imagemUrl = ex.exercicio.imagemUrl;
+          let imagemUrl = ex.exercicio.imagemUrl || null;
           if (imagemUrl) {
             const urlNormalizada = migrateMediaUrl(imagemUrl, ex.exercicio.id);
             if (urlNormalizada && urlNormalizada !== imagemUrl) {
@@ -454,8 +454,14 @@ export async function buscarPlanoAtual(userId: string) {
             }
           }
           
+          // Debug: log quando imagemUrl está ausente
+          if (!imagemUrl && process.env.NODE_ENV !== 'production') {
+            console.log(`[TreinoDashboard] Exercício "${ex.exercicio.nome}" (${ex.exercicio.id}) sem imagemUrl`);
+          }
+          
           return {
             id: ex.id,
+            exercicioId: ex.exercicio.id, // ID do exercício para construir URLs de mídia
             nome: ex.exercicio.nome,
             grupo: ex.exercicio.grupoMuscularPrincipal,
             series: ex.series,
@@ -466,7 +472,7 @@ export async function buscarPlanoAtual(userId: string) {
             descricao: ex.exercicio.descricao,
             execucao: ex.exercicio.execucaoTecnica,
             errosComuns: ex.exercicio.errosComuns,
-            imagemUrl,
+            imagemUrl: imagemUrl || null, // Garantir que sempre tenha a propriedade, mesmo que null
             equipamentos: ex.exercicio.equipamentoNecessario
           };
         })

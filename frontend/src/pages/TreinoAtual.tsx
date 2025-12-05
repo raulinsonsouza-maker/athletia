@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTreinoAtual } from '../hooks/useTreinoAtual'
 import { useCronometro } from '../hooks/useCronometro'
@@ -46,6 +46,18 @@ export default function TreinoAtual() {
   // Mídia dos exercícios
   const exercicioMedia = useExercicioMediaChain(exercicioAtivo)
   const proximoMedia = useExercicioMediaChain(proximoExercicio)
+
+  // Debug: verificar se imagemUrl está presente
+  useEffect(() => {
+    if (exercicioAtivo) {
+      console.log('[TreinoAtual] Exercício ativo:', {
+        nome: exercicioAtivo.nome,
+        imagemUrl: exercicioAtivo.imagemUrl,
+        mediaUrl: exercicioMedia.url,
+        hasMedia: exercicioMedia.hasMedia
+      })
+    }
+  }, [exercicioAtivo, exercicioMedia.url, exercicioMedia.hasMedia])
 
   // Handlers
   const handleVoltar = useCallback(() => navigate('/treinos'), [navigate])

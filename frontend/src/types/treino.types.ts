@@ -141,6 +141,7 @@ export interface TreinoHomeResponse {
 
 export interface PlanoAtualExercicio {
   id: string
+  exercicioId?: string // ID do exercício para construir URLs de mídia
   nome: string
   grupo: string
   series: number
