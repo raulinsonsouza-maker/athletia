@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma';
 import { garantirPlanoSemanal, aplicarCardioAoTreino } from './treino-engine.service';
 import { garantirPerfilParaInteligencia, obterPerfilBasico } from './perfil.service';
 import { obterImagemTreino, obterImagemGrupo } from '../utils/imagens-treino';
+import { migrateMediaUrl } from '../utils/migrate-media-urls';
 
 // ============================================================================
 // FUNÇÕES AUXILIARES
@@ -436,21 +437,39 @@ export async function buscarPlanoAtual(userId: string) {
           ? imagensPadrao[treino.letraTreino]
           : obterImagemTreino(gruposPrincipais, genero),
         cardio,
-        exercicios: exerciciosValidos.map(ex => ({
-          id: ex.id,
-          nome: ex.exercicio.nome,
-          grupo: ex.exercicio.grupoMuscularPrincipal,
-          series: ex.series,
-          repeticoes: ex.repeticoes,
-          carga: ex.carga,
-          ordem: ex.ordem,
-          concluido: ex.concluido,
-          descricao: ex.exercicio.descricao,
-          execucao: ex.exercicio.execucaoTecnica,
-          errosComuns: ex.exercicio.errosComuns,
-          imagemUrl: ex.exercicio.imagemUrl,
-          equipamentos: ex.exercicio.equipamentoNecessario
-        }))
+        exercicios: exerciciosValidos.map(ex => {
+          // Normalizar URL de mídia do formato antigo para o novo formato
+          let imagemUrl = ex.exercicio.imagemUrl;
+          if (imagemUrl) {
+            const urlNormalizada = migrateMediaUrl(imagemUrl, ex.exercicio.id);
+            if (urlNormalizada && urlNormalizada !== imagemUrl) {
+              imagemUrl = urlNormalizada;
+              // Atualizar no banco em background (não bloquear resposta)
+              prisma.exercicio.update({
+                where: { id: ex.exercicio.id },
+                data: { imagemUrl: urlNormalizada }
+              }).catch((err: any) => {
+                console.warn(`[TreinoDashboard] Erro ao migrar URL para ${ex.exercicio.id}:`, err);
+              });
+            }
+          }
+          
+          return {
+            id: ex.id,
+            nome: ex.exercicio.nome,
+            grupo: ex.exercicio.grupoMuscularPrincipal,
+            series: ex.series,
+            repeticoes: ex.repeticoes,
+            carga: ex.carga,
+            ordem: ex.ordem,
+            concluido: ex.concluido,
+            descricao: ex.exercicio.descricao,
+            execucao: ex.exercicio.execucaoTecnica,
+            errosComuns: ex.exercicio.errosComuns,
+            imagemUrl,
+            equipamentos: ex.exercicio.equipamentoNecessario
+          };
+        })
       };
     })
     .filter((bloco): bloco is NonNullable<typeof bloco> => bloco !== null); // Filtrar treinos sem exercícios
