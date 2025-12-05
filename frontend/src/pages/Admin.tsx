@@ -200,7 +200,6 @@ export default function Admin() {
     } else if (activeTab === 'exercicios') {
       carregarExercicios()
     } else if (activeTab === 'grupos') {
-    } else if (activeTab === 'grupos') {
       carregarGruposMusculares()
     }
     // Imagens carrega seus próprios dados

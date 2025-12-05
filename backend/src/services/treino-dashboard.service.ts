@@ -58,7 +58,7 @@ function extrairGruposPrincipais(exercicios: any[]): string[] {
 async function obterMapaImagensPadrao(): Promise<Record<string, string>> {
   try {
     const imagens = await prisma.treinoImagemPadrao.findMany();
-    return imagens.reduce((acc, img) => {
+    return imagens.reduce((acc: Record<string, string>, img: any) => {
       acc[img.letra] = img.imagemUrl;
       return acc;
     }, {} as Record<string, string>);
