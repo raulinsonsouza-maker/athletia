@@ -7,7 +7,20 @@ export const listarImagensPadrao = async (req: AuthRequest, res: Response) => {
         const imagens = await (prisma as any).treinoImagemPadrao.findMany({
             orderBy: { letra: 'asc' }
         });
-        return res.json(imagens);
+
+        // Sanitizar URLs para evitar Mixed Content (http://localhost em https://site)
+        // Converte URLs absolutas locais em relativas
+        const imagensSanitized = imagens.map((img: any) => {
+            if (img.imagemUrl && img.imagemUrl.includes('http://localhost:3001')) {
+                return {
+                    ...img,
+                    imagemUrl: img.imagemUrl.replace('http://localhost:3001', '')
+                };
+            }
+            return img;
+        });
+
+        return res.json(imagensSanitized);
     } catch (error: any) {
         console.error('Erro ao listar imagens padrão:', error);
         return res.status(500).json({
@@ -84,11 +97,9 @@ export const uploadImagemTreinoPadrao = async (req: AuthRequest, res: Response) 
             });
         }
 
-        // Construir URL pública
-        // O middleware já salvou o arquivo com o nome correto (ex: A.jpg)
-        // Usar variável de ambiente para URL base se disponível, senão fallback
-        const baseUrl = process.env.API_URL || 'http://localhost:3001';
-        const imagemUrl = `${baseUrl}/api/uploads/treino-imagens/${file.filename}`;
+        // Construir URL relativa para evitar problemas de Mixed Content e CORS
+        // O frontend irá resolver isso contra o domínio atual
+        const imagemUrl = `/api/uploads/treino-imagens/${file.filename}`;
 
         const imagem = await (prisma as any).treinoImagemPadrao.upsert({
             where: { letra: letraNormalizada },
