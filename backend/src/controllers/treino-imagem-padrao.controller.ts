@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma';
 
 export const listarImagensPadrao = async (req: AuthRequest, res: Response) => {
     try {
-        const imagens = await prisma.treinoImagemPadrao.findMany({
+        const imagens = await (prisma as any).treinoImagemPadrao.findMany({
             orderBy: { letra: 'asc' }
         });
         return res.json(imagens);
@@ -38,7 +38,7 @@ export const salvarImagemPadrao = async (req: AuthRequest, res: Response) => {
             });
         }
 
-        const imagem = await prisma.treinoImagemPadrao.upsert({
+        const imagem = await (prisma as any).treinoImagemPadrao.upsert({
             where: { letra: letraNormalizada },
             update: { imagemUrl },
             create: {
