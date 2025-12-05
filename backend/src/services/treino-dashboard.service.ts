@@ -22,26 +22,26 @@ function calcularVolumeTreino(treino: any): number {
   if (!treino || !treino.exercicios || !Array.isArray(treino.exercicios)) {
     return 0;
   }
-  
+
   return treino.exercicios.reduce((total: number, exercicio: any) => {
     // Ignorar exercícios de cardio e alongamento no cálculo de volume
     const grupo = exercicio.exercicio?.grupoMuscularPrincipal || exercicio.grupoMuscularPrincipal || '';
     if (grupo === 'Cardio' || grupo === 'Flexibilidade' || exercicio.exercicio?.nome?.toLowerCase().includes('alongamento')) {
       return total;
     }
-    
+
     const repeticoes = extrairRepeticoes(exercicio.repeticoes);
     // Usar carga registrada ou carga sugerida como fallback
     let carga = exercicio.carga || 0;
     if (carga <= 0 && exercicio.exercicio?.cargaInicialSugerida) {
       carga = exercicio.exercicio.cargaInicialSugerida;
     }
-    
+
     // Validar valores numéricos válidos
     if (isNaN(repeticoes) || isNaN(carga) || repeticoes <= 0 || carga <= 0) {
       return total;
     }
-    
+
     return total + exercicio.series * repeticoes * carga;
   }, 0);
 }
@@ -55,6 +55,19 @@ function extrairGruposPrincipais(exercicios: any[]): string[] {
   return Array.from(grupos).slice(0, 3);
 }
 
+async function obterMapaImagensPadrao(): Promise<Record<string, string>> {
+  try {
+    const imagens = await prisma.treinoImagemPadrao.findMany();
+    return imagens.reduce((acc, img) => {
+      acc[img.letra] = img.imagemUrl;
+      return acc;
+    }, {} as Record<string, string>);
+  } catch (error) {
+    console.error('Erro ao carregar imagens padrão:', error);
+    return {};
+  }
+}
+
 // ============================================================================
 // FUNÇÕES PRINCIPAIS
 // ============================================================================
@@ -65,6 +78,9 @@ export async function obterResumoTreinos(userId: string) {
 
   // Garantir plano semanal usando novo engine
   await garantirPlanoSemanal({ userId });
+
+  // Carregar imagens padrão
+  const imagensPadrao = await obterMapaImagensPadrao();
 
   const experiencia = perfil?.experiencia || 'Intermediário';
   const localPreferencial = perfil?.localTreino || 'Academia Comercial';
@@ -153,7 +169,7 @@ export async function obterResumoTreinos(userId: string) {
   // Gerar planosAtivos com imagens inteligentes
   const planosAtivos = proximosTreinos.map((treino) => {
     const gruposPrincipais = extrairGruposPrincipais(treino.exercicios);
-    
+
     return {
       id: treino.id,
       titulo: treino.nome || 'Treino',
@@ -163,7 +179,9 @@ export async function obterResumoTreinos(userId: string) {
       data: treino.data,
       totalExercicios: treino.exercicios.length,
       gruposPrincipais,
-      imagem: obterImagemTreino(gruposPrincipais, genero)
+      imagem: (treino.letraTreino && imagensPadrao[treino.letraTreino])
+        ? imagensPadrao[treino.letraTreino]
+        : obterImagemTreino(gruposPrincipais, genero)
     };
   });
 
@@ -201,7 +219,7 @@ export async function obterResumoTreinos(userId: string) {
   }, {});
 
   const diasSemanaLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  
+
   const semana = Array.from({ length: 7 }).map((_, index) => {
     const dataDia = normalizarData(new Date(inicioSemana));
     dataDia.setDate(inicioSemana.getDate() + index);
@@ -227,7 +245,7 @@ export async function obterResumoTreinos(userId: string) {
   // Validar dados reais do banco
   const realizados = treinosSemana.filter(treino => treino.concluido === true).length;
   const planejados = treinosSemana.length;
-  
+
   // Calcular volume total apenas de treinos concluídos com exercícios válidos
   const volumeTotal = treinosSemana
     .filter(treino => treino.concluido === true)
@@ -235,7 +253,7 @@ export async function obterResumoTreinos(userId: string) {
       const volume = calcularVolumeTreino(treino);
       return acc + (isNaN(volume) ? 0 : volume);
     }, 0);
-  
+
   // Calcular séries totais apenas de treinos concluídos, excluindo cardio e alongamento
   const seriesTotais = treinosSemana
     .filter(treino => treino.concluido === true)
@@ -243,21 +261,21 @@ export async function obterResumoTreinos(userId: string) {
       if (!treino.exercicios || !Array.isArray(treino.exercicios)) {
         return acc;
       }
-      
+
       const seriesTreino = treino.exercicios.reduce((soma: number, exercicio: any) => {
         const grupo = exercicio.exercicio?.grupoMuscularPrincipal || exercicio.grupoMuscularPrincipal || '';
         // Ignorar cardio e alongamento
         if (grupo === 'Cardio' || grupo === 'Flexibilidade' || exercicio.exercicio?.nome?.toLowerCase().includes('alongamento')) {
           return soma;
         }
-        
+
         const series = exercicio.series || 0;
         return soma + (isNaN(series) ? 0 : Math.max(0, series));
       }, 0);
-      
+
       return acc + seriesTreino;
     }, 0);
-  
+
   // Contar dias sem treino apenas dos dias passados (não futuros)
   const diasSemTreino = semana.filter(dia => {
     const dataDia = new Date(dia.data);
@@ -313,6 +331,9 @@ export async function buscarPlanoAtual(userId: string) {
 
   // Garantir plano semanal usando novo engine
   await garantirPlanoSemanal({ userId });
+
+  // Carregar imagens padrão
+  const imagensPadrao = await obterMapaImagensPadrao();
 
   const experiencia = perfil?.experiencia || 'Intermediário';
   const local = perfil?.localTreino || 'Academia Comercial';
@@ -373,7 +394,7 @@ export async function buscarPlanoAtual(userId: string) {
       }
 
       const gruposPrincipais = extrairGruposPrincipais(exerciciosValidos)
-      
+
       // Extrair informações do cardio do exercício (se existir)
       const exercicioCardio = treino.exercicios.find(
         (ex: any) => ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
@@ -384,13 +405,13 @@ export async function buscarPlanoAtual(userId: string) {
       if (exercicioCardio) {
         const tempoMatch = exercicioCardio.repeticoes?.match(/(\d+)/);
         const tempoMinutos = tempoMatch ? parseInt(tempoMatch[1], 10) : 0;
-        
+
         const nomeCardio = exercicioCardio.exercicio?.nome?.toLowerCase() || '';
         let tipo = 'esteira';
         if (nomeCardio.includes('bicicleta')) tipo = 'bicicleta';
         else if (nomeCardio.includes('eliptico') || nomeCardio.includes('elíptico')) tipo = 'eliptico';
         else if (nomeCardio.includes('remada')) tipo = 'remada';
-        
+
         treinoTemp.cardio = {
           ativo: true,
           tipo,
@@ -399,11 +420,11 @@ export async function buscarPlanoAtual(userId: string) {
           momento: exercicioCardio.ordem === 0 ? 'inicio' as const : 'final' as const
         };
       }
-      
+
       // Garantir que sempre tenha campo cardio (usar função centralizada)
       aplicarCardioAoTreino(treinoTemp, objetivo);
       const cardio = treinoTemp.cardio || { ativo: false };
-      
+
       return {
         id: treino.id,
         titulo: treino.nome || 'Treino',
@@ -411,7 +432,9 @@ export async function buscarPlanoAtual(userId: string) {
         letraTreino: treino.letraTreino,
         gruposPrincipais,
         totalExercicios: exerciciosValidos.length,
-        imagem: obterImagemTreino(gruposPrincipais, genero),
+        imagem: (treino.letraTreino && imagensPadrao[treino.letraTreino])
+          ? imagensPadrao[treino.letraTreino]
+          : obterImagemTreino(gruposPrincipais, genero),
         cardio,
         exercicios: exerciciosValidos.map(ex => ({
           id: ex.id,

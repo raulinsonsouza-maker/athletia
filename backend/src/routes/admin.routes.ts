@@ -25,6 +25,10 @@ import {
   removerGrupoAdmin,
   uploadImagemGrupoAdmin
 } from '../controllers/grupo-muscular.controller';
+import {
+  listarImagensPadrao,
+  salvarImagemPadrao
+} from '../controllers/treino-imagem-padrao.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
@@ -272,6 +276,10 @@ router.delete('/exercicios/midias/limpar-todas', limparTodasUrlsMidias);
 
 // Endpoint para listar imagens do banco
 router.get('/imagens-banco/arquivos', listarImagensBanco);
+
+// Imagens Padrão de Treino (A-G)
+router.get('/treino-imagens', listarImagensPadrao);
+router.post('/treino-imagens', salvarImagemPadrao);
 
 
 

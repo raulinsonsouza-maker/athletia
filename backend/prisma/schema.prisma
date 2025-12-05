@@ -337,7 +337,15 @@ model PaymentHistory {
 
   @@index([userId])
   @@index([transactionId])
-  @@index([userId, createdAt])
   @@index([status])
   @@map("payment_history")
+}
+
+model TreinoImagemPadrao {
+  id        String   @id @default(uuid())
+  letra     String   @unique // A, B, C, D, E, F, G
+  imagemUrl String   @map("imagem_url")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("treino_imagens_padrao")
 }

@@ -7,6 +7,7 @@ import ExercicioFormModal from '../components/ExercicioFormModal'
 import GruposMuscularesAdminList from '../components/GruposMuscularesAdminList'
 import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
 import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
+import TreinoImagensAdmin from '../components/TreinoImagensAdmin'
 
 
 interface User {
@@ -150,7 +151,7 @@ export default function Admin() {
   const [loadingEstatisticas, setLoadingEstatisticas] = useState(false)
   const [errorUsuarios, setErrorUsuarios] = useState<string | null>(null)
   const [errorEstatisticas, setErrorEstatisticas] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas' | 'grupos'>('estatisticas')
+  const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas' | 'grupos' | 'imagens'>('estatisticas')
   const [usuarios, setUsuarios] = useState<User[]>([])
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [search, setSearch] = useState('')
@@ -199,8 +200,10 @@ export default function Admin() {
     } else if (activeTab === 'exercicios') {
       carregarExercicios()
     } else if (activeTab === 'grupos') {
+    } else if (activeTab === 'grupos') {
       carregarGruposMusculares()
     }
+    // Imagens carrega seus próprios dados
   }, [activeTab, search])
 
   const carregarGruposMusculares = async () => {
@@ -559,9 +562,23 @@ export default function Admin() {
                 </svg>
                 Grupos Musculares
               </button>
+              <button
+                onClick={() => setActiveTab('imagens')}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'imagens'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                  }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Imagens de Treino
+              </button>
             </nav>
           </div>
         </div>
+
+        {activeTab === 'imagens' && <TreinoImagensAdmin />}
 
         {
           activeTab === 'usuarios' && (
