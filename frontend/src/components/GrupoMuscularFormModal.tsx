@@ -1,6 +1,22 @@
-imagemUrl: '',
+import { useState, useEffect } from 'react'
+import { useToast } from '../hooks/useToast'
+import api from '../services/auth.service'
+import { grupoMuscularAdminService } from '../services/grupo-muscular-admin.service'
+
+interface GrupoMuscularFormModalProps {
+    isOpen: boolean
+    onClose: () => void
+    onSave: () => void
+    grupoId?: string | null
+    onSuccess?: () => void
+}
+
+const formInicial = {
+    nome: '',
+    descricao: '',
+    imagemUrl: '',
     ativo: true,
-        ordem: 0
+    ordem: 0
 }
 
 export default function GrupoMuscularFormModal({
