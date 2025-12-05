@@ -32,12 +32,16 @@ api.interceptors.request.use((config) => {
     const adminToken = localStorage.getItem('adminAccessToken')
     if (adminToken) {
       config.headers.Authorization = `Bearer ${adminToken}`
+    } else {
+      console.warn('[API] Rota admin sem token:', config.url)
     }
   } else {
     // Para rotas normais, usar token do usuário
     const token = localStorage.getItem('accessToken')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    } else {
+      console.warn('[API] Requisição sem token de acesso:', config.url)
     }
   }
   return config
@@ -100,8 +104,16 @@ api.interceptors.response.use(
 
             originalRequest.headers.Authorization = `Bearer ${accessToken}`
             return api(originalRequest)
+          } else {
+            console.warn('[API] Tentativa de refresh sem refreshToken admin')
+            localStorage.removeItem('adminAccessToken')
+            localStorage.removeItem('adminRefreshToken')
+            localStorage.removeItem('adminUser')
+            window.location.href = '/admin/login'
+            return Promise.reject(error)
           }
-        } catch (refreshError) {
+        } catch (refreshError: any) {
+          console.error('[API] Erro ao renovar token admin:', refreshError)
           localStorage.removeItem('adminAccessToken')
           localStorage.removeItem('adminRefreshToken')
           localStorage.removeItem('adminUser')
@@ -123,8 +135,16 @@ api.interceptors.response.use(
 
             originalRequest.headers.Authorization = `Bearer ${accessToken}`
             return api(originalRequest)
+          } else {
+            console.warn('[API] Tentativa de refresh sem refreshToken. Redirecionando para login.')
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('user')
+            window.location.href = '/login'
+            return Promise.reject(error)
           }
-        } catch (refreshError) {
+        } catch (refreshError: any) {
+          console.error('[API] Erro ao renovar token:', refreshError)
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
           localStorage.removeItem('user')
