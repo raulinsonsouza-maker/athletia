@@ -4,16 +4,15 @@ import { useTreinoAtual } from '../hooks/useTreinoAtual'
 import { useCronometro } from '../hooks/useCronometro'
 import { useModal } from '../hooks/useModal'
 import { useExercicioMediaChain } from '../hooks/useExercicioMediaChain'
-import { IconeCheck, IconeTrofeu, IconeSeta, IconeDumbbell } from '../components/icons/TreinoIcons'
-import { TimerBar } from '../components/treino/TimerBar'
+import { IconeCheck, IconeTrofeu, IconeSeta, IconeDumbbell, IconeVoltar, IconeMenu } from '../components/icons/TreinoIcons'
 import { ExercicioInfo } from '../components/treino/ExercicioInfo'
 import { ChecklistModal } from '../components/treino/ChecklistModal'
 import { ImagemExpandidaModal } from '../components/treino/ImagemExpandidaModal'
 import { useToast } from '../hooks/useToast'
 
 /**
- * Componente principal de treino atual
- * Arquitetura limpa: <200 linhas, responsabilidades separadas
+ * Componente principal de treino atual - Redesenhado
+ * Focado em uso na academia com design moderno e inteligente
  */
 export default function TreinoAtual() {
   const navigate = useNavigate()
@@ -24,7 +23,6 @@ export default function TreinoAtual() {
   const {
     blocoAtivo,
     exercicioAtivo,
-    proximoExercicio,
     progresso,
     exercicioAtivoIndex,
     loading,
@@ -43,9 +41,8 @@ export default function TreinoAtual() {
   const checklistModal = useModal(false)
   const imagemModal = useModal(false)
 
-  // Mídia dos exercícios
+  // Mídia do exercício
   const exercicioMedia = useExercicioMediaChain(exercicioAtivo)
-  const proximoMedia = useExercicioMediaChain(proximoExercicio)
 
   // Debug: verificar se imagemUrl está presente
   useEffect(() => {
@@ -117,158 +114,73 @@ export default function TreinoAtual() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
-      {/* TIMER BAR */}
-      <TimerBar
-        cronometro={cronometro.formatado}
-        timerAtivo={cronometro.ativo}
-        progressoConcluidos={progresso.concluidos}
-        onVoltar={handleVoltar}
-        onToggleTimer={cronometro.toggle}
-        onToggleChecklist={checklistModal.toggle}
-      />
-
-      {/* CONTEÚDO PRINCIPAL */}
-      <main className="flex-1 pt-14 pb-52 px-4 flex flex-col">
-        <h1 className="text-3xl font-bold text-center mb-3 mt-2">{exercicioAtivo.nome}</h1>
-
-        {/* DADOS DO EXERCÍCIO */}
-        <div className="bg-[#111] rounded-xl border border-white/10 p-4 mb-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col">
-              <span className="text-xs text-white/50 uppercase tracking-wider mb-1">Séries</span>
-              <span className="text-lg font-bold">{exercicioAtivo.series}</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs text-white/50 uppercase tracking-wider mb-1">Repetições</span>
-              <span className="text-lg font-bold">{exercicioAtivo.repeticoes}</span>
-            </div>
-            {exercicioAtivo.carga && (
-              <div className="flex flex-col">
-                <span className="text-xs text-white/50 uppercase tracking-wider mb-1">Carga</span>
-                <span className="text-lg font-bold">{exercicioAtivo.carga}kg</span>
-              </div>
-            )}
-            <div className="flex flex-col">
-              <span className="text-xs text-white/50 uppercase tracking-wider mb-1">Grupo</span>
-              <span className="text-lg font-bold text-primary">{exercicioAtivo.grupo}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* PRÓXIMO EXERCÍCIO */}
-        {proximoExercicio && (
-          <div className="bg-white/5 rounded-xl border border-white/10 p-3 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <p className="text-xs text-white/50 uppercase tracking-wider mb-1">Próximo</p>
-                <p className="text-sm font-semibold text-white/90">{proximoExercicio.nome}</p>
-                <p className="text-xs text-white/50 mt-1">{proximoExercicio.series}x{proximoExercicio.repeticoes}</p>
-              </div>
-              {proximoMedia.url ? (
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10">
-                  {proximoMedia.isVideo ? (
-                    <video
-                      src={proximoMedia.url}
-                      className="w-full h-full object-cover"
-                      muted
-                      loop
-                      onError={proximoMedia.handleError}
-                    />
-                  ) : (
-                    <img
-                      src={proximoMedia.url}
-                      alt={proximoExercicio.nome}
-                      className="w-full h-full object-cover"
-                      onError={proximoMedia.handleError}
-                    />
-                  )}
-                </div>
-              ) : (
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#111] border border-white/10 flex items-center justify-center">
-                  <IconeDumbbell />
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* MÍDIA DO EXERCÍCIO */}
-        <div className="flex items-center justify-center mb-4">
-          <button
-            onClick={imagemModal.abrir}
-            className="w-full max-w-sm h-56 bg-[#111] rounded-xl overflow-hidden border border-white/10 flex items-center justify-center hover:border-primary/50 transition relative group"
+      {/* HEADER FIXO */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button 
+            onClick={handleVoltar} 
+            className="p-2 -ml-2 text-white/80 hover:text-white transition rounded-lg hover:bg-white/10"
           >
-            {exercicioMedia.url ? (
-              <>
-                {exercicioMedia.isVideo ? (
-                  <video
-                    src={exercicioMedia.url}
-                    className="w-full h-full object-contain"
-                    muted
-                    loop
-                    onError={exercicioMedia.handleError}
-                  />
-                ) : (
-                  <img
-                    src={exercicioMedia.url}
-                    alt={exercicioAtivo.nome}
-                    className="w-full h-full object-contain"
-                    onError={exercicioMedia.handleError}
-                  />
-                )}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
-                  <span className="text-xs text-white/70 opacity-0 group-hover:opacity-100 transition">Toque para expandir</span>
-                </div>
-              </>
-            ) : (
-              <IconeDumbbell />
+            <IconeVoltar />
+          </button>
+          
+          <div className="flex items-center gap-4 flex-1 justify-center">
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-mono font-bold text-primary">{cronometro.formatado}</span>
+              <button 
+                onClick={cronometro.toggle}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+                  cronometro.ativo ? 'bg-white/10 text-white/70' : 'bg-primary text-black'
+                }`}
+              >
+                {cronometro.ativo ? 'Pausar' : 'Iniciar'}
+              </button>
+            </div>
+          </div>
+          
+          <button 
+            onClick={checklistModal.toggle}
+            className="p-2 -mr-2 text-white/80 hover:text-white transition rounded-lg hover:bg-white/10 relative"
+          >
+            <IconeMenu />
+            {progresso.concluidos > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-black text-xs rounded-full flex items-center justify-center font-bold">
+                {progresso.concluidos}
+              </span>
             )}
           </button>
         </div>
+      </header>
 
-        {/* INFORMAÇÕES DO EXERCÍCIO */}
-        <ExercicioInfo exercicio={exercicioAtivo} />
-
-        {/* NAVEGAÇÃO */}
-        <div className="flex items-center justify-center gap-8 mt-4">
-          <button
-            onClick={exercicioAnterior}
-            disabled={exercicioAtivoIndex === 0}
-            className="p-4 rounded-full bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/20 active:bg-white/30 transition border border-white/20"
-          >
-            <IconeSeta direcao="esquerda" />
-          </button>
-          <span className="text-base font-semibold text-white/80 min-w-[60px] text-center">
-            {exercicioAtivoIndex + 1} / {blocoAtivo.exercicios.length}
-          </span>
-          <button
-            onClick={irParaProximoExercicio}
-            disabled={exercicioAtivoIndex >= blocoAtivo.exercicios.length - 1}
-            className="p-4 rounded-full bg-white/10 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/20 active:bg-white/30 transition border border-white/20"
-          >
-            <IconeSeta direcao="direita" />
-          </button>
-        </div>
-      </main>
-
-      {/* FOOTER FIXO */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a] to-transparent pt-6 pb-6 px-4">
-        {/* PROGRESSO */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-base font-bold text-white">{progresso.concluidos} de {progresso.total} exercícios</span>
-            <span className="text-base font-bold text-primary">{progresso.percentual}%</span>
+      {/* CONTEÚDO PRINCIPAL - Layout Moderno */}
+      <main className="flex-1 pt-16 pb-32 px-4 md:px-6 lg:px-8">
+        {/* BARRA DE PROGRESSO SUPERIOR */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-white/60">
+              Exercício {exercicioAtivoIndex + 1} de {blocoAtivo.exercicios.length}
+            </span>
+            <span className="text-sm font-bold text-primary">{progresso.percentual}%</span>
           </div>
-          <div className="flex items-center gap-2 justify-center">
-            {blocoAtivo.exercicios.map((_, idx) => {
-              const concluido = isExercicioConcluido(blocoAtivo.exercicios[idx].id)
+          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-300"
+              style={{ width: `${progresso.percentual}%` }}
+            />
+          </div>
+          <div className="flex items-center gap-1.5 justify-center mt-3">
+            {blocoAtivo.exercicios.map((ex, idx) => {
+              const concluido = isExercicioConcluido(ex.id)
+              const ativo = idx === exercicioAtivoIndex
               return (
                 <div
-                  key={blocoAtivo.exercicios[idx].id}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    concluido 
-                      ? 'bg-primary scale-110' 
-                      : 'bg-white/20'
+                  key={ex.id}
+                  className={`h-1.5 flex-1 rounded-full transition-all ${
+                    ativo
+                      ? 'bg-primary scale-y-125'
+                      : concluido 
+                        ? 'bg-primary/60' 
+                        : 'bg-white/10'
                   }`}
                 />
               )
@@ -276,40 +188,154 @@ export default function TreinoAtual() {
           </div>
         </div>
 
-        {/* DESFAZER */}
-        {podeDesfazer && (
-          <button
-            onClick={desfazer}
-            className="w-full mb-2 py-2 rounded-xl bg-white/10 text-white/80 text-sm font-medium hover:bg-white/20 transition"
-          >
-            Desfazer ({Math.ceil(tempoDesfazer / 1000)}s)
-          </button>
-        )}
+        {/* TÍTULO DO EXERCÍCIO */}
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 leading-tight">
+          {exercicioAtivo.nome}
+        </h1>
 
-        {/* BOTÃO PRINCIPAL */}
-        <button
-          onClick={handleMarcarConcluido}
-          className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all active:scale-95 ${
-            exercicioConcluido 
-              ? 'bg-white/10 text-white/70' 
-              : 'bg-primary text-black shadow-lg shadow-primary/30'
-          }`}
-        >
-          <IconeCheck />
-          <span>{exercicioConcluido ? 'Desmarcar exercício' : 'Concluir exercício'}</span>
-        </button>
+        {/* LAYOUT GRID MODERNO */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          {/* COLUNA ESQUERDA: MÍDIA EM DESTAQUE */}
+          <div className="space-y-4">
+            {/* GIF/VIDEO GRANDE */}
+            <div className="relative">
+              <button
+                onClick={imagemModal.abrir}
+                disabled={!exercicioMedia.url}
+                className="w-full aspect-[4/3] bg-[#111] rounded-2xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all relative group disabled:cursor-default"
+              >
+                {exercicioMedia.url ? (
+                  <>
+                    {exercicioMedia.isVideo ? (
+                      <video
+                        src={exercicioMedia.url}
+                        className="w-full h-full object-contain"
+                        muted
+                        loop
+                        autoPlay
+                        playsInline
+                        onError={exercicioMedia.handleError}
+                      />
+                    ) : (
+                      <img
+                        src={exercicioMedia.url}
+                        alt={exercicioAtivo.nome}
+                        className="w-full h-full object-contain"
+                        onError={exercicioMedia.handleError}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+                      <span className="text-sm text-white/70 opacity-0 group-hover:opacity-100 transition px-4 py-2 bg-black/60 rounded-full backdrop-blur-sm">
+                        Toque para expandir
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    <IconeDumbbell />
+                    <span className="text-white/40 text-sm mt-4">Sem mídia disponível</span>
+                  </div>
+                )}
+              </button>
+            </div>
 
-        {/* FINALIZAR TREINO */}
-        {progresso.percentual === 100 && (
+            {/* INFO CARDS HORIZONTAIS */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+                <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Séries</div>
+                <div className="text-3xl font-bold">{exercicioAtivo.series}</div>
+              </div>
+              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+                <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Repetições</div>
+                <div className="text-3xl font-bold">{exercicioAtivo.repeticoes}</div>
+              </div>
+              {exercicioAtivo.carga && (
+                <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+                  <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Carga</div>
+                  <div className="text-3xl font-bold">{exercicioAtivo.carga}<span className="text-xl text-white/60">kg</span></div>
+                </div>
+              )}
+              <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl border border-primary/30 p-4">
+                <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Grupo</div>
+                <div className="text-2xl font-bold text-primary">{exercicioAtivo.grupo}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* COLUNA DIREITA: INFORMAÇÕES */}
+          <div className="space-y-4">
+            {/* NAVEGAÇÃO ENTRE EXERCÍCIOS */}
+            <div className="flex items-center justify-between gap-4 bg-[#111] rounded-xl border border-white/10 p-4">
+              <button
+                onClick={exercicioAnterior}
+                disabled={exercicioAtivoIndex === 0}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition border border-white/10 disabled:border-transparent"
+              >
+                <IconeSeta direcao="esquerda" />
+                <span className="text-sm font-medium">Anterior</span>
+              </button>
+              
+              <div className="flex-1 text-center">
+                <div className="text-xs text-white/50 mb-1">Progresso</div>
+                <div className="text-lg font-bold">
+                  {exercicioAtivoIndex + 1} / {blocoAtivo.exercicios.length}
+                </div>
+              </div>
+              
+              <button
+                onClick={irParaProximoExercicio}
+                disabled={exercicioAtivoIndex >= blocoAtivo.exercicios.length - 1}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition border border-white/10 disabled:border-transparent"
+              >
+                <span className="text-sm font-medium">Próximo</span>
+                <IconeSeta direcao="direita" />
+              </button>
+            </div>
+
+            {/* INFORMAÇÕES DO EXERCÍCIO */}
+            <ExercicioInfo exercicio={exercicioAtivo} />
+          </div>
+        </div>
+      </main>
+
+      {/* FOOTER FIXO MODERNO */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent pt-6 pb-6 px-4 md:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-3">
+          {/* DESFAZER */}
+          {podeDesfazer && (
+            <button
+              onClick={desfazer}
+              className="w-full py-2.5 rounded-xl bg-white/10 text-white/80 text-sm font-medium hover:bg-white/20 transition border border-white/10"
+            >
+              Desfazer ({Math.ceil(tempoDesfazer / 1000)}s)
+            </button>
+          )}
+
+          {/* BOTÃO PRINCIPAL */}
           <button
-            onClick={handleFinalizarTreino}
-            disabled={concluindoTreino}
-            className="w-full mt-3 py-4 rounded-2xl bg-green-600 text-white font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-60"
+            onClick={handleMarcarConcluido}
+            className={`w-full py-5 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg ${
+              exercicioConcluido 
+                ? 'bg-white/10 text-white/70 border border-white/20' 
+                : 'bg-gradient-to-r from-primary to-primary/90 text-black shadow-primary/30'
+            }`}
           >
-            <IconeTrofeu />
-            {concluindoTreino ? 'Finalizando...' : 'Finalizar Treino'}
+            <IconeCheck />
+            <span>{exercicioConcluido ? 'Exercício concluído' : 'Concluir exercício'}</span>
           </button>
-        )}
+
+          {/* FINALIZAR TREINO */}
+          {progresso.percentual === 100 && (
+            <button
+              onClick={handleFinalizarTreino}
+              disabled={concluindoTreino}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-green-600 to-green-500 text-white font-bold text-lg flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-green-500/20"
+            >
+              <IconeTrofeu />
+              {concluindoTreino ? 'Finalizando...' : 'Finalizar Treino'}
+            </button>
+          )}
+        </div>
       </footer>
 
       {/* MODAIS */}
