@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { uploadExercicioMedia, removeExercicioMedia } from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { useExercicioMedia } from '../hooks/useExercicioMedia'
@@ -23,10 +23,20 @@ export default function UploadExercicioMedia({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [refreshKey, setRefreshKey] = useState(Date.now()) // Para forçar atualização com timestamp
+  const [currentImagemUrl, setCurrentImagemUrl] = useState<string | null | undefined>(imagemUrl)
 
-  // Hook para exibir mídia atual
+  // Atualizar imagemUrl quando a prop mudar (apenas quando realmente mudar)
+  useEffect(() => {
+    if (imagemUrl !== currentImagemUrl) {
+      setCurrentImagemUrl(imagemUrl)
+      setRefreshKey(Date.now()) // Forçar refresh com novo timestamp
+    }
+  }, [imagemUrl])
+
+  // Hook para exibir mídia atual - adicionar cache-busting
   const { url: currentMediaUrl, isVideo: isCurrentVideo, hasMedia: hasCurrentMedia } = useExercicioMedia({
-    imagemUrl: imagemUrl || undefined,
+    imagemUrl: currentImagemUrl || undefined,
     fallbackChain: []
   })
 
@@ -81,26 +91,37 @@ export default function UploadExercicioMedia({
         })
       }, 200)
 
-      await uploadExercicioMedia(exercicioId, selectedFile)
+      const response = await uploadExercicioMedia(exercicioId, selectedFile)
       
       clearInterval(progressInterval)
       setUploadProgress(100)
 
       showToast('Mídia enviada com sucesso!', 'success')
       
-      // Limpar estado
+      // Limpar estado primeiro
       setSelectedFile(null)
       setPreviewUrl(null)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
 
-      // Chamar callback de sucesso
-      if (onUploadSuccess) {
-        setTimeout(() => {
-          onUploadSuccess()
-        }, 500)
+      // Atualizar URL da mídia com cache-busting
+      const newMediaUrl = response?.mediaUrl || response?.exercicio?.imagemUrl
+      if (newMediaUrl) {
+        // Forçar atualização com novo timestamp para cache-busting
+        setCurrentImagemUrl(newMediaUrl)
+        setRefreshKey(Date.now())
       }
+
+      // Chamar callback de sucesso primeiro para recarregar dados
+      if (onUploadSuccess) {
+        await new Promise(resolve => setTimeout(resolve, 300))
+        onUploadSuccess()
+      }
+
+      // Aguardar um pouco mais para garantir que a nova URL seja carregada
+      await new Promise(resolve => setTimeout(resolve, 300))
+      setRefreshKey(Date.now()) // Forçar refresh novamente após callback
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao fazer upload da mídia'
       showToast(errorMessage, 'error')
@@ -127,6 +148,10 @@ export default function UploadExercicioMedia({
     try {
       // Usar nova função de remoção
       await removeExercicioMedia(exercicioId)
+
+      // Atualizar estado para remover mídia
+      setCurrentImagemUrl(null)
+      setRefreshKey(Date.now())
 
       showToast('Mídia removida com sucesso!', 'success')
       if (onUploadSuccess) {
@@ -156,15 +181,21 @@ export default function UploadExercicioMedia({
           <div className="relative">
             {isCurrentVideo ? (
               <video
-                src={resolveApiPath(currentMediaUrl!) || ''}
+                key={refreshKey}
+                src={`${resolveApiPath(currentMediaUrl!) || ''}?t=${refreshKey}`}
                 className="w-full h-auto max-h-96 rounded-lg"
                 controls
               />
             ) : (
               <img
-                src={resolveApiPath(currentMediaUrl!) || ''}
+                key={refreshKey}
+                src={`${resolveApiPath(currentMediaUrl!) || ''}?t=${refreshKey}`}
                 alt={`Demonstração de execução de ${exercicioNome}`}
                 className="w-full h-auto max-h-96 rounded-lg object-contain"
+                onError={() => {
+                  // Se falhar, tentar recarregar
+                  setRefreshKey(Date.now())
+                }}
               />
             )}
             <button
