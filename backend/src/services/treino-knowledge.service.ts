@@ -47,16 +47,23 @@ function resolveKnowledgePath() {
   const candidatePaths = [
     path.resolve(process.cwd(), KNOWLEDGE_FILE),
     path.resolve(process.cwd(), '..', KNOWLEDGE_FILE),
-    path.resolve(__dirname, '..', '..', KNOWLEDGE_FILE)
+    path.resolve(__dirname, '..', '..', KNOWLEDGE_FILE),
+    path.resolve(__dirname, '..', KNOWLEDGE_FILE), // Add dist/ai check
+    path.resolve(__dirname, '../../ai', 'conhecimento_estruturado.json') // Explicit fallback
   ]
+
+  console.log('[Knowledge] Buscando arquivo em:', candidatePaths);
 
   for (const candidate of candidatePaths) {
     if (fs.existsSync(candidate)) {
+      console.log('[Knowledge] Arquivo encontrado em:', candidate);
       return candidate
     }
   }
 
-  throw new Error('Arquivo de conhecimento estruturado não encontrado. Verifique se ai/conhecimento_estruturado.json existe.')
+  const errorMsg = `Arquivo de conhecimento estruturado não encontrado. Verifique se ai/conhecimento_estruturado.json existe. Caminhos tentados: ${candidatePaths.join(', ')}`;
+  console.error(errorMsg);
+  throw new Error(errorMsg)
 }
 
 function loadRawKnowledge(): StructuredKnowledge {
