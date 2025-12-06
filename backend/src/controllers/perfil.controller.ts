@@ -185,7 +185,8 @@ export const updatePerfil = async (req: AuthRequest, res: Response) => {
       lesoes,
       equipamentos,
       preferencias,
-      rpePreferido
+      rpePreferido,
+      user
     } = req.body;
 
     // Verificar se perfil existe
@@ -242,6 +243,16 @@ export const updatePerfil = async (req: AuthRequest, res: Response) => {
         }
       }
     });
+
+    // Atualizar nome do usuário, se enviado
+    if (user && typeof user.nome === 'string') {
+      await prisma.user.update({
+        where: { id: perfil.user.id },
+        data: { nome: user.nome }
+      });
+      // Atualizar objeto de retorno em memória
+      (perfil as any).user.nome = user.nome;
+    }
 
     res.json({
       message: 'Perfil atualizado com sucesso',

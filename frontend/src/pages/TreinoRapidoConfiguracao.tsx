@@ -36,7 +36,7 @@ export default function TreinoRapidoConfiguracao() {
 
     setLoading(true)
     try {
-      await treinoRapidoService.criarTreinoRapido({
+      const treinoCriado = await treinoRapidoService.criarTreinoRapido({
         gruposMusculares,
         duracao,
         dificuldade,
@@ -44,7 +44,15 @@ export default function TreinoRapidoConfiguracao() {
       })
 
       showToast('Treino criado com sucesso!', 'success')
-      navigate('/treino/atual')
+
+      // Se o backend retornou o treino criado, navegar diretamente para ele
+      const treinoId = (treinoCriado as any)?.id
+      if (treinoId) {
+        navigate(`/treino/atual?treino=${treinoId}`)
+      } else {
+        // Fallback: manter comportamento antigo
+        navigate('/treino/atual')
+      }
     } catch (error: any) {
       console.error('Erro ao criar treino:', error)
       showToast(error.response?.data?.message || 'Erro ao criar treino rápido', 'error')
