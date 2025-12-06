@@ -7,7 +7,7 @@ import BottomTabs from '../components/navigation/BottomTabs'
 
 const DURACOES = [20, 30, 40, 50, 60]
 const DIFICULDADES = ['Iniciante', 'Intermediário', 'Avançado'] as const
-const LOCAIS_TREINO = ['Academia comercial', 'Academia Pequena', 'Sem equipamento', 'Customizado']
+const LOCAIS_TREINO = ['Academia comercial', 'Academia Pequena', 'Sem equipamento']
 
 export default function TreinoRapidoConfiguracao() {
   const navigate = useNavigate()
