@@ -157,10 +157,19 @@ export default function Progresso() {
         }
       })
     })
-    return Object.entries(gruposCount)
+
+    const entries = Object.entries(gruposCount)
       .filter(([_, count]) => count > 0)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
+
+    if (entries.length <= 5) {
+      return entries
+    }
+
+    const top4 = entries.slice(0, 4)
+    const outrosTotal = entries.slice(4).reduce((acc, [, count]) => acc + count, 0)
+
+    return [...top4, ['Outros', outrosTotal]]
   }, [historico])
 
   const volumePorSemana = useMemo(() => {
@@ -349,8 +358,14 @@ export default function Progresso() {
                 <BarChart
                   data={{
                     labels: frequenciaPorSemana.map(([semana]) => {
-                      const data = new Date(semana)
-                      return `${data.getDate()}/${data.getMonth() + 1}`
+                      const inicio = new Date(semana)
+                      const fim = new Date(inicio)
+                      fim.setDate(inicio.getDate() + 6)
+                      const format = (d: Date) =>
+                        `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
+                          .toString()
+                          .padStart(2, '0')}`
+                      return `${format(inicio)} - ${format(fim)}`
                     }),
                     datasets: [
                       {

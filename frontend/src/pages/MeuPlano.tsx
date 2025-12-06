@@ -109,10 +109,10 @@ export default function MeuPlano() {
 
         <section className="bg-white/5 backdrop-blur rounded-3xl border border-white/10 p-4 space-y-3">
           <p className="text-xs uppercase tracking-[0.3em] text-white/50">Semana</p>
-          <div className="flex gap-3 overflow-x-auto pb-1">
+          <div className="grid grid-cols-7 gap-2">
             {(homeData?.semana || Array.from({ length: 7 })).map((dia, index) => {
               if (!dia) {
-                return <div key={index} className="w-14 h-14 rounded-full bg-white/5 animate-pulse" />
+                return <div key={index} className="w-10 h-10 rounded-full bg-white/5 animate-pulse mx-auto" />
               }
               const fezTreino = dia.concluido
               const diaPassadoSemTreino = dia.status === 'passado' && !dia.concluido
@@ -120,9 +120,9 @@ export default function MeuPlano() {
               const diaSemana = dataObj.toLocaleDateString('pt-BR', { weekday: 'short' })
               const diaNumero = dataObj.getDate()
               return (
-                <div key={dia.label} className="flex flex-col items-center gap-1 min-w-[3.5rem]">
+                <div key={dia.label} className="flex flex-col items-center gap-1">
                   <span
-                    className={`w-14 h-14 rounded-full border-2 flex items-center justify-center text-base font-semibold ${
+                    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-semibold ${
                       fezTreino
                         ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
                         : diaPassadoSemTreino
