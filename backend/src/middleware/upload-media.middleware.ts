@@ -58,9 +58,12 @@ export const validateUploadedFile = (req: any, res: any, next: any) => {
 
     // Verificar se o tipo MIME detectado corresponde à extensão
     const ext = path.extname(req.file.originalname).toLowerCase();
-    const expectedMimeTypes = ACCEPTED_MEDIA_TYPES[detectedMimeType as keyof typeof ACCEPTED_MEDIA_TYPES];
     
-    if (!expectedMimeTypes || !expectedMimeTypes.includes(ext)) {
+    // Verificar se o tipo MIME detectado está nos tipos aceitos e se a extensão corresponde
+    const mimeTypeKey = detectedMimeType as keyof typeof ACCEPTED_MEDIA_TYPES;
+    const expectedExtensions = ACCEPTED_MEDIA_TYPES[mimeTypeKey];
+    
+    if (!expectedExtensions || !(expectedExtensions as readonly string[]).includes(ext)) {
       // Remover arquivo com tipo MIME não correspondente
       fs.unlinkSync(req.file.path);
       return res.status(400).json({
