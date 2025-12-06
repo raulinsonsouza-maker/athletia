@@ -147,7 +147,7 @@ export default function Progresso() {
     })
   }
 
-  const grupos = useMemo(() => {
+  const grupos = useMemo<[string, number][]>(() => {
     const gruposCount: Record<string, number> = {}
     historico.forEach((treino) => {
       treino.exercicios?.forEach((ex) => {
@@ -158,7 +158,7 @@ export default function Progresso() {
       })
     })
 
-    const entries = Object.entries(gruposCount)
+    const entries: [string, number][] = Object.entries(gruposCount)
       .filter(([_, count]) => count > 0)
       .sort((a, b) => b[1] - a[1])
 
