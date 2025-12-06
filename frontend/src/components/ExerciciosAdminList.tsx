@@ -309,8 +309,17 @@ function ExercicioCard({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (i
   // Adicionar cache-busting baseado no ID do exercício e URL da imagem
   const mediaUrlWithCacheBust = mediaUrl ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}t=${exercicio.id}-${exercicio.imagemUrl || 'no-img'}` : null
 
+  // Validar que o exercício tem ID antes de permitir edição
+  const handleEdit = () => {
+    if (!exercicio.id || typeof exercicio.id !== 'string') {
+      console.error('Exercício sem ID válido:', exercicio)
+      return
+    }
+    onEdit(exercicio.id)
+  }
+
   return (
-    <div className="card-hover p-4 cursor-pointer" onClick={() => onEdit(exercicio.id)}>
+    <div className="card-hover p-4 cursor-pointer" onClick={handleEdit}>
       {/* Imagem */}
       <div className="w-full h-48 bg-dark-lighter rounded-lg mb-4 overflow-hidden flex items-center justify-center">
         {hasMedia && mediaUrlWithCacheBust ? (
@@ -358,6 +367,10 @@ function ExercicioCard({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (i
         <button
           onClick={(e) => {
             e.stopPropagation()
+            if (!exercicio.id || typeof exercicio.id !== 'string') {
+              console.error('Exercício sem ID válido:', exercicio)
+              return
+            }
             onEdit(exercicio.id)
           }}
           className="btn-secondary w-full text-sm mt-4"
@@ -378,10 +391,18 @@ function ExercicioListItem({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
   // Adicionar cache-busting baseado no ID do exercício e URL da imagem
   const mediaUrlWithCacheBust = mediaUrl ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}t=${exercicio.id}-${exercicio.imagemUrl || 'no-img'}` : null
 
+  const handleEdit = () => {
+    if (!exercicio.id || typeof exercicio.id !== 'string') {
+      console.error('Exercício sem ID válido:', exercicio)
+      return
+    }
+    onEdit(exercicio.id)
+  }
+
   return (
     <div
       className="card-hover p-3 flex items-center gap-4 cursor-pointer"
-      onClick={() => onEdit(exercicio.id)}
+      onClick={handleEdit}
     >
       <div className="w-12 h-12 rounded bg-dark-lighter flex-shrink-0 overflow-hidden">
         {hasMedia && mediaUrlWithCacheBust ? (
@@ -416,6 +437,10 @@ function ExercicioListItem({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
       <button
         onClick={(e) => {
           e.stopPropagation()
+          if (!exercicio.id || typeof exercicio.id !== 'string') {
+            console.error('Exercício sem ID válido:', exercicio)
+            return
+          }
           onEdit(exercicio.id)
         }}
         className="p-2 text-light-muted hover:text-primary transition-colors"
@@ -438,10 +463,18 @@ function ExercicioTableRow({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
   // Adicionar cache-busting baseado no ID do exercício e URL da imagem
   const mediaUrlWithCacheBust = mediaUrl ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}t=${exercicio.id}-${exercicio.imagemUrl || 'no-img'}` : null
 
+  const handleEdit = () => {
+    if (!exercicio.id || typeof exercicio.id !== 'string') {
+      console.error('Exercício sem ID válido:', exercicio)
+      return
+    }
+    onEdit(exercicio.id)
+  }
+
   return (
     <tr
       className="border-b border-grey/10 hover:bg-dark-lighter/50 transition-colors cursor-pointer"
-      onClick={() => onEdit(exercicio.id)}
+      onClick={handleEdit}
     >
       <td className="py-2 px-4">
         <div className="w-10 h-10 rounded bg-dark-lighter overflow-hidden">
@@ -472,6 +505,10 @@ function ExercicioTableRow({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
         <button
           onClick={(e) => {
             e.stopPropagation()
+            if (!exercicio.id || typeof exercicio.id !== 'string') {
+              console.error('Exercício sem ID válido:', exercicio)
+              return
+            }
             onEdit(exercicio.id)
           }}
           className="p-1.5 text-light-muted hover:text-primary transition-colors"

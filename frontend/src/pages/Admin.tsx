@@ -299,7 +299,17 @@ export default function Admin() {
       const todosExercicios = response.data.exercicios || []
       setGruposMusculares(response.data.gruposMusculares || [])
 
-      setExercicios(todosExercicios)
+      // Validar e garantir que todos os exercícios tenham ID válido
+      const exerciciosValidados = todosExercicios.map((ex: any) => {
+        if (!ex.id || typeof ex.id !== 'string') {
+          console.warn('Exercício sem ID válido encontrado:', ex)
+          // Se não tem ID, criar um temporário ou pular
+          return null
+        }
+        return ex
+      }).filter((ex: any) => ex !== null)
+
+      setExercicios(exerciciosValidados)
     } catch (error: any) {
       if (import.meta.env.DEV) {
         console.error('Erro ao carregar exercícios:', error)
@@ -410,6 +420,13 @@ export default function Admin() {
   }
 
   const handleEditExercicio = async (exercicioId: string) => {
+    // Validar se exercicioId é um UUID válido ou string válida
+    if (!exercicioId || typeof exercicioId !== 'string' || exercicioId.trim() === '') {
+      console.error('ID do exercício inválido:', exercicioId)
+      showToast('ID do exercício inválido', 'error')
+      return
+    }
+
     setIsCreatingExercicio(false)
     setSelectedExercicioId(exercicioId)
     setShowEditModal(true)
@@ -417,11 +434,40 @@ export default function Admin() {
     setExercicioEdit(null)
 
     try {
-      const response = await api.get(`/admin/exercicios/${exercicioId}`)
+      // Encoder o ID para evitar problemas com caracteres especiais
+      const encodedId = encodeURIComponent(exercicioId.trim())
+      
+      // Log para debug (apenas em desenvolvimento)
+      if (import.meta.env.DEV) {
+        console.log('[handleEditExercicio] Buscando exercício com ID:', exercicioId, 'Encoded:', encodedId)
+      }
+      
+      const response = await api.get(`/admin/exercicios/${encodedId}`)
+      
+      if (!response.data || !response.data.id) {
+        console.error('[handleEditExercicio] Dados inválidos retornados:', response.data)
+        throw new Error('Dados do exercício inválidos retornados do servidor')
+      }
+      
       setExercicioEdit(response.data)
     } catch (error: any) {
-      console.error('Erro ao carregar exercício:', error)
-      showToast(error.response?.data?.error || 'Erro ao carregar exercício', 'error')
+      console.error('[handleEditExercicio] Erro ao carregar exercício:', {
+        exercicioId,
+        status: error.response?.status,
+        error: error.response?.data,
+        message: error.message
+      })
+      
+      let errorMessage = 'Erro ao carregar exercício'
+      if (error.response?.status === 404) {
+        errorMessage = `Exercício não encontrado (ID: ${exercicioId})`
+      } else if (error.response?.data?.error) {
+        errorMessage = error.response.data.error
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      showToast(errorMessage, 'error')
       setShowEditModal(false)
     } finally {
       setLoadingExercicioEdit(false)
