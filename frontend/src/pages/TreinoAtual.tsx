@@ -157,7 +157,7 @@ export default function TreinoAtual() {
 
       {/* CONTEÚDO PRINCIPAL - Layout Moderno */}
       <main className="flex-1 pt-16 pb-32 px-4 md:px-6 lg:px-8">
-        {/* BARRA DE PROGRESSO SUPERIOR */}
+        {/* BARRA DE PROGRESSO SUPERIOR (UNIFICADA) */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-white/60">
@@ -165,22 +165,16 @@ export default function TreinoAtual() {
             </span>
             <span className="text-sm font-bold text-primary">{progresso.percentual}%</span>
           </div>
-          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-300"
-              style={{ width: `${progresso.percentual}%` }}
-            />
-          </div>
-          <div className="flex items-center gap-1.5 justify-center mt-3">
+          <div className="flex items-center gap-1.5 justify-center mt-1">
             {blocoAtivo.exercicios.map((ex, idx) => {
               const concluido = isExercicioConcluido(ex.id)
               const ativo = idx === exercicioAtivoIndex
               return (
                 <div
                   key={ex.id}
-                  className={`h-1.5 flex-1 rounded-full transition-all ${
+                  className={`h-2 flex-1 rounded-full transition-all ${
                     ativo
-                      ? 'bg-primary scale-y-125'
+                      ? 'bg-primary scale-y-110'
                       : concluido 
                         ? 'bg-primary/60' 
                         : 'bg-white/10'
