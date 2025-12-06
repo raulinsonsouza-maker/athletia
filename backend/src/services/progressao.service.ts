@@ -480,12 +480,19 @@ export async function calcularEstatisticasProgresso(
     const cargasComData = cargasPorGrupo[grupo];
     if (cargasComData.length >= 2) {
       // Ordenar por data (mais antiga primeiro)
-      const cargasOrdenadas = [...cargasComData].sort((a, b) => 
+      const cargasOrdenadas = [...cargasComData].sort((a, b) =>
         a.data.getTime() - b.data.getTime()
       );
       const primeira = cargasOrdenadas[0].carga;
       const ultima = cargasOrdenadas[cargasOrdenadas.length - 1].carga;
-      progressaoPorGrupo[grupo] = ((ultima - primeira) / primeira) * 100;
+
+      // Evitar divisão por zero ou valores inválidos
+      if (primeira && primeira > 0) {
+        const progressao = ((ultima - primeira) / primeira) * 100;
+        if (Number.isFinite(progressao)) {
+          progressaoPorGrupo[grupo] = progressao;
+        }
+      }
     }
   });
 

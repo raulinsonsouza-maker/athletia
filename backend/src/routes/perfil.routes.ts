@@ -29,8 +29,14 @@ const perfilValidation = [
     }),
   body('sexo')
     .optional()
-    .isIn(['M', 'F', 'Outro'])
-    .withMessage('Sexo deve ser M, F ou Outro'),
+    .custom((value) => {
+      if (value === undefined || value === null || value === '') return true
+      const validValues = ['M', 'F', 'Outro', 'Masculino', 'Feminino']
+      if (!validValues.includes(value)) {
+        throw new Error('Sexo deve ser Masculino, Feminino ou Outro')
+      }
+      return true
+    }),
   body('altura')
     .optional()
     .custom((value) => {
