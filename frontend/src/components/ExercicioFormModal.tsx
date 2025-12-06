@@ -241,7 +241,7 @@ export default function ExercicioFormModal({
                     type="text"
                     value={formData.nome}
                     onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                    className={`input w-full ${errors.nome ? 'border-red-400' : ''}`}
+                    className={`input-field w-full ${errors.nome ? 'border-red-400' : ''}`}
                     placeholder="Ex: Supino Reto"
                   />
                   {errors.nome && <p className="text-red-400 text-xs mt-1">{errors.nome}</p>}
@@ -255,7 +255,7 @@ export default function ExercicioFormModal({
                     <select
                       value={formData.grupoMuscularPrincipal}
                       onChange={(e) => setFormData(prev => ({ ...prev, grupoMuscularPrincipal: e.target.value }))}
-                      className={`input w-full ${errors.grupoMuscularPrincipal ? 'border-red-400' : ''}`}
+                      className={`input-field w-full ${errors.grupoMuscularPrincipal ? 'border-red-400' : ''}`}
                     >
                       <option value="">Selecione...</option>
                       {gruposMusculares.map(grupo => (
@@ -274,7 +274,7 @@ export default function ExercicioFormModal({
                     <select
                       value={formData.nivelDificuldade}
                       onChange={(e) => setFormData(prev => ({ ...prev, nivelDificuldade: e.target.value }))}
-                      className={`input w-full ${errors.nivelDificuldade ? 'border-red-400' : ''}`}
+                      className={`input-field w-full ${errors.nivelDificuldade ? 'border-red-400' : ''}`}
                     >
                       <option value="">Selecione...</option>
                       <option value="Iniciante">Iniciante</option>

@@ -28,11 +28,10 @@ export default function UploadExercicioMedia({
 
   // Atualizar imagemUrl quando a prop mudar (apenas quando realmente mudar)
   useEffect(() => {
-    if (imagemUrl !== currentImagemUrl) {
-      setCurrentImagemUrl(imagemUrl)
-      setRefreshKey(Date.now()) // Forçar refresh com novo timestamp
-    }
-  }, [imagemUrl])
+    // Sempre atualizar quando a prop mudar, incluindo quando for null/undefined
+    setCurrentImagemUrl(imagemUrl)
+    setRefreshKey(Date.now()) // Forçar refresh com novo timestamp
+  }, [imagemUrl, exercicioId]) // Incluir exercicioId para garantir atualização quando exercício mudar
 
   // Hook para exibir mídia atual - adicionar cache-busting
   const { url: currentMediaUrl, isVideo: isCurrentVideo, hasMedia: hasCurrentMedia } = useExercicioMedia({

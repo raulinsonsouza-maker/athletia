@@ -306,21 +306,26 @@ function ExercicioCard({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (i
     fallbackChain: []
   })
 
+  // Adicionar cache-busting baseado no ID do exercício e URL da imagem
+  const mediaUrlWithCacheBust = mediaUrl ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}t=${exercicio.id}-${exercicio.imagemUrl || 'no-img'}` : null
+
   return (
     <div className="card-hover p-4 cursor-pointer" onClick={() => onEdit(exercicio.id)}>
       {/* Imagem */}
       <div className="w-full h-48 bg-dark-lighter rounded-lg mb-4 overflow-hidden flex items-center justify-center">
-        {hasMedia && mediaUrl ? (
+        {hasMedia && mediaUrlWithCacheBust ? (
           isVideo ? (
             <video
-              src={mediaUrl}
+              key={`${exercicio.id}-video`}
+              src={mediaUrlWithCacheBust}
               className="w-full h-full object-cover"
               muted
               loop
             />
           ) : (
             <img
-              src={mediaUrl}
+              key={`${exercicio.id}-img-${exercicio.imagemUrl || 'no-img'}`}
+              src={mediaUrlWithCacheBust}
               alt={exercicio.nome}
               className="w-full h-full object-cover"
             />
@@ -370,17 +375,20 @@ function ExercicioListItem({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
     fallbackChain: []
   })
 
+  // Adicionar cache-busting baseado no ID do exercício e URL da imagem
+  const mediaUrlWithCacheBust = mediaUrl ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}t=${exercicio.id}-${exercicio.imagemUrl || 'no-img'}` : null
+
   return (
     <div
       className="card-hover p-3 flex items-center gap-4 cursor-pointer"
       onClick={() => onEdit(exercicio.id)}
     >
       <div className="w-12 h-12 rounded bg-dark-lighter flex-shrink-0 overflow-hidden">
-        {hasMedia && mediaUrl ? (
+        {hasMedia && mediaUrlWithCacheBust ? (
           isVideo ? (
-            <video src={mediaUrl} className="w-full h-full object-cover" muted loop />
+            <video key={`${exercicio.id}-video`} src={mediaUrlWithCacheBust} className="w-full h-full object-cover" muted loop />
           ) : (
-            <img src={mediaUrl} alt={exercicio.nome} className="w-full h-full object-cover" />
+            <img key={`${exercicio.id}-img-${exercicio.imagemUrl || 'no-img'}`} src={mediaUrlWithCacheBust} alt={exercicio.nome} className="w-full h-full object-cover" />
           )
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -427,6 +435,9 @@ function ExercicioTableRow({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
     fallbackChain: []
   })
 
+  // Adicionar cache-busting baseado no ID do exercício e URL da imagem
+  const mediaUrlWithCacheBust = mediaUrl ? `${mediaUrl}${mediaUrl.includes('?') ? '&' : '?'}t=${exercicio.id}-${exercicio.imagemUrl || 'no-img'}` : null
+
   return (
     <tr
       className="border-b border-grey/10 hover:bg-dark-lighter/50 transition-colors cursor-pointer"
@@ -434,11 +445,11 @@ function ExercicioTableRow({ exercicio, onEdit }: { exercicio: Exercicio; onEdit
     >
       <td className="py-2 px-4">
         <div className="w-10 h-10 rounded bg-dark-lighter overflow-hidden">
-          {hasMedia && mediaUrl ? (
+          {hasMedia && mediaUrlWithCacheBust ? (
             isVideo ? (
-              <video src={mediaUrl} className="w-full h-full object-cover" muted loop />
+              <video key={`${exercicio.id}-video`} src={mediaUrlWithCacheBust} className="w-full h-full object-cover" muted loop />
             ) : (
-              <img src={mediaUrl} alt={exercicio.nome} className="w-full h-full object-cover" />
+              <img key={`${exercicio.id}-img-${exercicio.imagemUrl || 'no-img'}`} src={mediaUrlWithCacheBust} alt={exercicio.nome} className="w-full h-full object-cover" />
             )
           ) : (
             <div className="w-full h-full flex items-center justify-center">
