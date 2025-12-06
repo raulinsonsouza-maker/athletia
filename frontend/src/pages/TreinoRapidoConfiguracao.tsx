@@ -100,14 +100,6 @@ export default function TreinoRapidoConfiguracao() {
                 </button>
               )
             })}
-            <button
-              onClick={() => setDuracao(0)}
-              className={`rounded-2xl py-3 font-semibold border transition ${
-                duracao === 0 ? 'border-primary bg-primary/15 text-white' : 'border-white/10 text-white/70'
-              }`}
-            >
-              Customizado
-            </button>
           </div>
         </section>
 
@@ -155,7 +147,7 @@ export default function TreinoRapidoConfiguracao() {
         <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3">
           <div className="flex items-center justify-between text-sm text-white/70">
             <span>Duração</span>
-            <strong className="text-white">{duracao > 0 ? `${duracao} min` : 'Customizada'}</strong>
+            <strong className="text-white">{`${duracao} min`}</strong>
           </div>
           <div className="flex items-center justify-between text-sm text-white/70">
             <span>Dificuldade</span>
