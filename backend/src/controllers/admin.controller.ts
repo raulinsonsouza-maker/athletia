@@ -716,48 +716,51 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    const trimmedId = id.trim();
+
     // Verificar se é UUID
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id.trim());
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedId);
     
     let exercicio = null;
     
     try {
-      if (isUuid) {
-        // Buscar por UUID
-        exercicio = await prisma.exercicio.findUnique({
-          where: { id: id.trim() },
-          select: {
-            id: true,
-            nome: true,
-            grupoMuscularPrincipal: true,
-            sinergistas: true,
-            descricao: true,
-            execucaoTecnica: true,
-            errosComuns: true,
-            imagemUrl: true,
-            cargaInicialSugerida: true,
-            rpeSugerido: true,
-            equipamentoNecessario: true,
-            nivelDificuldade: true,
-            alternativas: true,
-            ativo: true,
-            createdAt: true,
-            updatedAt: true,
-            gruposMusculares: {
-              include: {
-                grupo: true
-              }
+      // 1) Sempre tentar buscar diretamente pelo ID (pode ser UUID ou slug)
+      exercicio = await prisma.exercicio.findUnique({
+        where: { id: trimmedId },
+        select: {
+          id: true,
+          nome: true,
+          grupoMuscularPrincipal: true,
+          sinergistas: true,
+          descricao: true,
+          execucaoTecnica: true,
+          errosComuns: true,
+          imagemUrl: true,
+          cargaInicialSugerida: true,
+          rpeSugerido: true,
+          equipamentoNecessario: true,
+          nivelDificuldade: true,
+          alternativas: true,
+          ativo: true,
+          createdAt: true,
+          updatedAt: true,
+          gruposMusculares: {
+            include: {
+              grupo: true
             }
           }
-        });
-      } else {
+        }
+      });
+
+      // 2) Se não encontrou e NÃO é UUID, tentar buscar por nome (compatibilidade com dados legados onde o ID pode ser o nome/slug)
+      if (!exercicio && !isUuid) {
         // Se não é UUID, tentar buscar por nome (pode ser slug)
-        console.log(`[obterExercicio] Buscando por nome (não é UUID): "${id.trim()}"`);
+        console.log(`[obterExercicio] Buscando por nome (não é UUID): "${trimmedId}"`);
         
         // Primeiro tentar busca exata pelo nome (sem filtro de ativo, pois é admin e pode editar inativos)
         exercicio = await prisma.exercicio.findFirst({
           where: {
-            nome: { equals: id.trim(), mode: 'insensitive' as const }
+            nome: { equals: trimmedId, mode: 'insensitive' as const }
           },
           select: {
             id: true,
@@ -785,9 +788,9 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
         });
         
         // Se ainda não encontrou e tem hífen, tentar converter slug para nome
-        if (!exercicio && id.includes('-')) {
+        if (!exercicio && trimmedId.includes('-')) {
           try {
-            const nomeAproximado = id
+            const nomeAproximado = trimmedId
               .split('-')
               .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
               .join(' ');
