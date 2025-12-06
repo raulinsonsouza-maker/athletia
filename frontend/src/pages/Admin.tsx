@@ -302,12 +302,23 @@ export default function Admin() {
       // Validar e garantir que todos os exercícios tenham ID válido
       const exerciciosValidados = todosExercicios.map((ex: any) => {
         if (!ex.id || typeof ex.id !== 'string') {
-          console.warn('Exercício sem ID válido encontrado:', ex)
-          // Se não tem ID, criar um temporário ou pular
+          console.warn('[carregarExercicios] Exercício sem ID válido encontrado:', ex)
           return null
         }
+        
+        // Verificar se o ID parece ser um UUID válido
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ex.id)
+        if (!isUuid) {
+          console.warn(`[carregarExercicios] Exercício "${ex.nome}" tem ID que não é UUID: "${ex.id}". O backend tentará buscar por nome.`)
+        }
+        
         return ex
       }).filter((ex: any) => ex !== null)
+
+      // Log para debug - mostrar alguns IDs para verificar
+      if (import.meta.env.DEV && exerciciosValidados.length > 0) {
+        console.log('[carregarExercicios] Exemplos de IDs recebidos:', exerciciosValidados.slice(0, 5).map((ex: any) => ({ nome: ex.nome, id: ex.id, isUuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ex.id) })))
+      }
 
       setExercicios(exerciciosValidados)
     } catch (error: any) {

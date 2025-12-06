@@ -752,7 +752,9 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
         });
       } else {
         // Se não é UUID, tentar buscar por nome (pode ser slug)
-        // Primeiro tentar busca exata pelo nome
+        console.log(`[obterExercicio] Buscando por nome (não é UUID): "${id.trim()}"`);
+        
+        // Primeiro tentar busca exata pelo nome (sem filtro de ativo, pois é admin e pode editar inativos)
         exercicio = await prisma.exercicio.findFirst({
           where: {
             nome: { equals: id.trim(), mode: 'insensitive' as const }
@@ -789,6 +791,8 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
               .split('-')
               .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
               .join(' ');
+            
+            console.log(`[obterExercicio] Tentando buscar por nome aproximado: "${nomeAproximado}"`);
             
             exercicio = await prisma.exercicio.findFirst({
               where: {
@@ -835,9 +839,35 @@ export const obterExercicio = async (req: AuthRequest, res: Response) => {
     }
 
     if (!exercicio) {
+      // Log adicional para debug
+      console.log(`[obterExercicio] Exercício não encontrado. ID buscado: "${id.trim()}", é UUID: ${isUuid}`);
+      
+      // Tentar buscar qualquer exercício com esse nome para ver se existe (mesmo inativo)
+      try {
+        const exercicioInativo = await prisma.exercicio.findFirst({
+          where: {
+            nome: { equals: id.trim(), mode: 'insensitive' as const }
+          },
+          select: { id: true, nome: true, ativo: true }
+        });
+        
+        if (exercicioInativo && !exercicioInativo.ativo) {
+          return res.status(404).json({
+            error: 'Exercício encontrado mas está inativo',
+            id: id.trim(),
+            exercicioId: exercicioInativo.id,
+            ativo: false
+          });
+        }
+      } catch (checkError) {
+        // Ignorar erro na verificação de inativo
+      }
+      
       return res.status(404).json({
         error: 'Exercício não encontrado',
-        id: id.trim()
+        id: id.trim(),
+        isUuid,
+        suggestion: isUuid ? null : 'Tente usar o UUID do exercício ou verifique se o nome está correto'
       });
     }
 

@@ -312,9 +312,15 @@ function ExercicioCard({ exercicio, onEdit }: { exercicio: Exercicio; onEdit: (i
   // Validar que o exercício tem ID antes de permitir edição
   const handleEdit = () => {
     if (!exercicio.id || typeof exercicio.id !== 'string') {
-      console.error('Exercício sem ID válido:', exercicio)
+      console.error('[ExercicioCard] Exercício sem ID válido:', exercicio)
       return
     }
+    
+    // Log para debug
+    if (import.meta.env.DEV) {
+      console.log('[ExercicioCard] Editando exercício:', { nome: exercicio.nome, id: exercicio.id })
+    }
+    
     onEdit(exercicio.id)
   }
 
