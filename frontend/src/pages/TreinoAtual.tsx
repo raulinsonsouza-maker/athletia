@@ -44,6 +44,11 @@ export default function TreinoAtual() {
   // Mídia do exercício
   const exercicioMedia = useExercicioMediaChain(exercicioAtivo)
 
+  // Garantir que a tela sempre abra no topo ao entrar no treino
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }, [])
+
   // Debug: verificar se imagemUrl está presente
   useEffect(() => {
     if (exercicioAtivo) {
@@ -156,7 +161,7 @@ export default function TreinoAtual() {
       </header>
 
       {/* CONTEÚDO PRINCIPAL - Layout Moderno */}
-      <main className="flex-1 pt-16 pb-32 px-4 md:px-6 lg:px-8">
+      <main className="flex-1 pt-16 pb-28 px-4 md:px-6 lg:px-8">
         {/* BARRA DE PROGRESSO SUPERIOR (UNIFICADA) */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -186,7 +191,7 @@ export default function TreinoAtual() {
         </div>
 
         {/* TÍTULO DO EXERCÍCIO */}
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-6 leading-tight">
+        <h1 className="text-2xl md:text-4xl font-bold text-center mb-4 md:mb-6 leading-tight">
           {exercicioAtivo.nome}
         </h1>
 
@@ -199,7 +204,7 @@ export default function TreinoAtual() {
               <button
                 onClick={imagemModal.abrir}
                 disabled={!hasMedia}
-                className="w-full aspect-[4/3] bg-[#111] rounded-2xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all relative group disabled:cursor-default"
+                className="w-full aspect-[3/2] md:aspect-[4/3] bg-[#111] rounded-2xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all relative group disabled:cursor-default"
               >
                 {hasMedia ? (
                   <>
@@ -250,23 +255,26 @@ export default function TreinoAtual() {
 
             {/* INFO CARDS HORIZONTAIS */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-3 md:p-4">
                 <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Séries</div>
-                <div className="text-3xl font-bold">{exercicioAtivo.series}</div>
+                <div className="text-2xl md:text-3xl font-bold">{exercicioAtivo.series}</div>
               </div>
-              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-3 md:p-4">
                 <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Repetições</div>
-                <div className="text-3xl font-bold">{exercicioAtivo.repeticoes}</div>
+                <div className="text-2xl md:text-3xl font-bold">{exercicioAtivo.repeticoes}</div>
               </div>
               {exercicioAtivo.carga && (
-                <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+                <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-3 md:p-4">
                   <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Carga</div>
-                  <div className="text-3xl font-bold">{exercicioAtivo.carga}<span className="text-xl text-white/60">kg</span></div>
+                  <div className="text-2xl md:text-3xl font-bold">
+                    {exercicioAtivo.carga}
+                    <span className="text-lg md:text-xl text-white/60">kg</span>
+                  </div>
                 </div>
               )}
-              <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl border border-primary/30 p-4">
+              <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl border border-primary/30 p-3 md:p-4">
                 <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Grupo</div>
-                <div className="text-2xl font-bold text-primary">{exercicioAtivo.grupo}</div>
+                <div className="text-xl md:text-2xl font-bold text-primary">{exercicioAtivo.grupo}</div>
               </div>
             </div>
           </div>
