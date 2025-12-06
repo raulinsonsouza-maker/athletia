@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
 import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
+import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 
 // Rate limiting inteligente para rotas de autenticação
 // Logins bem-sucedidos NÃO contam para o limite, apenas tentativas falhadas
@@ -27,8 +28,8 @@ const registerValidation = [
     .withMessage('Email inválido')
     .normalizeEmail(),
   body('senha')
-    .isLength({ min: 6 })
-    .withMessage('Senha deve ter no mínimo 6 caracteres'),
+    .isLength({ min: 8 })
+    .withMessage('Senha deve ter no mínimo 8 caracteres'),
   body('nome')
     .optional()
     .trim()
@@ -95,8 +96,8 @@ const cadastroPrePagamentoValidation = [
     .withMessage('Telefone é obrigatório')
     .trim(),
   body('senha')
-    .isLength({ min: 6 })
-    .withMessage('Senha deve ter no mínimo 6 caracteres'),
+    .isLength({ min: 8 })
+    .withMessage('Senha deve ter no mínimo 8 caracteres'),
   body('onboarding')
     .notEmpty()
     .withMessage('Dados do onboarding são obrigatórios')
@@ -117,7 +118,7 @@ router.post('/login', authLimiter, loginValidation, validateRequest, login);
 router.post('/refresh', authLimiter, refreshTokenValidation, validateRequest, refreshToken);
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
-router.post('/ativar-plano-pagamento', ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);
+router.post('/ativar-plano-pagamento', optionalAuthenticate, ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);
 
 export default router;
 

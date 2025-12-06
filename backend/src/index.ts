@@ -30,6 +30,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+// SEGURANÇA: Validar FRONTEND_URL no startup
+if (!FRONTEND_URL || FRONTEND_URL === '*' || FRONTEND_URL.trim() === '') {
+  console.error('❌ [SEGURANÇA] FRONTEND_URL inválido ou não configurado. Configure uma URL válida no .env');
+  process.exit(1);
+}
+
 // Configurar trust proxy para funcionar atrás de nginx/proxy reverso
 // Confiar apenas em 1 proxy (nginx) para segurança do rate limiting
 // Isso permite que express-rate-limit funcione corretamente com X-Forwarded-For
@@ -42,10 +48,10 @@ console.log(`[INIT] Diretório de upload de exercícios configurado: ${uploadDir
 console.log(`[INIT] Diretório existe: ${fs.existsSync(uploadDir) ? 'SIM' : 'NÃO'}`);
 
 // Rate limiting - Proteção contra brute force e DDoS
-// Aumentado para permitir mais requisições legítimas
+// SEGURANÇA: Reduzido para melhor proteção
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 500, // Máximo 500 requisições por IP a cada 15 minutos (aumentado de 100)
+  max: 300, // Máximo 300 requisições por IP a cada 15 minutos (reduzido de 500)
   message: {
     error: 'Muitas requisições. Por favor, tente novamente mais tarde.'
   },
@@ -264,9 +270,13 @@ app.use((req, res) => {
 // Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Erro:', err);
+  // SEGURANÇA: Nunca expor stack trace em respostas, mesmo em development
+  // Logar apenas no servidor
+  if (err.stack) {
+    console.error('Stack trace:', err.stack);
+  }
   res.status(err.status || 500).json({
-    error: err.message || 'Erro interno do servidor',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    error: err.message || 'Erro interno do servidor'
   });
 });
 

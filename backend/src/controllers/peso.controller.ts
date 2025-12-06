@@ -8,11 +8,19 @@ export const registrarPeso = async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
     const { peso } = req.body;
 
+    // SEGURANÇA: Validar que peso é um número válido
+    const pesoNum = parseFloat(peso);
+    if (isNaN(pesoNum) || pesoNum <= 0 || pesoNum > 1000) {
+      return res.status(400).json({
+        error: 'Peso inválido. Deve ser um número entre 0 e 1000 kg'
+      });
+    }
+
     // Criar registro de peso
     const registroPeso = await prisma.historicoPeso.create({
       data: {
         userId,
-        peso: parseFloat(peso)
+        peso: pesoNum
       }
     });
 
@@ -41,7 +49,13 @@ export const buscarHistoricoPeso = async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
     const { limite } = req.query;
 
-    const limiteNum = limite ? parseInt(limite as string) : 30;
+    // SEGURANÇA: Validar e limitar máximo de registros retornados
+    let limiteNum = limite ? parseInt(limite as string) : 30;
+    if (isNaN(limiteNum) || limiteNum <= 0) {
+      limiteNum = 30;
+    }
+    // Limitar máximo a 100 registros para prevenir DoS
+    limiteNum = Math.min(limiteNum, 100);
 
     const historico = await prisma.historicoPeso.findMany({
       where: { userId },

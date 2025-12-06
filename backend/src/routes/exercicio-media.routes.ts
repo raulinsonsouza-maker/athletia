@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { serveMedia, uploadMedia, removeMedia } from '../controllers/exercicio-media.controller';
-import { uploadMediaMiddleware } from '../middleware/upload-media.middleware';
+import { uploadMediaMiddleware, validateUploadedFile } from '../middleware/upload-media.middleware';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 
@@ -10,7 +10,8 @@ const router = Router();
 router.get('/:exercicioId/media.*', serveMedia);
 
 // Rotas protegidas para upload e remoção
-router.post('/:exercicioId/media', authenticate, requireAdmin, uploadMediaMiddleware.single('media'), uploadMedia);
+// SEGURANÇA: Adicionar validação de magic bytes após upload
+router.post('/:exercicioId/media', authenticate, requireAdmin, uploadMediaMiddleware.single('media'), validateUploadedFile, uploadMedia);
 router.delete('/:exercicioId/media', authenticate, requireAdmin, removeMedia);
 
 export default router;

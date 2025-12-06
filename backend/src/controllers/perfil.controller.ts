@@ -84,9 +84,16 @@ export const createPerfil = async (req: AuthRequest, res: Response) => {
         objetivo: objetivo || null,
         frequenciaSemanal: frequenciaSemanal !== undefined && frequenciaSemanal !== null && frequenciaSemanal !== '' ? (typeof frequenciaSemanal === 'string' ? parseInt(frequenciaSemanal) : frequenciaSemanal) : null,
         tempoDisponivel: tempoDisponivel !== undefined && tempoDisponivel !== null && tempoDisponivel !== '' ? (typeof tempoDisponivel === 'string' ? parseInt(tempoDisponivel) : tempoDisponivel) : null,
-        lesoes: Array.isArray(lesoes) ? lesoes : [],
-        equipamentos: Array.isArray(equipamentos) ? equipamentos : [],
-        preferencias: Array.isArray(preferencias) ? preferencias : [],
+        // SEGURANÇA: Validar que arrays contêm apenas strings e limitar tamanho
+        lesoes: Array.isArray(lesoes) 
+          ? lesoes.filter((item: any) => typeof item === 'string').slice(0, 20) 
+          : [],
+        equipamentos: Array.isArray(equipamentos) 
+          ? equipamentos.filter((item: any) => typeof item === 'string').slice(0, 20) 
+          : [],
+        preferencias: Array.isArray(preferencias) 
+          ? preferencias.filter((item: any) => typeof item === 'string').slice(0, 20) 
+          : [],
         rpePreferido: rpePreferido !== undefined && rpePreferido !== null && rpePreferido !== '' ? (typeof rpePreferido === 'string' ? parseInt(rpePreferido) : rpePreferido) : null,
         ultimaAtualizacaoPeriodica: new Date() // Marcar data inicial da atualização periódica
       },
@@ -148,10 +155,14 @@ export const createPerfil = async (req: AuthRequest, res: Response) => {
       });
     }
     
+    // SEGURANÇA: Nunca expor stack trace em respostas
+    // Logar apenas no servidor
+    if (error.stack) {
+      console.error('Stack trace:', error.stack);
+    }
     res.status(500).json({
       error: 'Erro ao criar perfil',
-      message: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: error.message
     });
   }
 };

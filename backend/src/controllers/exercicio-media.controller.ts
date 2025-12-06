@@ -37,22 +37,16 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Proteção contra path traversal: resolveExercicioId valida entrada
-    let realExercicioId = await resolveExercicioId(exercicioId);
+    // SEGURANÇA: Proteção contra path traversal - resolveExercicioId valida entrada
+    const realExercicioId = await resolveExercicioId(exercicioId);
 
-    // Fallback para legado: se não encontrou no banco, mas parece um slug seguro, tenta usar como ID
+    // SEGURANÇA: Remover fallback inseguro - retornar 404 se exercício não for encontrado no banco
     if (!realExercicioId) {
-      // Validação básica de segurança para slug (alfanumérico e hífens)
-      if (/^[a-zA-Z0-9-_]+$/.test(exercicioId)) {
-        logger.warn(`Exercício não encontrado no banco, tentando modo legado: ${exercicioId}`, 'exercicio-media.controller');
-        realExercicioId = exercicioId;
-      } else {
-        logger.warn(`Exercício não encontrado: ${exercicioId}`, 'exercicio-media.controller');
-        return res.status(404).json({
-          error: 'Exercício não encontrado',
-          exercicioId
-        });
-      }
+      logger.warn(`Exercício não encontrado no banco: ${exercicioId}`, 'exercicio-media.controller');
+      return res.status(404).json({
+        error: 'Exercício não encontrado',
+        exercicioId
+      });
     }
 
     const filePath = await getMediaFilePath(realExercicioId, `.${extension}`, exercicioId);

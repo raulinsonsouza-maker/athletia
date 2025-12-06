@@ -76,7 +76,9 @@ export function validateWebhookSignature(payload: string | Buffer, signature: st
  */
 async function findUserByEmail(email: string) {
   try {
-    console.log(`🔍 Buscando usuário com email: ${email}`);
+    // SEGURANÇA: Não logar email completo
+    const emailHash = email.substring(0, 3) + '***';
+    console.log(`🔍 Buscando usuário com email: ${emailHash}`);
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
@@ -84,11 +86,11 @@ async function findUserByEmail(email: string) {
     });
 
     if (user) {
-      console.log('👤 Usuário encontrado:', { id: user.id, email: user.email, nome: user.nome });
+      console.log('👤 Usuário encontrado:', { id: user.id, email: emailHash, nome: user.nome });
       return user;
     }
 
-    console.log('❌ Usuário não encontrado');
+    console.log(`❌ Usuário não encontrado para: ${emailHash}`);
     return null;
   } catch (error) {
     console.error('❌ Erro ao buscar usuário:', error);
@@ -243,12 +245,13 @@ export async function processPaymentApproved(webhookData: any) {
     const user = await findUserByEmail(customer?.email);
     
     if (!user) {
-      console.log('❌ Usuário não encontrado para email:', customer?.email);
+      const emailHash = customer?.email ? customer.email.substring(0, 3) + '***' : 'N/A';
+      console.log(`❌ Usuário não encontrado para email: ${emailHash}`);
       return {
         success: false,
         message: 'Usuário não encontrado',
         transaction_id: transactionId,
-        email: customer?.email
+        email: emailHash
       };
     }
 

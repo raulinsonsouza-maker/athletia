@@ -192,7 +192,9 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`[LOGIN] Tentativa de login para: ${emailNormalizado}`);
+    // SEGURANÇA: Não logar email completo, apenas hash parcial para privacidade
+    const emailHash = emailNormalizado.substring(0, 3) + '***';
+    console.log(`[LOGIN] Tentativa de login para: ${emailHash}`);
 
     // Buscar usuário por email (pode ser email ou username)
     // O campo email no banco pode conter tanto email quanto username
@@ -201,25 +203,25 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      console.log(`[LOGIN] Usuário não encontrado: ${emailNormalizado}`);
+      console.log(`[LOGIN] Usuário não encontrado: ${emailHash}`);
       return res.status(401).json({
         error: 'Usuário ou senha inválidos'
       });
     }
 
-    console.log(`[LOGIN] Usuário encontrado: ${user.email} (Role: ${user.role})`);
+    console.log(`[LOGIN] Usuário encontrado: ${emailHash} (Role: ${user.role})`);
 
     // Verificar senha
     const senhaValida = await bcrypt.compare(senha, user.senhaHash);
 
     if (!senhaValida) {
-      console.log(`[LOGIN] Senha inválida para usuário: ${emailNormalizado}`);
+      console.log(`[LOGIN] Senha inválida para usuário: ${emailHash}`);
       return res.status(401).json({
         error: 'Usuário ou senha inválidos'
       });
     }
 
-    console.log(`[LOGIN] Login bem-sucedido para: ${emailNormalizado} (Role: ${user.role})`);
+    console.log(`[LOGIN] Login bem-sucedido para: ${emailHash} (Role: ${user.role})`);
 
     // Gerar tokens
     const { accessToken, refreshToken } = generateTokens(user.id);
@@ -517,9 +519,11 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
     // Para produção, é recomendado integrar com serviço de e-mail (SendGrid, AWS SES, etc.)
     // e enviar as credenciais de forma segura via e-mail ao invés de retornar no JSON
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[Ativação Plano] E-mail para ${email}:`);
-      console.log(`   Usuário: ${email}`);
-      console.log(`   Senha: ${senhaGerada}`);
+      // SEGURANÇA: Não logar senha, apenas confirmar que foi gerada
+      const emailHash = email.substring(0, 3) + '***';
+      console.log(`[Ativação Plano] E-mail para ${emailHash}:`);
+      console.log(`   Usuário: ${emailHash}`);
+      console.log(`   Senha: [REDACTED]`);
       console.log(`   Link de login: ${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`);
     }
     
@@ -544,9 +548,8 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
         nome: user.nome,
         plano: user.plano
       },
-      // Em produção, não retornar a senha
-      // Apenas para desenvolvimento/teste
-      senhaGerada: process.env.NODE_ENV === 'development' ? senhaGerada : undefined
+      // SEGURANÇA: Nunca retornar senha em resposta JSON, mesmo em development
+      // Senha deve ser enviada apenas via email seguro
     });
   } catch (error: any) {
     console.error('Erro no cadastro completo:', error);
@@ -558,14 +561,24 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
 };
 
 // Ativar plano após pagamento e gerar treinos
-export const ativarPlanoAposPagamento = async (req: Request, res: Response) => {
+export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
   try {
-    const { userId, plano } = req.body;
+    // SEGURANÇA: Se autenticado via JWT, usar req.userId (mais seguro)
+    // Se não autenticado, permitir userId do body apenas para chamadas internas (webhooks)
+    const userId = req.userId || req.body.userId;
+    const { plano } = req.body;
 
     // Validações
     if (!userId || !plano) {
       return res.status(400).json({
         error: 'UserId e plano são obrigatórios'
+      });
+    }
+
+    // SEGURANÇA: Se autenticado via JWT, garantir que userId do body (se presente) corresponde ao token
+    if (req.userId && req.body.userId && req.userId !== req.body.userId) {
+      return res.status(403).json({
+        error: 'Não autorizado a ativar plano de outro usuário'
       });
     }
 

@@ -10,13 +10,29 @@ import { MAX_FILE_SIZE } from '../utils/file-validation';
 
 /**
  * Valida se ID é seguro (previne path traversal)
+ * SEGURANÇA: Validação melhorada usando path.resolve() para garantir que não há path traversal
  */
 function isValidId(id: string): boolean {
   if (!id || id.length === 0) return false;
-  // UUID ou slug válido (sem path traversal)
-  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  const slugPattern = /^[a-z0-9-]+$/i;
-  return uuidPattern.test(id) || (slugPattern.test(id) && !id.includes('..') && !id.includes('/') && !id.includes('\\'));
+  
+  // Normalizar o ID removendo encoding
+  try {
+    const normalized = decodeURIComponent(id);
+    
+    // Verificar caracteres perigosos
+    if (normalized.includes('..') || normalized.includes('/') || normalized.includes('\\')) {
+      return false;
+    }
+    
+    // UUID ou slug válido
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const slugPattern = /^[a-z0-9-]+$/i;
+    
+    return uuidPattern.test(normalized) || slugPattern.test(normalized);
+  } catch (error) {
+    // Se houver erro ao decodificar, rejeitar
+    return false;
+  }
 }
 
 const storageGrupoImagem = multer.diskStorage({
@@ -29,11 +45,22 @@ const storageGrupoImagem = multer.diskStorage({
 
     try {
       const basePath = getUploadExerciciosPath();
-      const uploadPath = path.join(path.dirname(basePath), 'grupos-musculares', grupoId);
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
+      const baseDir = path.dirname(basePath);
+      const uploadPath = path.join(baseDir, 'grupos-musculares', grupoId);
+      
+      // SEGURANÇA: Resolver caminho absoluto e verificar que está dentro do diretório base
+      const resolvedPath = path.resolve(uploadPath);
+      const resolvedBase = path.resolve(baseDir);
+      
+      // Verificar que o caminho resolvido começa com o diretório base (previne path traversal)
+      if (!resolvedPath.startsWith(resolvedBase)) {
+        return cb(new Error('Caminho de upload inválido'), undefined as any);
       }
-      cb(null, uploadPath);
+      
+      if (!fs.existsSync(resolvedPath)) {
+        fs.mkdirSync(resolvedPath, { recursive: true });
+      }
+      cb(null, resolvedPath);
     } catch (error: any) {
       cb(new Error(`Erro ao criar diretório de upload: ${error.message}`), undefined as any);
     }

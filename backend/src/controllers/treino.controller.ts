@@ -395,7 +395,13 @@ export const buscarTreinos = async (req: AuthRequest, res: Response) => {
     if (concluido !== undefined) filtros.concluido = concluido === 'true'
     if (tipo) filtros.tipo = tipo as string
     if (modoTreino) filtros.modoTreino = modoTreino as 'IA' | 'MANUAL'
-    if (limite) filtros.limite = parseInt(limite as string, 10)
+    // SEGURANÇA: Validar e limitar máximo de treinos retornados
+    if (limite) {
+      const limiteNum = parseInt(limite as string, 10);
+      if (!isNaN(limiteNum) && limiteNum > 0) {
+        filtros.limite = Math.min(limiteNum, 100); // Limitar máximo a 100 para prevenir DoS
+      }
+    }
 
     const treinos = await buscarTreinosComFiltros(userId, filtros, {
       exercicios: true,

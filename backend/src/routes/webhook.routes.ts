@@ -1,8 +1,19 @@
 import { Router, Request, Response } from 'express';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import * as caktoService from '../services/cakto.service';
 
 const router = Router();
+
+// Rate limiting específico para webhooks (mais restritivo)
+const webhookLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Máximo 100 webhooks por IP a cada 15 minutos
+  message: { error: 'Muitas requisições de webhook. Por favor, tente novamente mais tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: any) => req.method === 'OPTIONS'
+});
 
 /**
  * Webhook do Cakto para processar eventos de pagamento
@@ -11,7 +22,7 @@ const router = Router();
  * IMPORTANTE: Usa express.raw() para receber o body como Buffer,
  * necessário para validar a assinatura HMAC SHA256 do webhook
  */
-router.post('/cakto', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+router.post('/cakto', webhookLimiter, express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
   console.log('\n🔔 Webhook Cakto recebido:', new Date().toISOString());
   console.log('Headers:', JSON.stringify(req.headers, null, 2));
   console.log('Body type:', typeof req.body);
@@ -55,12 +66,17 @@ router.post('/cakto', express.raw({ type: 'application/json' }), async (req: Req
       validationMethod = 'header_hmac';
     }
 
-    // Método 2: Verificar secret no JSON (fallback)
+    // Método 2: Verificar secret no JSON (fallback) - MANTIDO PARA COMPATIBILIDADE
+    // SEGURANÇA: Logar uso do fallback para monitoramento
     if (!signatureValid && webhookData.secret) {
-      console.log('🔐 Header não encontrado, tentando validação por secret no JSON...');
+      console.log('⚠️ [SEGURANÇA] Header HMAC não encontrado, usando fallback de validação por secret no JSON');
+      console.log('⚠️ [SEGURANÇA] IP da requisição:', req.ip || req.socket.remoteAddress);
       if (webhookData.secret === process.env.CAKTO_WEBHOOK_SECRET) {
         signatureValid = true;
         validationMethod = 'json_secret';
+        console.log('⚠️ [SEGURANÇA] Validação por fallback aceita - considere migrar para HMAC apenas');
+      } else {
+        console.log('❌ [SEGURANÇA] Secret no JSON não corresponde ao esperado');
       }
     }
 

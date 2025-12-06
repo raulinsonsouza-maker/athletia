@@ -56,27 +56,25 @@ export const gerarCheckoutUrl = async (req: Request, res: Response) => {
  */
 export const verificarStatusAssinatura = async (req: AuthRequest, res: Response) => {
   try {
-    let email: string | undefined;
-
-    // Se autenticado, buscar email do usuário
-    if (req.userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-        select: { email: true }
-      });
-      email = user?.email;
-    }
-
-    // Fallback: usar query param
-    if (!email) {
-      email = req.query.email as string;
-    }
-
-    if (!email) {
-      return res.status(400).json({
-        error: 'Email é obrigatório'
+    // SEGURANÇA: Sempre usar email do usuário autenticado, nunca query parameter
+    if (!req.userId) {
+      return res.status(401).json({
+        error: 'Autenticação obrigatória'
       });
     }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true }
+    });
+
+    if (!user || !user.email) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    const email = user.email;
 
     const result = await caktoService.checkUserSubscription(email);
 
@@ -100,27 +98,25 @@ export const verificarStatusAssinatura = async (req: AuthRequest, res: Response)
  */
 export const obterHistoricoPagamentos = async (req: AuthRequest, res: Response) => {
   try {
-    let email: string | undefined;
-
-    // Se autenticado, buscar email do usuário
-    if (req.userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: req.userId },
-        select: { email: true }
-      });
-      email = user?.email;
-    }
-
-    // Fallback: usar query param
-    if (!email) {
-      email = req.query.email as string;
-    }
-
-    if (!email) {
-      return res.status(400).json({
-        error: 'Email é obrigatório'
+    // SEGURANÇA: Sempre usar email do usuário autenticado, nunca query parameter
+    if (!req.userId) {
+      return res.status(401).json({
+        error: 'Autenticação obrigatória'
       });
     }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { email: true }
+    });
+
+    if (!user || !user.email) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    const email = user.email;
 
     const result = await caktoService.getUserPaymentHistory(email);
 
