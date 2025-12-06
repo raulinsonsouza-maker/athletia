@@ -27,6 +27,9 @@ export default function ModalInstrucoes({
     fallbackChain: []
   })
 
+  const isAlongamentoGeral = exercicio.nome?.toLowerCase() === 'alongamento geral'.toLowerCase()
+  const alongamentoVideoUrl = 'https://www.youtube.com/embed/HtJv4Gv5HTQ'
+
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="card max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in border border-primary/30">
@@ -49,7 +52,17 @@ export default function ModalInstrucoes({
 
         {/* Imagem/Vídeo Grande */}
         <div className="w-full mb-6 rounded-xl overflow-hidden bg-dark-lighter border-2 border-primary/20 flex items-center justify-center min-h-[200px] max-h-[500px]">
-          {mediaUrl ? (
+          {isAlongamentoGeral ? (
+            <div className="w-full h-auto max-h-[500px] aspect-video">
+              <iframe
+                src={`${alongamentoVideoUrl}?rel=0`}
+                title={exercicio.nome}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          ) : mediaUrl ? (
             isVideo ? (
               <video
                 src={mediaUrl}

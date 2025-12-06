@@ -2,9 +2,9 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTreinoAtual } from '../hooks/useTreinoAtual'
 import { useCronometro } from '../hooks/useCronometro'
-import { useModal } from '../hooks/useModal'
+import { useModal } from '../hooks/useModal }
 import { useExercicioMediaChain } from '../hooks/useExercicioMediaChain'
-import { IconeCheck, IconeTrofeu, IconeSeta, IconeDumbbell, IconeVoltar, IconeMenu } from '../components/icons/TreinoIcons'
+import { IconeCheck, IconeTrofeu, IconeSeta, IconeDumbbell, IconeVoltar, IconeMenu, IconeFechar } from '../components/icons/TreinoIcons'
 import { ExercicioInfo } from '../components/treino/ExercicioInfo'
 import { ChecklistModal } from '../components/treino/ChecklistModal'
 import { ImagemExpandidaModal } from '../components/treino/ImagemExpandidaModal'
@@ -111,6 +111,9 @@ export default function TreinoAtual() {
   }
 
   const exercicioConcluido = isExercicioConcluido(exercicioAtivo.id)
+  const isAlongamentoGeral = exercicioAtivo.nome?.toLowerCase() === 'alongamento geral'.toLowerCase()
+  const alongamentoVideoUrl = 'https://www.youtube.com/embed/HtJv4Gv5HTQ'
+  const hasMedia = isAlongamentoGeral || !!exercicioMedia.url
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col">
@@ -201,14 +204,26 @@ export default function TreinoAtual() {
             <div className="relative">
               <button
                 onClick={imagemModal.abrir}
-                disabled={!exercicioMedia.url}
+                disabled={!hasMedia}
                 className="w-full aspect-[4/3] bg-[#111] rounded-2xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all relative group disabled:cursor-default"
               >
-                {exercicioMedia.url ? (
+                {hasMedia ? (
                   <>
-                    {exercicioMedia.isVideo ? (
+                    {isAlongamentoGeral ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-full h-full aspect-video">
+                          <iframe
+                            src={`${alongamentoVideoUrl}?rel=0`}
+                            title="Alongamento Geral"
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                          />
+                        </div>
+                      </div>
+                    ) : exercicioMedia.isVideo ? (
                       <video
-                        src={exercicioMedia.url}
+                        src={exercicioMedia.url!}
                         className="w-full h-full object-contain"
                         muted
                         loop
@@ -218,7 +233,7 @@ export default function TreinoAtual() {
                       />
                     ) : (
                       <img
-                        src={exercicioMedia.url}
+                        src={exercicioMedia.url!}
                         alt={exercicioAtivo.nome}
                         className="w-full h-full object-contain"
                         onError={exercicioMedia.handleError}
@@ -356,7 +371,36 @@ export default function TreinoAtual() {
         />
       )}
 
-      {imagemModal.aberto && exercicioMedia.url && exercicioAtivo && (
+      {imagemModal.aberto && exercicioAtivo && isAlongamentoGeral && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[70] flex items-center justify-center p-4"
+          onClick={imagemModal.fechar}
+        >
+          <div
+            className="relative w-full max-w-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={imagemModal.fechar}
+              className="absolute top-4 right-4 p-2 bg-white/10 rounded-full hover:bg-white/20 transition z-10"
+            >
+              <IconeFechar />
+            </button>
+            <div className="w-full h-auto rounded-xl max-h-[90vh] overflow-hidden aspect-video">
+              <iframe
+                src={`${alongamentoVideoUrl}?rel=0`}
+                title={exercicioAtivo.nome}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            <p className="text-center text-white/80 mt-4">{exercicioAtivo.nome}</p>
+          </div>
+        </div>
+      )}
+
+      {imagemModal.aberto && exercicioAtivo && !isAlongamentoGeral && exercicioMedia.url && (
         <ImagemExpandidaModal
           url={exercicioMedia.url}
           isVideo={exercicioMedia.isVideo}
