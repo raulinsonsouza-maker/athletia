@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTreinoAtual } from '../hooks/useTreinoAtual'
 import { useCronometro } from '../hooks/useCronometro'
-import { useModal } from '../hooks/useModal }
+import { useModal } from '../hooks/useModal'
 import { useExercicioMediaChain } from '../hooks/useExercicioMediaChain'
 import { IconeCheck, IconeTrofeu, IconeSeta, IconeDumbbell, IconeVoltar, IconeMenu, IconeFechar } from '../components/icons/TreinoIcons'
 import { ExercicioInfo } from '../components/treino/ExercicioInfo'
