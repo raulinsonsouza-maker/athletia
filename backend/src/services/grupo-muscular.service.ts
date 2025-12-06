@@ -4,6 +4,12 @@ import { slugify } from '../utils/slugify'
 
 const limparNome = (nome?: string | null) => nome?.trim() ?? ''
 
+/**
+ * Localiza um grupo visual EXISTENTE para o nome informado.
+ *
+ * IMPORTANTE: não cria mais grupos automaticamente.
+ * Isso garante que novos grupos só serão criados manualmente pelo painel de admin.
+ */
 async function garantirGrupoVisual(nome: string) {
   const nomeLimpo = limparNome(nome)
   if (!nomeLimpo) {
@@ -12,18 +18,21 @@ async function garantirGrupoVisual(nome: string) {
 
   const slug = slugify(nomeLimpo, 'grupo')
 
-  return prisma.grupoMuscularVisual.upsert({
-    where: { slug },
-    update: {
-      nome: nomeLimpo,
-      ativo: true
-    },
-    create: {
-      nome: nomeLimpo,
-      slug,
-      ativo: true
-    }
+  const existente = await prisma.grupoMuscularVisual.findUnique({
+    where: { slug }
   })
+
+  if (!existente) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[GruposMusculares] Grupo visual não encontrado para nome:', nomeLimpo, 'slug:', slug)
+    }
+    // Não criar automaticamente - retornamos null para que o chamador apenas ignore esse grupo
+    return null
+  }
+
+  // Retornar o grupo existente sem alterar nome/ativo,
+  // para manter o controle 100% manual no painel de grupos.
+  return existente
 }
 
 type GrupoTarget = {
