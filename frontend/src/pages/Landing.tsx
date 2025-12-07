@@ -2,38 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import MobileNumberPicker from '../components/MobileNumberPicker'
 
-interface Depoimento {
-  nome: string
-  idade: number
-  depoimento: string
-  imagemAntes: string
-  resultado: string
-}
-
-const DEPOIMENTOS: Depoimento[] = [
-  {
-    nome: 'Miguel',
-    idade: 32,
-    depoimento: 'A IA ajustava o treino certinho toda semana. Eu nunca evoluí tão rápido.',
-    imagemAntes: '/images/onboarding/Miguel.webp',
-    resultado: 'Perdeu 12 kg em 4 meses'
-  },
-  {
-    nome: 'Carla',
-    idade: 28,
-    depoimento: 'Sempre me senti perdida na academia. Agora sei exatamente o que fazer.',
-    imagemAntes: '/images/onboarding/Julia.webp',
-    resultado: 'Ganhou definição em 90 dias'
-  },
-  {
-    nome: 'João',
-    idade: 35,
-    depoimento: 'O app é direto. Sem enrolação. Só seguir que funciona.',
-    imagemAntes: '/images/onboarding/Rodrigo.webp',
-    resultado: 'Ganhou 4 kg de massa magra em 2 meses'
-  }
-]
-
 interface OnboardingData {
   nome?: string
   dataNascimento?: string
@@ -59,7 +27,6 @@ interface OnboardingData {
 export default function Landing() {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
-  const [depoimentoAtual, setDepoimentoAtual] = useState(0)
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     lesoes: [],
     preferencias: [],
