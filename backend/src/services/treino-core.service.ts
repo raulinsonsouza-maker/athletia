@@ -10,7 +10,7 @@
 import { prisma } from '../lib/prisma';
 import { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } from './treino.service';
 import { obterTodosGruposAtivos, validarEMapearGrupos } from './grupo-muscular.service';
-import { obterGruposDoDia, distribuirDiasSemana, NOMES_SPLITS, LETRAS_TREINO } from './split-generator.service';
+import { obterGruposDoDia, distribuirDiasSemana, NOMES_SPLITS, LETRAS_TREINO, gerarSplitsInteligentes } from './split-generator.service';
 import { calcularParametrosTreino, calcularConfiguracaoTempo, calcularTempoEstimado, calcularMaxExerciciosPorTempo } from './treino-parameters.service';
 import { FiltrosExercicio } from './exercicio-filters.service';
 import { selecionarExerciciosParaGrupos, balancearExerciciosPorGrupo, buscarHistoricoExercicios } from './exercicio-selector.service';
@@ -451,5 +451,9 @@ export async function regenerarTreinos30Dias(
   console.log(`[REGENERAÇÃO] ${treinosGerados.length} treinos gerados para usuário ${userId}`);
 }
 
-// Re-exportar funções usadas por outros serviços
-export { gerarSplitsInteligentes as obterSplitsPorFrequencia } from './split-generator.service';
+// Re-exportar funções usadas por outros serviços (fachada única)
+export {
+  gerarSplitsInteligentes as obterSplitsPorFrequencia,
+  distribuirDiasSemana
+} from './split-generator.service';
+export { obterInicioSemana } from './treino-utils.service';

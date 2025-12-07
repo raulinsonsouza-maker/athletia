@@ -289,6 +289,6 @@ app.listen(PORT, () => {
 
   sincronizarTodosExerciciosComGrupos()
     .then(() => console.log('🧠 Grupos musculares sincronizados com exercícios.'))
-    .catch((error) => console.error('⚠️ Falha ao sincronizar grupos musculares:', error));
+    .catch((error: any) => console.error('⚠️ Falha ao sincronizar grupos musculares:', error));
 });
 

@@ -98,3 +98,125 @@ export async function validarEMapearGrupos(grupos: string[]): Promise<string[]> 
 export function invalidarCache(): void {
   cache = null;
 }
+
+// ============================================================================
+// SINCRONIZAÇÃO DE EXERCÍCIOS COM GRUPOS VISUAIS
+// ============================================================================
+
+/**
+ * Sincroniza os registros de ExercicioGrupoMuscular para um exercício específico
+ * com base no grupoMuscularPrincipal e nos sinergistas do exercício.
+ */
+export async function sincronizarGruposDoExercicio(
+  exercicioId: string,
+  grupoMuscularPrincipal: string,
+  sinergistas: string[] = []
+): Promise<void> {
+  // Limpar vínculos atuais
+  await prisma.exercicioGrupoMuscular.deleteMany({
+    where: { exercicioId }
+  });
+
+  const nomesGrupos = [
+    grupoMuscularPrincipal,
+    ...(Array.isArray(sinergistas) ? sinergistas : [])
+  ].filter((g) => typeof g === 'string' && g.trim() !== '');
+
+  if (nomesGrupos.length === 0) {
+    return;
+  }
+
+  const gruposVisuais = await obterGruposVisuaisAtivos();
+
+  const normalizar = (valor: string) => valor.trim().toLowerCase();
+
+  const encontrarGrupoVisual = (nome: string) => {
+    const alvo = normalizar(nome);
+
+    // 1) match exato
+    let encontrado = gruposVisuais.find((g) => normalizar(g.nome) === alvo);
+    if (encontrado) return encontrado;
+
+    // 2) nome do grupo visual contido no nome do exercício
+    encontrado = gruposVisuais.find((g) => alvo.includes(normalizar(g.nome)));
+    if (encontrado) return encontrado;
+
+    // 3) nome do exercício contido no nome do grupo visual
+    encontrado = gruposVisuais.find((g) => normalizar(g.nome).includes(alvo));
+    if (encontrado) return encontrado;
+
+    return null;
+  };
+
+  const registros: {
+    exercicioId: string;
+    grupoVisualId: string;
+    papel: 'PRINCIPAL' | 'SINERGISTA';
+    ordem?: number;
+  }[] = [];
+
+  const usados = new Set<string>();
+  let ordem = 0;
+
+  // Grupo principal
+  const grupoPrincipalVisual = encontrarGrupoVisual(grupoMuscularPrincipal);
+  if (grupoPrincipalVisual) {
+    registros.push({
+      exercicioId,
+      grupoVisualId: grupoPrincipalVisual.id,
+      papel: 'PRINCIPAL',
+      ordem
+    });
+    usados.add(grupoPrincipalVisual.id);
+  }
+
+  // Sinergistas
+  for (const nome of Array.isArray(sinergistas) ? sinergistas : []) {
+    const grupoVisual = encontrarGrupoVisual(nome);
+    if (!grupoVisual || usados.has(grupoVisual.id)) continue;
+
+    ordem += 1;
+    registros.push({
+      exercicioId,
+      grupoVisualId: grupoVisual.id,
+      papel: 'SINERGISTA',
+      ordem
+    });
+    usados.add(grupoVisual.id);
+  }
+
+  if (registros.length === 0) {
+    return;
+  }
+
+  await prisma.exercicioGrupoMuscular.createMany({
+    data: registros,
+    skipDuplicates: true
+  });
+}
+
+/**
+ * Sincroniza TODOS os exercícios do banco com a tabela de grupos visuais
+ * Deve ser chamado no startup para garantir consistência.
+ */
+export async function sincronizarTodosExerciciosComGrupos(): Promise<void> {
+  console.log('[GruposMusculares] Iniciando sincronização de todos os exercícios com grupos visuais...');
+
+  const exercicios = await prisma.exercicio.findMany({
+    select: {
+      id: true,
+      grupoMuscularPrincipal: true,
+      sinergistas: true
+    }
+  });
+
+  for (const exercicio of exercicios) {
+    await sincronizarGruposDoExercicio(
+      exercicio.id,
+      exercicio.grupoMuscularPrincipal,
+      exercicio.sinergistas || []
+    );
+  }
+
+  console.log(`[GruposMusculares] Sincronização concluída para ${exercicios.length} exercícios.`);
+}

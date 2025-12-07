@@ -267,7 +267,11 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
   // Determinar dias da semana usando função automática
   const diasTreino = distribuirDiasSemana(frequencia);
   const nomesDias = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  console.log(`[INFO] Dias de treino: ${diasTreino.map(d => nomesDias[d] || `Dia${d}`).join(', ')}`);
+  console.log(
+    `[INFO] Dias de treino: ${diasTreino
+      .map((d: number) => nomesDias[d] || `Dia${d}`)
+      .join(', ')}`
+  );
 
   // Gerar treinos sequencialmente para evitar problemas de concorrência
   const treinosGerados: TreinoGerado[] = [];
