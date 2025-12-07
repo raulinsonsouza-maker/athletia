@@ -971,7 +971,7 @@ export async function buscarExerciciosComFallback(
   const quantidadeMinima = Math.max(quantidade, 3);
   
   // Buscar exercícios
-  let exercicios: any[];
+  let exercicios: any[] = [];
   
   if (cacheExercicios && cacheExercicios.has(grupo)) {
     exercicios = cacheExercicios.get(grupo) || [];
@@ -1039,7 +1039,7 @@ export async function buscarExerciciosComFallback(
     }
     
     // Fallback: usar grupoMuscularPrincipal se não encontrou por grupo visual
-    if (!exercicios || exercicios.length === 0) {
+    if (exercicios.length === 0) {
       exercicios = await prisma.exercicio.findMany({
         where: {
           ativo: true,

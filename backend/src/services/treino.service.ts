@@ -10,6 +10,7 @@ import {
   validarTreinoCompleto,
   evitarRedundancia
 } from './workout-intelligence.service';
+import type { PerfilCompleto } from './treino-core.service';
 
 import { logger } from '../lib/logger';
 
@@ -1145,7 +1146,7 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
   validarDadosMinimos(perfil);
 
   // Importar função do core
-  const { regenerarTreinos30Dias, PerfilCompleto } = await import('./treino-core.service');
+  const { regenerarTreinos30Dias } = await import('./treino-core.service');
   
   // Converter perfil para formato completo
   const perfilCompleto: PerfilCompleto = {

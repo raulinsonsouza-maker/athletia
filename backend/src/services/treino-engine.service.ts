@@ -63,7 +63,7 @@ function calcularIndiceDia(frequencia: number, data: Date, inicioSemana: Date): 
 /**
  * Aplica cardio estruturado ao treino
  */
-function aplicarCardioAoTreino(treino: any, objetivo: string): any {
+export function aplicarCardioAoTreino(treino: any, objetivo: string): any {
   if (!treino.cardio) {
     treino.cardio = { ativo: false };
   }
