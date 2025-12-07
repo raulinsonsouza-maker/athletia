@@ -882,17 +882,17 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-dark via-dark-lighter to-dark">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header com progresso */}
-      <div className="w-full py-4 px-6 border-b border-grey/30">
+      <div className="w-full py-4 px-6 border-b border-slate-200 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-3">
             <div className="text-xl font-display font-bold text-primary">AthletIA</div>
-            <div className="text-sm text-light-muted">
+            <div className="text-sm text-slate-600">
               Passo {step === 4.5 ? '4.5' : step === 5.5 ? '5.5' : step === 7.5 ? '7.5' : step} de {totalSteps}
             </div>
           </div>
-          <div className="w-full bg-dark-lighter rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
             <div
               className="bg-primary h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -907,13 +907,13 @@ export default function Landing() {
           {/* Passo 1: Idade */}
           {step === 1 && (
             <div className="text-center animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Qual é a sua idade?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 A idade influencia diretamente no metabolismo e capacidade de recuperação
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Treinos personalizados por idade garantem resultados mais seguros e eficazes
               </p>
               
@@ -944,12 +944,12 @@ export default function Landing() {
                       className={`relative overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
                         selected
                           ? 'ring-4 ring-primary scale-105'
-                          : 'ring-2 ring-grey hover:ring-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                       aria-label={`Selecionar idade ${faixa.label}`}
                       aria-pressed={selected}
                     >
-                      <div className="w-full aspect-[3/4] bg-dark-lighter overflow-hidden">
+                      <div className="w-full aspect-[3/4] bg-slate-100 overflow-hidden">
                         <img 
                           src={faixa.image} 
                           alt={`Idade ${faixa.label}`}
@@ -959,12 +959,12 @@ export default function Landing() {
                           height="400"
                         />
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-3">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-3">
                         <div className="text-white font-bold text-lg">{faixa.label}</div>
                       </div>
                       {selected && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -979,13 +979,13 @@ export default function Landing() {
           {/* Passo 2: Sexo */}
           {step === 2 && (
             <div className="text-center animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Qual é o seu sexo?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Homens e mulheres têm diferenças hormonais e estruturais importantes
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Isso afeta ganho de massa muscular, perda de gordura e distribuição de força
               </p>
               
@@ -1019,12 +1019,12 @@ export default function Landing() {
                       className={`relative overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
                         selected
                           ? 'ring-4 ring-primary scale-105'
-                          : 'ring-2 ring-grey hover:ring-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                       aria-label={`Selecionar ${sexo.value}`}
                       aria-pressed={selected}
                     >
-                      <div className="w-full aspect-[3/4] bg-dark-lighter overflow-hidden">
+                      <div className="w-full aspect-[3/4] bg-slate-100 overflow-hidden">
                         {sexo.image ? (
                           <img 
                             src={sexo.image} 
@@ -1035,22 +1035,22 @@ export default function Landing() {
                             height="400"
                           />
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center px-6 text-light">
+                          <div className="w-full h-full flex flex-col items-center justify-center px-6 text-slate-900">
                             <div className="text-lg font-semibold mb-2 text-center">
                               {sexo.value}
                             </div>
-                            <p className="text-sm text-light-muted text-center leading-snug">
+                            <p className="text-sm text-slate-600 text-center leading-snug">
                               {sexo.description}
                             </p>
                           </div>
                         )}
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-4">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
                         <div className="text-white font-bold text-xl">{sexo.value}</div>
                       </div>
                       {selected && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -1065,13 +1065,13 @@ export default function Landing() {
           {/* Passo 3: Tipo de Corpo */}
           {step === 3 && (
             <div className="text-center animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 {genderContent.tipoCorpo.title}
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 {genderContent.tipoCorpo.subtitle}
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 {genderContent.tipoCorpo.desc}
               </p>
               
@@ -1142,12 +1142,12 @@ export default function Landing() {
                       className={`relative overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
                         selected
                           ? 'ring-4 ring-primary scale-105'
-                          : 'ring-2 ring-grey hover:ring-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                       aria-label={`Selecionar tipo de corpo: ${tipo.label}`}
                       aria-pressed={selected}
                     >
-                      <div className="w-full aspect-[3/4] bg-dark-lighter">
+                      <div className="w-full aspect-[3/4] bg-slate-100">
                         <img 
                           src={tipo.image} 
                           alt={tipo.label}
@@ -1160,13 +1160,13 @@ export default function Landing() {
                           }}
                         />
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-4">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
                         <div className="text-white font-bold text-xl mb-1">{tipo.label}</div>
                         <div className="text-white/80 text-sm">{tipo.desc}</div>
                       </div>
                       {selected && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -1181,10 +1181,10 @@ export default function Landing() {
           {/* Passo 4: Altura */}
           {step === 4 && (
             <div className="text-center animate-fade-in max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-8">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-8">
                 Qual é a sua altura?
               </h2>
-              <p className="text-light-muted mb-6 text-lg">
+              <p className="text-slate-600 mb-6 text-lg">
                 Ajuste deslizando — selecionamos a altura exata para montar seus treinos.
               </p>
 
@@ -1196,7 +1196,7 @@ export default function Landing() {
                   onChange={(valor) => handleChange('altura', valor)}
                   unit="cm"
                 />
-                <p className="text-xs text-light-muted mt-4">Arraste para cima ou para baixo para ajustar.</p>
+                <p className="text-xs text-slate-600 mt-4">Arraste para cima ou para baixo para ajustar.</p>
               </div>
             </div>
           )}
@@ -1204,10 +1204,10 @@ export default function Landing() {
           {/* Passo 4.5: Peso */}
           {step === 4.5 && (
             <div className="text-center animate-fade-in max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-8">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-8">
                 Qual é o seu peso atual?
               </h2>
-              <p className="text-light-muted mb-6 text-lg">
+              <p className="text-slate-600 mb-6 text-lg">
                 Use o seletor para informar o peso atual. Ajustamos automaticamente conforme sua evolução.
               </p>
 
@@ -1222,7 +1222,7 @@ export default function Landing() {
 
                 {onboardingData.altura && onboardingData.pesoAtual && (
                   <div className="bg-primary/15 border border-primary/40 rounded-lg p-4">
-                    <p className="text-xs text-light-muted uppercase tracking-wide">Seu IMC estimado</p>
+                    <p className="text-xs text-slate-600 uppercase tracking-wide">Seu IMC estimado</p>
                     <p className="text-3xl font-bold text-primary mt-1">
                       {(() => {
                         const alturaMetros = (onboardingData.altura ?? 170) / 100
@@ -1231,7 +1231,7 @@ export default function Landing() {
                         return imcValor.toFixed(1)
                       })()}
                     </p>
-                    <p className="text-xs text-light-muted mt-2">
+                    <p className="text-xs text-slate-600 mt-2">
                       {(() => {
                         const alturaMetros = (onboardingData.altura ?? 170) / 100
                         if (alturaMetros <= 0) return '—'
@@ -1251,13 +1251,13 @@ export default function Landing() {
           {/* Passo 5: Consumo de Água */}
           {step === 5 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Quanta água você bebe diariamente?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 A hidratação adequada é fundamental para o desempenho e recuperação
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Isso nos ajuda a personalizar recomendações de hidratação para seus treinos
               </p>
               
@@ -1308,8 +1308,8 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-lg transition-all p-4 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100'
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -1325,7 +1325,7 @@ export default function Landing() {
                       </div>
                       {selected && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -1356,7 +1356,7 @@ export default function Landing() {
               <div className="text-center animate-fade-in max-w-2xl mx-auto">
                 {/* Indicador visual de água - Círculo com água preenchendo */}
                 <div className="mb-8 flex justify-center">
-                  <div className="relative w-40 h-40 rounded-full bg-dark-lighter border-4 border-grey overflow-hidden">
+                  <div className="relative w-40 h-40 rounded-full bg-slate-100 border-4 border-slate-300 overflow-hidden">
                     {/* Água preenchendo de baixo para cima */}
                     <div 
                       className={`absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out ${
@@ -1374,7 +1374,7 @@ export default function Landing() {
                 </div>
 
                 {/* Título */}
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-4">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
                   {analise.status === 'excelente' ? 'Uau! Impressionante!' :
                    analise.status === 'bom' ? 'Ótimo! Continue assim!' :
                    analise.status === 'baixo' ? 'Atenção!' :
@@ -1382,7 +1382,7 @@ export default function Landing() {
                 </h2>
 
                 {/* Mensagem de comparação */}
-                <p className="text-xl text-light mb-6">
+                <p className="text-xl text-slate-900 mb-6">
                   {analise.mensagem}
                 </p>
 
@@ -1412,17 +1412,17 @@ export default function Landing() {
                     )}
                     Recomendação
                   </h3>
-                  <p className="text-light">
+                  <p className="text-slate-900">
                     {analise.recomendacao}
                   </p>
                 </div>
 
                 {/* Informação adicional */}
-                <div className="bg-dark-lighter rounded-lg p-4 mb-6">
-                  <p className="text-xs text-light-muted">
+                <div className="bg-slate-100 rounded-lg p-4 mb-6">
+                  <p className="text-xs text-slate-600">
                     *Usuários do AthletIA que fizeram o teste
                   </p>
-                  <p className="text-sm text-light-muted mt-2 flex items-start gap-2">
+                  <p className="text-sm text-slate-600 mt-2 flex items-start gap-2">
                     <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
@@ -1436,13 +1436,13 @@ export default function Landing() {
           {/* Passo 6: Objetivo */}
           {step === 6 && (
             <div className="text-center animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 {genderContent.objetivos.title}
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 {genderContent.objetivos.subtitle}
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 {genderContent.objetivos.desc}
               </p>
               
@@ -1495,10 +1495,10 @@ export default function Landing() {
                       className={`relative overflow-hidden rounded-lg transition-all ${
                         selected
                           ? 'ring-4 ring-primary scale-105'
-                          : 'ring-2 ring-grey hover:ring-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                     >
-                      <div className="w-full aspect-[3/4] bg-dark-lighter">
+                      <div className="w-full aspect-[3/4] bg-slate-100">
                         <img 
                           src={obj.image} 
                           alt={obj.title}
@@ -1511,13 +1511,13 @@ export default function Landing() {
                           }}
                         />
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-4">
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
                         <div className="text-white font-bold text-xl mb-1">{obj.title}</div>
                         <div className="text-white/80 text-sm">{obj.desc}</div>
                       </div>
                       {selected && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -1532,13 +1532,13 @@ export default function Landing() {
           {/* Passo 7: Nível de Condicionamento Físico */}
           {step === 7 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Qual é o seu nível de condicionamento físico?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Isso nos ajuda a criar treinos adequados ao seu nível
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Seja honesto para receber treinos personalizados e seguros
               </p>
 
@@ -1586,8 +1586,8 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-lg transition-all p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter border-2 border-primary/50'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter hover:border-primary/30 border-2 border-transparent'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100 border-2 border-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100 hover:border-primary/30 border-2 border-transparent'
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -1630,7 +1630,7 @@ export default function Landing() {
               <div className="text-center animate-fade-in max-w-2xl mx-auto">
                 {/* Indicador visual de nível */}
                 <div className="mb-8 flex justify-center">
-                  <div className="relative w-40 h-40 rounded-full bg-dark-lighter border-4 border-grey overflow-hidden">
+                  <div className="relative w-40 h-40 rounded-full bg-slate-100 border-4 border-slate-300 overflow-hidden">
                     {/* Barra de progresso preenchendo */}
                     <div 
                       className={`absolute bottom-0 left-0 right-0 transition-all duration-1000 ease-out ${
@@ -1669,7 +1669,7 @@ export default function Landing() {
                 </div>
 
                 {/* Título */}
-                <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-4">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
                   {analise.status === 'excelente' ? 'Uau! Impressionante!' :
                    analise.status === 'bom' ? 'Ótimo! Continue assim!' :
                    analise.status === 'regular' ? 'Ótimo! Vamos começar!' :
@@ -1677,7 +1677,7 @@ export default function Landing() {
                 </h2>
 
                 {/* Mensagem de comparação */}
-                <p className="text-xl text-light mb-6">
+                <p className="text-xl text-slate-900 mb-6">
                   {analise.mensagem}
                 </p>
 
@@ -1707,17 +1707,17 @@ export default function Landing() {
                     )}
                     Recomendação
                   </h3>
-                  <p className="text-light">
+                  <p className="text-slate-900">
                     {analise.recomendacao}
                   </p>
                 </div>
 
                 {/* Informação adicional */}
-                <div className="bg-dark-lighter rounded-lg p-4 mb-6">
-                  <p className="text-xs text-light-muted">
+                <div className="bg-slate-100 rounded-lg p-4 mb-6">
+                  <p className="text-xs text-slate-600">
                     *Usuários do AthletIA que fizeram o teste
                   </p>
-                  <p className="text-sm text-light-muted mt-2 flex items-start gap-2">
+                  <p className="text-sm text-slate-600 mt-2 flex items-start gap-2">
                     <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
@@ -1731,13 +1731,13 @@ export default function Landing() {
           {/* Passo 8: Frequência Semanal */}
           {step === 8 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Quantas vezes por semana você quer treinar?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Vamos ajustar os treinos ao seu ritmo
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Escolha a frequência ideal para seus treinos
               </p>
 
@@ -1802,8 +1802,8 @@ export default function Landing() {
                       onClick={() => handleChangeAndAdvance('frequenciaSemanal', freq.value)}
                       className={`relative overflow-hidden rounded-xl transition-all p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter border-2 border-primary/50'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter hover:border-primary/30 border-2 border-transparent'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100 border-2 border-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100 hover:border-primary/30 border-2 border-transparent'
                       }`}
                     >
                       <div className="flex items-start gap-4">
@@ -1813,10 +1813,10 @@ export default function Landing() {
                           {freq.icon}
                         </div>
                         <div className="flex-1">
-                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-light'}`}>
+                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-slate-900'}`}>
                             {freq.label}
                           </div>
-                          <div className={`text-sm leading-relaxed ${selected ? 'text-light/90' : 'text-light-muted'}`}>
+                          <div className={`text-sm leading-relaxed ${selected ? 'text-slate-900/90' : 'text-slate-600'}`}>
                             {freq.desc}
                           </div>
                         </div>
@@ -1838,13 +1838,13 @@ export default function Landing() {
           {/* Passo 9: Tempo de Treino */}
           {step === 9 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Quanto tempo você quer que seus treinos durem?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Selecione a duração ideal para seus treinos
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Isso nos ajuda a criar treinos que se encaixam na sua rotina
               </p>
 
@@ -1879,8 +1879,8 @@ export default function Landing() {
                       onClick={() => handleChangeAndAdvance('tempoDisponivel', tempo.value)}
                       className={`relative overflow-hidden rounded-xl transition-all p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter border-2 border-primary/50'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter hover:border-primary/30 border-2 border-transparent'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100 border-2 border-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100 hover:border-primary/30 border-2 border-transparent'
                       }`}
                     >
                       <div className="flex items-start gap-4">
@@ -1892,10 +1892,10 @@ export default function Landing() {
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-light'}`}>
+                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-slate-900'}`}>
                             {tempo.label}
                           </div>
-                          <div className={`text-sm leading-relaxed ${selected ? 'text-light/90' : 'text-light-muted'}`}>
+                          <div className={`text-sm leading-relaxed ${selected ? 'text-slate-900/90' : 'text-slate-600'}`}>
                             {tempo.desc}
                           </div>
                         </div>
@@ -1917,13 +1917,13 @@ export default function Landing() {
           {/* Passo 10: Local do Treino */}
           {step === 10 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Escolha o local do seu treino
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Onde você prefere treinar?
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Isso nos ajuda a criar treinos adequados ao seu ambiente
               </p>
 
@@ -1950,8 +1950,8 @@ export default function Landing() {
                       onClick={() => handleChangeAndAdvance('localTreino', local.value)}
                       className={`relative overflow-hidden rounded-lg transition-all p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100'
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -1967,7 +1967,7 @@ export default function Landing() {
                       </div>
                       {selected && (
                         <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -1982,13 +1982,13 @@ export default function Landing() {
           {/* Passo 11: Problemas em Tentativas Anteriores */}
           {step === 11 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Problemas em suas tentativas anteriores de condicionamento físico?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Conte-nos o que dificultou seus treinos anteriores
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Isso nos ajuda a criar uma experiência melhor e evitar os mesmos problemas
               </p>
 
@@ -2026,8 +2026,8 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-lg transition-all p-4 text-left flex items-center justify-between ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100'
                       }`}
                     >
                       <div className="flex items-center gap-4 flex-1">
@@ -2044,7 +2044,7 @@ export default function Landing() {
                       <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
                         selected
                           ? 'bg-primary border-primary'
-                          : 'border-grey bg-transparent'
+                          : 'border-slate-300 bg-transparent'
                       }`}>
                         {selected && (
                           <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2058,7 +2058,7 @@ export default function Landing() {
               </div>
 
               {onboardingData.problemasAnteriores && onboardingData.problemasAnteriores.length > 0 && (
-                <div className="mt-6 text-sm text-light-muted">
+                <div className="mt-6 text-sm text-slate-600">
                   <p>Você selecionou {onboardingData.problemasAnteriores.length} {onboardingData.problemasAnteriores.length === 1 ? 'problema' : 'problemas'}</p>
                 </div>
               )}
@@ -2068,13 +2068,13 @@ export default function Landing() {
           {/* Passo 12: Objetivos Adicionais */}
           {step === 12 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-4">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">
                 Marque seus objetivos adicionais abaixo:
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Temos certeza de que você deseja não apenas um corpo melhor, mas também melhorar seu estilo de vida.
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Selecione todos os benefícios que você deseja alcançar
               </p>
 
@@ -2141,8 +2141,8 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-xl transition-all p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter border-2 border-primary/50'
-                          : 'ring-2 ring-grey hover:ring-primary/50 bg-dark-lighter hover:border-primary/30 border-2 border-transparent'
+                          ? 'ring-4 ring-primary scale-105 bg-slate-100 border-2 border-primary/50'
+                          : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-slate-100 hover:border-primary/30 border-2 border-transparent'
                       }`}
                     >
                       <div className="flex items-start gap-4">
@@ -2152,17 +2152,17 @@ export default function Landing() {
                           {objetivo.icon}
                         </div>
                         <div className="flex-1">
-                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-light'}`}>
+                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-slate-900'}`}>
                             {objetivo.value}
                           </div>
-                          <div className={`text-sm leading-relaxed ${selected ? 'text-light/90' : 'text-light-muted'}`}>
+                          <div className={`text-sm leading-relaxed ${selected ? 'text-slate-900/90' : 'text-slate-600'}`}>
                             {objetivo.desc}
                           </div>
                         </div>
                         <div className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
                           selected
                             ? 'bg-primary border-primary'
-                            : 'border-grey bg-transparent'
+                            : 'border-slate-300 bg-transparent'
                         }`}>
                           {selected && (
                             <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2177,7 +2177,7 @@ export default function Landing() {
               </div>
 
               {onboardingData.objetivosAdicionais && onboardingData.objetivosAdicionais.length > 0 && (
-                <div className="mt-6 text-sm text-light-muted">
+                <div className="mt-6 text-sm text-slate-600">
                   <p>Você selecionou {onboardingData.objetivosAdicionais.length} {onboardingData.objetivosAdicionais.length === 1 ? 'objetivo' : 'objetivos'}</p>
                 </div>
               )}
@@ -2187,13 +2187,13 @@ export default function Landing() {
           {/* Passo 13: Limitações Físicas */}
           {step === 13 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Lesões ou Limitações Físicas
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
+              <p className="text-slate-700 mb-2 text-lg">
                 Informar lesões garante treinos seguros e adaptados
               </p>
-              <p className="text-sm text-light-muted/80 mb-8">
+              <p className="text-sm text-slate-600 mb-8">
                 Adaptamos exercícios para suas condições, mantendo a eficácia do treino
               </p>
 
@@ -2215,7 +2215,7 @@ export default function Landing() {
                       className={`py-4 rounded-lg font-semibold transition-all text-lg ${
                         selected
                           ? 'bg-primary text-dark ring-4 ring-primary/50 scale-105'
-                          : 'bg-dark-lighter text-light ring-2 ring-grey hover:ring-primary/50'
+                          : 'bg-slate-100 text-slate-900 ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                     >
                       {lesao}
@@ -2229,10 +2229,10 @@ export default function Landing() {
           {/* Passo 14: Idade */}
           {step === 14 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Qual é a sua idade?
               </h2>
-              <p className="text-light-muted mb-8 text-lg">
+              <p className="text-slate-600 mb-8 text-lg">
                 A idade nos ajuda a ajustar o volume e a intensidade dos treinos para você.
               </p>
 
@@ -2244,7 +2244,7 @@ export default function Landing() {
                   onChange={(valor) => handleChange('idade', valor)}
                   unit="anos"
                 />
-                <p className="text-xs text-light-muted mt-4">
+                <p className="text-xs text-slate-600 mt-4">
                   Arraste para selecionar. Ajustaremos isso automaticamente conforme o tempo passa.
                 </p>
               </div>
@@ -2254,10 +2254,10 @@ export default function Landing() {
           {/* Passo 15: Nome */}
           {step === 15 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-3">
                 Para finalizar, como podemos te chamar?
               </h2>
-              <p className="text-light-muted mb-8 text-lg">
+              <p className="text-slate-600 mb-8 text-lg">
                 Queremos que tudo seja personalizado para você.
               </p>
 
@@ -2266,7 +2266,7 @@ export default function Landing() {
                   type="text"
                   value={onboardingData.nome || ''}
                   onChange={(e) => handleChange('nome', e.target.value)}
-                  className="w-full bg-transparent border-b-2 border-grey text-center text-2xl md:text-4xl font-bold text-light focus:border-primary focus:outline-none py-4 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-slate-300 text-center text-2xl md:text-4xl font-bold text-slate-900 focus:border-primary focus:outline-none py-4 transition-colors"
                   placeholder="Seu nome"
                   autoFocus
                   aria-label="Digite seu nome completo"
@@ -2282,13 +2282,13 @@ export default function Landing() {
       </div>
 
       {/* Footer com botões - estilo MadMuscles */}
-      <div className="w-full py-6 px-6 border-t border-grey/30">
+      <div className="w-full py-6 px-6 border-t border-slate-200">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
           {step > 0 ? (
             <button
               type="button"
               onClick={prevStep}
-              className="px-6 py-3 text-light-muted hover:text-light transition-colors flex items-center gap-2"
+              className="px-6 py-3 text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-2"
               aria-label="Voltar para o passo anterior"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
