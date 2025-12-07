@@ -1,149 +1,100 @@
-import { PapelGrupoMuscular } from '@prisma/client'
-import { prisma } from '../lib/prisma'
-import { slugify } from '../utils/slugify'
+/**
+ * GRUPO MUSCULAR SERVICE
+ * 
+ * Gerencia cache e operações com grupos musculares visuais
+ * Otimizado para performance com cache inteligente
+ */
 
-const limparNome = (nome?: string | null) => nome?.trim() ?? ''
+import { prisma } from '../lib/prisma';
+
+// ============================================================================
+// CACHE INTELIGENTE
+// ============================================================================
+
+interface GrupoMuscularCache {
+  grupos: Array<{ id: string; nome: string; slug: string }>;
+  timestamp: number;
+}
+
+let cache: GrupoMuscularCache | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
 /**
- * Localiza um grupo visual EXISTENTE para o nome informado.
- *
- * IMPORTANTE: não cria mais grupos automaticamente.
- * Isso garante que novos grupos só serão criados manualmente pelo painel de admin.
+ * Obtém grupos musculares visuais ativos (com cache)
  */
-async function garantirGrupoVisual(nome: string) {
-  const nomeLimpo = limparNome(nome)
-  if (!nomeLimpo) {
-    return null
+export async function obterGruposVisuaisAtivos(): Promise<Array<{ id: string; nome: string; slug: string }>> {
+  const agora = Date.now();
+  
+  if (cache && (agora - cache.timestamp) < CACHE_DURATION) {
+    return cache.grupos;
   }
-
-  const slug = slugify(nomeLimpo, 'grupo')
-
-  const existente = await prisma.grupoMuscularVisual.findUnique({
-    where: { slug }
-  })
-
-  if (!existente) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.warn('[GruposMusculares] Grupo visual não encontrado para nome:', nomeLimpo, 'slug:', slug)
-    }
-    // Não criar automaticamente - retornamos null para que o chamador apenas ignore esse grupo
-    return null
-  }
-
-  // Retornar o grupo existente sem alterar nome/ativo,
-  // para manter o controle 100% manual no painel de grupos.
-  return existente
+  
+  const grupos = await prisma.grupoMuscularVisual.findMany({
+    where: { ativo: true },
+    select: { id: true, nome: true, slug: true },
+    orderBy: [{ ordem: 'asc' }, { nome: 'asc' }]
+  });
+  
+  cache = { grupos, timestamp: agora };
+  return grupos;
 }
 
-type GrupoTarget = {
-  nome: string
-  papel: PapelGrupoMuscular
-  ordem: number
+/**
+ * Obtém todos os nomes dos grupos ativos
+ */
+export async function obterTodosGruposAtivos(): Promise<string[]> {
+  const grupos = await obterGruposVisuaisAtivos();
+  return grupos.map(g => g.nome);
 }
 
-export async function sincronizarGruposDoExercicio(
-  exercicioId: string,
-  principal?: string | null,
-  sinergistas?: string[] | null
-) {
-  const alvos: GrupoTarget[] = []
-  const nomePrincipal = limparNome(principal)
-  if (nomePrincipal) {
-    alvos.push({
-      nome: nomePrincipal,
-      papel: PapelGrupoMuscular.PRINCIPAL,
-      ordem: 0
-    })
-  }
-
-  const sinergistasUnicos = Array.from(
-    new Set(
-      (sinergistas || [])
-        .map((item) => limparNome(typeof item === 'string' ? item : String(item)))
-        .filter(Boolean)
-    )
-  )
-
-  sinergistasUnicos.forEach((nome, index) => {
-    alvos.push({
-      nome,
-      papel: PapelGrupoMuscular.SINERGISTA,
-      ordem: index
-    })
-  })
-
-  if (alvos.length === 0) {
-    await prisma.exercicioGrupoMuscular.deleteMany({
-      where: { exercicioId }
-    })
-    return
-  }
-
-  const registrosMantidos: Array<{ grupoId: string; papel: PapelGrupoMuscular }> = []
-
-  for (const alvo of alvos) {
-    const grupo = await garantirGrupoVisual(alvo.nome)
-    if (!grupo) continue
-
-    registrosMantidos.push({ grupoId: grupo.id, papel: alvo.papel })
-
-    await prisma.exercicioGrupoMuscular.upsert({
-      where: {
-        exercicioId_grupoVisualId_papel: {
-          exercicioId,
-          grupoVisualId: grupo.id,
-          papel: alvo.papel
-        }
-      },
-      update: {
-        ordem: alvo.ordem
-      },
-      create: {
-        exercicioId,
-        grupoVisualId: grupo.id,
-        papel: alvo.papel,
-        ordem: alvo.ordem
-      }
-    })
-  }
-
-  const existentes = await prisma.exercicioGrupoMuscular.findMany({
-    where: { exercicioId },
-    select: { id: true, grupoVisualId: true, papel: true }
-  })
-
-  const manter = new Set(registrosMantidos.map((registro) => `${registro.grupoId}:${registro.papel}`))
-  const paraRemover = existentes
-    .filter((rel) => !manter.has(`${rel.grupoVisualId}:${rel.papel}`))
-    .map((rel) => rel.id)
-
-  if (paraRemover.length > 0) {
-    await prisma.exercicioGrupoMuscular.deleteMany({
-      where: { id: { in: paraRemover } }
-    })
-  }
+/**
+ * Mapeia nome/slug para grupo visual válido
+ */
+export async function mapearGrupoParaVisual(nomeOuSlug: string): Promise<string | null> {
+  const grupos = await obterGruposVisuaisAtivos();
+  
+  // Buscar por nome exato
+  const porNome = grupos.find(g => 
+    g.nome.toLowerCase() === nomeOuSlug.toLowerCase()
+  );
+  if (porNome) return porNome.nome;
+  
+  // Buscar por slug
+  const porSlug = grupos.find(g => 
+    g.slug.toLowerCase() === nomeOuSlug.toLowerCase()
+  );
+  if (porSlug) return porSlug.nome;
+  
+  // Buscar por match parcial
+  const porMatch = grupos.find(g => 
+    g.nome.toLowerCase().includes(nomeOuSlug.toLowerCase()) ||
+    nomeOuSlug.toLowerCase().includes(g.nome.toLowerCase())
+  );
+  if (porMatch) return porMatch.nome;
+  
+  return null;
 }
 
-export async function sincronizarTodosExerciciosComGrupos() {
-  const exercicios = await prisma.exercicio.findMany({
-    select: {
-      id: true,
-      grupoMuscularPrincipal: true,
-      sinergistas: true
-    }
-  })
-
-  for (const exercicio of exercicios) {
-    try {
-      await sincronizarGruposDoExercicio(
-        exercicio.id,
-        exercicio.grupoMuscularPrincipal,
-        exercicio.sinergistas
-      )
-    } catch (error) {
-      console.error('[GruposMusculares] Falha ao sincronizar exercício', exercicio.id, error)
+/**
+ * Valida e mapeia lista de grupos para grupos visuais válidos
+ */
+export async function validarEMapearGrupos(grupos: string[]): Promise<string[]> {
+  const gruposValidos: string[] = [];
+  const gruposAtivos = await obterTodosGruposAtivos();
+  
+  for (const grupo of grupos) {
+    const grupoMapeado = await mapearGrupoParaVisual(grupo);
+    if (grupoMapeado && gruposAtivos.includes(grupoMapeado)) {
+      gruposValidos.push(grupoMapeado);
     }
   }
+  
+  return gruposValidos;
 }
 
-
+/**
+ * Invalida cache (útil após atualizações)
+ */
+export function invalidarCache(): void {
+  cache = null;
+}

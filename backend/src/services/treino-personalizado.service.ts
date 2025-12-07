@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma';
-import { calcularTempoEstimado as calcularTempoEstimadoCore, calcularConfiguracaoTempo, calcularParametrosTreino } from './treino-core.service';
+import { calcularTempoEstimado as calcularTempoEstimadoCore, calcularConfiguracaoTempo, calcularParametrosTreino } from './treino-parameters.service';
 
 /**
  * Calcula tempo estimado do treino baseado nos exercícios

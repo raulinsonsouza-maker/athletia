@@ -1,7 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
 import { slugify } from '../utils/slugify';
-import { calcularParametrosTreino as calcularParametrosTreinoCore } from './treino-core.service';
+import { calcularParametrosTreino as calcularParametrosTreinoCore } from './treino-parameters.service';
 
 const hashTexto = (texto: string): number => {
   let hash = 0;

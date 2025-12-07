@@ -418,544 +418,492 @@ export default function Landing() {
     setStep(1)
   }
 
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   // Tela inicial - Landing Page Completa
   if (step === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
+      <div className="min-h-screen bg-white text-slate-900">
         {/* Header */}
-        <header className="w-full py-6 px-6 border-b border-grey/20 sticky top-0 z-50 bg-dark/80 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div className="text-3xl font-display font-bold text-primary">AthletIA</div>
-            <div className="flex gap-4 items-center">
-              <button
-                onClick={() => navigate('/login')}
-                className="text-light-muted hover:text-primary transition-colors"
-              >
-                Entrar
-              </button>
+        <header className="w-full py-5 px-6 border-b border-slate-200 sticky top-0 z-50 bg-white/90 backdrop-blur-sm">
+          <div className="max-w-6xl mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg">
+                AI
+              </div>
+              <div className="text-xl font-display font-bold tracking-tight">AthletIA</div>
             </div>
+            <button
+              onClick={() => navigate('/login')}
+              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+            >
+              Entrar
+            </button>
           </div>
         </header>
 
-        {/* 1. HERO SECTION - IMPACTO IMEDIATO */}
-        <section className="relative py-20 md:py-32 px-4">
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center max-w-4xl mx-auto animate-fade-in">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-6 leading-tight">
-                Seu corpo é único. Seu treino também deveria ser.
-              </h1>
-              <p className="text-xl md:text-2xl text-light-muted mb-8 font-light leading-relaxed">
-                A IA cria para você um treino sob medida, ajustado diariamente ao seu progresso.
-              </p>
-              <p className="text-lg md:text-xl text-light mb-12 font-semibold">
-                Pare de desperdiçar meses com treinos genéricos que não funcionam para você.
-              </p>
-              
-              {/* Benefícios imediatos em bullets */}
-              <div className="space-y-4 mb-10 text-left max-w-2xl mx-auto">
-                <div className="flex items-start gap-3">
-                  <svg className="w-6 h-6 text-primary flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-light text-lg">Treino 100% personalizado gerado em menos de 2 minutos</span>
+        <main>
+          {/* SEÇÃO 1 – HERO ULTRA AGRESSIVO */}
+          <section className="min-h-[calc(100vh-72px)] flex items-start lg:items-center px-4 pt-10 pb-14 md:py-16">
+            <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+              {/* Texto principal */}
+              <div className="space-y-6 order-1">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold leading-tight tracking-tight">
+                  O motivo pelo qual você não evolui é simples.
+                  <span className="block text-primary mt-2">Seu treino está errado.</span>
+                </h1>
+
+                <div className="space-y-4">
+                  <p className="text-xl md:text-2xl text-slate-700">
+                    Você treina. Mas seu corpo não muda.
+                  </p>
+                  <p className="text-lg md:text-xl text-slate-600">
+                    O AthletIA cria o único treino que se adapta automaticamente ao seu corpo todos os dias.
+                  </p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <svg className="w-6 h-6 text-primary flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-light text-lg">Ajustes automáticos conforme você evolui</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <svg className="w-6 h-6 text-primary flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-light text-lg">Exercícios com demonstrações visuais e instruções detalhadas</span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <svg className="w-6 h-6 text-primary flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-light text-lg font-semibold">Garantia incondicional de 7 dias. Sem perguntas.</span>
+
+                <ul className="space-y-3 pt-2">
+                  {[
+                    'Resultados visíveis em semanas',
+                    'Progressão automática baseada no seu desempenho',
+                    'Treino pensado para o seu corpo, não para “média de usuários”',
+                    'Evolução contínua sem precisar pensar em nada'
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                        <svg className="h-3.5 w-3.5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </span>
+                      <span className="text-base md:text-lg text-slate-700">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <button
+                      onClick={iniciarOnboarding}
+                      className="btn-primary text-base md:text-lg px-10 md:px-12 py-4 md:py-4.5 font-bold shadow-xl shadow-primary/30 hover:scale-[1.02] transition-transform w-full sm:w-auto"
+                    >
+                      Criar meu treino inteligente agora
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection('como-funciona')}
+                      className="text-sm font-semibold text-primary hover:text-primary/80 underline-offset-4 hover:underline"
+                    >
+                      Quero ver como funciona
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-500">Leva menos de 2 minutos</p>
                 </div>
               </div>
 
-              {/* CTA Principal */}
-              <div className="mb-4">
+              {/* Mockup do app */}
+              <div className="relative order-2 mt-8 lg:mt-0">
+                <div className="relative mx-auto max-w-md rounded-3xl border border-slate-200 bg-slate-50 shadow-[0_18px_60px_rgba(15,23,42,0.25)] overflow-hidden">
+                  <div className="bg-slate-900 px-5 py-3 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-200">Treino de hoje</span>
+                    <span className="text-[10px] text-slate-400">AthletIA · IA Ativa</span>
+                  </div>
+                  <div className="p-5 space-y-4">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-primary mb-1">Treino A · Peito e Costas</p>
+                      <p className="text-lg font-semibold text-slate-900">Força e definição na parte superior</p>
+                      <p className="text-xs text-slate-500 mt-1">Tempo estimado: 48 min · Nível: Intermediário</p>
+                    </div>
+                    <div className="space-y-3 text-xs">
+                      {[
+                        'Aquecimento em esteira – 8 min',
+                        'Supino reto com barra – 4 x 8–10',
+                        'Puxada na frente – 4 x 10–12',
+                        'Crucifixo com halteres – 3 x 12',
+                        'Remada baixa – 3 x 10–12',
+                        'Alongamento guiado – 6 min'
+                      ].map((linha) => (
+                        <div
+                          key={linha}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2 border border-slate-100"
+                        >
+                          <span className="text-[11px] text-slate-800 truncate">{linha}</span>
+                          <span className="h-5 w-5 rounded-full border border-slate-200 flex items-center justify-center text-[10px] text-slate-400">
+                            ✓
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 rounded-2xl bg-primary/5 px-3 py-3 text-[11px] text-slate-700">
+                      <span className="font-semibold text-primary">IA ativa: </span>
+                      <span>
+                        Séries, cargas e volume serão ajustados automaticamente de acordo com seu desempenho de hoje.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="pointer-events-none absolute -right-6 -bottom-8 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
+              </div>
+            </div>
+          </section>
+
+          {/* SEÇÃO 2 – ROMPIMENTO DA CRENÇA */}
+          <section className="py-20 px-4 border-t border-slate-100 bg-slate-50/60">
+            <div className="max-w-4xl mx-auto space-y-8">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900">
+                O problema nunca foi você. Sempre foi o treino errado.
+              </h2>
+              <p className="text-lg md:text-xl text-slate-700 leading-relaxed">
+                A maioria das pessoas treina por meses e não vê nenhuma mudança real no espelho. Não é falta de esforço.
+                Não é falta de disciplina. É simplesmente seguir treinos genéricos que não foram criados para o seu corpo,
+                para o seu ritmo, para sua rotina e para sua evolução.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+                {[
+                  'Você treina e nada muda',
+                  'Você repete os mesmos exercícios sem progresso',
+                  'Você chega na academia sem saber o que fazer',
+                  'Você não sabe se está treinando demais ou de menos',
+                  'Você tenta treinos do YouTube e não funciona',
+                  'Você perde tempo, energia e motivação'
+                ].map((dor) => (
+                  <div key={dor} className="flex items-start gap-3 rounded-xl bg-white border border-slate-100 px-4 py-3">
+                    <span className="mt-1 text-sm text-rose-500">✕</span>
+                    <p className="text-sm md:text-base text-slate-700">{dor}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xl md:text-2xl font-display font-semibold text-slate-900 mt-4">
+                Seu corpo é único. Seu treino também precisa ser.
+              </p>
+            </div>
+          </section>
+
+          {/* SEÇÃO 3 – PROMESSA CENTRAL */}
+          <section className="py-20 px-4">
+            <div className="max-w-6xl mx-auto space-y-10">
+              <div className="max-w-3xl space-y-4">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900">
+                  O AthletIA cria o treino perfeito para o seu corpo e ajusta tudo automaticamente conforme você evolui.
+                </h2>
+                <p className="text-lg md:text-xl text-slate-700">
+                  Apenas treine. A IA assume o trabalho pesado.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+                {[
+                  {
+                    titulo: 'Treino completamente personalizado',
+                    descricao: 'Criado em segundos com base no seu biotipo, histórico, rotina e objetivo.'
+                  },
+                  {
+                    titulo: 'Progressão automática',
+                    descricao: 'Séries, peso, repetições e volume ajustados sem você precisar pensar.'
+                  },
+                  {
+                    titulo: 'Treino adaptado à sua rotina',
+                    descricao: 'Tempo disponível e equipamentos que você tem hoje. Tudo ajustado automaticamente.'
+                  },
+                  {
+                    titulo: 'Demonstrações visuais claras',
+                    descricao: 'GIFs animados e instruções de execução direta e sem enrolação.'
+                  },
+                  {
+                    titulo: 'Histórico completo',
+                    descricao: 'Você acompanha sua evolução com precisão, treino a treino.'
+                  },
+                  {
+                    titulo: 'Consistência garantida',
+                    descricao: 'Sistema motivacional que não deixa você parar e mantém você no plano.'
+                  }
+                ].map((bloco) => (
+                  <div
+                    key={bloco.titulo}
+                    className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-sm"
+                  >
+                    <h3 className="text-lg md:text-xl font-semibold text-slate-900 mb-2">{bloco.titulo}</h3>
+                    <p className="text-sm md:text-base text-slate-700 leading-relaxed">{bloco.descricao}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4">
                 <button
                   onClick={iniciarOnboarding}
-                  className="btn-primary text-lg md:text-xl px-12 py-5 font-bold hover:scale-105 transition-all duration-300 shadow-2xl shadow-primary/30 mb-2 w-full md:w-auto"
+                  className="btn-primary text-base md:text-lg px-10 md:px-14 py-4 font-bold shadow-lg shadow-primary/30 hover:scale-[1.02] transition-transform"
                 >
-                  Criar meu treino personalizado agora
+                  Criar meu treino inteligente agora
                 </button>
-                <p className="text-sm text-light-muted">Leva menos de 2 minutos</p>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* 2. PROVA VISUAL */}
-        <section className="py-16 px-4 bg-dark-lighter/30">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-12">
-              Veja como o AthletIA cria seu treino
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <div className="card-hover p-6 text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-light font-bold text-lg mb-2">Geração automática do treino completo</h3>
-                <p className="text-light-muted text-sm">A IA cria seu treino personalizado em segundos</p>
+          {/* SEÇÃO 4 – COMO FUNCIONA */}
+          <section id="como-funciona" className="py-20 px-4 bg-slate-50/80 border-y border-slate-100">
+            <div className="max-w-6xl mx-auto space-y-10">
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900">
+                  Seu treino criado e ajustado automaticamente em quatro etapas simples.
+                </h2>
               </div>
-              <div className="card-hover p-6 text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-light font-bold text-lg mb-2">Lista de exercícios com vídeo demonstrativo</h3>
-                <p className="text-light-muted text-sm">Cada exercício com GIF animado e instruções</p>
-              </div>
-              <div className="card-hover p-6 text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-light font-bold text-lg mb-2">Séries, repetições e descanso calculados para você</h3>
-                <p className="text-light-muted text-sm">Tudo calculado baseado no seu perfil</p>
-              </div>
-              <div className="card-hover p-6 text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-light font-bold text-lg mb-2">Ajustes automáticos conforme você relata sua evolução</h3>
-                <p className="text-light-muted text-sm">O treino evolui junto com você</p>
-              </div>
-              <div className="card-hover p-6 text-center animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-light font-bold text-lg mb-2">Histórico completo para acompanhar resultados</h3>
-                <p className="text-light-muted text-sm">Veja sua evolução mês a mês</p>
-              </div>
-            </div>
-            {/* Espaço reservado para prints/mockups */}
-            <div className="bg-dark-lighter/50 border-2 border-dashed border-grey/30 rounded-xl p-12 text-center">
-              <p className="text-light-muted text-sm">Espaço reservado para screenshots, mockups ou GIF demonstrativo</p>
-            </div>
-          </div>
-        </section>
 
-        {/* 3. DIAGNÓSTICO FORTE - "O PROBLEMA NÃO É VOCÊ" */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-4">
-              O problema não é você.
-            </h2>
-            <h3 className="text-2xl md:text-3xl font-display font-bold text-primary text-center mb-12">
-              É o treino errado.
-            </h3>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                'Você treina, mas não vê mudança real no espelho',
-                'Sente que sempre faz as mesmas coisas e não evolui',
-                'Chega na academia sem saber o que fazer',
-                'Se sente perdido na hora de combinar exercícios',
-                'Não sabe se está treinando demais ou de menos',
-                'Fica cansado, desmotivado e sem progresso',
-                'Tenta seguir treinos do YouTube, mas não funciona para o seu corpo'
-              ].map((problema, index) => (
-                <div key={index} className="card-hover p-6 animate-fade-in">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-error/20 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+              <div className="grid md:grid-cols-4 gap-6">
+                {[
+                  {
+                    titulo: 'Você responde perguntas rápidas',
+                    descricao: 'Sobre seu corpo, rotina e objetivo. Leva menos de 2 minutos.'
+                  },
+                  {
+                    titulo: 'A IA analisa seu perfil',
+                    descricao: 'Seleciona exercícios entre mais de 300 opções mapeadas.'
+                  },
+                  {
+                    titulo: 'Seu treino nasce pronto',
+                    descricao: 'Treino completo criado imediatamente, com tudo organizado.'
+                  },
+                  {
+                    titulo: 'O sistema aprende com você',
+                    descricao: 'A cada treino, ajusta progressão, volume e intensidade automaticamente.'
+                  }
+                ].map((passo, index) => (
+                  <div
+                    key={passo.titulo}
+                    className="rounded-2xl bg-white border border-slate-200 p-5 md:p-6 flex flex-col h-full"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                        {index + 1}
+                      </div>
+                      <h3 className="text-sm md:text-base font-semibold text-slate-900">{passo.titulo}</h3>
                     </div>
-                    <p className="text-light font-medium leading-relaxed">{problema}</p>
+                    <p className="text-sm md:text-sm text-slate-700 leading-relaxed flex-1">{passo.descricao}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 text-center text-sm text-slate-500">
+                GIF / mockup curto mostrando esse fluxo pode ser adicionado aqui.
+              </div>
+            </div>
+          </section>
+
+          {/* SEÇÃO 5 – PROVA SOCIAL */}
+          <section className="py-20 px-4">
+            <div className="max-w-4xl mx-auto space-y-8">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900">
+                Resultados que acontecem mais rápido do que você imagina.
+              </h2>
+
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center shadow-sm">
+                <div className="w-full md:w-1/2">
+                  <div className="relative rounded-2xl overflow-hidden bg-slate-100">
+                    <img
+                      src="/images/onboarding/Miguel.webp"
+                      alt="Transformação do Miguel com AthletIA"
+                      className="w-full h-auto object-cover"
+                      loading="lazy"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
+                      <p className="text-sm font-semibold text-white">Miguel perdeu 12 kg em 4 meses.</p>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="mt-12 text-center">
-              <p className="text-xl md:text-2xl text-light font-semibold mb-4">
-                A verdade é simples: seu corpo é diferente.
-              </p>
-              <p className="text-xl md:text-2xl text-primary font-bold">
-                Seu treino precisa ser diferente também.
+
+                <div className="w-full md:w-1/2 space-y-4">
+                  <p className="text-sm font-semibold text-primary uppercase tracking-wide">
+                    Caso real
+                  </p>
+                  <p className="text-lg md:text-xl font-semibold text-slate-900">
+                    “A primeira vez que senti evolução contínua foi com o AthletIA. Não precisa pensar, só treinar.”
+                  </p>
+                  <p className="text-sm text-slate-600">Miguel, 32 anos – Usuário AthletIA</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-500">
+                Quando você tiver mais provas sociais, adicione três cards em linha com outras transformações.
               </p>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* 4. SEÇÃO "O QUE O ATHLETIA FAZ" - SOLUÇÃO */}
-        <section className="py-16 px-4 bg-dark-lighter/30">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-12">
-              Como o AthletIA resolve isso
-            </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                {
-                  titulo: 'IA cria treinos totalmente personalizados',
-                  descricao: 'Para seu biotipo, idade, nível e objetivo'
-                },
-                {
-                  titulo: 'Você recebe seu treino do dia pronto',
-                  descricao: 'Com instruções e vídeos'
-                },
-                {
-                  titulo: 'Ajustes automáticos conforme você treina',
-                  descricao: 'O sistema ajusta cargas, repetições e volume'
-                },
-                {
-                  titulo: 'Progressão inteligente',
-                  descricao: 'Evita platôs e acelera resultados'
-                },
-                {
-                  titulo: 'Adapta completamente à sua rotina',
-                  descricao: 'Tempo e equipamentos disponíveis'
-                },
-                {
-                  titulo: 'Evita treinos muito difíceis ou muito leves',
-                  descricao: 'Previne lesões e garante resultados'
-                },
-                {
-                  titulo: 'Tudo isso sem precisar pagar caro',
-                  descricao: 'Por um personal trainer'
-                }
-              ].map((solucao, index) => (
-                <div key={index} className="card-hover p-6 animate-fade-in">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-light font-bold text-lg mb-2">{solucao.titulo}</h3>
-                      <p className="text-light-muted text-sm leading-relaxed">{solucao.descricao}</p>
-                    </div>
-                  </div>
+          {/* SEÇÃO 6 – COMPARAÇÃO */}
+          <section className="py-20 px-4 bg-slate-50/80 border-y border-slate-100">
+            <div className="max-w-6xl mx-auto space-y-10">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 max-w-3xl">
+                O AthletIA entrega o que nenhum treino genérico e nenhum personal entrega ao mesmo tempo.
+              </h2>
+
+              {/* Versão mobile: cards empilhados */}
+              <div className="grid gap-5 md:hidden">
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+                  <h3 className="text-base font-semibold text-slate-900">Treinos Genéricos</h3>
+                  <ul className="space-y-1.5 text-sm text-slate-700">
+                    <li>• Sem personalização</li>
+                    <li>• Sem progressão real</li>
+                    <li>• Sem histórico</li>
+                    <li>• Preço médio mensal</li>
+                  </ul>
                 </div>
-              ))}
-            </div>
-            <div className="text-center mt-10">
-              <button
-                onClick={iniciarOnboarding}
-                className="btn-primary text-lg px-12 py-5 font-bold hover:scale-105 transition-all duration-300 shadow-2xl shadow-primary/30"
-              >
-                Criar meu treino agora
-              </button>
-            </div>
-          </div>
-        </section>
 
-        {/* 5. COMO FUNCIONA */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-4">
-              Como Funciona
-            </h2>
-            <p className="text-lg text-light-muted text-center mb-12">
-              Processo simples, rápido e transparente
-            </p>
-            <div className="grid md:grid-cols-4 gap-6">
-              {[
-                {
-                  numero: '1',
-                  titulo: 'Você responde 10 perguntas rápidas',
-                  descricao: 'Sobre seu corpo, objetivos, rotina e histórico',
-                  icone: (
-                    <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  )
-                },
-                {
-                  numero: '2',
-                  titulo: 'IA analisa seu perfil completo',
-                  descricao: 'Nosso algoritmo cruza suas informações com mais de 300 exercícios mapeados',
-                  icone: (
-                    <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0.5 0.5 0 0 0 0 0z" />
-                    </svg>
-                  )
-                },
-                {
-                  numero: '3',
-                  titulo: 'Geramos seu treino 100% personalizado',
-                  descricao: 'Com repetições, séries, descanso e progressão calculados para você',
-                  icone: (
-                    <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  )
-                },
-                {
-                  numero: '4',
-                  titulo: 'Você treina e o AthletIA ajusta tudo automaticamente',
-                  descricao: 'A cada treino sua estratégia evolui junto com você',
-                  icone: (
-                    <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  )
-                }
-              ].map((passo, index) => (
-                <div key={index} className="card-hover p-6 text-center animate-fade-in">
-                  <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                    {passo.icone}
-                  </div>
-                  <div className="text-3xl font-bold text-primary mb-2">{passo.numero}</div>
-                  <h3 className="text-light font-bold text-lg mb-2">{passo.titulo}</h3>
-                  <p className="text-light-muted text-sm leading-relaxed">{passo.descricao}</p>
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+                  <h3 className="text-base font-semibold text-slate-900">Personal Trainer</h3>
+                  <ul className="space-y-1.5 text-sm text-slate-700">
+                    <li>• Personalização boa</li>
+                    <li>• Caro</li>
+                    <li>• Agenda limitada</li>
+                    <li>• Sem ajustes automáticos</li>
+                  </ul>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
-        {/* 6. BENEFÍCIOS CLAROS E ESPECÍFICOS */}
-        <section className="py-16 px-4 bg-dark-lighter/30">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-12">
-              O que você ganha usando AthletIA
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                'Treinos personalizados que realmente funcionam',
-                'Progressão automática que evita estagnação',
-                'Programação adaptada ao seu tempo e disponibilidade',
-                'Demonstração visual de cada exercício',
-                'Instruções detalhadas para execução perfeita',
-                'Histórico completo de evolução',
-                'Sistema motivacional com conquistas e desafios',
-                'Acesso imediato e custo muito menor que personal trainer'
-              ].map((beneficio, index) => (
-                <div key={index} className="card-hover p-6 animate-fade-in">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <p className="text-light font-medium leading-relaxed">{beneficio}</p>
-                  </div>
+                <div className="rounded-2xl border border-primary bg-primary/5 p-5 space-y-3">
+                  <h3 className="text-base font-semibold text-primary">AthletIA</h3>
+                  <ul className="space-y-1.5 text-sm text-slate-800">
+                    <li>• Personalização total</li>
+                    <li>• Ajustes automáticos diários</li>
+                    <li>• Histórico completo</li>
+                    <li>• Acesso imediato</li>
+                    <li>• Preço muito menor</li>
+                  </ul>
                 </div>
-              ))}
-            </div>
-            <div className="text-center mt-10">
-              <button
-                onClick={iniciarOnboarding}
-                className="btn-primary text-lg px-12 py-5 font-bold hover:scale-105 transition-all duration-300 shadow-2xl shadow-primary/30"
-              >
-                Criar meu treino personalizado
-              </button>
-            </div>
-          </div>
-        </section>
+              </div>
 
-        {/* 7. COMPARAÇÃO */}
-        <section className="py-16 px-4">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-12">
-              AthletIA vs Treinos Genéricos vs Personal Trainer
-            </h2>
-            <div className="card p-0 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-dark-lighter border-b border-grey/30">
-                      <th className="px-6 py-4 text-left text-light font-bold"></th>
-                      <th className="px-6 py-4 text-center text-light-muted font-semibold">Treinos genéricos</th>
-                      <th className="px-6 py-4 text-center text-light-muted font-semibold">Personal trainer</th>
-                      <th className="px-6 py-4 text-center text-primary font-bold">AthletIA</th>
+              {/* Versão desktop: tabela completa */}
+              <div className="hidden md:block overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <table className="w-full min-w-[640px] text-sm md:text-base">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-4 md:px-6 py-4 text-left text-slate-500 font-medium"></th>
+                      <th className="px-4 md:px-6 py-4 text-center text-slate-600 font-semibold">
+                        Treinos Genéricos
+                      </th>
+                      <th className="px-4 md:px-6 py-4 text-center text-slate-600 font-semibold">
+                        Personal Trainer
+                      </th>
+                      <th className="px-4 md:px-6 py-4 text-center text-primary font-semibold">
+                        AthletIA
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {[
-                      { feature: 'Personalização', generico: 'Nenhum', trainer: 'Média', athletia: 'Total e automática' },
-                      { feature: 'Custo mensal', generico: 'Médio', trainer: 'Muito alto', athletia: 'Baixo' },
-                      { feature: 'Ajuste automático', generico: 'Não', trainer: 'Não', athletia: 'Sim' },
-                      { feature: 'Acesso imediato', generico: 'Sim', trainer: 'Não', athletia: 'Sim' },
-                      { feature: 'Histórico e evolução', generico: 'Não', trainer: 'Parcial', athletia: 'Completo' }
-                    ].map((row, index) => (
-                      <tr key={index} className="border-b border-grey/20 hover:bg-dark-lighter/50 transition-colors">
-                        <td className="px-6 py-4 text-light font-medium">{row.feature}</td>
-                        <td className="px-6 py-4 text-center text-light-muted">{row.generico}</td>
-                        <td className="px-6 py-4 text-center text-light-muted">{row.trainer}</td>
-                        <td className="px-6 py-4 text-center text-primary font-bold">{row.athletia}</td>
+                      {
+                        feature: 'Personalização',
+                        generico: 'Sem personalização',
+                        trainer: 'Personalização boa',
+                        athletia: 'Personalização total'
+                      },
+                      {
+                        feature: 'Progressão real',
+                        generico: 'Sem progressão real',
+                        trainer: 'Depende do profissional',
+                        athletia: 'Ajustes automáticos diários'
+                      },
+                      {
+                        feature: 'Histórico de evolução',
+                        generico: 'Sem histórico',
+                        trainer: 'Anotações manuais',
+                        athletia: 'Histórico completo'
+                      },
+                      {
+                        feature: 'Acesso',
+                        generico: 'Imediato',
+                        trainer: 'Agenda limitada',
+                        athletia: 'Acesso imediato'
+                      },
+                      {
+                        feature: 'Preço médio mensal',
+                        generico: 'Médio',
+                        trainer: 'Caro',
+                        athletia: 'Preço muito menor'
+                      }
+                    ].map((row) => (
+                      <tr key={row.feature} className="border-t border-slate-100">
+                        <td className="px-4 md:px-6 py-4 text-slate-800 font-medium text-left">
+                          {row.feature}
+                        </td>
+                        <td className="px-4 md:px-6 py-4 text-center text-slate-600">{row.generico}</td>
+                        <td className="px-4 md:px-6 py-4 text-center text-slate-600">{row.trainer}</td>
+                        <td className="px-4 md:px-6 py-4 text-center font-semibold text-primary">{row.athletia}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        </section>
 
-        {/* 8. PROVA SOCIAL - DEPOIMENTOS */}
-        <section className="py-16 px-4 bg-dark-lighter/30">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light text-center mb-12">
-              Resultados que nos deixam orgulhosos
-            </h2>
-            <div className="card p-6 md:p-8">
-              <div className="flex flex-col md:flex-row gap-8 items-center">
-                {/* Imagem Antes e Depois */}
-                <div className="flex-1 max-w-md">
-                  <div className="relative rounded-lg overflow-hidden bg-dark-lighter shadow-lg">
-                    <img 
-                      src={DEPOIMENTOS[depoimentoAtual].imagemAntes}
-                      alt={`Transformação de ${DEPOIMENTOS[depoimentoAtual].nome}`}
-                      className="w-full h-auto object-cover"
-                      loading="lazy"
-                      width="600"
-                      height="800"
-                      onError={(e) => {
-                        e.currentTarget.src = `https://via.placeholder.com/600x800/4A4946/F9A620?text=Transformação`
-                      }}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-dark/90 to-transparent p-4">
-                      <p className="text-primary font-bold text-lg">{DEPOIMENTOS[depoimentoAtual].resultado}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Depoimento */}
-                <div className="flex-1">
-                  <div className="mb-4">
-                    <h3 className="text-light font-bold text-xl mb-2">
-                      {DEPOIMENTOS[depoimentoAtual].nome}, {DEPOIMENTOS[depoimentoAtual].idade} anos
-                    </h3>
-                    <div className="flex gap-1 mb-4">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg key={star} className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="text-light-muted text-lg leading-relaxed italic">
-                      "{DEPOIMENTOS[depoimentoAtual].depoimento}"
-                    </p>
-                  </div>
-                  
-                  {/* Controles do carrossel */}
-                  <div className="flex items-center gap-4 mt-6">
-                    <button
-                      onClick={() => setDepoimentoAtual((prev) => (prev === 0 ? DEPOIMENTOS.length - 1 : prev - 1))}
-                      className="btn-secondary p-2"
-                      aria-label="Depoimento anterior"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    
-                    <div className="flex gap-2">
-                      {DEPOIMENTOS.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setDepoimentoAtual(index)}
-                          className={`h-2 rounded-full transition-all ${
-                            index === depoimentoAtual ? 'bg-primary w-8' : 'bg-grey/30 w-2'
-                          }`}
-                          aria-label={`Ir para depoimento ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-                    
-                    <button
-                      onClick={() => setDepoimentoAtual((prev) => (prev === DEPOIMENTOS.length - 1 ? 0 : prev + 1))}
-                      className="btn-secondary p-2"
-                      aria-label="Próximo depoimento"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+              <div>
+                <button
+                  onClick={iniciarOnboarding}
+                  className="btn-primary text-base md:text-lg px-10 md:px-14 py-4 font-bold shadow-lg shadow-primary/25 hover:scale-[1.02] transition-transform"
+                >
+                  Criar meu treino agora
+                </button>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* 9. GARANTIA */}
-        <section className="py-16 px-4 bg-primary/10 border-y-2 border-primary/30">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6">
-              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-4">
-              Garantia incondicional de 7 dias
-            </h2>
-            <p className="text-xl text-light-muted mb-4">
-              Use o sistema por até 7 dias.
-            </p>
-            <p className="text-xl text-light-muted mb-6">
-              Se não gostar, devolvemos 100% do seu dinheiro.
-            </p>
-            <p className="text-lg text-light-muted mb-6">
-              Sem perguntas. Sem burocracia.
-            </p>
-            <div className="bg-dark-lighter/50 border-2 border-primary/30 rounded-xl p-6 inline-block">
-              <p className="text-light text-lg font-semibold">
-                Você fica com os treinos.
+          {/* SEÇÃO 7 – GARANTIA */}
+          <section className="py-20 px-4">
+            <div className="max-w-4xl mx-auto text-center space-y-6">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900">
+                Garantia incondicional de 7 dias
+              </h2>
+              <p className="text-lg md:text-xl text-slate-700">
+                Use o AthletIA por até 7 dias. Se não gostar, devolvemos 100 por cento do seu dinheiro.
               </p>
-              <p className="text-primary text-lg font-bold mt-2">
-                O risco é totalmente nosso.
+              <p className="text-base md:text-lg text-slate-700">
+                Sem perguntas. Sem formulários. Sem burocracia. O risco é totalmente nosso.
               </p>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* 10. CTA FINAL */}
-        <section className="py-20 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-light mb-6">
-              Pronto para começar sua transformação?
-            </h2>
-            <p className="text-xl text-light-muted mb-4 leading-relaxed">
-              Leva menos de 2 minutos.
-            </p>
-            <p className="text-xl text-light-muted mb-8 leading-relaxed">
-              Seu treino 100% personalizado criado agora pela IA.
-            </p>
-            <button
-              onClick={iniciarOnboarding}
-              className="btn-primary text-xl px-16 py-6 font-bold hover:scale-105 transition-all duration-300 shadow-2xl shadow-primary/30 mb-4 animate-pulse-glow"
-            >
-              Criar meu treino personalizado agora
-            </button>
-            <p className="text-sm text-light-muted mb-8">Começar agora mesmo</p>
-          </div>
-        </section>
-
-        {/* 11. RODAPÉ */}
-        <footer className="py-8 px-4 border-t border-grey/20 bg-dark-lighter/30">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-              <div className="text-primary font-display font-bold text-xl">AthletIA</div>
-              <div className="flex flex-wrap justify-center gap-6 text-sm">
-                <a href="#" className="text-light-muted hover:text-primary transition-colors">Termos de Serviço</a>
-                <a href="#" className="text-light-muted hover:text-primary transition-colors">Política de Privacidade</a>
-                <a href="#" className="text-light-muted hover:text-primary transition-colors">Política de Cookies</a>
+          {/* SEÇÃO 8 – CTA FINAL ULTRA AGRESSIVO */}
+          <section className="py-20 md:py-24 px-4 bg-primary/5 border-t border-primary/10">
+            <div className="max-w-4xl mx-auto text-center space-y-6">
+              <h2 className="text-3xl md:text-5xl font-display font-extrabold text-slate-900">
+                Seu melhor corpo começa agora.
+              </h2>
+              <p className="text-lg md:text-2xl text-slate-700">
+                Leva menos de 2 minutos para criar seu treino perfeito.
+              </p>
+              <div className="pt-2">
+                <button
+                  onClick={iniciarOnboarding}
+                  className="btn-primary text-base md:text-xl px-14 md:px-20 py-4 md:py-5 font-bold shadow-xl shadow-primary/30 hover:scale-[1.03] transition-transform"
+                >
+                  Criar meu treino inteligente agora
+                </button>
               </div>
             </div>
-            <div className="text-center text-xs text-light-muted">
-              <p className="mb-2">Consulte seu médico antes de iniciar qualquer programa de exercícios</p>
-              <p>© {new Date().getFullYear()} AthletIA. Todos os direitos reservados.</p>
+          </section>
+        </main>
+
+        {/* Rodapé */}
+        <footer className="py-10 px-4 border-t border-slate-200 bg-white">
+          <div className="max-w-6xl mx-auto space-y-4 text-center md:text-left">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-primary font-display font-bold text-lg">AthletIA</span>
+              </div>
+              <div className="flex flex-wrap justify-center md:justify-end gap-4 text-xs md:text-sm text-slate-600">
+                <a href="#" className="hover:text-primary transition-colors">
+                  Termos
+                </a>
+                <a href="#" className="hover:text-primary transition-colors">
+                  Privacidade
+                </a>
+                <a href="#" className="hover:text-primary transition-colors">
+                  Cookies
+                </a>
+              </div>
+            </div>
+            <div className="text-[11px] md:text-xs text-slate-500 space-y-1">
+              <p>Consulte seu médico antes de iniciar qualquer programa de exercícios</p>
+              <p>© 2025 AthletIA</p>
             </div>
           </div>
         </footer>
