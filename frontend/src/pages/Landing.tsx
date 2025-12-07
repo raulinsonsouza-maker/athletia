@@ -400,9 +400,12 @@ export default function Landing() {
         <header className="w-full py-5 px-6 border-b border-slate-200 sticky top-0 z-50 bg-white/90 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg">
-                AI
-              </div>
+              <img
+                src="/favicon.svg"
+                alt="Logo AthletIA"
+                className="w-9 h-9 rounded-2xl shadow-sm"
+                loading="lazy"
+              />
               <div className="text-xl font-display font-bold tracking-tight">AthletIA</div>
             </div>
             <button
@@ -420,7 +423,7 @@ export default function Landing() {
             <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
               {/* Texto principal */}
               <div className="space-y-6 order-1">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold leading-tight tracking-tight">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold leading-tight tracking-tight text-slate-900">
                   O motivo pelo qual você não evolui é simples.
                   <span className="block text-primary mt-2">Seu treino está errado.</span>
                 </h1>
