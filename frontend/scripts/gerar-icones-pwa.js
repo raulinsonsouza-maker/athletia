@@ -7,13 +7,17 @@
  * Requer: sharp (npm install sharp --save-dev)
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Verificar se sharp está instalado
 let sharp;
 try {
-  sharp = require('sharp');
+  sharp = (await import('sharp')).default;
 } catch (error) {
   console.error('❌ Erro: sharp não está instalado.');
   console.log('📦 Instale com: npm install sharp --save-dev');
@@ -62,4 +66,3 @@ async function gerarIcones() {
 }
 
 gerarIcones().catch(console.error);
-
