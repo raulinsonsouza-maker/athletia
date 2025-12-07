@@ -5,6 +5,7 @@ import { PlanoAtualResponse, TreinoHomeResponse } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
+import DiaSemanaIcon from '../components/icons/DiaSemanaIcon'
 
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
@@ -118,19 +119,31 @@ export default function MeuPlano() {
               const diaPassadoSemTreino = dia.status === 'passado' && !dia.concluido
               const dataObj = new Date(dia.data)
               const diaSemana = dataObj.toLocaleDateString('pt-BR', { weekday: 'short' })
-              const diaNumero = dataObj.getDate()
+              
+              // Determinar status do ícone
+              let iconStatus: 'concluido' | 'nao-treinou' | 'futuro' | 'hoje' = 'futuro'
+              if (fezTreino) {
+                iconStatus = 'concluido'
+              } else if (diaPassadoSemTreino) {
+                iconStatus = 'nao-treinou'
+              } else if (dia.status === 'hoje') {
+                iconStatus = 'hoje'
+              } else {
+                iconStatus = 'futuro'
+              }
+              
               return (
                 <div key={dia.label} className="flex flex-col items-center gap-1">
                   <span
-                    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-sm font-semibold ${
+                    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${
                       fezTreino
-                        ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
+                        ? 'border-emerald-400 bg-emerald-500/10'
                         : diaPassadoSemTreino
-                          ? 'border-rose-400 bg-rose-500/10 text-rose-200'
-                          : 'border-amber-300 bg-amber-400/10 text-amber-200'
+                          ? 'border-rose-400 bg-rose-500/10'
+                          : 'border-amber-300 bg-amber-400/10'
                     }`}
                   >
-                    {diaNumero}
+                    <DiaSemanaIcon status={iconStatus} size={20} />
                   </span>
                   <span className="text-xs text-white/60 uppercase tracking-wide">{diaSemana}</span>
                 </div>
