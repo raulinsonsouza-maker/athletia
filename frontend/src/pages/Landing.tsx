@@ -402,9 +402,11 @@ export default function Landing() {
             <div className="flex items-center gap-2.5 md:gap-3">
               <img
                 src="/favicon.svg"
-                alt="Logo AthletIA"
+                alt="Logo AthletIA - Treino Personalizado Inteligente com IA"
                 className="w-8 h-8 md:w-10 md:h-10 rounded-2xl shadow-lg"
                 loading="eager"
+                width="40"
+                height="40"
               />
               <div className="text-lg md:text-xl font-display font-bold tracking-tight text-light">AthletIA</div>
             </div>
@@ -417,23 +419,23 @@ export default function Landing() {
           </div>
         </header>
 
-        <main>
+        <main role="main">
           {/* SEÇÃO 1 – HERO ULTRA AGRESSIVO */}
-          <section className="min-h-[calc(100vh-80px)] flex items-center px-4 md:px-6 py-12 md:py-20">
+          <section aria-label="Hero - Treino Personalizado Inteligente" className="min-h-[calc(100vh-80px)] flex items-center px-4 md:px-6 py-12 md:py-20">
             <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center w-full">
               {/* Texto principal */}
               <div className="space-y-6 md:space-y-8 text-center lg:text-left">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
-                  O motivo pelo qual você não evolui é simples.
-                  <span className="block text-primary mt-2 md:mt-3">Seu treino está errado.</span>
+                  Treino Personalizado Inteligente: O Motivo Pelo Qual Você Não Evolui é Simples.
+                  <span className="block text-primary mt-2 md:mt-3">Seu Treino Está Errado.</span>
                 </h1>
 
                 <div className="space-y-3 md:space-y-4">
                   <p className="text-lg md:text-xl lg:text-2xl text-light-muted font-medium">
-                    Você treina. Mas seu corpo não muda.
+                    Você treina. Mas seu corpo não muda. Por quê?
                   </p>
                   <p className="text-base md:text-lg lg:text-xl text-light-muted leading-relaxed">
-                    O AthletIA cria o único treino que se adapta automaticamente ao seu corpo todos os dias.
+                    O AthletIA é o único sistema de treino personalizado inteligente que se adapta automaticamente ao seu corpo, objetivo e nível todos os dias usando inteligência artificial.
                   </p>
                 </div>
 
@@ -522,15 +524,15 @@ export default function Landing() {
           </section>
 
           {/* SEÇÃO 2 – ROMPIMENTO DA CRENÇA */}
-          <section className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20 bg-dark-lighter/50">
+          <section aria-label="Problema dos treinos genéricos" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20 bg-dark-lighter/50">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center md:text-left">
-                O problema nunca foi você. Sempre foi o treino errado.
+                O Problema Nunca Foi Você. Sempre Foi o Treino Errado.
               </h2>
               <p className="text-base md:text-lg lg:text-xl text-light-muted leading-relaxed text-center md:text-left">
                 A maioria das pessoas treina por meses e não vê nenhuma mudança real no espelho. Não é falta de esforço.
                 Não é falta de disciplina. É simplesmente seguir treinos genéricos que não foram criados para o seu corpo,
-                para o seu ritmo, para sua rotina e para sua evolução.
+                para o seu ritmo, para sua rotina e para sua evolução. <strong className="text-light">Treinos personalizados são a solução.</strong>
               </p>
               <div className="grid md:grid-cols-2 gap-3 md:gap-4">
                 {[
@@ -554,14 +556,14 @@ export default function Landing() {
           </section>
 
           {/* SEÇÃO 3 – PROMESSA CENTRAL */}
-          <section className="py-16 md:py-20 px-4 md:px-6">
+          <section aria-label="Benefícios do treino personalizado inteligente" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="max-w-3xl space-y-4 text-center md:text-left">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  O AthletIA cria o treino perfeito para o seu corpo e ajusta tudo automaticamente conforme você evolui.
+                  Treino Personalizado Inteligente: O AthletIA Cria o Treino Perfeito Para o Seu Corpo e Ajusta Tudo Automaticamente Conforme Você Evolui.
                 </h2>
                 <p className="text-lg md:text-xl text-light-muted">
-                  Apenas treine. A IA assume o trabalho pesado.
+                  Apenas treine. A inteligência artificial assume o trabalho pesado. Sistema de treino adaptativo que aprende com você.
                 </p>
               </div>
 
@@ -614,11 +616,11 @@ export default function Landing() {
           </section>
 
           {/* SEÇÃO 4 – COMO FUNCIONA */}
-          <section id="como-funciona" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
+          <section id="como-funciona" aria-label="Como funciona o sistema de treino personalizado" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="text-center space-y-3">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  Seu treino criado e ajustado automaticamente em quatro etapas simples.
+                  Como Funciona: Seu Treino Personalizado Criado e Ajustado Automaticamente em Quatro Etapas Simples.
                 </h2>
               </div>
 
@@ -659,7 +661,7 @@ export default function Landing() {
           </section>
 
           {/* SEÇÃO 5 – PROVA SOCIAL */}
-          <section className="py-16 md:py-20 px-4 md:px-6">
+          <section aria-label="Resultados e depoimentos" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center md:text-left">
                 Resultados que acontecem mais rápido do que você imagina.
@@ -670,9 +672,11 @@ export default function Landing() {
                   <div className="relative rounded-2xl overflow-hidden bg-dark">
                     <img
                       src="/images/onboarding/Miguel.webp"
-                      alt="Transformação do Miguel com AthletIA"
+                      alt="Miguel perdeu 12 kg em 4 meses com treino personalizado inteligente AthletIA - Resultado real de transformação física"
                       className="w-full h-auto object-cover"
                       loading="lazy"
+                      width="400"
+                      height="600"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3">
                       <p className="text-sm md:text-base font-semibold text-white">Miguel perdeu 12 kg em 4 meses.</p>
@@ -694,7 +698,7 @@ export default function Landing() {
           </section>
 
           {/* SEÇÃO 6 – COMPARAÇÃO */}
-          <section className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
+          <section aria-label="Comparação: AthletIA vs treinos genéricos e personal trainer" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light max-w-3xl text-center md:text-left">
                 O AthletIA entrega o que nenhum treino genérico e nenhum personal entrega ao mesmo tempo.
@@ -808,11 +812,82 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 7 – GARANTIA */}
-          <section className="py-16 md:py-20 px-4 md:px-6">
+          {/* SEÇÃO 7 – FAQ */}
+          <section aria-label="Perguntas frequentes sobre treino personalizado" className="py-16 md:py-20 px-4 md:px-6">
+            <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                  Perguntas Frequentes Sobre Treino Personalizado Inteligente
+                </h2>
+                <p className="text-base md:text-lg text-light-muted">
+                  Tire suas dúvidas sobre como funciona o sistema de treino adaptativo com IA
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    pergunta: 'O que é o AthletIA e como funciona o treino personalizado inteligente?',
+                    resposta: 'O AthletIA é um sistema de treino personalizado inteligente que usa inteligência artificial para criar treinos adaptados ao seu corpo, objetivo, nível e rotina. O sistema analisa seus dados, seleciona exercícios entre mais de 300 opções e ajusta automaticamente séries, peso e repetições conforme você evolui.'
+                  },
+                  {
+                    pergunta: 'Quanto tempo leva para criar meu treino personalizado?',
+                    resposta: 'Menos de 2 minutos. Você responde perguntas rápidas sobre seu corpo, rotina e objetivo, e a IA cria seu treino personalizado imediatamente.'
+                  },
+                  {
+                    pergunta: 'O treino personalizado se adapta automaticamente?',
+                    resposta: 'Sim. O sistema aprende com você a cada treino e ajusta automaticamente progressão, volume e intensidade. Não precisa pensar em nada, apenas treinar.'
+                  },
+                  {
+                    pergunta: 'Para quem é o AthletIA? Funciona para iniciantes?',
+                    resposta: 'O AthletIA funciona para todos os níveis: iniciantes, intermediários e avançados. O sistema adapta o treino ao seu nível de experiência, garantindo segurança e progressão adequada.'
+                  },
+                  {
+                    pergunta: 'Preciso de equipamentos específicos para o treino personalizado?',
+                    resposta: 'Não. O sistema se adapta ao local de treino que você tem disponível (academia, casa, ao ar livre) e aos equipamentos que você possui. O treino é criado especificamente para sua realidade.'
+                  },
+                  {
+                    pergunta: 'Como o treino personalizado inteligente é diferente de um personal trainer?',
+                    resposta: 'O AthletIA oferece personalização total, ajustes automáticos diários, histórico completo e acesso imediato 24/7, tudo por um preço muito menor que um personal trainer tradicional. Além disso, o sistema aprende continuamente com você e se adapta em tempo real.'
+                  },
+                  {
+                    pergunta: 'Posso cancelar a qualquer momento?',
+                    resposta: 'Sim. Você pode cancelar quando quiser, sem burocracia. Além disso, oferecemos garantia incondicional de 7 dias: se não gostar, devolvemos 100% do seu dinheiro.'
+                  }
+                ].map((faq, index) => (
+                  <details
+                    key={index}
+                    className="group rounded-2xl bg-dark-lighter border border-grey/20 p-5 md:p-6 hover:border-primary/30 transition-colors"
+                  >
+                    <summary className="cursor-pointer list-none">
+                      <div className="flex items-start justify-between gap-4">
+                        <h3 className="text-base md:text-lg font-semibold text-light pr-8">
+                          {faq.pergunta}
+                        </h3>
+                        <svg
+                          className="w-5 h-5 text-primary flex-shrink-0 mt-1 transition-transform group-open:rotate-180"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </summary>
+                    <p className="mt-4 text-sm md:text-base text-light-muted leading-relaxed">
+                      {faq.resposta}
+                    </p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* SEÇÃO 8 – GARANTIA */}
+          <section aria-label="Garantia de satisfação" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                Garantia incondicional de 7 dias
+                Garantia Incondicional de 7 Dias
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-light-muted leading-relaxed">
                 Use o AthletIA por até 7 dias. Se não gostar, devolvemos 100 por cento do seu dinheiro.
@@ -823,8 +898,8 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 8 – CTA FINAL ULTRA AGRESSIVO */}
-          <section className="py-20 md:py-28 px-4 md:px-6 bg-primary/10 border-t border-primary/20">
+          {/* SEÇÃO 9 – CTA FINAL ULTRA AGRESSIVO */}
+          <section aria-label="Chamada para ação final" className="py-20 md:py-28 px-4 md:px-6 bg-primary/10 border-t border-primary/20">
             <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light leading-tight">
                 Seu melhor corpo começa agora.
@@ -845,7 +920,7 @@ export default function Landing() {
         </main>
 
         {/* Rodapé */}
-        <footer className="py-10 md:py-12 px-4 md:px-6 border-t border-grey/20 bg-dark">
+        <footer role="contentinfo" className="py-10 md:py-12 px-4 md:px-6 border-t border-grey/20 bg-dark">
           <div className="max-w-6xl mx-auto space-y-4 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
@@ -944,11 +1019,12 @@ export default function Landing() {
                       <div className="w-full aspect-[3/4] bg-dark-lighter overflow-hidden">
                         <img 
                           src={faixa.image} 
-                          alt={`Idade ${faixa.label}`}
+                          alt={`Pessoa na faixa etária ${faixa.label} anos - Treino personalizado inteligente para sua idade`}
                           className="w-full h-full object-cover"
-                          loading="eager"
+                          loading="lazy"
                           width="300"
                           height="400"
+                          decoding="async"
                         />
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-3">
@@ -1020,7 +1096,7 @@ export default function Landing() {
                         {sexo.image ? (
                           <img 
                             src={sexo.image} 
-                            alt={sexo.value}
+                            alt={`Treino personalizado inteligente para ${sexo.value} - Sistema adaptativo com IA`}
                             className="w-full h-full object-cover"
                             loading="lazy"
                             width="300"
@@ -1142,7 +1218,7 @@ export default function Landing() {
                       <div className="w-full aspect-[3/4] bg-dark-lighter">
                         <img 
                           src={tipo.image} 
-                          alt={tipo.label}
+                          alt={`Treino personalizado para ${tipo.label} - Sistema inteligente de treinos adaptativos`}
                           className="w-full h-full object-cover"
                           loading="lazy"
                           width="300"
@@ -1493,7 +1569,7 @@ export default function Landing() {
                       <div className="w-full aspect-[3/4] bg-dark-lighter">
                         <img 
                           src={obj.image} 
-                          alt={obj.title}
+                          alt={`Treino personalizado para objetivo: ${obj.title} - Sistema inteligente de treinos com IA`}
                           className="w-full h-full object-cover"
                           loading="lazy"
                           width="300"
