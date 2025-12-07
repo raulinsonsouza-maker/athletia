@@ -17,7 +17,8 @@
     "criar-admin": "tsx scripts/criar-admin.ts",
     "migrar-treinos": "tsx scripts/migrar-treinos-nova-logica.ts",
     "validar-treinos": "tsx scripts/validar-treinos-gerados.ts",
-    "atualizar-treinos-periodico": "tsx src/jobs/atualizar-treinos-periodico.ts"
+    "atualizar-treinos-periodico": "tsx src/jobs/atualizar-treinos-periodico.ts",
+    "configurar-cron": "node scripts/configurar-cron-treinos.js"
   },
   "keywords": [
     "fitness",
