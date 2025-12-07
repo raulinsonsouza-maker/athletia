@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma';
 import { progressionEngine, getEquipmentStep, nearestAllowedWeight } from './progression.service';
 import { slugify } from '../utils/slugify';
+import { calcularParametrosTreino as calcularParametrosTreinoCore } from './treino-core.service';
 
 const hashTexto = (texto: string): number => {
   let hash = 0;
@@ -490,14 +491,17 @@ export async function selecionarExercicioAcessorio(
 }
 
 /**
- * Calcula parâmetros de treino (séries, reps, RPE, descanso) - FUNÇÃO ÚNICA
+ * Calcula parâmetros de treino (séries, reps, RPE, descanso)
+ * DEPRECATED: Usar calcularParametrosTreino de treino-core.service.ts
+ * Mantido para compatibilidade - delega para o core
  */
 export function calcularParametrosTreino(
   objetivo: string,
   experiencia: string,
   rpePreferido?: number | null
 ): { series: number; repeticoes: string; rpe: number; descanso: number } {
-  return getObjectiveParameters(objetivo, experiencia, rpePreferido);
+  // Usar função do core
+  return calcularParametrosTreinoCore(objetivo, experiencia, undefined, undefined, rpePreferido);
 }
 
 /**

@@ -1144,78 +1144,74 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
   // Validar dados mínimos
   validarDadosMinimos(perfil);
 
-  const frequenciaSemanal = perfil.frequenciaSemanal || 3;
+  // Importar função do core
+  const { regenerarTreinos30Dias, PerfilCompleto } = await import('./treino-core.service');
+  
+  // Converter perfil para formato completo
+  const perfilCompleto: PerfilCompleto = {
+    idade: perfil.idade,
+    sexo: perfil.sexo,
+    altura: perfil.altura,
+    pesoAtual: perfil.pesoAtual,
+    percentualGordura: perfil.percentualGordura,
+    tipoCorpo: perfil.tipoCorpo,
+    experiencia: perfil.experiencia,
+    problemasAnteriores: perfil.problemasAnteriores || [],
+    lesoes: perfil.lesoes || [],
+    objetivo: perfil.objetivo,
+    objetivosAdicionais: perfil.objetivosAdicionais || [],
+    rpePreferido: perfil.rpePreferido,
+    frequenciaSemanal: perfil.frequenciaSemanal,
+    tempoDisponivel: perfil.tempoDisponivel,
+    localTreino: perfil.localTreino,
+    preferencias: perfil.preferencias || [],
+    aguaDiaria: perfil.aguaDiaria
+  };
+
+  // Regenerar treinos usando core
+  await regenerarTreinos30Dias(userId, perfilCompleto);
+
+  // Buscar treinos gerados
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
-
-  console.log(`[INFO] Frequência semanal: ${frequenciaSemanal} dias`);
-  console.log(`[INFO] Gerando treinos para próximas 4 semanas (30 dias)`);
-
-  // Importar motor centralizado
-  const { garantirPlanoSemanal } = await import('./treino-engine.service');
-  
-  const todosTreinos: any[] = [];
-  
-  // Gerar treinos semana por semana (4 semanas = 30 dias)
-  for (let semana = 0; semana < 4; semana++) {
-    const dataReferencia = new Date(hoje);
-    dataReferencia.setDate(hoje.getDate() + (semana * 7));
-    
-    console.log(`[INFO] Gerando semana ${semana + 1}/4 (início: ${dataReferencia.toLocaleDateString('pt-BR')})`);
-    
-    try {
-      const treinosSemana = await garantirPlanoSemanal({
-        userId,
-        dataReferencia,
-        forcarRegeneracao: true // Forçar regeneração para garantir treinos novos
-      });
-      
-      // Buscar treinos completos do banco
-      const treinosCompletos = await prisma.treino.findMany({
-        where: {
-          id: { in: treinosSemana.map(t => t.id) }
-        },
-        include: {
-          exercicios: {
-            include: { exercicio: true },
-            orderBy: { ordem: 'asc' }
-          }
-        }
-      });
-      
-      todosTreinos.push(...treinosCompletos);
-      console.log(`[OK] Semana ${semana + 1}: ${treinosSemana.length} treinos gerados`);
-    } catch (error: any) {
-      console.error(`[ERROR] Erro ao gerar treinos da semana ${semana + 1}:`, error.message);
-    }
-  }
-
-  // Filtrar apenas treinos dos próximos 30 dias
   const dataLimite = new Date(hoje);
   dataLimite.setDate(hoje.getDate() + 30);
-  
-  const treinosFiltrados = todosTreinos.filter(t => {
-    const dataTreino = new Date(t.data);
-    return dataTreino >= hoje && dataTreino <= dataLimite;
+
+  const treinos = await prisma.treino.findMany({
+    where: {
+      userId,
+      data: {
+        gte: hoje,
+        lte: dataLimite
+      },
+      criadoPor: 'IA'
+    },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    },
+    orderBy: { data: 'asc' }
   });
 
-  console.log(`[OK] Total de ${treinosFiltrados.length} treinos gerados para os próximos 30 dias`);
+  console.log(`[OK] Total de ${treinos.length} treinos gerados para os próximos 30 dias`);
   
   // Resumo final
-  if (treinosFiltrados.length > 0) {
-    const totalExercicios = treinosFiltrados.reduce((sum, t) => sum + (t.exercicios?.length || 0), 0);
-    const totalForca = treinosFiltrados.reduce((sum, t) => {
+  if (treinos.length > 0) {
+    const totalExercicios = treinos.reduce((sum, t) => sum + (t.exercicios?.length || 0), 0);
+    const totalForca = treinos.reduce((sum, t) => {
       return sum + (t.exercicios?.filter((ex: any) => {
         const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
-        return grupo !== 'Cardio' && grupo !== 'Alongamento';
+        return grupo !== 'Cardio' && grupo !== 'Alongamento' && grupo !== 'Flexibilidade';
       }).length || 0);
     }, 0);
     
-    console.log(`📊 RESUMO: ${treinosFiltrados.length} treinos, ${totalExercicios} exercícios (${totalForca} força + cardio + alongamento)`);
-    console.log(`📊 Média: ${(totalExercicios / treinosFiltrados.length).toFixed(1)} exercícios por treino`);
+    console.log(`📊 RESUMO: ${treinos.length} treinos, ${totalExercicios} exercícios (${totalForca} força + cardio + alongamento)`);
+    console.log(`📊 Média: ${(totalExercicios / treinos.length).toFixed(1)} exercícios por treino`);
   }
   
-  return treinosFiltrados;
+  return treinos;
 }
 
 

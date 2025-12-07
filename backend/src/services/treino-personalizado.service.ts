@@ -1,18 +1,32 @@
 import { prisma } from '../lib/prisma';
+import { calcularTempoEstimado as calcularTempoEstimadoCore, calcularConfiguracaoTempo, calcularParametrosTreino } from './treino-core.service';
 
 /**
  * Calcula tempo estimado do treino baseado nos exercícios
+ * Usa função do core quando possível
  */
 function calcularTempoEstimado(exercicios: any[]): number {
-  let tempoTotal = 0;
+  // Se tem exercícios com parâmetros completos, usar lógica do core
+  if (exercicios.length > 0 && exercicios[0].series && exercicios[0].descanso) {
+    const primeiroEx = exercicios[0];
+    const parametros = {
+      series: primeiroEx.series,
+      repeticoes: primeiroEx.repeticoes || '8-12',
+      rpe: primeiroEx.rpe || 8,
+      descanso: primeiroEx.descanso
+    };
+    const configTempo = calcularConfiguracaoTempo('Hipertrofia', parametros);
+    return calcularTempoEstimadoCore(exercicios.length, configTempo);
+  }
   
+  // Fallback: cálculo simples
+  let tempoTotal = 0;
   for (const ex of exercicios) {
-    const tempoPorSerie = 30 + (ex.descanso || 90); // 30s execução + descanso
+    const tempoPorSerie = 30 + (ex.descanso || 90);
     const tempoExercicio = ex.series * tempoPorSerie;
     tempoTotal += tempoExercicio;
   }
-  
-  return Math.ceil(tempoTotal / 60) + 5; // Converter para minutos + 5min aquecimento
+  return Math.ceil(tempoTotal / 60) + 5;
 }
 
 /**
