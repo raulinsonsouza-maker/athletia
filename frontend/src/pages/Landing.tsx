@@ -426,7 +426,7 @@ export default function Landing() {
               {/* Texto principal */}
               <div className="space-y-6 md:space-y-8 text-center lg:text-left">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
-                  Treino Personalizado Inteligente: O Motivo Pelo Qual Você Não Evolui é Simples.
+                  O Motivo Pelo Qual Você Não Evolui é Simples.
                   <span className="block text-primary mt-2 md:mt-3">Seu Treino Está Errado.</span>
                 </h1>
 
@@ -560,10 +560,10 @@ export default function Landing() {
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="max-w-3xl space-y-4 text-center md:text-left">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  Treino Personalizado Inteligente: O AthletIA Cria o Treino Perfeito Para o Seu Corpo e Ajusta Tudo Automaticamente Conforme Você Evolui.
+                  O AthletIA Cria o Treino Perfeito Para o Seu Corpo e Ajusta Tudo Automaticamente.
                 </h2>
                 <p className="text-lg md:text-xl text-light-muted">
-                  Apenas treine. A inteligência artificial assume o trabalho pesado. Sistema de treino adaptativo que aprende com você.
+                  Treino personalizado inteligente que se adapta conforme você evolui. Apenas treine. A inteligência artificial assume o trabalho pesado. Sistema de treino adaptativo que aprende com você.
                 </p>
               </div>
 
@@ -620,7 +620,7 @@ export default function Landing() {
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="text-center space-y-3">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  Como Funciona: Seu Treino Personalizado Criado e Ajustado Automaticamente em Quatro Etapas Simples.
+                  Como Funciona: Seu Treino Criado em Quatro Etapas Simples.
                 </h2>
               </div>
 
@@ -817,10 +817,10 @@ export default function Landing() {
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <div className="text-center space-y-3">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  Perguntas Frequentes Sobre Treino Personalizado Inteligente
+                  Perguntas Frequentes
                 </h2>
                 <p className="text-base md:text-lg text-light-muted">
-                  Tire suas dúvidas sobre como funciona o sistema de treino adaptativo com IA
+                  Tire suas dúvidas sobre treino personalizado inteligente e como funciona o sistema de treino adaptativo com IA
                 </p>
               </div>
 
