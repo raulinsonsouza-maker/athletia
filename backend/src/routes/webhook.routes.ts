@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
 import * as caktoService from '../services/cakto.service';
 
 const router = Router();
@@ -124,6 +125,100 @@ router.post('/cakto', webhookLimiter, express.raw({ type: 'application/json' }),
 
   } catch (error: any) {
     console.error('❌ Erro ao processar webhook:', error);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      message: error.message 
+    });
+  }
+});
+
+/**
+ * Webhook do Resend para receber eventos de e-mail
+ * POST /api/webhooks/resend
+ * 
+ * Eventos possíveis: email.sent, email.delivered, email.bounced, email.complained
+ */
+router.post('/resend', webhookLimiter, express.json(), async (req: Request, res: Response) => {
+  console.log('\n📧 Webhook Resend recebido:', new Date().toISOString());
+
+  try {
+    // Validar assinatura do webhook
+    const signature = req.headers['resend-signature'] as string;
+    
+    if (!signature) {
+      console.log('❌ Assinatura do webhook Resend não encontrada');
+      return res.status(401).json({ error: 'Assinatura não encontrada' });
+    }
+
+    if (!process.env.RESEND_WEBHOOK_SECRET) {
+      console.warn('⚠️ RESEND_WEBHOOK_SECRET não configurado. Webhook não será validado.');
+      // Em produção, isso deve retornar erro
+      // return res.status(500).json({ error: 'Webhook secret não configurado' });
+    } else {
+      // Validar assinatura usando HMAC SHA256
+      const bodyString = JSON.stringify(req.body);
+      const expectedSignature = crypto
+        .createHmac('sha256', process.env.RESEND_WEBHOOK_SECRET)
+        .update(bodyString)
+        .digest('hex');
+
+      if (signature !== expectedSignature) {
+        console.log('❌ Assinatura do webhook Resend inválida');
+        return res.status(401).json({ error: 'Assinatura inválida' });
+      }
+
+      console.log('✅ Assinatura do webhook Resend validada');
+    }
+
+    // Processar evento
+    const event = req.body.type || req.body.event;
+    const data = req.body.data || req.body;
+
+    console.log('📋 Evento Resend:', event);
+    console.log('📋 Dados:', JSON.stringify(data, null, 2));
+
+    // Logar diferentes tipos de eventos
+    switch (event) {
+      case 'email.sent':
+        console.log('✅ E-mail enviado com sucesso:', {
+          emailId: data.email_id,
+          to: data.to
+        });
+        break;
+
+      case 'email.delivered':
+        console.log('📬 E-mail entregue:', {
+          emailId: data.email_id,
+          to: data.to
+        });
+        break;
+
+      case 'email.bounced':
+        console.warn('⚠️ E-mail retornou (bounce):', {
+          emailId: data.email_id,
+          to: data.to,
+          reason: data.bounce_type
+        });
+        break;
+
+      case 'email.complained':
+        console.warn('⚠️ E-mail marcado como spam:', {
+          emailId: data.email_id,
+          to: data.to
+        });
+        break;
+
+      default:
+        console.log(`ℹ️ Evento Resend não tratado: ${event}`);
+    }
+
+    res.status(200).json({ 
+      success: true,
+      message: 'Webhook processado com sucesso'
+    });
+
+  } catch (error: any) {
+    console.error('❌ Erro ao processar webhook Resend:', error);
     res.status(500).json({ 
       error: 'Erro interno do servidor',
       message: error.message 

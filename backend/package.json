@@ -43,6 +43,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "openai": "^6.9.0",
+    "resend": "^6.5.2",
     "string-similarity": "^4.0.4"
   },
   "devDependencies": {

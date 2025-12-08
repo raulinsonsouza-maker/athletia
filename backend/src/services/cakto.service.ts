@@ -309,6 +309,28 @@ export async function processPaymentApproved(webhookData: any) {
       // Não falhar o webhook se não conseguir gerar treinos
     }
 
+    // Enviar e-mail de boas-vindas (não crítico - não deve quebrar o webhook)
+    try {
+      const { sendWelcomeEmail } = await import('./email.service');
+      console.log(`📧 Enviando e-mail de boas-vindas para ${user.email.substring(0, 3)}***...`);
+      
+      const emailResult = await sendWelcomeEmail({
+        nome: user.nome || 'Usuário',
+        email: user.email,
+        plano: plano,
+        dataExpiracao: dataExpiracao
+      });
+
+      if (emailResult.success) {
+        console.log('✅ E-mail de boas-vindas enviado com sucesso');
+      } else {
+        console.warn('⚠️ Erro ao enviar e-mail de boas-vindas (não crítico):', emailResult.error);
+      }
+    } catch (error: any) {
+      console.error('⚠️ Erro ao enviar e-mail de boas-vindas (não crítico):', error.message);
+      // Não falhar o webhook se não conseguir enviar e-mail
+    }
+
     const result = {
       success: true,
       message: 'Pagamento processado com sucesso',
