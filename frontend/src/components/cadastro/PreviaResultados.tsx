@@ -1,13 +1,10 @@
 import { OnboardingData } from '../../types/onboarding.types'
-import { useOnboardingCalculations } from '../../hooks/useOnboardingCalculations'
 
 interface PreviaResultadosProps {
   onboardingData: OnboardingData | null
 }
 
 export default function PreviaResultados({ onboardingData }: PreviaResultadosProps) {
-  const { imc, classificacaoIMC } = useOnboardingCalculations(onboardingData)
-
   if (!onboardingData) return null
 
   const getExperienciaLabel = () => {
