@@ -19,6 +19,8 @@ interface User {
   plano?: string | null
   planoAtivo?: boolean
   dataPagamento?: string | null
+  dataExpiracao?: string | null
+  ativo?: boolean
   createdAt: string
   updatedAt?: string
   perfil?: {
@@ -39,6 +41,8 @@ interface UserDetails {
     plano: string | null
     planoAtivo: boolean
     dataPagamento: string | null
+    dataExpiracao: string | null
+    ativo?: boolean
     createdAt: string
     updatedAt: string
   }
@@ -169,8 +173,30 @@ export default function Admin() {
     email: '',
     senha: '',
     nome: '',
-    role: 'USER' as 'USER' | 'ADMIN'
+    telefone: '',
+    dataNascimento: '',
+    role: 'USER' as 'USER' | 'ADMIN',
+    onboarding: {
+      idade: '',
+      sexo: '',
+      tipoCorpo: '',
+      altura: '',
+      pesoAtual: '',
+      percentualGordura: '',
+      aguaDiaria: '',
+      experiencia: '',
+      objetivo: '',
+      frequenciaSemanal: '',
+      tempoDisponivel: '',
+      localTreino: '',
+      lesoes: [] as string[],
+      preferencias: [] as string[],
+      problemasAnteriores: [] as string[],
+      objetivosAdicionais: [] as string[],
+      rpePreferido: ''
+    }
   })
+  const [showOnboardingSection, setShowOnboardingSection] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [, setSelectedUserId] = useState<string | null>(null)
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
@@ -187,6 +213,7 @@ export default function Admin() {
   const [loadingGrupos, setLoadingGrupos] = useState(false)
   const [showGrupoModal, setShowGrupoModal] = useState(false)
   const [selectedGrupoId, setSelectedGrupoId] = useState<string | null>(null)
+  const [mostrarDesabilitados, setMostrarDesabilitados] = useState(false)
 
   useEffect(() => {
     verificarAdmin()
@@ -203,7 +230,7 @@ export default function Admin() {
       carregarGruposMusculares()
     }
     // Imagens carrega seus próprios dados
-  }, [activeTab, search])
+  }, [activeTab, search, mostrarDesabilitados])
 
   const carregarGruposMusculares = async () => {
     setLoadingGrupos(true)
@@ -257,8 +284,12 @@ export default function Admin() {
     setErrorUsuarios(null)
 
     try {
-      const params = search ? `?search=${encodeURIComponent(search)}` : ''
-      const response = await api.get(`/admin/usuarios${params}`)
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
+      if (mostrarDesabilitados) params.append('incluirDesabilitados', 'true')
+      const queryString = params.toString()
+      const url = `/admin/usuarios${queryString ? `?${queryString}` : ''}`
+      const response = await api.get(url)
       setUsuarios(response.data.usuarios || [])
 
       if (response.data.usuarios && response.data.usuarios.length === 0 && search) {
@@ -499,9 +530,53 @@ export default function Admin() {
     setCreating(true)
 
     try {
-      await api.post('/admin/usuarios', formData)
+      const payload: any = {
+        email: formData.email,
+        senha: formData.senha,
+        nome: formData.nome,
+        role: formData.role
+      }
+      
+      if (formData.telefone) payload.telefone = formData.telefone
+      if (formData.dataNascimento) payload.dataNascimento = formData.dataNascimento
+      
+      // Incluir onboarding apenas se a seção foi preenchida
+      if (showOnboardingSection && Object.values(formData.onboarding).some(v => 
+        (Array.isArray(v) ? v.length > 0 : v !== '' && v !== null)
+      )) {
+        payload.onboarding = formData.onboarding
+      }
+      
+      await api.post('/admin/usuarios', payload)
       setShowCreateModal(false)
-      setFormData({ email: '', senha: '', nome: '', role: 'USER' })
+      setFormData({
+        email: '',
+        senha: '',
+        nome: '',
+        telefone: '',
+        dataNascimento: '',
+        role: 'USER',
+        onboarding: {
+          idade: '',
+          sexo: '',
+          tipoCorpo: '',
+          altura: '',
+          pesoAtual: '',
+          percentualGordura: '',
+          aguaDiaria: '',
+          experiencia: '',
+          objetivo: '',
+          frequenciaSemanal: '',
+          tempoDisponivel: '',
+          localTreino: '',
+          lesoes: [],
+          preferencias: [],
+          problemasAnteriores: [],
+          objetivosAdicionais: [],
+          rpePreferido: ''
+        }
+      })
+      setShowOnboardingSection(false)
       await carregarUsuarios()
       await carregarEstatisticas()
       showToast('Usuário criado com sucesso!', 'success')
@@ -653,6 +728,16 @@ export default function Admin() {
                 </div>
 
                 <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={mostrarDesabilitados}
+                      onChange={(e) => setMostrarDesabilitados(e.target.checked)}
+                      className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm text-light-muted">Mostrar desabilitados</span>
+                  </label>
+                  
                   <div className="flex items-center gap-2 bg-dark-lighter p-1 rounded-lg border border-grey/30">
                     <button
                       onClick={() => setViewMode('cards')}
@@ -749,6 +834,9 @@ export default function Admin() {
                               ) : (
                                 <span className="badge-secondary text-xs">User</span>
                               )}
+                              {user.ativo === false && (
+                                <span className="badge-error text-xs">Desabilitado</span>
+                              )}
                               {user.planoAtivo ? (
                                 <span className="badge-success text-xs">Plano Ativo</span>
                               ) : (
@@ -762,6 +850,17 @@ export default function Admin() {
                               {user.plano && (
                                 <span className="badge-primary text-xs">{user.plano}</span>
                               )}
+                              {user.dataExpiracao && (() => {
+                                const dataExpiracao = new Date(user.dataExpiracao)
+                                const agora = new Date()
+                                const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
+                                if (diferencaDias < 0) {
+                                  return <span className="badge-error text-xs">Expirado</span>
+                                } else if (diferencaDias <= 3) {
+                                  return <span className="badge-warning text-xs">Expira em {diferencaDias}d</span>
+                                }
+                                return null
+                              })()}
                             </div>
 
                             {user.perfil && (
@@ -783,6 +882,11 @@ export default function Admin() {
                               <p className="text-light-muted text-xs">
                                 Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
                               </p>
+                              {user.dataExpiracao && (
+                                <p className="text-light-muted text-xs mt-1">
+                                  Expira em {new Date(user.dataExpiracao).toLocaleDateString('pt-BR')}
+                                </p>
+                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -821,6 +925,9 @@ export default function Admin() {
                               ) : (
                                 <span className="badge-secondary text-xs">User</span>
                               )}
+                              {user.ativo === false && (
+                                <span className="badge-error text-xs">Desabilitado</span>
+                              )}
                               {user.planoAtivo ? (
                                 <span className="badge-success text-xs">Plano Ativo</span>
                               ) : (
@@ -834,6 +941,17 @@ export default function Admin() {
                               {user.plano && (
                                 <span className="badge-primary text-xs">{user.plano}</span>
                               )}
+                              {user.dataExpiracao && (() => {
+                                const dataExpiracao = new Date(user.dataExpiracao)
+                                const agora = new Date()
+                                const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
+                                if (diferencaDias < 0) {
+                                  return <span className="badge-error text-xs">Expirado</span>
+                                } else if (diferencaDias <= 3) {
+                                  return <span className="badge-warning text-xs">Expira em {diferencaDias}d</span>
+                                }
+                                return null
+                              })()}
                             </div>
                           </div>
                           <button
@@ -861,6 +979,7 @@ export default function Admin() {
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Telefone</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Plano</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Status</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Expiração</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Perfil</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Cadastro</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Ações</th>
@@ -888,10 +1007,37 @@ export default function Admin() {
                                 )}
                               </td>
                               <td className="py-3 px-4">
-                                {user.planoAtivo ? (
-                                  <span className="badge-success text-xs">Ativo</span>
+                                <div className="flex flex-col gap-1">
+                                  {user.ativo === false && (
+                                    <span className="badge-error text-xs">Desabilitado</span>
+                                  )}
+                                  {user.planoAtivo ? (
+                                    <span className="badge-success text-xs">Ativo</span>
+                                  ) : (
+                                    <span className="badge-error text-xs">Inativo</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                {user.dataExpiracao ? (
+                                  <div className="flex flex-col gap-1">
+                                    <span className="text-xs text-light-muted">
+                                      {new Date(user.dataExpiracao).toLocaleDateString('pt-BR')}
+                                    </span>
+                                    {(() => {
+                                      const dataExpiracao = new Date(user.dataExpiracao)
+                                      const agora = new Date()
+                                      const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
+                                      if (diferencaDias < 0) {
+                                        return <span className="badge-error text-xs">Expirado</span>
+                                      } else if (diferencaDias <= 3) {
+                                        return <span className="badge-warning text-xs">Expira em {diferencaDias}d</span>
+                                      }
+                                      return null
+                                    })()}
+                                  </div>
                                 ) : (
-                                  <span className="badge-error text-xs">Inativo</span>
+                                  <span className="text-light-muted text-xs">-</span>
                                 )}
                               </td>
                               <td className="py-3 px-4">
@@ -1274,14 +1420,51 @@ export default function Admin() {
                     </h3>
                     <p className="text-light-muted text-sm mt-1">{userDetails.usuario.email}</p>
                   </div>
-                  <button
-                    onClick={handleCloseDetails}
-                    className="btn-secondary p-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {userDetails.usuario.ativo === false ? (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await api.post(`/admin/usuarios/${userDetails.usuario.id}/reativar`)
+                            showToast('Usuário reativado com sucesso!', 'success')
+                            await carregarUsuarios()
+                            await carregarDetalhesUsuario(userDetails.usuario.id)
+                          } catch (error: any) {
+                            showToast(error.response?.data?.error || 'Erro ao reativar usuário', 'error')
+                          }
+                        }}
+                        className="btn-success text-sm"
+                      >
+                        Reativar Usuário
+                      </button>
+                    ) : (
+                      <button
+                        onClick={async () => {
+                          if (window.confirm('Tem certeza que deseja desabilitar este usuário? Ele não aparecerá mais na listagem padrão.')) {
+                            try {
+                              await api.delete(`/admin/usuarios/${userDetails.usuario.id}`)
+                              showToast('Usuário desabilitado com sucesso!', 'success')
+                              await carregarUsuarios()
+                              handleCloseDetails()
+                            } catch (error: any) {
+                              showToast(error.response?.data?.error || 'Erro ao desabilitar usuário', 'error')
+                            }
+                          }
+                        }}
+                        className="btn-error text-sm"
+                      >
+                        Desabilitar Usuário
+                      </button>
+                    )}
+                    <button
+                      onClick={handleCloseDetails}
+                      className="btn-secondary p-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Tabs */}
@@ -1386,6 +1569,32 @@ export default function Admin() {
                                 ? new Date(userDetails.usuario.dataPagamento).toLocaleDateString('pt-BR')
                                 : 'N/A'}
                             </p>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-xs font-medium text-light-muted uppercase tracking-wide">Data de Expiração do Plano</label>
+                            <div className="mt-1">
+                              {userDetails.usuario.dataExpiracao ? (
+                                (() => {
+                                  const dataExpiracao = new Date(userDetails.usuario.dataExpiracao)
+                                  const agora = new Date()
+                                  const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
+                                  const expirado = diferencaDias < 0
+                                  const proximoExpirar = diferencaDias >= 0 && diferencaDias <= 3
+                                  
+                                  return (
+                                    <div className="flex items-center gap-2">
+                                      <p className={`text-base font-medium ${expirado ? 'text-error' : proximoExpirar ? 'text-warning' : 'text-light'}`}>
+                                        {dataExpiracao.toLocaleDateString('pt-BR')}
+                                      </p>
+                                      {expirado && <span className="badge-error text-xs">Expirado</span>}
+                                      {proximoExpirar && !expirado && <span className="badge-warning text-xs">Expira em {diferencaDias} {diferencaDias === 1 ? 'dia' : 'dias'}</span>}
+                                    </div>
+                                  )
+                                })()
+                              ) : (
+                                <p className="text-base text-light-muted">N/A</p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1815,138 +2024,364 @@ export default function Admin() {
               </div>
             )}
           </div>
-        )
-      }
-
-      {
-        showDetailsModal && (
-          <div
-            className="card max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in border border-primary/30"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {loadingDetails ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="spinner h-8 w-8"></div>
-                <p className="ml-4 text-light-muted">Carregando detalhes...</p>
-              </div>
-            ) : userDetails ? (
-              <>
-                {/* Header */}
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-grey/30">
-                  <div>
-                    <h3 className="text-2xl font-display font-bold text-light">
-                      {userDetails.usuario.nome || 'Usuário'}
-                    </h3>
-                    <p className="text-light-muted text-sm mt-1">{userDetails.usuario.email}</p>
-                  </div>
-                  <button
-                    onClick={handleCloseDetails}
-                    className="btn-secondary p-2"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                {/* Tabs */}
-                <div className="border-b border-grey/30 mb-6">
-                  <nav className="flex -mb-px">
-                    {(['basicas', 'onboarding', 'treinos', 'historico'] as const).map((tab) => {
-                      const labels = {
-                        basicas: 'Informações Básicas',
-                        onboarding: 'Dados do Onboarding',
-                        treinos: 'Treinos',
-                        historico: 'Histórico e Progresso'
-                      }
-                      return (
-                        <button
-                          key={tab}
-                          onClick={() => setDetailsTab(tab)}
-                          className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${detailsTab === tab
-                            ? 'border-primary text-primary'
-                            : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                            }`}
-                        >
-                          {labels[tab]}
-                        </button>
-                      )
-                    })}
-                  </nav>
-                </div>
-
-                {/* Conteúdo das Tabs - Simplificado para evitar erros de parser, o conteúdo real já está no arquivo mas precisa ser verificado se não foi cortado */}
-                <div className="flex-1 overflow-y-auto">
-                  {/* O conteúdo das tabs já está implementado acima, aqui estamos apenas fechando o modal corretamente */}
-                  {/* Se o conteúdo das tabs foi cortado, precisaremos restaurá-lo. Mas pelo view_file parecia estar lá, apenas mal estruturado no final */}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-12 text-light-muted">
-                <p>Erro ao carregar detalhes do usuário</p>
-              </div>
-            )}
-          </div>
-        )
-      }
+        </div>
+      )}
 
       {/* Modal de Criação de Usuário */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="card max-w-md w-full animate-scale-in border border-primary/30">
+          <div className="card max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-scale-in border border-primary/30">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-grey/30">
               <h3 className="text-xl font-display font-bold text-light">Novo Usuário</h3>
-              <button onClick={() => setShowCreateModal(false)} className="btn-secondary p-2">
+              <button onClick={() => {
+                setShowCreateModal(false)
+                setFormData({
+                  email: '',
+                  senha: '',
+                  nome: '',
+                  telefone: '',
+                  dataNascimento: '',
+                  role: 'USER',
+                  onboarding: {
+                    idade: '',
+                    sexo: '',
+                    tipoCorpo: '',
+                    altura: '',
+                    pesoAtual: '',
+                    percentualGordura: '',
+                    aguaDiaria: '',
+                    experiencia: '',
+                    objetivo: '',
+                    frequenciaSemanal: '',
+                    tempoDisponivel: '',
+                    localTreino: '',
+                    lesoes: [],
+                    preferencias: [],
+                    problemasAnteriores: [],
+                    objetivosAdicionais: [],
+                    rpePreferido: ''
+                  }
+                })
+                setShowOnboardingSection(false)
+              }} className="btn-secondary p-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <form onSubmit={handleCriarUsuario} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-light mb-2">Nome</label>
-                <input
-                  type="text"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="input-field w-full"
-                  required
-                />
+            <form onSubmit={handleCriarUsuario} className="space-y-6">
+              {/* Informações Básicas */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-light border-b border-grey/30 pb-2">Informações Básicas</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">Nome *</label>
+                    <input
+                      type="text"
+                      value={formData.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      className="input-field w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">Email *</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="input-field w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">Telefone</label>
+                    <input
+                      type="tel"
+                      value={formData.telefone}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                      className="input-field w-full"
+                      placeholder="(00) 00000-0000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">Data de Nascimento</label>
+                    <input
+                      type="date"
+                      value={formData.dataNascimento}
+                      onChange={(e) => setFormData({ ...formData, dataNascimento: e.target.value })}
+                      className="input-field w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">Senha *</label>
+                    <input
+                      type="password"
+                      value={formData.senha}
+                      onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                      className="input-field w-full"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">Tipo de Acesso</label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value as 'USER' | 'ADMIN' })}
+                      className="input-field w-full"
+                    >
+                      <option value="USER">Usuário</option>
+                      <option value="ADMIN">Administrador</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-light mb-2">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="input-field w-full"
-                  required
-                />
+
+              {/* Dados do Onboarding */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-grey/30 pb-2">
+                  <h4 className="text-lg font-semibold text-light">Dados do Onboarding</h4>
+                  <button
+                    type="button"
+                    onClick={() => setShowOnboardingSection(!showOnboardingSection)}
+                    className="btn-secondary text-sm"
+                  >
+                    {showOnboardingSection ? 'Ocultar' : 'Mostrar'} Dados do Onboarding
+                  </button>
+                </div>
+                
+                {showOnboardingSection && (
+                  <div className="space-y-4 pt-4">
+                    {/* Dados Físicos */}
+                    <div className="space-y-4 p-4 bg-dark-lighter rounded-lg">
+                      <h5 className="text-md font-semibold text-light mb-3">Dados Físicos</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Idade</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.idade}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, idade: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="1"
+                            max="120"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Sexo</label>
+                          <select
+                            value={formData.onboarding.sexo}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, sexo: e.target.value }
+                            })}
+                            className="input-field w-full"
+                          >
+                            <option value="">Selecione</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Altura (cm)</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.altura}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, altura: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="50"
+                            max="250"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Peso Atual (kg)</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.pesoAtual}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, pesoAtual: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="1"
+                            step="0.1"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">% Gordura Corporal</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.percentualGordura}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, percentualGordura: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Água Diária (L)</label>
+                          <input
+                            type="text"
+                            value={formData.onboarding.aguaDiaria}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, aguaDiaria: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            placeholder="Ex: 2.5L"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dados de Treino */}
+                    <div className="space-y-4 p-4 bg-dark-lighter rounded-lg">
+                      <h5 className="text-md font-semibold text-light mb-3">Dados de Treino</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Experiência</label>
+                          <select
+                            value={formData.onboarding.experiencia}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, experiencia: e.target.value }
+                            })}
+                            className="input-field w-full"
+                          >
+                            <option value="">Selecione</option>
+                            <option value="Iniciante">Iniciante</option>
+                            <option value="Intermediário">Intermediário</option>
+                            <option value="Avançado">Avançado</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Objetivo</label>
+                          <select
+                            value={formData.onboarding.objetivo}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, objetivo: e.target.value }
+                            })}
+                            className="input-field w-full"
+                          >
+                            <option value="">Selecione</option>
+                            <option value="Emagrecimento">Emagrecimento</option>
+                            <option value="Hipertrofia">Hipertrofia</option>
+                            <option value="Força">Força</option>
+                            <option value="Condicionamento">Condicionamento</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Frequência Semanal</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.frequenciaSemanal}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, frequenciaSemanal: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="1"
+                            max="7"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Tempo Disponível (min)</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.tempoDisponivel}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, tempoDisponivel: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="15"
+                            step="15"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">Local de Treino</label>
+                          <select
+                            value={formData.onboarding.localTreino}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, localTreino: e.target.value }
+                            })}
+                            className="input-field w-full"
+                          >
+                            <option value="">Selecione</option>
+                            <option value="Casa">Casa</option>
+                            <option value="Academia">Academia</option>
+                            <option value="Misto">Misto</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-light mb-2">RPE Preferido</label>
+                          <input
+                            type="number"
+                            value={formData.onboarding.rpePreferido}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              onboarding: { ...formData.onboarding, rpePreferido: e.target.value }
+                            })}
+                            className="input-field w-full"
+                            min="1"
+                            max="10"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-light mb-2">Senha</label>
-                <input
-                  type="password"
-                  value={formData.senha}
-                  onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                  className="input-field w-full"
-                  required
-                  minLength={6}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-light mb-2">Tipo de Acesso</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'USER' | 'ADMIN' })}
-                  className="input-field w-full"
-                >
-                  <option value="USER">Usuário</option>
-                  <option value="ADMIN">Administrador</option>
-                </select>
-              </div>
+
               <div className="flex justify-end gap-3 pt-4 border-t border-grey/30">
-                <button type="button" onClick={() => setShowCreateModal(false)} className="btn-secondary">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setShowCreateModal(false)
+                    setFormData({
+                      email: '',
+                      senha: '',
+                      nome: '',
+                      telefone: '',
+                      dataNascimento: '',
+                      role: 'USER',
+                      onboarding: {
+                        idade: '',
+                        sexo: '',
+                        tipoCorpo: '',
+                        altura: '',
+                        pesoAtual: '',
+                        percentualGordura: '',
+                        aguaDiaria: '',
+                        experiencia: '',
+                        objetivo: '',
+                        frequenciaSemanal: '',
+                        tempoDisponivel: '',
+                        localTreino: '',
+                        lesoes: [],
+                        preferencias: [],
+                        problemasAnteriores: [],
+                        objetivosAdicionais: [],
+                        rpePreferido: ''
+                      }
+                    })
+                    setShowOnboardingSection(false)
+                  }} 
+                  className="btn-secondary"
+                >
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={creating}>

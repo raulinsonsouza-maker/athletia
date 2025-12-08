@@ -9,15 +9,58 @@ import { slugify } from '../utils/slugify';
 import { ACCEPTED_EXTENSIONS } from '../utils/file-validation';
 import { toUserAdminDTO, sanitizeString, isValidUUID, isValidEmail } from '../utils/dto';
 
+// Funções auxiliares para normalizar dados de onboarding
+const parseNumber = (value: any): number | null => {
+  if (value === null || value === undefined || value === '') return null;
+  const num = typeof value === 'string' ? parseFloat(value) : Number(value);
+  return isNaN(num) ? null : num;
+};
+
+const normalizeArray = (value: any): string[] => {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(v => v && String(v).trim()).map(v => String(v).trim());
+  const unico = String(value).trim();
+  return unico ? [unico] : [];
+};
+
+const normalizeOnboardingData = (data: any) => {
+  if (!data) return null;
+  return {
+    idade: parseNumber(data.idade),
+    sexo: data.sexo ? String(data.sexo).trim() : null,
+    tipoCorpo: data.tipoCorpo ? String(data.tipoCorpo).trim() : null,
+    altura: parseNumber(data.altura),
+    pesoAtual: parseNumber(data.pesoAtual),
+    percentualGordura: parseNumber(data.percentualGordura),
+    aguaDiaria: data.aguaDiaria !== undefined && data.aguaDiaria !== null && data.aguaDiaria !== '' ? String(data.aguaDiaria).trim() : null,
+    experiencia: data.experiencia ? String(data.experiencia).trim() : null,
+    objetivo: data.objetivo ? String(data.objetivo).trim() : null,
+    frequenciaSemanal: parseNumber(data.frequenciaSemanal),
+    tempoDisponivel: parseNumber(data.tempoDisponivel),
+    localTreino: data.localTreino ? String(data.localTreino).trim() : null,
+    problemasAnteriores: normalizeArray(data.problemasAnteriores),
+    objetivosAdicionais: normalizeArray(data.objetivosAdicionais),
+    lesoes: normalizeArray(data.lesoes),
+    preferencias: normalizeArray(data.preferencias),
+    rpePreferido: parseNumber(data.rpePreferido)
+  };
+};
+
 // Listar todos os usuários
 export const listarUsuarios = async (req: AuthRequest, res: Response) => {
   try {
-    const { page = 1, limit = 10, search } = req.query;
+    const { page = 1, limit = 10, search, incluirDesabilitados } = req.query;
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
     const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
+    
+    // Filtrar apenas usuários ativos por padrão, a menos que incluirDesabilitados seja true
+    if (incluirDesabilitados !== 'true') {
+      where.ativo = true;
+    }
+    
     if (search) {
       where.OR = [
         { email: { contains: search as string, mode: 'insensitive' } },
@@ -55,6 +98,8 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
           plano: true,
           planoAtivo: true,
           dataPagamento: true,
+          dataExpiracao: true,
+          ativo: true,
           createdAt: true,
           updatedAt: true,
           perfil: {
@@ -97,7 +142,7 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
 // CORREÇÃO PROBLEMA 4: Role sempre 'USER', ignorar role do client
 export const criarUsuario = async (req: AuthRequest, res: Response) => {
   try {
-    const { email, senha, nome } = req.body;
+    const { email, senha, nome, telefone, dataNascimento, onboarding } = req.body;
 
     // CORREÇÃO: Validações rigorosas
     if (!email || !senha) {
@@ -148,6 +193,8 @@ export const criarUsuario = async (req: AuthRequest, res: Response) => {
         email: emailNormalizado,
         senhaHash,
         nome: nome?.trim() || null,
+        telefone: telefone?.trim() || null,
+        dataNascimento: dataNascimento ? new Date(dataNascimento) : null,
         role // Sempre USER, ignorar qualquer role enviado pelo client
       },
       select: {
@@ -158,6 +205,29 @@ export const criarUsuario = async (req: AuthRequest, res: Response) => {
         createdAt: true
       }
     });
+
+    // Se houver dados de onboarding, criar perfil
+    if (onboarding) {
+      const onboardingData = normalizeOnboardingData(onboarding);
+      if (onboardingData) {
+        await prisma.perfil.create({
+          data: {
+            userId: user.id,
+            ...onboardingData
+          }
+        });
+
+        // Se peso foi informado, criar registro no histórico
+        if (onboardingData.pesoAtual !== null && onboardingData.pesoAtual !== undefined) {
+          await prisma.historicoPeso.create({
+            data: {
+              userId: user.id,
+              peso: onboardingData.pesoAtual
+            }
+          });
+        }
+      }
+    }
 
     res.status(201).json({
       message: 'Usuário criado com sucesso',
@@ -240,7 +310,7 @@ export const atualizarUsuario = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Desativar usuário (soft delete - podemos adicionar campo ativo depois)
+// Desativar usuário (soft delete - ativo = false)
 export const desativarUsuario = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -256,8 +326,14 @@ export const desativarUsuario = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Por enquanto, apenas retornar sucesso
-    // Podemos adicionar campo 'ativo' no schema depois
+    // Desabilitar usuário (soft delete)
+    await prisma.user.update({
+      where: { id },
+      data: {
+        ativo: false
+      }
+    });
+
     res.json({
       message: 'Usuário desativado com sucesso',
       userId: id
@@ -266,6 +342,43 @@ export const desativarUsuario = async (req: AuthRequest, res: Response) => {
     console.error('Erro ao desativar usuário:', error);
     res.status(500).json({
       error: 'Erro ao desativar usuário',
+      message: error.message
+    });
+  }
+};
+
+// Reativar usuário (ativo = true)
+export const reativarUsuario = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Verificar se usuário existe
+    const existingUser = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    // Reativar usuário
+    await prisma.user.update({
+      where: { id },
+      data: {
+        ativo: true
+      }
+    });
+
+    res.json({
+      message: 'Usuário reativado com sucesso',
+      userId: id
+    });
+  } catch (error: any) {
+    console.error('Erro ao reativar usuário:', error);
+    res.status(500).json({
+      error: 'Erro ao reativar usuário',
       message: error.message
     });
   }
@@ -353,6 +466,7 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
         plano: usuario.plano,
         planoAtivo: usuario.planoAtivo,
         dataPagamento: usuario.dataPagamento,
+        dataExpiracao: usuario.dataExpiracao,
         createdAt: usuario.createdAt,
         updatedAt: usuario.updatedAt
       },

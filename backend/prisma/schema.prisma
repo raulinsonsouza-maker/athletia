@@ -27,6 +27,7 @@ model User {
   currentTrainingSource String?   @map("current_training_source") // "IA" ou "MANUAL"
   currentTrainingId     String?   @map("current_training_id") // UUID do treino ativo
   role                  Role      @default(USER)
+  ativo                 Boolean   @default(true) // Soft delete - usuários desabilitados não aparecem na listagem
   perfil                Perfil?
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")

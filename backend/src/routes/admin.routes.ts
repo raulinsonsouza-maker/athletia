@@ -9,6 +9,7 @@ import {
   criarUsuario,
   atualizarUsuario,
   desativarUsuario,
+  reativarUsuario,
   obterEstatisticas,
   obterDetalhesUsuario,
   listarExercicios,
@@ -231,6 +232,7 @@ router.get('/usuarios/:id', obterDetalhesUsuario); // Deve estar antes da rota P
 router.post('/usuarios', criarUsuarioValidation, validateRequest, criarUsuario);
 router.put('/usuarios/:id', atualizarUsuarioValidation, validateRequest, atualizarUsuario);
 router.delete('/usuarios/:id', desativarUsuario);
+router.post('/usuarios/:id/reativar', reativarUsuario);
 router.get('/estatisticas', obterEstatisticas);
 
 // Rotas de Exercícios
