@@ -2524,14 +2524,30 @@ export default function Admin() {
                       });
                       
                       if (response.data.success) {
-                        showToast('Pagamento simulado com sucesso! E-mail de boas-vindas enviado.', 'success');
+                        const emailSent = response.data.result?.emailSent;
+                        const emailError = response.data.result?.emailError;
+                        
+                        if (emailSent) {
+                          showToast('Pagamento simulado com sucesso! E-mail de boas-vindas enviado.', 'success');
+                        } else {
+                          showToast(
+                            `Pagamento simulado, mas e-mail não foi enviado. Erro: ${emailError || 'Desconhecido'}`,
+                            'error'
+                          );
+                          console.error('Erro no envio de e-mail:', emailError);
+                        }
+                        
                         setShowSimularPagamentoModal(false);
                         // Recarregar detalhes do usuário
                         await carregarDetalhesUsuario(userDetails.usuario.id);
                         // Recarregar lista de usuários
                         await carregarUsuarios();
                       } else {
-                        showToast(response.data.error || 'Erro ao simular pagamento', 'error');
+                        const errorMsg = response.data.error || 'Erro ao simular pagamento';
+                        showToast(errorMsg, 'error');
+                        if (response.data.configError) {
+                          console.error('Erro de configuração:', errorMsg);
+                        }
                       }
                     } catch (error: any) {
                       console.error('Erro ao simular pagamento:', error);

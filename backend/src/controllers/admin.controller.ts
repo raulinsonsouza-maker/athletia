@@ -450,19 +450,54 @@ export const simularPagamentoUsuario = async (req: AuthRequest, res: Response) =
       secret: process.env.CAKTO_WEBHOOK_SECRET || 'admin_simulation'
     };
 
+    // Verificar configuração do Resend antes de processar
+    console.log('🔍 [ADMIN] Verificando configuração do Resend...');
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ [ADMIN] RESEND_API_KEY não configurado!');
+      return res.status(500).json({
+        success: false,
+        error: 'RESEND_API_KEY não configurado. Verifique as variáveis de ambiente.',
+        configError: true
+      });
+    }
+    if (!process.env.RESEND_FROM_EMAIL) {
+      console.warn('⚠️ [ADMIN] RESEND_FROM_EMAIL não configurado. Usando valor padrão.');
+    }
+
     // Processar webhook (isso vai chamar o envio de e-mail automaticamente)
     const { processPaymentApproved } = await import('../services/cakto.service');
     const result = await processPaymentApproved(webhookSimulado);
 
+    // Log detalhado do resultado
+    console.log(`📊 [ADMIN] Resultado do processamento:`, JSON.stringify(result, null, 2));
+
     if (result.success && 'plano' in result && 'user_id' in result) {
       console.log(`✅ [ADMIN] Pagamento simulado processado com sucesso para usuário ${id}`);
+      
+      // Verificar se o e-mail foi enviado
+      const emailResult = result as any;
+      const emailSent = emailResult.emailSent === true;
+      const emailError = emailResult.emailError || null;
+      const emailMessageId = emailResult.emailMessageId || null;
+      
+      if (emailSent) {
+        console.log(`✅ [ADMIN] E-mail enviado com sucesso. MessageId: ${emailMessageId}`);
+      } else {
+        console.error(`❌ [ADMIN] E-mail NÃO foi enviado. Erro: ${emailError}`);
+      }
+      
       res.json({
         success: true,
-        message: 'Pagamento simulado processado com sucesso. E-mail de boas-vindas enviado.',
+        message: emailSent 
+          ? 'Pagamento simulado processado com sucesso. E-mail de boas-vindas enviado.'
+          : 'Pagamento simulado processado, mas e-mail não foi enviado.',
         result: {
           transaction_id: result.transaction_id,
           plano: result.plano,
-          user_id: result.user_id
+          user_id: result.user_id,
+          emailSent: emailSent,
+          emailError: emailError,
+          emailMessageId: emailMessageId
         }
       });
     } else {

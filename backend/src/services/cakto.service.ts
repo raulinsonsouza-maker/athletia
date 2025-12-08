@@ -310,9 +310,13 @@ export async function processPaymentApproved(webhookData: any) {
     }
 
     // Enviar e-mail de boas-vindas (não crítico - não deve quebrar o webhook)
+    let emailSent = false;
+    let emailError: string | null = null;
+    let emailMessageId: string | undefined = undefined;
+    
     try {
       const { sendWelcomeEmail } = await import('./email.service');
-      console.log(`📧 Enviando e-mail de boas-vindas para ${user.email.substring(0, 3)}***...`);
+      console.log(`📧 Enviando e-mail de boas-vindas para ${user.email}...`);
       
       const emailResult = await sendWelcomeEmail({
         nome: user.nome || 'Usuário',
@@ -322,12 +326,21 @@ export async function processPaymentApproved(webhookData: any) {
       });
 
       if (emailResult.success) {
-        console.log('✅ E-mail de boas-vindas enviado com sucesso');
+        emailSent = true;
+        emailMessageId = emailResult.messageId;
+        console.log('✅ E-mail de boas-vindas enviado com sucesso:', {
+          email: user.email.substring(0, 3) + '***',
+          messageId: emailMessageId
+        });
       } else {
-        console.warn('⚠️ Erro ao enviar e-mail de boas-vindas (não crítico):', emailResult.error);
+        emailError = emailResult.error || 'Erro desconhecido ao enviar e-mail';
+        console.error('❌ Erro ao enviar e-mail de boas-vindas:', emailError);
+        console.error('❌ Detalhes completos do erro:', JSON.stringify(emailResult, null, 2));
       }
     } catch (error: any) {
-      console.error('⚠️ Erro ao enviar e-mail de boas-vindas (não crítico):', error.message);
+      emailError = error.message || 'Exceção ao enviar e-mail';
+      console.error('❌ Exceção ao enviar e-mail de boas-vindas:', error);
+      console.error('❌ Stack trace:', error.stack);
       // Não falhar o webhook se não conseguir enviar e-mail
     }
 
@@ -337,10 +350,16 @@ export async function processPaymentApproved(webhookData: any) {
       transaction_id: transactionId,
       amount: amount,
       plano: plano,
-      user_id: user.id
+      user_id: user.id,
+      emailSent: emailSent,
+      emailError: emailError,
+      emailMessageId: emailMessageId
     };
 
-    console.log('✅ Pagamento aprovado processado:', result);
+    console.log('✅ Pagamento aprovado processado:', {
+      ...result,
+      email: user.email.substring(0, 3) + '***'
+    });
     return result;
 
   } catch (error: any) {

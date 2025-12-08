@@ -136,15 +136,29 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ succes
   try {
     // Verificar se Resend está configurado
     if (!process.env.RESEND_API_KEY) {
-      console.warn('⚠️ RESEND_API_KEY não configurado. E-mail de boas-vindas não será enviado.');
+      console.error('❌ RESEND_API_KEY não configurado. E-mail de boas-vindas não será enviado.');
+      console.error('❌ Verifique se a variável RESEND_API_KEY está definida no arquivo .env');
       return {
         success: false,
         error: 'RESEND_API_KEY não configurado'
       };
     }
 
+    // Verificar se o e-mail de remetente está configurado
+    if (!FROM_EMAIL || FROM_EMAIL === 'suporte@athletia.site') {
+      console.warn('⚠️ RESEND_FROM_EMAIL não configurado ou usando valor padrão. Verifique se está correto.');
+    }
+
+    console.log('📧 Preparando envio de e-mail:', {
+      to: data.email,
+      from: FROM_EMAIL,
+      subject: '🎉 Bem-vindo ao AthletIA Premium!',
+      plano: data.plano
+    });
+
     const html = generateWelcomeEmailHTML(data);
 
+    console.log('📧 Chamando Resend API...');
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: data.email,
@@ -152,26 +166,53 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ succes
       html: html
     });
 
+    console.log('📧 Resposta do Resend:', JSON.stringify({
+      hasError: !!result.error,
+      hasData: !!result.data,
+      error: result.error ? {
+        name: result.error.name,
+        message: result.error.message
+      } : null,
+      messageId: result.data?.id
+    }, null, 2));
+
     if (result.error) {
-      console.error('❌ Erro ao enviar e-mail de boas-vindas:', result.error);
+      console.error('❌ Erro do Resend ao enviar e-mail:', {
+        name: result.error.name,
+        message: result.error.message,
+        fullError: JSON.stringify(result.error, null, 2)
+      });
       return {
         success: false,
         error: result.error.message || 'Erro desconhecido ao enviar e-mail'
       };
     }
 
+    if (!result.data || !result.data.id) {
+      console.error('❌ Resposta do Resend não contém messageId:', result);
+      return {
+        success: false,
+        error: 'Resposta do Resend inválida (sem messageId)'
+      };
+    }
+
     console.log('✅ E-mail de boas-vindas enviado com sucesso:', {
-      email: data.email.substring(0, 3) + '***',
-      messageId: result.data?.id
+      email: data.email,
+      messageId: result.data.id,
+      from: FROM_EMAIL
     });
 
     return {
       success: true,
-      messageId: result.data?.id
+      messageId: result.data.id
     };
 
   } catch (error: any) {
-    console.error('❌ Erro ao enviar e-mail de boas-vindas:', error);
+    console.error('❌ Exceção ao enviar e-mail de boas-vindas:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return {
       success: false,
       error: error.message || 'Erro desconhecido ao enviar e-mail'
