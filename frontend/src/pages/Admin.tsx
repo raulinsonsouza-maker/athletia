@@ -1399,8 +1399,12 @@ export default function Admin() {
         }
       </main>
 
-      {
-        showDetailsModal && (
+      {/* Modal de Detalhes do Usuário */}
+      {showDetailsModal && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={handleCloseDetails}
+        >
           <div
             className="card max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-scale-in border border-primary/30"
             onClick={(e) => e.stopPropagation()}
@@ -1421,7 +1425,7 @@ export default function Admin() {
                     <p className="text-light-muted text-sm mt-1">{userDetails.usuario.email}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {userDetails.usuario.ativo === false ? (
+                    {userDetails.usuario.ativo === false && (
                       <button
                         onClick={async () => {
                           try {
@@ -1437,7 +1441,8 @@ export default function Admin() {
                       >
                         Reativar Usuário
                       </button>
-                    ) : (
+                    )}
+                    {userDetails.usuario.ativo !== false && (
                       <button
                         onClick={async () => {
                           if (window.confirm('Tem certeza que deseja desabilitar este usuário? Ele não aparecerá mais na listagem padrão.')) {
