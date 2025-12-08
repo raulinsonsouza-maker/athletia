@@ -8,6 +8,7 @@ interface User {
   role: string
   planoAtivo?: boolean
   plano?: string
+  dataExpiracao?: string
 }
 
 interface AuthContextType {

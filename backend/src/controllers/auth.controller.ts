@@ -234,7 +234,9 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         nome: user.nome,
         role: user.role,
-        planoAtivo: user.planoAtivo
+        planoAtivo: user.planoAtivo,
+        plano: user.plano,
+        dataExpiracao: user.dataExpiracao
       },
       accessToken,
       refreshToken

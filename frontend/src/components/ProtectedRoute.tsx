@@ -29,7 +29,12 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const rotasPermitidasSemPlano = ['/checkout', '/perfil']
   const precisaPlanoAtivo = !rotasPermitidasSemPlano.includes(location.pathname)
 
-  if (precisaPlanoAtivo && user && !user.planoAtivo) {
+  // Verificar se plano está ativo e não expirado
+  const planoValido = user && user.planoAtivo && (
+    !user.dataExpiracao || new Date(user.dataExpiracao) > new Date()
+  )
+
+  if (precisaPlanoAtivo && user && !planoValido) {
     return <Navigate to="/checkout" replace />
   }
 

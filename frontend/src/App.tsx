@@ -6,6 +6,7 @@ import Landing from './pages/Landing'
 import Cadastro from './pages/Cadastro'
 import Checkout from './pages/Checkout'
 import Confirmacao from './pages/Confirmacao'
+import PagamentoSucesso from './pages/PagamentoSucesso'
 import Treinos from './pages/Treinos'
 import TreinoAtual from './pages/TreinoAtual'
 import MeuPlano from './pages/MeuPlano'
@@ -29,6 +30,7 @@ function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/confirmacao" element={<Confirmacao />} />
+          <Route path="/pagamento-sucesso" element={<PagamentoSucesso />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           

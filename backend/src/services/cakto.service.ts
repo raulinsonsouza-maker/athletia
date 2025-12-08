@@ -486,8 +486,13 @@ export function generateCheckoutUrl(plano: 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL'
     throw new Error(`Product ID não configurado para o plano ${plano}`);
   }
 
+  // Obter URL do frontend para redirecionamento após pagamento
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const successUrl = `${frontendUrl}/pagamento-sucesso`;
+
   const params = new URLSearchParams({
     email: userEmail,
+    success_url: successUrl,
     ...customData
   });
   

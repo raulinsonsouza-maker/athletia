@@ -30,7 +30,9 @@ export function useCadastroForm() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState<Record<string, boolean>>({})
 
-  const validateField = useCallback((field: keyof FormData, value: string): string | undefined => {
+  const validateField = useCallback((field: keyof FormData, value: string, currentFormData?: FormData): string | undefined => {
+    const data = currentFormData || formData
+    
     switch (field) {
       case 'nomeCompleto':
         if (!value.trim()) return 'Nome completo é obrigatório'
@@ -56,13 +58,13 @@ export function useCadastroForm() {
 
       case 'confirmarSenha':
         if (!value) return 'Confirme sua senha'
-        if (value !== formData.senha) return 'As senhas não coincidem'
+        if (value !== data.senha) return 'As senhas não coincidem'
         return undefined
 
       default:
         return undefined
     }
-  }, [formData.senha])
+  }, [formData])
 
   const validateSenhaStrength = useCallback((senha: string): SenhaStrength => {
     if (!senha) return null
@@ -81,20 +83,42 @@ export function useCadastroForm() {
   }, [])
 
   const handleChange = useCallback((field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    
-    // Validar em tempo real se o campo já foi tocado
-    if (touched[field]) {
-      const error = validateField(field, value)
-      setErrors(prev => ({ ...prev, [field]: error }))
-    }
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value }
+      
+      // Se mudou a senha, revalidar confirmarSenha se já foi tocado
+      if (field === 'senha' && touched.confirmarSenha && newData.confirmarSenha) {
+        const confirmarSenhaError = newData.confirmarSenha !== value 
+          ? 'As senhas não coincidem' 
+          : undefined
+        setErrors(prev => ({ ...prev, confirmarSenha: confirmarSenhaError }))
+      }
+      
+      // Validar em tempo real se o campo já foi tocado
+      if (touched[field]) {
+        const error = validateField(field, value, newData)
+        setErrors(prev => ({ ...prev, [field]: error }))
+      }
+      
+      // Validar confirmarSenha em tempo real quando está digitando (mesmo sem ter saído do campo)
+      if (field === 'confirmarSenha' && newData.senha) {
+        const error = value !== newData.senha ? 'As senhas não coincidem' : undefined
+        setErrors(prev => ({ ...prev, confirmarSenha: error }))
+      }
+      
+      return newData
+    })
   }, [touched, validateField])
 
   const handleBlur = useCallback((field: keyof FormData) => {
     setTouched(prev => ({ ...prev, [field]: true }))
-    const error = validateField(field, formData[field])
-    setErrors(prev => ({ ...prev, [field]: error }))
-  }, [formData, validateField])
+    // Validar após marcar como tocado
+    setFormData(prev => {
+      const error = validateField(field, prev[field], prev)
+      setErrors(prevErrors => ({ ...prevErrors, [field]: error }))
+      return prev // Não altera o estado, só usa para validação
+    })
+  }, [validateField])
 
   const validateAll = useCallback((): boolean => {
     const newErrors: FormErrors = {}

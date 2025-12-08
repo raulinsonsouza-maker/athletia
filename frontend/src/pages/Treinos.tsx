@@ -6,6 +6,7 @@ import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
+import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
 
 // ============================================================================
 // ÍCONES SVG
@@ -208,6 +209,7 @@ export default function Treinos() {
       <AppHeader title="Treinos" subtitle="Seu plano de treinos" />
       
       <div className="px-4 pt-2 space-y-6">
+        <AvisoExpiracaoPlano />
         {/* CARD DESTAQUE - TREINO DE HOJE */}
         {treinoHoje && (
           <section className="relative rounded-2xl overflow-hidden">

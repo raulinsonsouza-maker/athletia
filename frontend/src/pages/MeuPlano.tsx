@@ -6,6 +6,7 @@ import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import DiaSemanaIcon from '../components/icons/DiaSemanaIcon'
+import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
 
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
@@ -82,6 +83,7 @@ export default function MeuPlano() {
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
       <AppHeader title="Meu Plano" subtitle="Resumo semanal e próximos passos" />
       <div className="px-5 space-y-6">
+        <AvisoExpiracaoPlano />
         <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
           <div className="p-6 space-y-4">
             <div>
