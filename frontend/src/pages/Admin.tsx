@@ -214,6 +214,9 @@ export default function Admin() {
   const [showGrupoModal, setShowGrupoModal] = useState(false)
   const [selectedGrupoId, setSelectedGrupoId] = useState<string | null>(null)
   const [mostrarDesabilitados, setMostrarDesabilitados] = useState(false)
+  const [showSimularPagamentoModal, setShowSimularPagamentoModal] = useState(false)
+  const [planoSimulacao, setPlanoSimulacao] = useState<'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL'>('MENSAL')
+  const [simulandoPagamento, setSimulandoPagamento] = useState(false)
 
   useEffect(() => {
     verificarAdmin()
@@ -1602,6 +1605,22 @@ export default function Admin() {
                             </div>
                           </div>
                         </div>
+                        
+                        {/* Botão para Simular Pagamento */}
+                        <div className="mt-6 pt-6 border-t border-grey/30">
+                          <button
+                            onClick={() => setShowSimularPagamentoModal(true)}
+                            className="btn-primary w-full flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                            Simular Pagamento (Teste)
+                          </button>
+                          <p className="text-xs text-light-muted mt-2 text-center">
+                            Use para testar envio de e-mail de boas-vindas sem transação real
+                          </p>
+                        </div>
                       </div>
 
                       {/* Informações do Sistema */}
@@ -2436,6 +2455,108 @@ export default function Admin() {
           carregarGruposMusculares()
         }}
       />
+
+      {/* Modal de Simular Pagamento */}
+      {showSimularPagamentoModal && userDetails && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="card max-w-md w-full animate-scale-in border border-primary/30">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-grey/30">
+              <h3 className="text-xl font-display font-bold text-light">Simular Pagamento</h3>
+              <button 
+                onClick={() => setShowSimularPagamentoModal(false)} 
+                className="btn-secondary p-2"
+                disabled={simulandoPagamento}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+                <p className="text-sm text-warning font-medium mb-2">⚠️ Ação de Teste</p>
+                <p className="text-sm text-light-muted">
+                  Esta ação irá simular um pagamento completo, ativando o plano do usuário e enviando o e-mail de boas-vindas. 
+                  Use apenas para testes em produção.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-light mb-2">Usuário</label>
+                <div className="bg-dark-lighter p-3 rounded-lg">
+                  <p className="text-light font-medium">{userDetails.usuario.nome || 'Sem nome'}</p>
+                  <p className="text-light-muted text-sm">{userDetails.usuario.email}</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-light mb-2">Plano *</label>
+                <select
+                  value={planoSimulacao}
+                  onChange={(e) => setPlanoSimulacao(e.target.value as 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL')}
+                  className="input-field w-full"
+                  disabled={simulandoPagamento}
+                >
+                  <option value="MENSAL">Mensal</option>
+                  <option value="TRIMESTRAL">Trimestral</option>
+                  <option value="SEMESTRAL">Semestral</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-grey/30">
+                <button 
+                  type="button" 
+                  onClick={() => setShowSimularPagamentoModal(false)} 
+                  className="btn-secondary"
+                  disabled={simulandoPagamento}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={async () => {
+                    if (!userDetails) return;
+                    
+                    setSimulandoPagamento(true);
+                    try {
+                      const response = await api.post(`/admin/usuarios/${userDetails.usuario.id}/simular-pagamento`, {
+                        plano: planoSimulacao
+                      });
+                      
+                      if (response.data.success) {
+                        showToast('Pagamento simulado com sucesso! E-mail de boas-vindas enviado.', 'success');
+                        setShowSimularPagamentoModal(false);
+                        // Recarregar detalhes do usuário
+                        await carregarDetalhesUsuario(userDetails.usuario.id);
+                        // Recarregar lista de usuários
+                        await carregarUsuarios();
+                      } else {
+                        showToast(response.data.error || 'Erro ao simular pagamento', 'error');
+                      }
+                    } catch (error: any) {
+                      console.error('Erro ao simular pagamento:', error);
+                      showToast(error.response?.data?.error || 'Erro ao simular pagamento', 'error');
+                    } finally {
+                      setSimulandoPagamento(false);
+                    }
+                  }}
+                  className="btn-primary"
+                  disabled={simulandoPagamento}
+                >
+                  {simulandoPagamento ? (
+                    <span className="flex items-center gap-2">
+                      <div className="spinner h-4 w-4"></div>
+                      Processando...
+                    </span>
+                  ) : (
+                    'Confirmar e Enviar E-mail'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

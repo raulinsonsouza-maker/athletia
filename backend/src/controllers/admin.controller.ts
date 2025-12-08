@@ -384,6 +384,105 @@ export const reativarUsuario = async (req: AuthRequest, res: Response) => {
   }
 };
 
+// Simular pagamento para testar envio de e-mail (apenas admin)
+export const simularPagamentoUsuario = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { plano } = req.body;
+
+    // Validações
+    if (!plano) {
+      return res.status(400).json({
+        error: 'Plano é obrigatório'
+      });
+    }
+
+    const planosValidos = ['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'];
+    if (!planosValidos.includes(plano.toUpperCase())) {
+      return res.status(400).json({
+        error: 'Plano inválido. Deve ser MENSAL, TRIMESTRAL ou SEMESTRAL'
+      });
+    }
+
+    // Buscar usuário
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { perfil: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    console.log(`🧪 [ADMIN] Simulando pagamento para usuário ${id} (${user.email.substring(0, 3)}***)`);
+    console.log(`🧪 [ADMIN] Plano selecionado: ${plano}`);
+
+    // Criar webhook simulado com estrutura similar à do Cakto
+    const webhookSimulado = {
+      event: 'purchase_approved',
+      data: {
+        id: `test_${Date.now()}_${id}`,
+        transaction_id: `test_${Date.now()}_${id}`,
+        amount: plano === 'MENSAL' ? 19.90 : plano === 'TRIMESTRAL' ? 49.90 : 89.90,
+        status: 'approved',
+        paymentMethod: 'admin_simulation',
+        customer: {
+          email: user.email,
+          id: `test_customer_${Date.now()}`,
+          customer_id: `test_customer_${Date.now()}`
+        },
+        product: {
+          short_id: plano === 'MENSAL' 
+            ? process.env.CAKTO_PRODUCT_ID_MENSAL 
+            : plano === 'TRIMESTRAL'
+            ? process.env.CAKTO_PRODUCT_ID_TRIMESTRAL
+            : process.env.CAKTO_PRODUCT_ID_SEMESTRAL
+        },
+        checkoutUrl: `https://pay.cakto.com.br/${plano === 'MENSAL' 
+          ? process.env.CAKTO_PRODUCT_ID_MENSAL 
+          : plano === 'TRIMESTRAL'
+          ? process.env.CAKTO_PRODUCT_ID_TRIMESTRAL
+          : process.env.CAKTO_PRODUCT_ID_SEMESTRAL}?email=${user.email}`
+      },
+      // Adicionar secret para validação (em teste admin, podemos usar secret real ou pular)
+      secret: process.env.CAKTO_WEBHOOK_SECRET || 'admin_simulation'
+    };
+
+    // Processar webhook (isso vai chamar o envio de e-mail automaticamente)
+    const { processPaymentApproved } = await import('../services/cakto.service');
+    const result = await processPaymentApproved(webhookSimulado);
+
+    if (result.success && 'plano' in result && 'user_id' in result) {
+      console.log(`✅ [ADMIN] Pagamento simulado processado com sucesso para usuário ${id}`);
+      res.json({
+        success: true,
+        message: 'Pagamento simulado processado com sucesso. E-mail de boas-vindas enviado.',
+        result: {
+          transaction_id: result.transaction_id,
+          plano: result.plano,
+          user_id: result.user_id
+        }
+      });
+    } else {
+      console.error(`❌ [ADMIN] Erro ao simular pagamento: ${result.message || 'Erro desconhecido'}`);
+      res.status(500).json({
+        success: false,
+        error: result.message || 'Erro ao simular pagamento',
+        result: result
+      });
+    }
+
+  } catch (error: any) {
+    console.error('❌ [ADMIN] Erro ao simular pagamento:', error);
+    res.status(500).json({
+      error: 'Erro ao simular pagamento',
+      message: error.message
+    });
+  }
+};
+
 // Obter detalhes completos de um usuário
 export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
   try {
