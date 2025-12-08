@@ -24,7 +24,7 @@ interface SubscriptionStatus {
 
 export default function PagamentoSucesso() {
   const navigate = useNavigate()
-  const { user, updateUser } = useAuth()
+  const { updateUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
