@@ -1,26 +1,5 @@
 import { useMemo } from 'react'
-
-interface OnboardingData {
-  nome?: string
-  dataNascimento?: string
-  idade?: number
-  sexo?: string
-  altura?: number
-  pesoAtual?: number
-  percentualGordura?: number
-  tipoCorpo?: string
-  aguaDiaria?: string
-  experiencia?: string
-  objetivo?: string
-  frequenciaSemanal?: number
-  tempoDisponivel?: number
-  localTreino?: string
-  problemasAnteriores?: string[]
-  objetivosAdicionais?: string[]
-  lesoes?: string[]
-  preferencias?: string[]
-  rpePreferido?: number
-}
+import { OnboardingData } from '../types/onboarding.types'
 
 /**
  * Hook para cálculos do onboarding

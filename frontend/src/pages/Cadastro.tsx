@@ -4,28 +4,7 @@ import InputMask from 'react-input-mask'
 import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
 import { useOnboardingCalculations } from '../hooks/useOnboardingCalculations'
-
-interface OnboardingData {
-  nome?: string
-  dataNascimento?: string
-  idade?: number
-  sexo?: string
-  altura?: number
-  pesoAtual?: number
-  percentualGordura?: number
-  tipoCorpo?: string
-  aguaDiaria?: string
-  experiencia?: string
-  objetivo?: string
-  frequenciaSemanal?: number
-  tempoDisponivel?: number
-  localTreino?: string
-  problemasAnteriores?: string[]
-  objetivosAdicionais?: string[]
-  lesoes?: string[]
-  preferencias?: string[]
-  rpePreferido?: number
-}
+import { OnboardingData } from '../types/onboarding.types'
 
 const IconeMarcadorLista = ({ className = 'w-2 h-2 text-primary translate-y-[2px]' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
