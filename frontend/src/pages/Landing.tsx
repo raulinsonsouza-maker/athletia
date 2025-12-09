@@ -208,10 +208,10 @@ export default function Landing() {
                     <span className="text-sm font-semibold text-primary">✨ Interface Intuitiva e Profissional</span>
                   </div>
                   <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-light leading-tight">
-                    Veja Como É Fácil Usar o AthletIA
+                    Esta É a Interface Que Você Vai Usar Todos os Dias
                   </h2>
                   <p className="text-lg md:text-xl text-light-muted leading-relaxed">
-                    Esta é a interface real que você vai usar todos os dias. Treinos organizados, progresso visual e tudo na palma da sua mão.
+                    Treinos organizados, progresso em tempo real e tudo na palma da sua mão. Veja como é simples e intuitivo usar o AthletIA.
                   </p>
                   <div className="space-y-4 pt-4">
                     <div className="flex items-start gap-3">
@@ -221,8 +221,8 @@ export default function Landing() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Treinos sempre organizados</h3>
-                        <p className="text-sm md:text-base text-light-muted">Seu plano semanal completo, com todos os exercícios detalhados e prontos para executar.</p>
+                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Seu plano semanal completo</h3>
+                        <p className="text-sm md:text-base text-light-muted">Todos os treinos organizados e prontos. Basta abrir o app e começar a treinar.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -232,8 +232,8 @@ export default function Landing() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Acompanhe seu progresso em tempo real</h3>
-                        <p className="text-sm md:text-base text-light-muted">Veja sua evolução dia a dia, com gráficos e estatísticas que mostram o quanto você está evoluindo.</p>
+                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Acompanhe sua evolução</h3>
+                        <p className="text-sm md:text-base text-light-muted">Veja gráficos, estatísticas e seu histórico completo de treinos em um só lugar.</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -243,8 +243,8 @@ export default function Landing() {
                         </svg>
                       </div>
                       <div>
-                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Treino rápido quando precisar</h3>
-                        <p className="text-sm md:text-base text-light-muted">Crie um treino personalizado em segundos para quando você tem pouco tempo ou quer focar em grupos específicos.</p>
+                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Treino rápido em segundos</h3>
+                        <p className="text-sm md:text-base text-light-muted">Crie um treino personalizado na hora, escolhendo os grupos musculares que quer trabalhar hoje.</p>
                       </div>
                     </div>
                   </div>
