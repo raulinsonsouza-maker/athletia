@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../lib/prisma';
+import { parseAndValidateDate } from '../utils/dto';
 import * as treinoService from '../services/treino.service';
 import * as progressaoService from '../services/progressao.service';
 import { obterResumoTreinos, buscarPlanoAtual } from '../services/treino-dashboard.service';
@@ -17,11 +18,23 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
 
     console.log('[CONTROLLER] Gerando treino usando motor centralizado...', { userId, data, gerarSemana });
 
+    // SEGURANÇA: Validar formato de data antes de usar
+    let dataReferencia: Date = new Date();
+    if (data) {
+      const parsedDate = parseAndValidateDate(data);
+      if (!parsedDate) {
+        return res.status(400).json({
+          error: 'Data inválida. Use o formato ISO (ex: 2024-12-20)'
+        });
+      }
+      dataReferencia = parsedDate;
+    }
+
     if (gerarSemana === true) {
       // Gerar semana completa usando motor centralizado
       const treinos = await garantirPlanoSemanalInteligente({ 
         userId, 
-        dataReferencia: data ? new Date(data) : new Date() 
+        dataReferencia
       });
       return res.status(201).json({
         message: `${treinos.length} treino(s) gerado(s) com sucesso`,
@@ -32,7 +45,7 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
       // Gerar treino do dia usando motor centralizado
       const treinoGerado = await gerarTreinoDoDiaUnico(
         userId,
-        data ? new Date(data) : new Date()
+        dataReferencia
       );
 
       if (!treinoGerado) {
@@ -78,7 +91,17 @@ export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
     const { data } = req.query;
 
-    const dataTreino = data ? new Date(data as string) : new Date();
+    // SEGURANÇA: Validar formato de data
+    let dataTreino: Date = new Date();
+    if (data) {
+      const parsedDate = parseAndValidateDate(data);
+      if (!parsedDate) {
+        return res.status(400).json({
+          error: 'Data inválida. Use o formato ISO (ex: 2024-12-20)'
+        });
+      }
+      dataTreino = parsedDate;
+    }
     dataTreino.setHours(0, 0, 0, 0);
     const fimDia = new Date(dataTreino);
     fimDia.setHours(23, 59, 59, 999);
@@ -390,8 +413,25 @@ export const buscarTreinos = async (req: AuthRequest, res: Response) => {
     const { buscarTreinosComFiltros } = await import('../services/treino-query.service')
 
     const filtros: any = {}
-    if (dataInicio) filtros.dataInicio = new Date(dataInicio as string)
-    if (dataFim) filtros.dataFim = new Date(dataFim as string)
+    // SEGURANÇA: Validar formatos de data
+    if (dataInicio) {
+      const parsedDate = parseAndValidateDate(dataInicio);
+      if (!parsedDate) {
+        return res.status(400).json({
+          error: 'Data de início inválida. Use o formato ISO (ex: 2024-12-20)'
+        });
+      }
+      filtros.dataInicio = parsedDate;
+    }
+    if (dataFim) {
+      const parsedDate = parseAndValidateDate(dataFim);
+      if (!parsedDate) {
+        return res.status(400).json({
+          error: 'Data de fim inválida. Use o formato ISO (ex: 2024-12-20)'
+        });
+      }
+      filtros.dataFim = parsedDate;
+    }
     if (concluido !== undefined) filtros.concluido = concluido === 'true'
     if (tipo) filtros.tipo = tipo as string
     if (modoTreino) filtros.modoTreino = modoTreino as 'IA' | 'MANUAL'

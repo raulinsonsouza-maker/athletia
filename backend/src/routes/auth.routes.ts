@@ -6,17 +6,26 @@ import { validateRequest } from '../middleware/validate.middleware';
 import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 
 // Rate limiting inteligente para rotas de autenticação
+// SEGURANÇA: Mais restritivo para prevenir brute force
 // Logins bem-sucedidos NÃO contam para o limite, apenas tentativas falhadas
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 15, // Máximo 15 tentativas por IP a cada 15 minutos (aumentado para ser mais tolerante)
+  max: 5, // Máximo 5 tentativas por IP a cada 15 minutos (reduzido para maior segurança)
   message: {
     error: 'Muitas tentativas de login. Por favor, tente novamente em alguns minutos.'
   },
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Logins bem-sucedidos NÃO contam para o limite
-  skip: (req: any) => req.method === 'OPTIONS' // Pular requisições CORS preflight
+  skip: (req: any) => req.method === 'OPTIONS', // Pular requisições CORS preflight
+  handler: (req, res) => {
+    // Logar tentativa de rate limit excedido
+    const { logRateLimitExceeded } = require('../utils/security-logger');
+    logRateLimitExceeded(undefined, req.path, req);
+    res.status(429).json({
+      error: 'Muitas tentativas de login. Por favor, tente novamente em alguns minutos.'
+    });
+  }
 });
 
 const router = Router();

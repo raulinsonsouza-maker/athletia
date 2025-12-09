@@ -70,14 +70,28 @@ router.post('/cakto', webhookLimiter, express.raw({ type: 'application/json' }),
     // Método 2: Verificar secret no JSON (fallback) - MANTIDO PARA COMPATIBILIDADE
     // SEGURANÇA: Logar uso do fallback para monitoramento
     if (!signatureValid && webhookData.secret) {
-      console.log('⚠️ [SEGURANÇA] Header HMAC não encontrado, usando fallback de validação por secret no JSON');
-      console.log('⚠️ [SEGURANÇA] IP da requisição:', req.ip || req.socket.remoteAddress);
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'] || 'unknown';
+      const timestamp = new Date().toISOString();
+      
+      console.log('⚠️ [SEGURANÇA] [MONITORAMENTO] Header HMAC não encontrado, usando fallback de validação por secret no JSON');
+      console.log('⚠️ [SEGURANÇA] [MONITORAMENTO] Detalhes da requisição:', {
+        timestamp,
+        ip: clientIp,
+        userAgent,
+        hasSecret: !!webhookData.secret,
+        event: webhookData.event || webhookData.type,
+        hasSignatureHeader: !!signature
+      });
+      
       if (webhookData.secret === process.env.CAKTO_WEBHOOK_SECRET) {
         signatureValid = true;
         validationMethod = 'json_secret';
-        console.log('⚠️ [SEGURANÇA] Validação por fallback aceita - considere migrar para HMAC apenas');
+        console.log('⚠️ [SEGURANÇA] [MONITORAMENTO] Validação por fallback aceita - MIGRAR PARA HMAC APENAS');
+        console.log('⚠️ [SEGURANÇA] [MONITORAMENTO] Este webhook deve ser atualizado para usar header x-cakto-signature');
       } else {
         console.log('❌ [SEGURANÇA] Secret no JSON não corresponde ao esperado');
+        console.log('❌ [SEGURANÇA] Possível tentativa de ataque ou webhook mal configurado');
       }
     }
 

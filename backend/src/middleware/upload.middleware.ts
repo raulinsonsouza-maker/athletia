@@ -2,7 +2,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { getUploadExerciciosPath } from '../utils/upload-paths';
-import { MAX_FILE_SIZE } from '../utils/file-validation';
+import { MAX_FILE_SIZE, validateMediaFile, ACCEPTED_MEDIA_TYPES } from '../utils/file-validation';
 
 // ============================================================================
 // UPLOAD DE IMAGEM DE GRUPO MUSCULAR VISUAL
@@ -130,3 +130,58 @@ export const uploadTreinoImagem = multer({
     fileSize: MAX_FILE_SIZE
   }
 });
+
+/**
+ * Middleware para validar magic bytes de arquivos de imagem após upload
+ * SEGURANÇA: Validação de magic bytes para prevenir upload de arquivos maliciosos
+ */
+export const validateImageMagicBytes = (req: any, res: any, next: any) => {
+  if (!req.file) {
+    return next();
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const detectedMimeType = validateMediaFile(fileBuffer);
+
+    if (!detectedMimeType) {
+      // Remover arquivo inválido
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(400).json({
+        error: 'Arquivo inválido ou corrompido. Magic bytes não correspondem a um formato válido.'
+      });
+    }
+
+    // Verificar se o tipo MIME detectado corresponde à extensão
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    
+    // Verificar se o tipo MIME detectado está nos tipos aceitos e se a extensão corresponde
+    const mimeTypeKey = detectedMimeType as keyof typeof ACCEPTED_MEDIA_TYPES;
+    const expectedExtensions = ACCEPTED_MEDIA_TYPES[mimeTypeKey];
+    
+    if (!expectedExtensions || !(expectedExtensions as readonly string[]).includes(ext)) {
+      // Remover arquivo com tipo MIME não correspondente
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(400).json({
+        error: `Tipo de arquivo não corresponde à extensão. Detectado: ${detectedMimeType}, esperado para ${ext}`
+      });
+    }
+
+    // Adicionar tipo MIME detectado ao req.file para uso posterior
+    req.file.detectedMimeType = detectedMimeType;
+    next();
+  } catch (error: any) {
+    // Em caso de erro, remover arquivo e retornar erro
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    return res.status(500).json({
+      error: 'Erro ao validar arquivo',
+      message: error.message
+    });
+  }
+};

@@ -36,6 +36,7 @@ import {
 import { authenticate } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
 import { verificarPlanoAtivo } from '../middleware/plano.middleware';
+import { validateUUIDParam } from '../middleware/validate-uuid.middleware';
 
 const router = Router();
 
@@ -67,28 +68,31 @@ router.get('/home', obterHomeTreinos);
 router.get('/plano-atual', obterPlanoAtual);
 router.post('/gerar', gerarTreinoDoDia);
 router.post('/versao-alternativa', gerarVersaoAlternativa);
-router.post('/exercicio/:id/concluir', concluirExercicioValidation, validateRequest, concluirExercicio);
-router.post('/:id/concluir', concluirTreino);
-router.get('/exercicio/:id/alternativas', obterAlternativas);
-router.post('/exercicio/:id/substituir', substituirExercicioValidation, validateRequest, substituirExercicio);
+// SEGURANÇA: Validar UUID em parâmetros de rota
+router.post('/exercicio/:id/concluir', validateUUIDParam('id'), concluirExercicioValidation, validateRequest, concluirExercicio);
+router.post('/:id/concluir', validateUUIDParam('id'), concluirTreino);
+router.get('/exercicio/:id/alternativas', validateUUIDParam('id'), obterAlternativas);
+router.post('/exercicio/:id/substituir', validateUUIDParam('id'), substituirExercicioValidation, validateRequest, substituirExercicio);
 router.get('/historico', buscarHistorico);
 router.get('/estatisticas', buscarEstatisticas);
 
 // Rotas de treino personalizado
 router.post('/personalizado', criarTreinoPersonalizado);
 router.get('/personalizado', listarTreinosPersonalizados);
-router.get('/personalizado/:id', buscarTreinoPersonalizado);
-router.put('/personalizado/:id', editarTreinoPersonalizado);
-router.delete('/personalizado/:id', deletarTreinoPersonalizado);
-router.post('/personalizado/:id/duplicar', duplicarTreinoPersonalizado);
+// SEGURANÇA: Validar UUID em parâmetros de rota
+router.get('/personalizado/:id', validateUUIDParam('id'), buscarTreinoPersonalizado);
+router.put('/personalizado/:id', validateUUIDParam('id'), editarTreinoPersonalizado);
+router.delete('/personalizado/:id', validateUUIDParam('id'), deletarTreinoPersonalizado);
+router.post('/personalizado/:id/duplicar', validateUUIDParam('id'), duplicarTreinoPersonalizado);
 
 // Rotas de templates personalizados
 router.post('/template', criarTemplatePersonalizado);
 router.get('/template', listarTemplatesPersonalizados);
-router.get('/template/:id', buscarTemplatePersonalizado);
-router.put('/template/:id', editarTemplatePersonalizado);
-router.delete('/template/:id', deletarTemplatePersonalizado);
-router.post('/template/:id/aplicar', aplicarTemplatePersonalizado);
+// SEGURANÇA: Validar UUID em parâmetros de rota
+router.get('/template/:id', validateUUIDParam('id'), buscarTemplatePersonalizado);
+router.put('/template/:id', validateUUIDParam('id'), editarTemplatePersonalizado);
+router.delete('/template/:id', validateUUIDParam('id'), deletarTemplatePersonalizado);
+router.post('/template/:id/aplicar', validateUUIDParam('id'), aplicarTemplatePersonalizado);
 
 // Rotas de treino rápido
 router.post('/rapido', criarTreinoRapido);

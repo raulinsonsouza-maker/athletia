@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
+import { logAuthFailed, logSecurityEvent, SecurityEventType, SecurityEventSeverity } from '../utils/security-logger';
 
 // Validar variáveis de ambiente críticas para segurança
 if (!process.env.JWT_SECRET) {
@@ -203,6 +204,8 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
+      // SEGURANÇA: Logar tentativa de login falhada
+      logAuthFailed(emailHash, 'Usuário não encontrado', req);
       console.log(`[LOGIN] Usuário não encontrado: ${emailHash}`);
       return res.status(401).json({
         error: 'Usuário ou senha inválidos'
@@ -564,7 +567,20 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
 
 // Ativar plano após pagamento e gerar treinos
 export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
+  const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+  const timestamp = new Date().toISOString();
+  
   try {
+    // SEGURANÇA: Log de monitoramento para todas as tentativas
+    console.log(`[Ativação Plano] [${requestId}] Tentativa de ativação de plano:`, {
+      timestamp,
+      ip: clientIp,
+      hasAuth: !!req.userId,
+      hasUserIdInBody: !!req.body.userId,
+      userAgent: req.headers['user-agent'] || 'unknown'
+    });
+
     // SEGURANÇA: Se autenticado via JWT, usar req.userId (mais seguro)
     // Se não autenticado, permitir userId do body apenas para chamadas internas (webhooks)
     const userId = req.userId || req.body.userId;
@@ -572,6 +588,7 @@ export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
 
     // Validações
     if (!userId || !plano) {
+      console.log(`[Ativação Plano] [${requestId}] Validação falhou: userId ou plano ausente`);
       return res.status(400).json({
         error: 'UserId e plano são obrigatórios'
       });
@@ -579,8 +596,22 @@ export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
 
     // SEGURANÇA: Se autenticado via JWT, garantir que userId do body (se presente) corresponde ao token
     if (req.userId && req.body.userId && req.userId !== req.body.userId) {
+      console.warn(`[Ativação Plano] [${requestId}] [SEGURANÇA] Tentativa de ativar plano de outro usuário:`, {
+        authenticatedUserId: req.userId,
+        requestedUserId: req.body.userId,
+        ip: clientIp
+      });
       return res.status(403).json({
         error: 'Não autorizado a ativar plano de outro usuário'
+      });
+    }
+
+    // SEGURANÇA: Log quando userId vem do body sem autenticação (chamada interna)
+    if (!req.userId && req.body.userId) {
+      console.log(`[Ativação Plano] [${requestId}] [MONITORAMENTO] Chamada sem autenticação JWT (chamada interna):`, {
+        userId: req.body.userId,
+        ip: clientIp,
+        userAgent: req.headers['user-agent'] || 'unknown'
       });
     }
 
@@ -655,6 +686,13 @@ export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
       // O treino será gerado automaticamente quando o usuário acessar a página de treino
     }
 
+    console.log(`[Ativação Plano] [${requestId}] Plano ativado com sucesso:`, {
+      userId: userAtualizado.id,
+      email: userAtualizado.email?.substring(0, 3) + '***',
+      plano: userAtualizado.plano,
+      authenticated: !!req.userId
+    });
+
     res.status(200).json({
       message: 'Plano ativado com sucesso. Treinos gerados automaticamente.',
       user: {
@@ -666,7 +704,11 @@ export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
       }
     });
   } catch (error: any) {
-    console.error('Erro ao ativar plano:', error);
+    console.error(`[Ativação Plano] [${requestId}] Erro ao ativar plano:`, {
+      error: error.message,
+      stack: error.stack,
+      ip: clientIp
+    });
     res.status(500).json({
       error: 'Erro ao ativar plano',
       message: error.message

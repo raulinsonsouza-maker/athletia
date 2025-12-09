@@ -2,6 +2,8 @@ import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import * as treinoPersonalizadoService from '../services/treino-personalizado.service';
 import { criarTreinoPersonalizadoManual, aplicarTemplatePersonalizado as aplicarTemplateService, aplicarTreinoRecorrente as aplicarRecorrenteService } from '../services/inteligencia-treinos.service';
+import { validateTreinoPersonalizadoOwnership } from '../utils/ownership-validator';
+import { logIDORAttempt } from '../utils/security-logger';
 
 // Criar treino personalizado - USA CORE SERVICE
 export const criarTreinoPersonalizado = async (req: AuthRequest, res: Response) => {
@@ -79,6 +81,16 @@ export const buscarTreinoPersonalizado = async (req: AuthRequest, res: Response)
     const userId = req.userId!;
     const { id } = req.params;
 
+    // SEGURANÇA: Validar ownership antes de buscar
+    const hasAccess = await validateTreinoPersonalizadoOwnership(id, userId);
+    if (!hasAccess) {
+      logIDORAttempt(userId, 'treino-personalizado', id, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para acessar este treino'
+      });
+    }
+
     const treino = await treinoPersonalizadoService.buscarTreinoPersonalizado(userId, id);
 
     res.json(treino);
@@ -102,6 +114,16 @@ export const editarTreinoPersonalizado = async (req: AuthRequest, res: Response)
     const userId = req.userId!;
     const { id } = req.params;
     const { nome, data, exercicios } = req.body;
+
+    // SEGURANÇA: Validar ownership antes de editar
+    const hasAccess = await validateTreinoPersonalizadoOwnership(id, userId);
+    if (!hasAccess) {
+      logIDORAttempt(userId, 'treino-personalizado', id, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para editar este treino'
+      });
+    }
 
     const treino = await treinoPersonalizadoService.editarTreinoPersonalizado(userId, id, {
       nome,
@@ -133,6 +155,16 @@ export const deletarTreinoPersonalizado = async (req: AuthRequest, res: Response
     const userId = req.userId!;
     const { id } = req.params;
 
+    // SEGURANÇA: Validar ownership antes de deletar
+    const hasAccess = await validateTreinoPersonalizadoOwnership(id, userId);
+    if (!hasAccess) {
+      logIDORAttempt(userId, 'treino-personalizado', id, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para deletar este treino'
+      });
+    }
+
     await treinoPersonalizadoService.deletarTreinoPersonalizado(userId, id);
 
     res.json({
@@ -162,6 +194,16 @@ export const duplicarTreinoPersonalizado = async (req: AuthRequest, res: Respons
     if (!data) {
       return res.status(400).json({
         error: 'Data é obrigatória para duplicar treino'
+      });
+    }
+
+    // SEGURANÇA: Validar ownership antes de duplicar
+    const hasAccess = await validateTreinoPersonalizadoOwnership(id, userId);
+    if (!hasAccess) {
+      logIDORAttempt(userId, 'treino-personalizado', id, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para duplicar este treino'
       });
     }
 

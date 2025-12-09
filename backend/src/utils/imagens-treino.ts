@@ -220,33 +220,4 @@ export function obterImagemTreino(grupos: string[], genero?: Genero): string {
   return obterImagemGrupo(grupoPrincipal, genero);
 }
 
-/**
- * Obtém imagem baseada no nome do treino (para retrocompatibilidade)
- */
-export function obterImagemPorNomeTreino(nome: string, genero?: Genero): string {
-  const generoNorm = normalizarGenero(genero);
-  const nomeLower = nome.toLowerCase();
-  
-  // Tentar identificar categoria pelo nome
-  for (const [categoria, imagens] of Object.entries(IMAGENS_CATEGORIAS)) {
-    if (nomeLower.includes(categoria.toLowerCase())) {
-      return imagens[generoNorm];
-    }
-  }
-  
-  // Tentar identificar grupo muscular pelo nome
-  for (const [grupo, imagens] of Object.entries(IMAGENS_GRUPOS)) {
-    if (nomeLower.includes(grupo.toLowerCase())) {
-      return imagens[generoNorm];
-    }
-  }
-  
-  return IMAGEM_PADRAO[generoNorm];
-}
-
-export default {
-  obterImagemGrupo,
-  obterImagemTreino,
-  obterImagemPorNomeTreino
-};
 

@@ -323,8 +323,6 @@ async function adicionarCardioEAlongamento(exercicios: TreinoExercicioInput[]) {
   return lista
 }
 
-// Função gerarTreinoPersonalizado removida - usar gerarTreinoDoDiaUnico do treino-engine.service.ts
-
 // Re-exportar do treino-engine para compatibilidade
 export { garantirPlanoSemanal as garantirPlanoSemanalInteligente } from './treino-engine.service'
 

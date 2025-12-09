@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -39,7 +40,7 @@ interface LineChartProps {
   title?: string
 }
 
-export function LineChart({ data, title }: LineChartProps) {
+export const LineChart = memo(function LineChart({ data, title }: LineChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -77,7 +78,7 @@ export function LineChart({ data, title }: LineChartProps) {
   }
 
   return <Line data={data} options={options} />
-}
+})
 
 interface BarChartProps {
   data: {
@@ -93,7 +94,7 @@ interface BarChartProps {
   title?: string
 }
 
-export function BarChart({ data, title }: BarChartProps) {
+export const BarChart = memo(function BarChart({ data, title }: BarChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -131,7 +132,7 @@ export function BarChart({ data, title }: BarChartProps) {
   }
 
   return <Bar data={data} options={options} />
-}
+})
 
 interface DoughnutChartProps {
   data: {
@@ -147,7 +148,7 @@ interface DoughnutChartProps {
   title?: string
 }
 
-export function DoughnutChart({ data, title }: DoughnutChartProps) {
+export const DoughnutChart = memo(function DoughnutChart({ data, title }: DoughnutChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -168,5 +169,5 @@ export function DoughnutChart({ data, title }: DoughnutChartProps) {
   }
 
   return <Doughnut data={data} options={options} />
-}
+})
 

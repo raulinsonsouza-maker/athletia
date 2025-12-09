@@ -23,8 +23,6 @@ import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
-import { slugify } from './utils/slugify';
-import { getPlaceholderMedia } from './utils/media-placeholders';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -61,17 +59,48 @@ const generalLimiter = rateLimit({
   skipSuccessfulRequests: false // Manter contagem de todas as requisições para proteção geral
 });
 
-// Middlewares
+// Rate limiting específico para endpoints sensíveis
+const sensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // Máximo 10 requisições por IP
+  message: {
+    error: 'Muitas tentativas. Por favor, tente novamente mais tarde.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: any) => req.method === 'OPTIONS'
+});
+
+// Middlewares de segurança
 app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", FRONTEND_URL],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000, // 1 ano
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// SEGURANÇA: Limitar tamanho de payload para prevenir DoS
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // Aplicar rate limiting geral em todas as rotas
 app.use('/api/', generalLimiter);

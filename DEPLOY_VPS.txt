@@ -1,17 +1,12 @@
 # DEPLOY NA VPS - COMANDO ÚNICO
 
-cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh && npm install && npm run build && bash scripts/criar-estrutura-upload.sh && bash scripts/renomear-media-producao.sh && pm2 restart backend
+cd /opt/athletia && git pull origin main && cd backend && chmod +x scripts/*.sh && npm install && npm run build && pm2 restart backend
 
 # Isso vai:
 # 1. Fazer pull das alterações
 # 2. Instalar dependências
 # 3. Buildar o backend
-# 4. Criar estrutura de diretórios upload/
-# 5. Renomear arquivos exercicio.* para media.* (CORREÇÃO CRÍTICA!)
-# 6. Reiniciar o backend
-
-# Para validar (opcional):
-bash scripts/validar-sistema-upload.sh
+# 4. Reiniciar o backend
 
 # ============================================================================
 # CORREÇÃO URGENTE - RENOMEAR ARQUIVOS DE MÍDIA

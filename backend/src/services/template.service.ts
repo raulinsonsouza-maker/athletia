@@ -379,8 +379,6 @@ export async function adaptarTemplate(
   return exerciciosAdaptados;
 }
 
-// Função calcularCargaInicial removida - usar calcularCargaExercicio de workout-intelligence.service.ts diretamente
-
 /**
  * Cria um treino a partir de um template adaptado
  */

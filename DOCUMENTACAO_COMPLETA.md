@@ -1239,10 +1239,12 @@ Localizados em `backend/scripts/`:
 3.  **`renomear-media-producao.sh`**
     - *Uso:* `./scripts/renomear-media-producao.sh`
     - *Função:* Utilitário para padronizar nomes de arquivos de mídia antigos (de `exercicio.*` para `media.*`).
+    - *Nota:* Pode ser necessário em migrações de produção.
 
 4.  **`ensure-upload-dirs.sh`**
     - *Uso:* `./scripts/ensure-upload-dirs.sh`
     - *Função:* Garante que a estrutura de pastas de upload exista e tenha permissões corretas.
+    - *Nota:* Pode ser necessário em setup inicial de produção.
 
 ---
 

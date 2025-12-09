@@ -3,13 +3,21 @@
  * Retorna apenas o que o frontend realmente precisa
  */
 
-export interface UserPublicDTO {
-  id: string;
-  email: string;
-  nome: string | null;
-  role: 'USER' | 'ADMIN';
-  createdAt: Date;
+/**
+ * Valida e converte string para Date
+ * Retorna null se a data for inválida
+ */
+export function parseAndValidateDate(dateString: any): Date | null {
+  if (!dateString) return null;
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+  
+  return date;
 }
+
 
 export interface UserAdminDTO {
   id: string;
@@ -30,18 +38,6 @@ export interface UserProfileDTO {
   pesoAtual: number | null;
 }
 
-/**
- * Converte User do Prisma para DTO público (sem dados sensíveis)
- */
-export function toUserPublicDTO(user: any): UserPublicDTO {
-  return {
-    id: user.id,
-    email: user.email,
-    nome: user.nome,
-    role: user.role,
-    createdAt: user.createdAt
-  };
-}
 
 /**
  * Converte User do Prisma para DTO admin (com dados administrativos)

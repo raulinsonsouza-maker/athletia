@@ -739,10 +739,9 @@ export async function gerarTreinoABC(
   return treinoCompleto;
 }
 
-/**
- * Determina grupos musculares do dia de forma simples
- */
-function determinarGruposMuscularesSimples(
+// Função determinarGruposMuscularesSimples removida - não utilizada
+
+function _determinarGruposMuscularesSimples_NAO_USADA(
   experiencia: string,
   frequenciaSemanal: number,
   data: Date
@@ -822,29 +821,6 @@ function determinarGruposMuscularesSimples(
   else grupos = ['Costas', 'Bíceps', 'Abdômen'];
   console.log(`[OK] Default A-B-C selecionado: Ciclo ${ciclo + 1}`);
   return grupos;
-}
-
-/**
- * Filtra grupos musculares baseado em lesões
- */
-function filtrarGruposPorLesoes(grupos: string[], lesoes: string[]): string[] {
-  if (lesoes.length === 0) return grupos;
-
-  const gruposEvitar = new Set<string>();
-  const mapeamentoLesoes: Record<string, string[]> = {
-    'Joelho': ['Quadríceps', 'Posteriores', 'Panturrilhas'],
-    'Ombro': ['Ombros', 'Peito', 'Tríceps'],
-    'Coluna': ['Costas', 'Posteriores', 'Abdômen'],
-    'Pulso': ['Bíceps', 'Tríceps', 'Ombros'],
-    'Tornozelo': ['Panturrilhas', 'Quadríceps', 'Posteriores']
-  };
-
-  lesoes.forEach(lesao => {
-    const gruposAfetados = mapeamentoLesoes[lesao] || [];
-    gruposAfetados.forEach(grupo => gruposEvitar.add(grupo));
-  });
-
-  return grupos.filter(grupo => !gruposEvitar.has(grupo));
 }
 
 /**
@@ -1007,11 +983,9 @@ function determinarTipoTreino(experiencia: string, frequenciaSemanal: number): s
   return 'A-B-C';
 }
 
-/**
- * Verifica se é a primeira semana do usuário (7 primeiros dias desde o primeiro treino)
- * Primeira semana sempre é moderada para coleta de dados
- */
-async function verificarPrimeiraSemana(userId: string): Promise<boolean> {
+// Função verificarPrimeiraSemana removida - não utilizada
+
+async function _verificarPrimeiraSemana_NAO_USADA(userId: string): Promise<boolean> {
   // Buscar primeiro treino do usuário
   const primeiroTreino = await prisma.treino.findFirst({
     where: { userId },
@@ -1216,10 +1190,9 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
 }
 
 
-/**
- * Fallback: Gera treinos usando método dinâmico (método antigo)
- */
-async function gerarTreinos30DiasFallback(userId: string): Promise<any[]> {
+// Função gerarTreinos30DiasFallback removida - não utilizada (substituída por gerarTreinos30Dias)
+
+async function _gerarTreinos30DiasFallback_NAO_USADA(userId: string): Promise<any[]> {
   console.log(`[INFO] Usando método fallback (geração dinâmica)...`);
   
   const perfil = await prisma.perfil.findUnique({ where: { userId } });

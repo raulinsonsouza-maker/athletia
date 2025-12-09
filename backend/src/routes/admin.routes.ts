@@ -35,7 +35,7 @@ import {
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadImagemGrupo, uploadTreinoImagem } from '../middleware/upload.middleware';
+import { uploadImagemGrupo, uploadTreinoImagem, validateImageMagicBytes } from '../middleware/upload.middleware';
 import { normalizeMediaUrls } from '../middleware/normalize-media-urls.middleware';
 
 const router = Router();
@@ -272,6 +272,7 @@ router.post(
       next();
     });
   },
+  validateImageMagicBytes, // SEGURANÇA: Validar magic bytes antes de processar
   uploadImagemGrupoAdmin
 );
 
@@ -301,6 +302,7 @@ router.post(
       next();
     });
   },
+  validateImageMagicBytes, // SEGURANÇA: Validar magic bytes antes de processar
   uploadImagemTreinoPadrao
 );
 

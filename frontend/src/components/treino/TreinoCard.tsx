@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Treino, VarianteCard, StatusTreino } from '../../types/treino.types'
 import {
   formatarDataTreino,
@@ -19,7 +20,7 @@ interface TreinoCardProps {
   className?: string
 }
 
-export default function TreinoCard({
+const TreinoCard = memo(function TreinoCard({
   treino,
   variante = 'completo',
   onClick,
@@ -303,5 +304,7 @@ export default function TreinoCard({
       )}
     </div>
   )
-}
+})
+
+export default TreinoCard
 
