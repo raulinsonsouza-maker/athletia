@@ -11,6 +11,7 @@ import FeedbackCard from '../components/onboarding/FeedbackCard'
 import LandingHero from '../components/landing/LandingHero'
 import ComparisonTable from '../components/landing/ComparisonTable'
 import FAQItem from '../components/landing/FAQItem'
+import AppPreview from '../components/landing/AppPreview'
 import StepIdade from '../components/onboarding/steps/StepIdade'
 import StepSexo from '../components/onboarding/steps/StepSexo'
 import { DEFAULT_VALUES } from '../constants/onboarding.constants'
@@ -197,7 +198,75 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 3 – PROMESSA CENTRAL */}
+          {/* SEÇÃO 3 – PREVIEW DO APP (GERAR DESEJO) */}
+          <section aria-label="Preview do aplicativo AthletIA" className="py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Texto e CTA */}
+                <div className="space-y-6 md:space-y-8 text-center lg:text-left order-2 lg:order-1">
+                  <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+                    <span className="text-sm font-semibold text-primary">✨ Interface Intuitiva e Profissional</span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-light leading-tight">
+                    Veja Como É Fácil Usar o AthletIA
+                  </h2>
+                  <p className="text-lg md:text-xl text-light-muted leading-relaxed">
+                    Esta é a interface real que você vai usar todos os dias. Treinos organizados, progresso visual e tudo na palma da sua mão.
+                  </p>
+                  <div className="space-y-4 pt-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mt-0.5">
+                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Treinos sempre organizados</h3>
+                        <p className="text-sm md:text-base text-light-muted">Seu plano semanal completo, com todos os exercícios detalhados e prontos para executar.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mt-0.5">
+                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Acompanhe seu progresso em tempo real</h3>
+                        <p className="text-sm md:text-base text-light-muted">Veja sua evolução dia a dia, com gráficos e estatísticas que mostram o quanto você está evoluindo.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center mt-0.5">
+                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-base md:text-lg font-semibold text-light mb-1">Treino rápido quando precisar</h3>
+                        <p className="text-sm md:text-base text-light-muted">Crie um treino personalizado em segundos para quando você tem pouco tempo ou quer focar em grupos específicos.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-4">
+                    <button
+                      onClick={iniciarOnboarding}
+                      className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 w-full sm:w-auto"
+                    >
+                      Quero ter isso agora
+                    </button>
+                  </div>
+                </div>
+
+                {/* Preview do App */}
+                <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+                  <AppPreview className="transform hover:scale-105 transition-transform duration-500" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* SEÇÃO 4 – PROMESSA CENTRAL */}
           <section aria-label="Benefícios do treino personalizado inteligente" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="max-w-3xl space-y-4 text-center md:text-left">
@@ -257,7 +326,7 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 4 – COMO FUNCIONA */}
+          {/* SEÇÃO 5 – COMO FUNCIONA */}
           <section id="como-funciona" aria-label="Como funciona o sistema de treino personalizado" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="text-center space-y-3">
