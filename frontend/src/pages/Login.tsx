@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -8,8 +8,23 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const navigate = useNavigate()
+
+  // Redirecionar após login bem-sucedido baseado no plano
+  useEffect(() => {
+    if (user) {
+      const planoValido = user.planoAtivo && (
+        !user.dataExpiracao || new Date(user.dataExpiracao) > new Date()
+      )
+      
+      if (planoValido) {
+        navigate('/meu-plano', { replace: true })
+      } else {
+        navigate('/checkout', { replace: true })
+      }
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,7 +33,7 @@ export default function Login() {
 
     try {
       await login(email, senha)
-      navigate('/meu-plano')
+      // O useEffect vai redirecionar baseado no plano ativo
     } catch (err: any) {
       console.error('Erro no login:', err)
 

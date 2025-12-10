@@ -1,27 +1,23 @@
-import { useOnboardingProgress } from '../../hooks/onboarding/useOnboardingProgress'
-import { OnboardingStep } from '../../types/onboarding.types'
-
 interface OnboardingHeaderProps {
-  step: OnboardingStep
+  step?: number
 }
 
-export default function OnboardingHeader({ step }: OnboardingHeaderProps) {
-  const { progress, currentStepDisplay, totalSteps } = useOnboardingProgress(step)
-
+export default function OnboardingHeader({}: OnboardingHeaderProps) {
   return (
     <div className="w-full py-4 md:py-5 px-4 md:px-6 border-b border-grey/30 bg-dark/95 backdrop-blur-md">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-3">
-          <div className="text-lg md:text-xl font-display font-bold text-primary">AthletIA</div>
-          <div className="text-sm md:text-base text-light-muted">
-            Passo {currentStepDisplay} de {totalSteps}
+        <div className="flex items-center">
+          <div className="flex items-center gap-2.5 md:gap-3">
+            <img
+              src="/favicon.svg"
+              alt="Logo AthletIA"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-2xl shadow-lg"
+              loading="eager"
+              width="40"
+              height="40"
+            />
+            <div className="text-lg md:text-xl font-display font-bold text-primary">AthletIA</div>
           </div>
-        </div>
-        <div className="w-full bg-dark-lighter rounded-full h-1.5 overflow-hidden">
-          <div
-            className="bg-primary h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          ></div>
         </div>
       </div>
     </div>

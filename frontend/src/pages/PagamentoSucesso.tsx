@@ -48,6 +48,17 @@ export default function PagamentoSucesso() {
               plano: response.data.user.plano
             })
           }
+
+          // Disparar evento de conversão do Google Ads quando plano estiver ativo
+          if (response.data.user.planoAtivo && typeof window !== 'undefined' && (window as any).gtag) {
+            console.log('✅ Disparando evento de conversão do Google Ads na página de pagamento sucesso')
+            ;(window as any).gtag('event', 'conversion', {
+              'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+              'value': 1.0,
+              'currency': 'BRL',
+              'transaction_id': ''
+            })
+          }
         } else {
           setError('Não foi possível verificar o status do pagamento. Mas não se preocupe, se o pagamento foi aprovado, seu plano será ativado em breve.')
         }
