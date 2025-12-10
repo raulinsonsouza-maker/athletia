@@ -1,5 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import LegalModal from '../components/legal/LegalModal'
+import TermosContent from '../components/legal/TermosContent'
+import PrivacidadeContent from '../components/legal/PrivacidadeContent'
+import CookiesContent from '../components/legal/CookiesContent'
 import MobileNumberPicker from '../components/MobileNumberPicker'
 import { OnboardingData, OnboardingStep } from '../types/onboarding.types'
 import { useOnboardingNavigation } from '../hooks/onboarding/useOnboardingNavigation'
@@ -38,6 +42,11 @@ export default function Landing() {
     problemasAnteriores: [],
     objetivosAdicionais: []
   })
+  
+  // Estados para modais legais
+  const [modalTermos, setModalTermos] = useState(false)
+  const [modalPrivacidade, setModalPrivacidade] = useState(false)
+  const [modalCookies, setModalCookies] = useState(false)
 
   // Hooks customizados
   const { nextStep, prevStep } = useOnboardingNavigation(step, setStep)
@@ -648,15 +657,24 @@ export default function Landing() {
                 <span className="text-primary font-display font-bold text-lg md:text-xl">AthletIA</span>
               </div>
               <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-6 text-xs md:text-sm text-light-muted">
-                <Link to="/termos" className="hover:text-primary transition-colors">
+                <button
+                  onClick={() => setModalTermos(true)}
+                  className="hover:text-primary transition-colors"
+                >
                   Termos
-                </Link>
-                <Link to="/privacidade" className="hover:text-primary transition-colors">
+                </button>
+                <button
+                  onClick={() => setModalPrivacidade(true)}
+                  className="hover:text-primary transition-colors"
+                >
                   Privacidade
-                </Link>
-                <Link to="/cookies" className="hover:text-primary transition-colors">
+                </button>
+                <button
+                  onClick={() => setModalCookies(true)}
+                  className="hover:text-primary transition-colors"
+                >
                   Cookies
-                </Link>
+                </button>
               </div>
             </div>
             <div className="text-[11px] md:text-xs text-light-muted space-y-1">
@@ -665,6 +683,31 @@ export default function Landing() {
             </div>
           </div>
         </footer>
+
+        {/* Modais Legais */}
+        <LegalModal
+          isOpen={modalTermos}
+          onClose={() => setModalTermos(false)}
+          title="Termos de Uso"
+        >
+          <TermosContent />
+        </LegalModal>
+
+        <LegalModal
+          isOpen={modalPrivacidade}
+          onClose={() => setModalPrivacidade(false)}
+          title="Política de Privacidade"
+        >
+          <PrivacidadeContent />
+        </LegalModal>
+
+        <LegalModal
+          isOpen={modalCookies}
+          onClose={() => setModalCookies(false)}
+          title="Política de Cookies"
+        >
+          <CookiesContent />
+        </LegalModal>
       </div>
     )
   }
