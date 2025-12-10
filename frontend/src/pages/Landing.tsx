@@ -125,13 +125,6 @@ export default function Landing() {
     setStep(1)
   }, [])
 
-  const scrollToSection = useCallback((id: string) => {
-    const el = document.getElementById(id)
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }, [])
-
   // Tela inicial - Landing Page Completa
   if (step === 0) {
     return (
