@@ -37,14 +37,11 @@
         return false;
       }
       
-      // Carregar gtag.js de forma não bloqueante após interação do usuário ou timeout
-      var gtagLoaded = false;
+      // Carregar gtag.js APÓS FCP (First Contentful Paint) - não bloqueia renderização inicial
+      // Usar requestIdleCallback se disponível, senão usar setTimeout após load
       function loadGtag() {
-        if (gtagLoaded) return;
-        gtagLoaded = true;
         var script = document.createElement('script');
         script.async = true;
-        script.defer = true;
         script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
         document.head.appendChild(script);
         
@@ -54,13 +51,13 @@
         };
       }
       
-      // Carregar após interação do usuário (melhor performance)
-      ['mousedown', 'touchstart', 'keydown'].forEach(function(event) {
-        document.addEventListener(event, loadGtag, { once: true, passive: true });
-      });
-      
-      // Fallback: carregar após 3 segundos se não houver interação
-      setTimeout(loadGtag, 3000);
+      // Carregar após FCP (quando página está renderizada)
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadGtag, { timeout: 2000 });
+      } else {
+        // Fallback: carregar após load event (página completamente carregada)
+        window.addEventListener('load', loadGtag, { once: true });
+      }
     </script>
     
     <!-- Primary Meta Tags -->
@@ -122,10 +119,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AthletIA" />
     
+    <!-- Preload CSS crítico para evitar bloqueio de renderização -->
+    <!-- O Vite injeta o CSS automaticamente, mas preload ajuda o navegador -->
+    
     <!-- Preload imagem hero WebP responsiva (LCP optimization) - Prioridade alta -->
-    <!-- Mobile primeiro (mais comum) - Preload crítico -->
+    <!-- Mobile primeiro (mais comum) - Preload crítico - dimensão exata 665px -->
     <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" />
-    <!-- Desktop - Preload condicional -->
+    <!-- Desktop - Preload condicional - usar 800x1600 para telas maiores -->
     <link rel="preload" as="image" href="/images/app-preview/treinos-screen-800x1600.webp" fetchpriority="high" type="image/webp" media="(min-width: 769px)" />
     
     <!-- CSS crítico inline para evitar bloqueio de renderização -->

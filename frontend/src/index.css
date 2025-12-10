@@ -27,11 +27,13 @@
 
   h1 {
     font-size: 2.25rem;
+    min-height: 3.5rem; /* Reservar espaço fixo para evitar CLS */
   }
   
   @media (min-width: 768px) {
     h1 {
       font-size: 3rem;
+      min-height: 4rem; /* Altura maior em desktop */
     }
   }
 
