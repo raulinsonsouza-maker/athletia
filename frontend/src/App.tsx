@@ -19,6 +19,9 @@ import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
 import Progresso from './pages/Progresso'
+import Termos from './pages/Termos'
+import Privacidade from './pages/Privacidade'
+import Cookies from './pages/Cookies'
 
 function App() {
   return (
@@ -33,6 +36,9 @@ function App() {
           <Route path="/pagamento-sucesso" element={<PagamentoSucesso />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/termos" element={<Termos />} />
+          <Route path="/privacidade" element={<Privacidade />} />
+          <Route path="/cookies" element={<Cookies />} />
           
           {/* Rotas protegidas */}
           <Route path="/dashboard" element={<Navigate to="/meu-plano" replace />} />
