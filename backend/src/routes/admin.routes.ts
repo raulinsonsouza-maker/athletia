@@ -13,6 +13,7 @@ import {
   simularPagamentoUsuario,
   obterEstatisticas,
   obterDetalhesUsuario,
+  redefinirSenhaUsuario,
   listarExercicios,
   obterExercicio,
   criarExercicio,
@@ -234,6 +235,7 @@ router.post('/usuarios', criarUsuarioValidation, validateRequest, criarUsuario);
 router.put('/usuarios/:id', atualizarUsuarioValidation, validateRequest, atualizarUsuario);
 router.delete('/usuarios/:id', desativarUsuario);
 router.post('/usuarios/:id/reativar', reativarUsuario);
+router.post('/usuarios/:id/redefinir-senha', redefinirSenhaUsuario);
 router.post('/usuarios/:id/simular-pagamento', simularPagamentoUsuario);
 router.get('/estatisticas', obterEstatisticas);
 

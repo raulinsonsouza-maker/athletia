@@ -601,6 +601,7 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
         planoAtivo: usuario.planoAtivo,
         dataPagamento: usuario.dataPagamento,
         dataExpiracao: usuario.dataExpiracao,
+        senhaHash: usuario.senhaHash ? `${usuario.senhaHash.substring(0, 20)}...` : null, // Mostrar apenas início do hash para debug
         createdAt: usuario.createdAt,
         updatedAt: usuario.updatedAt
       },
@@ -656,6 +657,76 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
     console.error('Erro ao obter detalhes do usuário:', error);
     res.status(500).json({
       error: 'Erro ao obter detalhes do usuário',
+      message: error.message
+    });
+  }
+};
+
+// Redefinir senha do usuário (apenas admin)
+export const redefinirSenhaUsuario = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { novaSenha } = req.body;
+
+    if (!novaSenha) {
+      return res.status(400).json({
+        error: 'Nova senha é obrigatória'
+      });
+    }
+
+    // Validar força da senha
+    if (novaSenha.length < 8) {
+      return res.status(400).json({
+        error: 'A senha deve ter no mínimo 8 caracteres'
+      });
+    }
+
+    // Verificar se tem pelo menos 1 letra e 1 número
+    const hasLetter = /[a-zA-Z]/.test(novaSenha);
+    const hasNumber = /[0-9]/.test(novaSenha);
+
+    if (!hasLetter || !hasNumber) {
+      return res.status(400).json({
+        error: 'A senha deve conter pelo menos uma letra e um número'
+      });
+    }
+
+    // Verificar se usuário existe
+    const usuario = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (!usuario) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    // Hash da nova senha
+    const senhaHash = await bcrypt.hash(novaSenha.trim(), 10);
+
+    // Atualizar senha do usuário
+    await prisma.user.update({
+      where: { id },
+      data: { senhaHash }
+    });
+
+    // Invalidar todos os refresh tokens do usuário (segurança)
+    await prisma.refreshToken.deleteMany({
+      where: { userId: id }
+    });
+
+    console.log(`[ADMIN] Senha redefinida pelo admin ${req.userId} para usuário ${id} (${usuario.email.substring(0, 3)}***)`);
+
+    res.status(200).json({
+      message: 'Senha redefinida com sucesso',
+      usuarioId: id
+    });
+
+  } catch (error: any) {
+    console.error('Erro ao redefinir senha do usuário:', error);
+    res.status(500).json({
+      error: 'Erro ao redefinir senha do usuário',
       message: error.message
     });
   }

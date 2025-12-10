@@ -42,6 +42,7 @@ interface UserDetails {
     planoAtivo: boolean
     dataPagamento: string | null
     dataExpiracao: string | null
+    senhaHash?: string | null
     ativo?: boolean
     createdAt: string
     updatedAt: string
@@ -217,6 +218,9 @@ export default function Admin() {
   const [showSimularPagamentoModal, setShowSimularPagamentoModal] = useState(false)
   const [planoSimulacao, setPlanoSimulacao] = useState<'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL'>('MENSAL')
   const [simulandoPagamento, setSimulandoPagamento] = useState(false)
+  const [showRedefinirSenhaModal, setShowRedefinirSenhaModal] = useState(false)
+  const [novaSenha, setNovaSenha] = useState('')
+  const [redefinindoSenha, setRedefinindoSenha] = useState(false)
 
   useEffect(() => {
     verificarAdmin()
@@ -1534,6 +1538,23 @@ export default function Admin() {
                                 : 'Não informado'}
                             </p>
                           </div>
+                          <div className="space-y-1 md:col-span-2">
+                            <label className="text-xs font-medium text-light-muted uppercase tracking-wide">Senha (Hash)</label>
+                            <div className="flex items-center gap-3">
+                              <p className="text-base text-light font-mono text-sm">
+                                {userDetails.usuario.senhaHash || 'Não disponível'}
+                              </p>
+                              <button
+                                onClick={() => setShowRedefinirSenhaModal(true)}
+                                className="btn-primary text-xs px-3 py-1.5"
+                              >
+                                Redefinir Senha
+                              </button>
+                            </div>
+                            <p className="text-xs text-light-muted mt-1">
+                              A senha está armazenada como hash (criptografada) por segurança. Use o botão acima para redefinir.
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -2567,6 +2588,103 @@ export default function Admin() {
                   ) : (
                     'Confirmar e Enviar E-mail'
                   )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Redefinir Senha */}
+      {showRedefinirSenhaModal && userDetails && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowRedefinirSenhaModal(false)}
+        >
+          <div
+            className="card max-w-md w-full animate-scale-in border border-primary/30"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-grey/30">
+              <h3 className="text-xl font-display font-bold text-light">
+                Redefinir Senha do Usuário
+              </h3>
+              <button
+                onClick={() => setShowRedefinirSenhaModal(false)}
+                className="btn-secondary p-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-light-muted mb-2">
+                  Usuário: <span className="text-light font-medium">{userDetails.usuario.email}</span>
+                </p>
+                <p className="text-xs text-light-muted mb-4">
+                  A nova senha deve ter no mínimo 8 caracteres, com pelo menos uma letra e um número.
+                </p>
+              </div>
+
+              <label className="block space-y-2">
+                <span className="text-sm font-medium text-light">Nova Senha</span>
+                <input
+                  type="password"
+                  value={novaSenha}
+                  onChange={(e) => setNovaSenha(e.target.value)}
+                  className="w-full px-4 py-2 bg-dark-card border border-grey/30 rounded-lg text-light focus:ring-primary focus:border-primary outline-none"
+                  placeholder="Digite a nova senha"
+                  disabled={redefinindoSenha}
+                />
+              </label>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowRedefinirSenhaModal(false)
+                    setNovaSenha('')
+                  }}
+                  className="btn-secondary flex-1"
+                  disabled={redefinindoSenha}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!novaSenha || novaSenha.length < 8) {
+                      showToast('A senha deve ter no mínimo 8 caracteres', 'error')
+                      return
+                    }
+
+                    if (!/[a-zA-Z]/.test(novaSenha) || !/[0-9]/.test(novaSenha)) {
+                      showToast('A senha deve conter pelo menos uma letra e um número', 'error')
+                      return
+                    }
+
+                    setRedefinindoSenha(true)
+                    try {
+                      await api.post(`/admin/usuarios/${userDetails.usuario.id}/redefinir-senha`, {
+                        novaSenha
+                      })
+                      showToast('Senha redefinida com sucesso!', 'success')
+                      setShowRedefinirSenhaModal(false)
+                      setNovaSenha('')
+                      // Recarregar detalhes do usuário
+                      await carregarDetalhesUsuario(userDetails.usuario.id)
+                    } catch (error: any) {
+                      console.error('Erro ao redefinir senha:', error)
+                      showToast(error.response?.data?.error || 'Erro ao redefinir senha', 'error')
+                    } finally {
+                      setRedefinindoSenha(false)
+                    }
+                  }}
+                  className="btn-primary flex-1"
+                  disabled={redefinindoSenha || !novaSenha}
+                >
+                  {redefinindoSenha ? 'Redefinindo...' : 'Redefinir Senha'}
                 </button>
               </div>
             </div>
