@@ -425,11 +425,11 @@ export default function Landing() {
 
               <div className="rounded-3xl border border-grey/20 bg-dark-lighter p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-center shadow-xl">
                 <div className="w-full md:w-1/2">
-                  <div className="relative rounded-2xl overflow-hidden bg-dark">
+                  <div className="relative rounded-2xl overflow-hidden bg-dark aspect-[2/3]">
                     <img
                       src="/images/onboarding/Miguel.webp"
                       alt="Miguel perdeu 12 kg em 4 meses com treino personalizado inteligente AthletIA - Resultado real de transformação física"
-                      className="w-full h-auto object-cover"
+                      className="w-full h-full object-cover"
                       loading="lazy"
                       width="400"
                       height="600"

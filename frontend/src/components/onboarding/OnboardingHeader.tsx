@@ -10,7 +10,7 @@ export default function OnboardingHeader({}: OnboardingHeaderProps) {
           <div className="flex items-center gap-2.5 md:gap-3">
             <img
               src="/favicon.svg"
-              alt="Logo AthletIA"
+              alt="Logo AthletIA - Treino Personalizado Inteligente com IA"
               className="w-8 h-8 md:w-10 md:h-10 rounded-2xl shadow-lg"
               loading="eager"
               width="40"
