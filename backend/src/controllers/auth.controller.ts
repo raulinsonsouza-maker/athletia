@@ -212,13 +212,23 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(`[LOGIN] Usuário encontrado: ${emailHash} (Role: ${user.role})`);
+    console.log(`[LOGIN] Usuário encontrado: ${emailHash} (Role: ${user.role}, Email: ${user.email})`);
+
+    // Verificar se senhaHash existe
+    if (!user.senhaHash) {
+      console.error(`[LOGIN] ERRO: Usuário ${emailHash} não tem senhaHash no banco`);
+      return res.status(401).json({
+        error: 'Usuário ou senha inválidos'
+      });
+    }
 
     // Verificar senha
     const senhaValida = await bcrypt.compare(senha, user.senhaHash);
 
     if (!senhaValida) {
-      console.log(`[LOGIN] Senha inválida para usuário: ${emailHash}`);
+      console.log(`[LOGIN] Senha inválida para usuário: ${emailHash} (Email: ${user.email})`);
+      // Debug: verificar se o hash está correto (apenas para debug)
+      console.log(`[LOGIN DEBUG] Tentando comparar senha para: ${emailHash}`);
       return res.status(401).json({
         error: 'Usuário ou senha inválidos'
       });
@@ -809,7 +819,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 // Redefinir senha com token
 export const resetPassword = async (req: Request, res: Response) => {
   try {
-    const { token, newPassword } = req.body;
+    const { token, newPassword, confirmPassword } = req.body;
 
     if (!token || !newPassword) {
       return res.status(400).json({
@@ -817,20 +827,29 @@ export const resetPassword = async (req: Request, res: Response) => {
       });
     }
 
-    // Validar força da senha
-    if (newPassword.length < 8) {
+    // Trim da senha para remover espaços em branco
+    const senhaLimpa = newPassword.trim();
+
+    if (senhaLimpa.length < 8) {
       return res.status(400).json({
         error: 'A senha deve ter no mínimo 8 caracteres'
       });
     }
 
     // Verificar se tem pelo menos 1 letra e 1 número
-    const hasLetter = /[a-zA-Z]/.test(newPassword);
-    const hasNumber = /[0-9]/.test(newPassword);
+    const hasLetter = /[a-zA-Z]/.test(senhaLimpa);
+    const hasNumber = /[0-9]/.test(senhaLimpa);
 
     if (!hasLetter || !hasNumber) {
       return res.status(400).json({
         error: 'A senha deve conter pelo menos uma letra e um número'
+      });
+    }
+
+    // Verificar confirmação de senha se fornecida
+    if (confirmPassword && confirmPassword.trim() !== senhaLimpa) {
+      return res.status(400).json({
+        error: 'As senhas não coincidem'
       });
     }
 
@@ -866,14 +885,31 @@ export const resetPassword = async (req: Request, res: Response) => {
       });
     }
 
-    // Hash da nova senha
-    const senhaHash = await bcrypt.hash(newPassword, 10);
+    // Hash da nova senha (usar senha limpa, sem espaços)
+    const senhaHash = await bcrypt.hash(senhaLimpa, 10);
+    console.log(`[RESET PASSWORD] Hash gerado para usuário ${resetToken.userId} (email: ${resetToken.user.email})`);
 
     // Atualizar senha do usuário
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: resetToken.userId },
-      data: { senhaHash }
+      data: { senhaHash },
+      select: {
+        id: true,
+        email: true,
+        senhaHash: true
+      }
     });
+
+    // Verificar se a senha foi atualizada corretamente
+    const senhaVerificada = await bcrypt.compare(senhaLimpa, updatedUser.senhaHash);
+    if (!senhaVerificada) {
+      console.error(`[RESET PASSWORD] ERRO: Senha não corresponde após atualização para usuário ${resetToken.userId}`);
+      return res.status(500).json({
+        error: 'Erro ao atualizar senha. Tente novamente.'
+      });
+    }
+
+    console.log(`[RESET PASSWORD] Senha verificada com sucesso para usuário ${resetToken.userId} (email: ${updatedUser.email})`);
 
     // Marcar token como usado
     await prisma.passwordResetToken.update({
@@ -886,7 +922,7 @@ export const resetPassword = async (req: Request, res: Response) => {
       where: { userId: resetToken.userId }
     });
 
-    console.log('✅ Senha redefinida com sucesso para usuário:', resetToken.userId);
+    console.log(`✅ Senha redefinida com sucesso para usuário ${resetToken.userId} (email: ${updatedUser.email})`);
 
     res.status(200).json({
       message: 'Senha redefinida com sucesso. Você pode fazer login com sua nova senha.'

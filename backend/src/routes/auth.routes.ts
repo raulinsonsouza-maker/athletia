@@ -146,12 +146,21 @@ const resetPasswordValidation = [
     .notEmpty()
     .withMessage('Token é obrigatório'),
   body('newPassword')
+    .trim()
     .isLength({ min: 8 })
     .withMessage('Senha deve ter no mínimo 8 caracteres')
     .matches(/[a-zA-Z]/)
     .withMessage('Senha deve conter pelo menos uma letra')
     .matches(/[0-9]/)
-    .withMessage('Senha deve conter pelo menos um número')
+    .withMessage('Senha deve conter pelo menos um número'),
+  body('confirmPassword')
+    .optional()
+    .custom((value, { req }) => {
+      if (value && value.trim() !== req.body.newPassword?.trim()) {
+        throw new Error('As senhas não coincidem');
+      }
+      return true;
+    })
 ];
 
 // Rotas
