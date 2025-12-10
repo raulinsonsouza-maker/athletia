@@ -6,11 +6,11 @@ import { validateRequest } from '../middleware/validate.middleware';
 import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 
 // Rate limiting inteligente para rotas de autenticação
-// SEGURANÇA: Mais restritivo para prevenir brute force
+// SEGURANÇA: Balanceado entre segurança e usabilidade
 // Logins bem-sucedidos NÃO contam para o limite, apenas tentativas falhadas
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // Máximo 5 tentativas por IP a cada 15 minutos (reduzido para maior segurança)
+  max: 15, // Máximo 15 tentativas por IP a cada 15 minutos (aumentado para melhor UX)
   message: {
     error: 'Muitas tentativas de login. Por favor, tente novamente em alguns minutos.'
   },
@@ -26,6 +26,18 @@ const authLimiter = rateLimit({
       error: 'Muitas tentativas de login. Por favor, tente novamente em alguns minutos.'
     });
   }
+});
+
+// Rate limiter mais permissivo para redefinição de senha (já tem rate limiting interno)
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // Máximo 10 solicitações por IP a cada 15 minutos
+  message: {
+    error: 'Muitas solicitações. Por favor, tente novamente em alguns minutos.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req: any) => req.method === 'OPTIONS'
 });
 
 const router = Router();
@@ -149,8 +161,8 @@ router.post('/refresh', authLimiter, refreshTokenValidation, validateRequest, re
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
 router.post('/ativar-plano-pagamento', optionalAuthenticate, ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);
-router.post('/forgot-password', forgotPasswordValidation, validateRequest, requestPasswordReset);
-router.post('/reset-password', resetPasswordValidation, validateRequest, resetPassword);
+router.post('/forgot-password', passwordResetLimiter, forgotPasswordValidation, validateRequest, requestPasswordReset);
+router.post('/reset-password', passwordResetLimiter, resetPasswordValidation, validateRequest, resetPassword);
 
 export default router;
 
