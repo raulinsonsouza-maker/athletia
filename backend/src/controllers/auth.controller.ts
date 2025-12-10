@@ -222,13 +222,22 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    // Trim da senha para garantir consistência (mesmo tratamento que no reset)
+    const senhaLimpa = (senha || '').trim();
+    
     // Verificar senha
-    const senhaValida = await bcrypt.compare(senha, user.senhaHash);
+    const senhaValida = await bcrypt.compare(senhaLimpa, user.senhaHash);
 
     if (!senhaValida) {
       console.log(`[LOGIN] Senha inválida para usuário: ${emailHash} (Email: ${user.email})`);
-      // Debug: verificar se o hash está correto (apenas para debug)
-      console.log(`[LOGIN DEBUG] Tentando comparar senha para: ${emailHash}`);
+      console.log(`[LOGIN DEBUG] Tamanho da senha recebida: ${senhaLimpa.length} caracteres`);
+      console.log(`[LOGIN DEBUG] Hash no banco: ${user.senhaHash.substring(0, 20)}...`);
+      
+      // Teste adicional: verificar se a senha tem espaços ou caracteres especiais
+      if (senha !== senhaLimpa) {
+        console.log(`[LOGIN DEBUG] ATENÇÃO: Senha tinha espaços em branco que foram removidos`);
+      }
+      
       return res.status(401).json({
         error: 'Usuário ou senha inválidos'
       });

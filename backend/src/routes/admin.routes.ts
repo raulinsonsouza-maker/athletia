@@ -80,6 +80,19 @@ const atualizarUsuarioValidation = [
     .withMessage('Role deve ser USER ou ADMIN')
 ];
 
+const redefinirSenhaValidation = [
+  body('novaSenha')
+    .trim()
+    .notEmpty()
+    .withMessage('Nova senha é obrigatória')
+    .isLength({ min: 8 })
+    .withMessage('A senha deve ter no mínimo 8 caracteres')
+    .matches(/[a-zA-Z]/)
+    .withMessage('A senha deve conter pelo menos uma letra')
+    .matches(/[0-9]/)
+    .withMessage('A senha deve conter pelo menos um número')
+];
+
 const criarExercicioValidation = [
   body('nome')
     .notEmpty()
@@ -235,7 +248,7 @@ router.post('/usuarios', criarUsuarioValidation, validateRequest, criarUsuario);
 router.put('/usuarios/:id', atualizarUsuarioValidation, validateRequest, atualizarUsuario);
 router.delete('/usuarios/:id', desativarUsuario);
 router.post('/usuarios/:id/reativar', reativarUsuario);
-router.post('/usuarios/:id/redefinir-senha', redefinirSenhaUsuario);
+router.post('/usuarios/:id/redefinir-senha', redefinirSenhaValidation, validateRequest, redefinirSenhaUsuario);
 router.post('/usuarios/:id/simular-pagamento', simularPagamentoUsuario);
 router.get('/estatisticas', obterEstatisticas);
 

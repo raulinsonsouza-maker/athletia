@@ -702,14 +702,36 @@ export const redefinirSenhaUsuario = async (req: AuthRequest, res: Response) => 
       });
     }
 
+    // Trim da senha para remover espaços em branco
+    const senhaLimpa = novaSenha.trim();
+    console.log(`[ADMIN] Redefinindo senha para usuário ${id} (${usuario.email.substring(0, 3)}***)`);
+    console.log(`[ADMIN] Tamanho da senha: ${senhaLimpa.length} caracteres`);
+
     // Hash da nova senha
-    const senhaHash = await bcrypt.hash(novaSenha.trim(), 10);
+    const senhaHash = await bcrypt.hash(senhaLimpa, 10);
+    console.log(`[ADMIN] Hash gerado: ${senhaHash.substring(0, 20)}...`);
 
     // Atualizar senha do usuário
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id },
-      data: { senhaHash }
+      data: { senhaHash },
+      select: {
+        id: true,
+        email: true,
+        senhaHash: true
+      }
     });
+
+    // Verificar se a senha foi atualizada corretamente (TESTE CRÍTICO)
+    const senhaVerificada = await bcrypt.compare(senhaLimpa, updatedUser.senhaHash);
+    if (!senhaVerificada) {
+      console.error(`[ADMIN] ERRO CRÍTICO: Senha não corresponde após atualização para usuário ${id}`);
+      return res.status(500).json({
+        error: 'Erro ao atualizar senha. A senha não foi salva corretamente. Tente novamente.'
+      });
+    }
+
+    console.log(`[ADMIN] ✅ Senha verificada com sucesso para usuário ${id} (${updatedUser.email})`);
 
     // Invalidar todos os refresh tokens do usuário (segurança)
     await prisma.refreshToken.deleteMany({

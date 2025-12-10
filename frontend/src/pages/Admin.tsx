@@ -2666,8 +2666,10 @@ export default function Admin() {
 
                     setRedefinindoSenha(true)
                     try {
+                      // Trim da senha antes de enviar
+                      const senhaLimpa = novaSenha.trim()
                       await api.post(`/admin/usuarios/${userDetails.usuario.id}/redefinir-senha`, {
-                        novaSenha
+                        novaSenha: senhaLimpa
                       })
                       showToast('Senha redefinida com sucesso!', 'success')
                       setShowRedefinirSenhaModal(false)

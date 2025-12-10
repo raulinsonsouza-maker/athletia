@@ -51,7 +51,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Normalizar email/username (trim e lowercase)
       const emailNormalizado = email.trim().toLowerCase()
-      const response = await authService.login(emailNormalizado, senha)
+      // Normalizar senha (trim para remover espaços)
+      const senhaNormalizada = senha.trim()
+      const response = await authService.login(emailNormalizado, senhaNormalizada)
       localStorage.setItem('accessToken', response.accessToken)
       localStorage.setItem('refreshToken', response.refreshToken)
       localStorage.setItem('user', JSON.stringify(response.user))
