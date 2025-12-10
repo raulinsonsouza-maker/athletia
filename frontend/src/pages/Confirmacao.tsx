@@ -49,6 +49,17 @@ export default function Confirmacao() {
     if (location.state) {
       setEmail(location.state.email || '')
       setPlano(location.state.plano || '')
+      
+      // Disparar evento de conversão do Google Ads quando o plano estiver presente
+      if (location.state.plano && typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'conversion', {
+          'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+          'value': 1.0,
+          'currency': 'BRL',
+          'transaction_id': ''
+        })
+        console.log('✅ Evento de conversão do Google Ads disparado')
+      }
     } else {
       // Se não tem dados, redirecionar para landing
       navigate('/')

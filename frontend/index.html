@@ -13,6 +13,25 @@
       gtag('config', 'AW-448210685');
     </script>
     
+    <!-- Event snippet for Compra conversion page -->
+    <script>
+      function gtag_report_conversion(url) {
+        var callback = function () {
+          if (typeof(url) != 'undefined') {
+            window.location = url;
+          }
+        };
+        gtag('event', 'conversion', {
+          'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+          'value': 1.0,
+          'currency': 'BRL',
+          'transaction_id': '',
+          'event_callback': callback
+        });
+        return false;
+      }
+    </script>
+    
     <!-- Primary Meta Tags -->
     <title>AthletIA - Treino Personalizado Inteligente com IA | Personal Trainer Online</title>
     <meta name="title" content="AthletIA - Treino Personalizado Inteligente com IA | Personal Trainer Online" />

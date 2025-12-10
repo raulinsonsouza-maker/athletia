@@ -11,7 +11,6 @@ import FeedbackCard from '../components/onboarding/FeedbackCard'
 import LandingHero from '../components/landing/LandingHero'
 import ComparisonTable from '../components/landing/ComparisonTable'
 import FAQItem from '../components/landing/FAQItem'
-import AppPreview from '../components/landing/AppPreview'
 import StepIdade from '../components/onboarding/steps/StepIdade'
 import StepSexo from '../components/onboarding/steps/StepSexo'
 import { DEFAULT_VALUES } from '../constants/onboarding.constants'
@@ -120,8 +119,12 @@ export default function Landing() {
     }
   }, [step])
 
-  // Função para iniciar o onboarding
+  // Função para iniciar o onboarding com tracking de conversão
   const iniciarOnboarding = useCallback(() => {
+    // Disparar evento de conversão do Google Ads
+    if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
+      (window as any).gtag_report_conversion()
+    }
     setStep(1)
   }, [])
 
@@ -242,11 +245,11 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 4 – PREVIEW DO APP (GERAR DESEJO) - SIMPLIFICADA */}
-          <section aria-label="Preview do aplicativo AthletIA" className="py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark">
+          {/* SEÇÃO 4 – BENEFÍCIOS VISUAIS - SUBSTITUÍDA */}
+          <section aria-label="Benefícios do AthletIA" className="py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark">
             <div className="max-w-7xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-                {/* Texto e CTA - SIMPLIFICADO */}
+                {/* Texto e CTA */}
                 <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
                   <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-light leading-tight">
                     Esta É a Interface Que Você Vai Usar Todos os Dias
@@ -264,9 +267,60 @@ export default function Landing() {
                   </div>
                 </div>
 
-                {/* Preview do App com imagem real */}
-                <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
-                  <AppPreview className="transform hover:scale-105 transition-transform duration-500" imagemApp="/images/app-preview/treinos-screen.png" />
+                {/* Cards de Benefícios Visuais */}
+                <div className="order-1 lg:order-2 space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Card 1 - Treinos Personalizados */}
+                    <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 p-6 space-y-3 hover:border-primary/50 transition-all hover:scale-105">
+                      <div className="w-12 h-12 rounded-xl bg-primary/30 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-bold text-light">Treinos Personalizados</h3>
+                      <p className="text-sm text-light-muted">Criados pela IA em segundos</p>
+                    </div>
+
+                    {/* Card 2 - Progressão Automática */}
+                    <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 p-6 space-y-3 hover:border-primary/50 transition-all hover:scale-105">
+                      <div className="w-12 h-12 rounded-xl bg-primary/30 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-bold text-light">Progressão Automática</h3>
+                      <p className="text-sm text-light-muted">Evolui com você</p>
+                    </div>
+
+                    {/* Card 3 - Histórico Completo */}
+                    <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 p-6 space-y-3 hover:border-primary/50 transition-all hover:scale-105">
+                      <div className="w-12 h-12 rounded-xl bg-primary/30 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-bold text-light">Histórico Completo</h3>
+                      <p className="text-sm text-light-muted">Acompanhe sua evolução</p>
+                    </div>
+
+                    {/* Card 4 - Acesso Imediato */}
+                    <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl border-2 border-primary/30 p-6 space-y-3 hover:border-primary/50 transition-all hover:scale-105">
+                      <div className="w-12 h-12 rounded-xl bg-primary/30 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-bold text-light">Acesso 24/7</h3>
+                      <p className="text-sm text-light-muted">Quando você precisar</p>
+                    </div>
+                  </div>
+
+                  {/* Card Grande - Destaque */}
+                  <div className="bg-gradient-to-br from-primary/30 to-primary/10 rounded-3xl border-2 border-primary/40 p-8 text-center space-y-4">
+                    <div className="text-5xl font-black text-primary">300+</div>
+                    <h3 className="text-2xl font-bold text-light">Exercícios Mapeados</h3>
+                    <p className="text-base text-light-muted">A IA seleciona os melhores para você</p>
+                  </div>
                 </div>
               </div>
             </div>

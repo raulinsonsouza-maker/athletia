@@ -17,12 +17,13 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
           {/* Efeito de brilho/glow ao redor */}
           <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl -z-10 scale-110" />
           
-          {/* Frame do telefone com imagem real */}
-          <div className="relative rounded-[3rem] border-8 border-dark-lighter bg-dark-lighter shadow-2xl overflow-hidden">
+          {/* Frame do telefone com imagem real - borda melhorada */}
+          <div className="relative rounded-[2.5rem] shadow-2xl overflow-hidden">
+            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <img 
               src={imagemApp} 
               alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
-              className="w-full h-auto object-cover"
+              className="w-full h-auto object-cover rounded-[2.5rem]"
               loading="eager"
               width="400"
               height="800"
