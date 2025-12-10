@@ -64,7 +64,7 @@ export const ExercicioInfo = memo(({ exercicio }: ExercicioInfoProps) => {
                 <ul className="space-y-1">
                   {exercicio.errosComuns.map((erro, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <IconePonto className="w-2 h-2 text-red-400 flex-shrink-0 translate-y-[7px]" />
+                      <IconePonto className="w-4 h-4 text-red-400 flex-shrink-0 translate-y-[7px]" />
                       <span>{erro}</span>
                     </li>
                   ))}

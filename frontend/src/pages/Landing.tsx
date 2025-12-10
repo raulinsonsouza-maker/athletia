@@ -164,7 +164,7 @@ export default function Landing() {
           </div>
         </header>
 
-        <main role="main">
+        <main role="main" id="main-content">
           {/* SEÇÃO 1 – HERO ULTRA AGRESSIVO */}
           <LandingHero 
             onStartOnboarding={iniciarOnboarding}

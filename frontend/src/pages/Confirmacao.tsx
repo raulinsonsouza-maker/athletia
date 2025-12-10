@@ -33,7 +33,7 @@ const IconeArrowRight = ({ className = 'w-5 h-5' }: { className?: string }) => (
   </svg>
 )
 
-const IconePonto = ({ className = 'w-2 h-2 text-warning translate-y-[6px]' }: { className?: string }) => (
+const IconePonto = ({ className = 'w-4 h-4 text-warning translate-y-[6px]' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8" fill="currentColor" className={className}>
     <circle cx="4" cy="4" r="4" />
   </svg>
