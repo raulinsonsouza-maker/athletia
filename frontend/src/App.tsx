@@ -22,6 +22,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Termos from './pages/Termos'
 import Privacidade from './pages/Privacidade'
 import Cookies from './pages/Cookies'
+import ResetPassword from './pages/ResetPassword'
 
 // Lazy load Progresso (usa Chart.js - 60KB) - só carrega quando necessário
 const Progresso = lazy(() => import('./pages/Progresso'))
@@ -42,6 +43,7 @@ function App() {
           <Route path="/termos" element={<Termos />} />
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/cookies" element={<Cookies />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Rotas protegidas */}
           <Route path="/dashboard" element={<Navigate to="/meu-plano" replace />} />

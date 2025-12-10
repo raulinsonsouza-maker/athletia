@@ -39,6 +39,7 @@ model User {
   treinosPersonalizadosTemplates TreinoPersonalizadoTemplate[]
   configuracoesTreino            ConfiguracaoTreinoUsuario[]
   paymentHistory                 PaymentHistory[]
+  passwordResetTokens            PasswordResetToken[]
 
   @@map("users")
 }
@@ -349,4 +350,21 @@ model TreinoImagemPadrao {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("treino_imagens_padrao")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([used])
+  @@map("password_reset_tokens")
 }

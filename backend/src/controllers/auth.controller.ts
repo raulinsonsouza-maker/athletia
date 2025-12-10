@@ -716,3 +716,188 @@ export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
   }
 };
 
+// Solicitar redefinição de senha
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        error: 'E-mail é obrigatório'
+      });
+    }
+
+    // Normalizar e-mail
+    const emailNormalizado = email.toLowerCase().trim();
+
+    // Buscar usuário
+    const user = await prisma.user.findUnique({
+      where: { email: emailNormalizado }
+    });
+
+    // SEGURANÇA: Sempre retornar sucesso para prevenir user enumeration
+    // Não expor se o e-mail existe ou não
+    if (!user) {
+      // Simular delay para prevenir timing attacks
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return res.status(200).json({
+        message: 'Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.'
+      });
+    }
+
+    // Verificar rate limiting: máximo 3 solicitações por hora por e-mail
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentRequests = await prisma.passwordResetToken.count({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: oneHourAgo
+        }
+      }
+    });
+
+    if (recentRequests >= 3) {
+      return res.status(429).json({
+        error: 'Muitas solicitações. Por favor, tente novamente em 1 hora.'
+      });
+    }
+
+    // Gerar token único
+    const { randomUUID } = await import('crypto');
+    const token = randomUUID();
+
+    // Expiração: 1 hora
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    // Salvar token no banco
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        token,
+        expiresAt
+      }
+    });
+
+    // Enviar e-mail
+    const { sendPasswordResetEmail } = await import('../services/email.service');
+    const emailResult = await sendPasswordResetEmail({
+      nome: user.nome || 'Usuário',
+      email: user.email,
+      token
+    });
+
+    if (!emailResult.success) {
+      console.error('❌ Erro ao enviar e-mail de redefinição:', emailResult.error);
+      // Não falhar a requisição se o e-mail não foi enviado
+      // O token já foi criado, então o usuário pode tentar novamente
+    }
+
+    // Sempre retornar sucesso (segurança)
+    res.status(200).json({
+      message: 'Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.'
+    });
+
+  } catch (error: any) {
+    console.error('Erro ao solicitar redefinição de senha:', error);
+    res.status(500).json({
+      error: 'Erro ao processar solicitação',
+      message: error.message
+    });
+  }
+};
+
+// Redefinir senha com token
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        error: 'Token e nova senha são obrigatórios'
+      });
+    }
+
+    // Validar força da senha
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        error: 'A senha deve ter no mínimo 8 caracteres'
+      });
+    }
+
+    // Verificar se tem pelo menos 1 letra e 1 número
+    const hasLetter = /[a-zA-Z]/.test(newPassword);
+    const hasNumber = /[0-9]/.test(newPassword);
+
+    if (!hasLetter || !hasNumber) {
+      return res.status(400).json({
+        error: 'A senha deve conter pelo menos uma letra e um número'
+      });
+    }
+
+    // Buscar token
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true }
+    });
+
+    if (!resetToken) {
+      return res.status(400).json({
+        error: 'Token inválido ou expirado'
+      });
+    }
+
+    // Verificar se token foi usado
+    if (resetToken.used) {
+      return res.status(400).json({
+        error: 'Este link já foi utilizado. Solicite uma nova redefinição de senha.'
+      });
+    }
+
+    // Verificar se token expirou
+    if (new Date() > resetToken.expiresAt) {
+      // Marcar como usado para limpeza
+      await prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true }
+      });
+
+      return res.status(400).json({
+        error: 'Token expirado. Solicite uma nova redefinição de senha.'
+      });
+    }
+
+    // Hash da nova senha
+    const senhaHash = await bcrypt.hash(newPassword, 10);
+
+    // Atualizar senha do usuário
+    await prisma.user.update({
+      where: { id: resetToken.userId },
+      data: { senhaHash }
+    });
+
+    // Marcar token como usado
+    await prisma.passwordResetToken.update({
+      where: { id: resetToken.id },
+      data: { used: true }
+    });
+
+    // Invalidar todos os refresh tokens do usuário (segurança)
+    await prisma.refreshToken.deleteMany({
+      where: { userId: resetToken.userId }
+    });
+
+    console.log('✅ Senha redefinida com sucesso para usuário:', resetToken.userId);
+
+    res.status(200).json({
+      message: 'Senha redefinida com sucesso. Você pode fazer login com sua nova senha.'
+    });
+
+  } catch (error: any) {
+    console.error('Erro ao redefinir senha:', error);
+    res.status(500).json({
+      error: 'Erro ao redefinir senha',
+      message: error.message
+    });
+  }
+};
+

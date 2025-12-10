@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento } from '../controllers/auth.controller';
+import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento, requestPasswordReset, resetPassword } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
 import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 
@@ -121,6 +121,27 @@ const ativarPlanoValidation = [
     .withMessage('Plano inválido')
 ];
 
+// Validações para redefinição de senha
+const forgotPasswordValidation = [
+  body('email')
+    .isEmail()
+    .withMessage('Email inválido')
+    .normalizeEmail()
+];
+
+const resetPasswordValidation = [
+  body('token')
+    .notEmpty()
+    .withMessage('Token é obrigatório'),
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('Senha deve ter no mínimo 8 caracteres')
+    .matches(/[a-zA-Z]/)
+    .withMessage('Senha deve conter pelo menos uma letra')
+    .matches(/[0-9]/)
+    .withMessage('Senha deve conter pelo menos um número')
+];
+
 // Rotas
 router.post('/register', authLimiter, registerValidation, validateRequest, register);
 router.post('/login', authLimiter, loginValidation, validateRequest, login);
@@ -128,6 +149,8 @@ router.post('/refresh', authLimiter, refreshTokenValidation, validateRequest, re
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
 router.post('/ativar-plano-pagamento', optionalAuthenticate, ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);
+router.post('/forgot-password', forgotPasswordValidation, validateRequest, requestPasswordReset);
+router.post('/reset-password', resetPasswordValidation, validateRequest, resetPassword);
 
 export default router;
 

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -8,6 +9,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -190,8 +192,15 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="text-center text-white/60 text-sm">
-            <p>
+          <div className="text-center space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowForgotPasswordModal(true)}
+              className="text-sm text-primary hover:underline block w-full"
+            >
+              Esqueci minha senha
+            </button>
+            <p className="text-white/60 text-sm">
               Não tem uma conta?{' '}
               <Link to="/register" className="text-primary font-semibold hover:underline">
                 Cadastre-se
@@ -200,6 +209,11 @@ export default function Login() {
           </div>
         </main>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={showForgotPasswordModal}
+        onClose={() => setShowForgotPasswordModal(false)}
+      />
     </div>
   )
 }

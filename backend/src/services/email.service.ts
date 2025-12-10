@@ -25,7 +25,7 @@ function formatarData(data: Date): string {
  * Gera template HTML do e-mail de boas-vindas
  */
 function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
-  const { nome, plano, dataExpiracao } = data;
+  const { nome, email, plano, dataExpiracao } = data;
   const dataFormatada = formatarData(dataExpiracao);
   const loginUrl = 'https://athletia.site/login';
   const areaMembrosUrl = 'https://athletia.site/meu-plano';
@@ -91,27 +91,89 @@ function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
                 </table>
               </div>
               
-              <p style="margin: 0 0 30px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
-                Agora você pode acessar sua área de membros e começar a usar todos os recursos premium da plataforma:
-              </p>
+              <!-- Box de Credenciais Destacado -->
+              <div style="background-color: #1A1814; border: 2px solid #F9A620; border-radius: 8px; padding: 25px; margin: 30px 0;">
+                <h2 style="margin: 0 0 20px 0; color: #F9A620; font-size: 20px; font-weight: bold; text-align: center;">
+                  🔐 Suas Credenciais de Acesso
+                </h2>
+                <div style="background-color: #0F0E0A; border-radius: 6px; padding: 20px; margin: 15px 0; text-align: center;">
+                  <p style="margin: 0 0 10px 0; color: #E0E0E8; font-size: 14px; font-weight: 600;">Seu e-mail de login:</p>
+                  <p style="margin: 0; color: #F9A620; font-size: 20px; font-weight: bold; word-break: break-all;">${email}</p>
+                </div>
+                <p style="margin: 15px 0 0 0; color: #E0E0E8; font-size: 14px; text-align: center; line-height: 1.6;">
+                  ⚠️ <strong>Importante:</strong> Use este e-mail para fazer login na plataforma. Este é o mesmo e-mail que você usou no cadastro.
+                </p>
+              </div>
               
-              <!-- CTA Button -->
+              <!-- Seção Como Acessar - Melhorada -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 25px; margin: 30px 0; border-radius: 4px;">
+                <h2 style="margin: 0 0 25px 0; color: #F7F7FF; font-size: 20px; font-weight: bold;">
+                  📋 Como Acessar Sua Área de Membros
+                </h2>
+                
+                <!-- Passo 1 -->
+                <div style="margin: 0 0 20px 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">1</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Acesse a página de login</p>
+                      <p style="margin: 0 0 12px 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Clique no botão abaixo ou acesse diretamente:</p>
+                      <a href="${loginUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${loginUrl}</a>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passo 2 -->
+                <div style="margin: 0 0 20px 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">2</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Digite seu e-mail</p>
+                      <p style="margin: 0 0 8px 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">No campo "E-mail", digite:</p>
+                      <div style="background-color: #070600; border: 1px solid #F9A620; border-radius: 4px; padding: 10px; margin: 8px 0;">
+                        <p style="margin: 0; color: #F9A620; font-size: 16px; font-weight: bold; word-break: break-all; text-align: center;">${email}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passo 3 -->
+                <div style="margin: 0 0 20px 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">3</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Digite sua senha</p>
+                      <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Use a senha que você criou durante o cadastro. Se esqueceu sua senha, você pode recuperá-la na página de login.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passo 4 -->
+                <div style="margin: 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">4</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Comece a treinar!</p>
+                      <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Após fazer login, você terá acesso completo aos seus treinos personalizados, histórico de treinos, progresso e muito mais!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- CTA Button Principal - Maior e Mais Visível -->
               <table role="presentation" style="width: 100%; margin: 30px 0;">
                 <tr>
                   <td style="text-align: center;">
-                    <a href="${areaMembrosUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 15px 40px; border-radius: 6px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);">Acessar Área de Membros</a>
+                    <a href="${loginUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4); transition: all 0.3s ease;">
+                      🚀 Acessar Minha Área de Membros Agora
+                    </a>
                   </td>
                 </tr>
               </table>
               
-              <p style="margin: 30px 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
-                <strong>Como acessar:</strong>
+              <p style="margin: 20px 0 0 0; color: #E0E0E8; font-size: 14px; text-align: center; line-height: 1.6;">
+                💡 <strong>Dica:</strong> Salve este e-mail ou anote suas credenciais em local seguro para facilitar o acesso futuro.
               </p>
-              <ol style="margin: 0 0 30px 0; padding-left: 20px; color: #F7F7FF; font-size: 14px; line-height: 1.8;">
-                <li>Acesse: <a href="${loginUrl}" style="color: #F9A620; text-decoration: none;">${loginUrl}</a></li>
-                <li>Faça login com o e-mail cadastrado</li>
-                <li>Comece a usar seus treinos personalizados!</li>
-              </ol>
               
               <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
                 Se você tiver alguma dúvida ou precisar de ajuda, nossa equipe de suporte está pronta para ajudar.
@@ -227,6 +289,187 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ succes
       message: error.message,
       stack: error.stack,
       name: error.name
+    });
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao enviar e-mail'
+    };
+  }
+}
+
+interface PasswordResetEmailData {
+  nome: string;
+  email: string;
+  token: string;
+}
+
+/**
+ * Gera template HTML do e-mail de redefinição de senha
+ */
+function generatePasswordResetEmailHTML(data: PasswordResetEmailData): string {
+  const { nome, email, token } = data;
+  const resetUrl = `https://athletia.site/reset-password?token=${token}`;
+
+  // SVG para ícone de cadeado
+  const lockIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+    <path d="M12 1C9.24 1 7 3.24 7 6V8H5C3.9 8 3 8.9 3 10V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V10C21 8.9 20.1 8 19 8H17V6C17 3.24 14.76 1 12 1ZM12 3C13.66 3 15 4.34 15 6V8H9V6C9 4.34 10.34 3 12 3ZM5 10H19V20H5V10Z" fill="#F9A620"/>
+  </svg>`;
+
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redefinir sua senha - AthletIA</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #141210; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4); border: 1px solid #4A4946;">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #070600; font-size: 28px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center;">
+                ${lockIcon}
+                Redefinir sua senha
+              </h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Olá <strong style="color: #F9A620;">${nome}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Recebemos uma solicitação para redefinir a senha da sua conta AthletIA associada ao e-mail <strong style="color: #F9A620;">${email}</strong>.
+              </p>
+              
+              <p style="margin: 0 0 30px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Clique no botão abaixo para criar uma nova senha:
+              </p>
+              
+              <!-- CTA Button -->
+              <table role="presentation" style="width: 100%; margin: 30px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="${resetUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4);">
+                      🔐 Redefinir Minha Senha
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 20px 0 0 0; color: #E0E0E8; font-size: 14px; text-align: center; line-height: 1.6;">
+                Ou copie e cole este link no seu navegador:<br>
+                <a href="${resetUrl}" style="color: #F9A620; word-break: break-all;">${resetUrl}</a>
+              </p>
+              
+              <!-- Aviso de Expiração -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 20px; margin: 30px 0; border-radius: 4px;">
+                <p style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 14px; font-weight: bold;">
+                  ⚠️ Importante:
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #E0E0E8; font-size: 14px; line-height: 1.8;">
+                  <li>Este link expira em <strong>1 hora</strong></li>
+                  <li>Se você não solicitou esta redefinição, ignore este e-mail</li>
+                  <li>Por segurança, não compartilhe este link com ninguém</li>
+                </ul>
+              </div>
+              
+              <p style="margin: 30px 0 0 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Se você tiver alguma dúvida ou precisar de ajuda, nossa equipe de suporte está pronta para ajudar.
+              </p>
+              
+              <p style="margin: 20px 0 0 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                <strong style="color: #F9A620;">Equipe AthletIA</strong>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0F0E0A; padding: 30px; text-align: center; border-top: 1px solid #4A4946;">
+              <p style="margin: 0 0 10px 0; color: #63625F; font-size: 12px;">
+                Este é um e-mail automático, por favor não responda.
+              </p>
+              <p style="margin: 0; color: #63625F; font-size: 12px;">
+                © ${new Date().getFullYear()} AthletIA. Todos os direitos reservados.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Envia e-mail de redefinição de senha
+ */
+export async function sendPasswordResetEmail(data: PasswordResetEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    // Verificar se Resend está configurado
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY não configurado. E-mail de redefinição não será enviado.');
+      return {
+        success: false,
+        error: 'RESEND_API_KEY não configurado'
+      };
+    }
+
+    console.log('📧 Preparando envio de e-mail de redefinição:', {
+      to: data.email,
+      from: FROM_EMAIL,
+      subject: 'Redefinir sua senha do AthletIA'
+    });
+
+    const html = generatePasswordResetEmailHTML(data);
+
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.email,
+      subject: 'Redefinir sua senha do AthletIA',
+      html: html
+    });
+
+    if (result.error) {
+      console.error('❌ Erro do Resend ao enviar e-mail:', result.error);
+      return {
+        success: false,
+        error: result.error.message || 'Erro desconhecido ao enviar e-mail'
+      };
+    }
+
+    if (!result.data || !result.data.id) {
+      console.error('❌ Resposta do Resend não contém messageId:', result);
+      return {
+        success: false,
+        error: 'Resposta do Resend inválida (sem messageId)'
+      };
+    }
+
+    console.log('✅ E-mail de redefinição enviado com sucesso:', {
+      email: data.email.substring(0, 3) + '***',
+      messageId: result.data.id
+    });
+
+    return {
+      success: true,
+      messageId: result.data.id
+    };
+
+  } catch (error: any) {
+    console.error('❌ Exceção ao enviar e-mail de redefinição:', {
+      message: error.message,
+      stack: error.stack
     });
     return {
       success: false,
