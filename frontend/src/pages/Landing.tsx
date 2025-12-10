@@ -170,12 +170,38 @@ export default function Landing() {
 
               <div className="grid md:grid-cols-3 gap-6 pt-6">
                 {[
-                  { icon: '🎯', title: 'Treino personalizado', desc: 'Criado para o seu corpo' },
-                  { icon: '⚡', title: 'Ajuste automático', desc: 'Evolui com você' },
-                  { icon: '✅', title: 'Resultados reais', desc: 'Comprovados por milhares' }
+                  { 
+                    icon: (
+                      <svg className="w-12 h-12 text-primary mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" strokeWidth={2} />
+                        <circle cx="12" cy="12" r="6" strokeWidth={2} />
+                        <circle cx="12" cy="12" r="2" fill="currentColor" />
+                      </svg>
+                    ), 
+                    title: 'Treino personalizado', 
+                    desc: 'Criado para o seu corpo' 
+                  },
+                  { 
+                    icon: (
+                      <svg className="w-12 h-12 text-primary mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    ), 
+                    title: 'Ajuste automático', 
+                    desc: 'Evolui com você' 
+                  },
+                  { 
+                    icon: (
+                      <svg className="w-12 h-12 text-primary mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    ), 
+                    title: 'Resultados reais', 
+                    desc: 'Comprovados por milhares' 
+                  }
                 ].map((item) => (
                   <div key={item.title} className="space-y-2">
-                    <div className="text-4xl">{item.icon}</div>
+                    <div className="flex justify-center">{item.icon}</div>
                     <h3 className="text-lg font-bold text-light">{item.title}</h3>
                     <p className="text-sm text-light-muted">{item.desc}</p>
                   </div>
@@ -268,9 +294,9 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 6 – COMO FUNCIONA - SIMPLIFICADA */}
+          {/* SEÇÃO 6 – COMO FUNCIONA */}
           <section id="como-funciona" aria-label="Como funciona o sistema de treino personalizado" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
-            <div className="max-w-4xl mx-auto space-y-8 text-center">
+            <div className="max-w-6xl mx-auto space-y-10 text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
                 Como Funciona: Seu Treino Personalizado em 4 Passos Simples
               </h2>
@@ -278,15 +304,42 @@ export default function Landing() {
                 Do zero ao treino completo em menos de 2 minutos
               </p>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
-                {[1, 2, 3, 4].map((num) => (
-                  <div key={num} className="h-16 w-16 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-2xl font-bold text-primary mx-auto">
-                    {num}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 pt-8">
+                {[
+                  {
+                    numero: 1,
+                    titulo: 'Você responde perguntas',
+                    descricao: 'Corpo, objetivo, rotina e nível. Perguntas rápidas e objetivas.'
+                  },
+                  {
+                    numero: 2,
+                    titulo: 'A IA analisa e cria',
+                    descricao: 'Nossa IA analisa seu perfil e seleciona os exercícios ideais entre mais de 300 opções.'
+                  },
+                  {
+                    numero: 3,
+                    titulo: 'Seu treino está pronto',
+                    descricao: 'Treino completo criado em segundos, com séries, peso e repetições organizados.'
+                  },
+                  {
+                    numero: 4,
+                    titulo: 'O sistema evolui com você',
+                    descricao: 'A cada treino, ajusta automaticamente progressão, volume e intensidade.'
+                  }
+                ].map((passo) => (
+                  <div key={passo.numero} className="space-y-4">
+                    <div className="h-16 w-16 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center text-2xl font-bold text-primary mx-auto">
+                      {passo.numero}
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg md:text-xl font-bold text-light">{passo.titulo}</h3>
+                      <p className="text-sm md:text-base text-light-muted leading-relaxed">{passo.descricao}</p>
+                    </div>
                   </div>
                 ))}
               </div>
 
-              <div className="pt-6">
+              <div className="pt-8">
                 <button
                   onClick={iniciarOnboarding}
                   className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
