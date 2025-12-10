@@ -14,17 +14,13 @@
     <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2" as="font" type="font/woff2" crossorigin />
     
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-448210685"></script>
+    <!-- Google tag (gtag.js) - Deferido para não bloquear renderização -->
     <script>
+      // Inicializar dataLayer antes do script assíncrono
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-448210685');
-    </script>
-    
-    <!-- Event snippet for Compra conversion page -->
-    <script>
+      
+      // Função de conversão disponível imediatamente
       function gtag_report_conversion(url) {
         var callback = function () {
           if (typeof(url) != 'undefined') {
@@ -40,6 +36,19 @@
         });
         return false;
       }
+      
+      // Carregar gtag.js de forma não bloqueante após o carregamento inicial
+      window.addEventListener('load', function() {
+        var script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
+        document.head.appendChild(script);
+        
+        script.onload = function() {
+          gtag('js', new Date());
+          gtag('config', 'AW-448210685');
+        };
+      });
     </script>
     
     <!-- Primary Meta Tags -->
@@ -101,8 +110,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AthletIA" />
     
-    <!-- Preload imagem hero (LCP optimization) -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen.png" />
+    <!-- Preload imagem hero WebP (LCP optimization) - Prioridade alta -->
+    <link rel="preload" as="image" href="/images/app-preview/treinos-screen.webp" fetchpriority="high" type="image/webp" />
     
     <!-- Prefetch imagens críticas do onboarding para reduzir carregamentos sem gerar warnings -->
     <link rel="prefetch" as="image" href="/images/onboarding/18 aos 29.webp" />

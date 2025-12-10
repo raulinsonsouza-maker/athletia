@@ -20,14 +20,20 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
           {/* Frame do telefone com imagem real - borda melhorada */}
           <div className="relative rounded-[2.5rem] shadow-2xl overflow-hidden aspect-[9/19] w-full max-w-[400px]">
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
-            <img 
-              src={imagemApp} 
-              alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
-              className="w-full h-full object-cover rounded-[2.5rem]"
-              loading="eager"
-              width="400"
-              height="800"
-            />
+            <picture>
+              {/* Tentar WebP primeiro (melhor compressão) */}
+              <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
+              {/* Fallback para PNG */}
+              <img 
+                src={imagemApp} 
+                alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
+                className="w-full h-full object-cover rounded-[2.5rem]"
+                loading="eager"
+                fetchPriority="high"
+                width="400"
+                height="800"
+              />
+            </picture>
           </div>
           
           {/* Efeitos de brilho decorativos */}

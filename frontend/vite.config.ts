@@ -32,6 +32,7 @@ export default defineConfig({
     // Otimizar imagens durante o build
     assetsInlineLimit: 4096, // Inline imagens pequenas (< 4KB)
     chunkSizeWarningLimit: 600, // Aumentar limite de aviso para 600KB
+    cssCodeSplit: true, // Separar CSS para melhor cache
     // Vite já minifica automaticamente com esbuild (mais rápido que terser)
     rollupOptions: {
       output: {
