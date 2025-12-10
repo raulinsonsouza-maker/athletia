@@ -9,26 +9,31 @@ export default function LandingHero({ onStartOnboarding, onScrollToHowItWorks }:
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center w-full">
         {/* Texto principal */}
         <div className="space-y-6 md:space-y-8 text-center lg:text-left">
+          {/* Badge de produto */}
+          <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
+            <span className="text-sm font-semibold text-primary">🤖 Treino Personalizado com Inteligência Artificial</span>
+          </div>
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
-            O Motivo Pelo Qual Você Não Evolui é Simples.
-            <span className="block text-primary mt-2 md:mt-3">Seu Treino Está Errado.</span>
+            Treino Personalizado Criado por IA
+            <span className="block text-primary mt-2 md:mt-3">Que Se Adapta Automaticamente ao Seu Corpo</span>
           </h1>
 
           <div className="space-y-3 md:space-y-4">
-            <p className="text-lg md:text-xl lg:text-2xl text-light-muted font-medium">
-              Você treina. Mas seu corpo não muda. Por quê?
+            <p className="text-lg md:text-xl lg:text-2xl text-light font-semibold">
+              O AthletIA é um aplicativo que cria seu treino personalizado em segundos usando inteligência artificial.
             </p>
             <p className="text-base md:text-lg lg:text-xl text-light-muted leading-relaxed">
-              O AthletIA é o único sistema de treino personalizado inteligente que se adapta automaticamente ao seu corpo, objetivo e nível todos os dias usando inteligência artificial.
+              <strong className="text-light">Não é um treino genérico.</strong> É um treino criado especificamente para você: seu corpo, seu objetivo, sua rotina e seu nível. E o melhor: ele se ajusta automaticamente conforme você evolui, sem você precisar pensar em nada.
             </p>
           </div>
 
           <ul className="space-y-3 md:space-y-4 pt-2 text-left">
             {[
-              'Resultados visíveis em semanas',
-              'Progressão automática baseada no seu desempenho',
-              'Treino pensado para o seu corpo, não para "média de usuários"',
-              'Evolução contínua sem precisar pensar em nada'
+              'Treino criado em menos de 2 minutos, baseado no seu perfil completo',
+              'Ajuste automático de séries, peso e repetições a cada treino',
+              'Mais de 300 exercícios mapeados, selecionados pela IA para você',
+              'Progressão inteligente que garante evolução contínua'
             ].map((item) => (
               <li key={item} className="flex items-center gap-3 md:gap-4">
                 <span className="flex-shrink-0 inline-flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-full bg-primary/20 border border-primary/30">
@@ -47,17 +52,19 @@ export default function LandingHero({ onStartOnboarding, onScrollToHowItWorks }:
                 onClick={onStartOnboarding}
                 className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 w-full sm:w-auto"
               >
-                Criar meu treino inteligente agora
+                Criar meu treino personalizado agora
               </button>
               <button
                 type="button"
                 onClick={onScrollToHowItWorks}
                 className="text-sm md:text-base font-semibold text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors px-2 py-1"
               >
-                Quero ver como funciona
+                Ver como funciona
               </button>
             </div>
-            <p className="text-xs md:text-sm text-light-muted text-center lg:text-left">Leva menos de 2 minutos</p>
+            <p className="text-xs md:text-sm text-light-muted text-center lg:text-left">
+              <span className="font-semibold text-primary">100% gratuito</span> para criar seu treino • Leva menos de 2 minutos
+            </p>
           </div>
         </div>
 

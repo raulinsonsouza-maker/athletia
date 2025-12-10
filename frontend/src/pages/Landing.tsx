@@ -166,11 +166,101 @@ export default function Landing() {
             onScrollToHowItWorks={() => scrollToSection('como-funciona')}
           />
 
-          {/* SEÇÃO 2 – ROMPIMENTO DA CRENÇA */}
-          <section aria-label="Problema dos treinos genéricos" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20 bg-dark-lighter/50">
+          {/* SEÇÃO 2 – O QUE É O ATHLETIA (CLAREZA DO PRODUTO) */}
+          <section aria-label="O que é o AthletIA" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20 bg-dark-lighter/50">
+            <div className="max-w-5xl mx-auto space-y-8 md:space-y-10">
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                  O Que É o AthletIA?
+                </h2>
+                <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-primary">
+                  Um Aplicativo de Treino Personalizado Criado por Inteligência Artificial
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Criado por Inteligência Artificial</h3>
+                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                        Nossa IA analisa seu perfil completo (corpo, objetivo, rotina, nível) e cria um treino personalizado em segundos. Não é um treino genérico copiado da internet.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Ajuste Automático Contínuo</h3>
+                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                        A cada treino, o sistema ajusta automaticamente séries, peso, repetições e volume baseado no seu desempenho. Você só precisa treinar.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Mais de 300 Exercícios Mapeados</h3>
+                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                        A IA seleciona os exercícios ideais para você entre centenas de opções, considerando seu biotipo, lesões, equipamentos disponíveis e objetivo.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Acesso 24/7 no Seu Celular</h3>
+                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                        Seu treino sempre disponível no celular. Treine em casa, na academia ou onde preferir. Tudo organizado e pronto para usar.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 text-center">
+                <button
+                  onClick={iniciarOnboarding}
+                  className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                >
+                  Criar meu treino personalizado agora
+                </button>
+                <p className="text-xs md:text-sm text-light-muted mt-3">100% gratuito • Leva menos de 2 minutos</p>
+              </div>
+            </div>
+          </section>
+
+          {/* SEÇÃO 3 – ROMPIMENTO DA CRENÇA */}
+          <section aria-label="Problema dos treinos genéricos" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center md:text-left">
-                O Problema Nunca Foi Você. Sempre Foi o Treino Errado.
+                Por Que Você Não Evolui? O Problema Nunca Foi Você.
               </h2>
               <p className="text-base md:text-lg lg:text-xl text-light-muted leading-relaxed text-center md:text-left">
                 A maioria das pessoas treina por meses e não vê nenhuma mudança real no espelho. Não é falta de esforço.
@@ -198,7 +288,7 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 3 – PREVIEW DO APP (GERAR DESEJO) */}
+          {/* SEÇÃO 4 – PREVIEW DO APP (GERAR DESEJO) */}
           <section aria-label="Preview do aplicativo AthletIA" className="py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark">
             <div className="max-w-7xl mx-auto">
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -253,7 +343,7 @@ export default function Landing() {
                       onClick={iniciarOnboarding}
                       className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 w-full sm:w-auto"
                     >
-                      Quero ter isso agora
+                      Criar meu treino personalizado agora
                     </button>
                   </div>
                 </div>
@@ -266,43 +356,43 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 4 – PROMESSA CENTRAL */}
+          {/* SEÇÃO 5 – PROMESSA CENTRAL */}
           <section aria-label="Benefícios do treino personalizado inteligente" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="max-w-3xl space-y-4 text-center md:text-left">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  O AthletIA Cria o Treino Perfeito Para o Seu Corpo e Ajusta Tudo Automaticamente.
+                  Como o AthletIA Funciona: Treino Personalizado Que Evolui Com Você
                 </h2>
                 <p className="text-lg md:text-xl text-light-muted">
-                  Treino personalizado inteligente que se adapta conforme você evolui. Apenas treine. A inteligência artificial assume o trabalho pesado. Sistema de treino adaptativo que aprende com você.
+                  A inteligência artificial cria seu treino personalizado em segundos, baseado no seu perfil completo. E o melhor: a cada treino, o sistema ajusta automaticamente séries, peso, repetições e volume conforme você evolui. Você só precisa treinar.
                 </p>
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {[
                   {
-                    titulo: 'Treino completamente personalizado',
-                    descricao: 'Criado em segundos com base no seu biotipo, histórico, rotina e objetivo.'
+                    titulo: 'Treino 100% personalizado para você',
+                    descricao: 'Criado pela IA em segundos, considerando seu biotipo, objetivo, rotina, nível e histórico. Não é um treino genérico.'
                   },
                   {
-                    titulo: 'Progressão automática',
-                    descricao: 'Séries, peso, repetições e volume ajustados sem você precisar pensar.'
+                    titulo: 'Ajuste automático a cada treino',
+                    descricao: 'O sistema analisa seu desempenho e ajusta automaticamente séries, peso, repetições e volume. Sem você precisar pensar.'
                   },
                   {
-                    titulo: 'Treino adaptado à sua rotina',
-                    descricao: 'Tempo disponível e equipamentos que você tem hoje. Tudo ajustado automaticamente.'
+                    titulo: 'Adaptado ao seu tempo e equipamentos',
+                    descricao: 'Treino criado para o tempo que você tem disponível e os equipamentos que você possui. Academia, casa ou ao ar livre.'
                   },
                   {
-                    titulo: 'Demonstrações visuais claras',
-                    descricao: 'GIFs animados e instruções de execução direta e sem enrolação.'
+                    titulo: 'Instruções visuais de cada exercício',
+                    descricao: 'Demonstrações claras e instruções de execução para cada exercício. Você sabe exatamente como fazer.'
                   },
                   {
-                    titulo: 'Histórico completo',
-                    descricao: 'Você acompanha sua evolução com precisão, treino a treino.'
+                    titulo: 'Acompanhe sua evolução em tempo real',
+                    descricao: 'Gráficos, estatísticas e histórico completo. Veja sua progressão treino a treino.'
                   },
                   {
-                    titulo: 'Consistência garantida',
-                    descricao: 'Sistema motivacional que não deixa você parar e mantém você no plano.'
+                    titulo: 'Sistema que mantém você consistente',
+                    descricao: 'Lembretes, motivação e acompanhamento que garantem que você não desista do seu objetivo.'
                   }
                 ].map((bloco) => (
                   <div
@@ -320,38 +410,42 @@ export default function Landing() {
                   onClick={iniciarOnboarding}
                   className="btn-primary text-base md:text-lg px-10 md:px-14 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
-                  Criar meu treino inteligente agora
+                  Criar meu treino personalizado agora
                 </button>
+                <p className="text-xs md:text-sm text-light-muted mt-3">100% gratuito • Leva menos de 2 minutos</p>
               </div>
             </div>
           </section>
 
-          {/* SEÇÃO 5 – COMO FUNCIONA */}
+          {/* SEÇÃO 6 – COMO FUNCIONA */}
           <section id="como-funciona" aria-label="Como funciona o sistema de treino personalizado" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="text-center space-y-3">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  Como Funciona: Seu Treino Criado em Quatro Etapas Simples.
+                  Como Funciona: Seu Treino Personalizado em 4 Passos Simples
                 </h2>
+                <p className="text-base md:text-lg text-light-muted">
+                  Do zero ao treino completo em menos de 2 minutos
+                </p>
               </div>
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 {[
                   {
-                    titulo: 'Você responde perguntas rápidas',
-                    descricao: 'Sobre seu corpo, rotina e objetivo. Leva menos de 2 minutos.'
+                    titulo: '1. Você responde perguntas sobre você',
+                    descricao: 'Corpo, objetivo, rotina, nível e equipamentos. Perguntas rápidas e objetivas.'
                   },
                   {
-                    titulo: 'A IA analisa seu perfil',
-                    descricao: 'Seleciona exercícios entre mais de 300 opções mapeadas.'
+                    titulo: '2. A IA analisa e cria seu treino',
+                    descricao: 'Nossa inteligência artificial analisa seu perfil e seleciona os exercícios ideais entre mais de 300 opções.'
                   },
                   {
-                    titulo: 'Seu treino nasce pronto',
-                    descricao: 'Treino completo criado imediatamente, com tudo organizado.'
+                    titulo: '3. Seu treino personalizado está pronto',
+                    descricao: 'Treino completo criado em segundos, com séries, peso, repetições e tudo organizado para você.'
                   },
                   {
-                    titulo: 'O sistema aprende com você',
-                    descricao: 'A cada treino, ajusta progressão, volume e intensidade automaticamente.'
+                    titulo: '4. O sistema evolui com você',
+                    descricao: 'A cada treino, ajusta automaticamente progressão, volume e intensidade baseado no seu desempenho.'
                   }
                 ].map((passo, index) => (
                   <div
@@ -371,12 +465,15 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 5 – PROVA SOCIAL */}
+          {/* SEÇÃO 7 – PROVA SOCIAL */}
           <section aria-label="Resultados e depoimentos" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center md:text-left">
-                Resultados que acontecem mais rápido do que você imagina.
+                Resultados Reais de Pessoas Reais
               </h2>
+              <p className="text-base md:text-lg text-light-muted text-center md:text-left">
+                Veja como o AthletIA está transformando corpos e vidas
+              </p>
 
               <div className="rounded-3xl border border-grey/20 bg-dark-lighter p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-center shadow-xl">
                 <div className="w-full md:w-1/2">
@@ -400,18 +497,18 @@ export default function Landing() {
                     Caso real
                   </p>
                   <p className="text-lg md:text-xl lg:text-2xl font-semibold text-light leading-relaxed">
-                    "A primeira vez que senti evolução contínua foi com o AthletIA. Não precisa pensar, só treinar."
+                    "A primeira vez que senti evolução contínua foi com o AthletIA. Não preciso pensar em nada, só treinar. O treino se ajusta sozinho conforme eu evoluo."
                   </p>
-                  <p className="text-sm md:text-base text-light-muted">Miguel, 32 anos – Usuário AthletIA</p>
+                  <p className="text-sm md:text-base text-light-muted">Miguel, 32 anos – Perdeu 12 kg em 4 meses com AthletIA</p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* SEÇÃO 6 – COMPARAÇÃO */}
+          {/* SEÇÃO 8 – COMPARAÇÃO */}
           <ComparisonTable onStartOnboarding={iniciarOnboarding} />
 
-          {/* SEÇÃO 7 – FAQ */}
+          {/* SEÇÃO 9 – FAQ */}
           <section aria-label="Perguntas frequentes sobre treino personalizado" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <div className="text-center space-y-3">
@@ -460,7 +557,7 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 8 – GARANTIA */}
+          {/* SEÇÃO 10 – GARANTIA */}
           <section aria-label="Garantia de satisfação" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
@@ -475,23 +572,26 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 9 – CTA FINAL ULTRA AGRESSIVO */}
+          {/* SEÇÃO 11 – CTA FINAL ULTRA AGRESSIVO */}
           <section aria-label="Chamada para ação final" className="py-20 md:py-28 px-4 md:px-6 bg-primary/10 border-t border-primary/20">
             <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light leading-tight">
-                Seu melhor corpo começa agora.
+                Seu Treino Personalizado Está a 2 Minutos de Distância
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-light-muted">
-                Leva menos de 2 minutos para criar seu treino perfeito.
+                Crie seu treino personalizado agora. É 100% gratuito e leva menos de 2 minutos.
               </p>
               <div className="pt-2">
                 <button
                   onClick={iniciarOnboarding}
                   className="btn-primary text-lg md:text-xl px-12 md:px-20 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
                 >
-                  Criar meu treino inteligente agora
+                  Criar meu treino personalizado agora
                 </button>
               </div>
+              <p className="text-sm md:text-base text-light-muted mt-4">
+                Sem cartão de crédito • Sem compromisso • Resultados garantidos
+              </p>
             </div>
           </section>
         </main>
