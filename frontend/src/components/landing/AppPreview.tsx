@@ -22,8 +22,10 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
             <img 
               src={imagemApp} 
               alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
-              className="w-full h-auto object-contain"
-              loading="lazy"
+              className="w-full h-auto object-cover"
+              loading="eager"
+              width="400"
+              height="800"
             />
           </div>
           
