@@ -123,10 +123,24 @@
     <meta name="apple-mobile-web-app-title" content="AthletIA" />
     
     <!-- Preload imagem hero WebP responsiva (LCP optimization) - Prioridade alta -->
-    <!-- Mobile primeiro (mais comum) -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" media="(max-width: 768px)" />
-    <!-- Desktop -->
+    <!-- Mobile primeiro (mais comum) - Preload crítico -->
+    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" />
+    <!-- Desktop - Preload condicional -->
     <link rel="preload" as="image" href="/images/app-preview/treinos-screen-800x1600.webp" fetchpriority="high" type="image/webp" media="(min-width: 769px)" />
+    
+    <!-- CSS crítico inline para evitar bloqueio de renderização -->
+    <style>
+      /* CSS crítico mínimo para evitar CLS */
+      body { 
+        font-family: system-ui, -apple-system, sans-serif; 
+        margin: 0; 
+        background: #070600; 
+        color: #F7F7FF;
+      }
+      #root { min-height: 100vh; }
+      /* Evitar flash de conteúdo não estilizado */
+      .font-display { font-family: system-ui, sans-serif; }
+    </style>
     
     <!-- Prefetch imagens críticas do onboarding para reduzir carregamentos sem gerar warnings -->
     <link rel="prefetch" as="image" href="/images/onboarding/18 aos 29.webp" />

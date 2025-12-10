@@ -6,15 +6,15 @@ interface LandingHeroProps {
 
 export default function LandingHero({ onStartOnboarding }: LandingHeroProps) {
   return (
-    <section aria-label="Hero - Treino Personalizado Inteligente" className="min-h-[calc(100vh-80px)] flex items-center px-4 md:px-6 py-12 md:py-20">
+    <section aria-label="Hero - Treino Personalizado Inteligente" className="min-h-[600px] md:min-h-[700px] flex items-center px-4 md:px-6 py-12 md:py-20">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center w-full">
-        {/* Texto principal - SIMPLIFICADO */}
-        <div className="space-y-8 md:space-y-10 text-center lg:text-left">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
+        {/* Texto principal - SIMPLIFICADO - Altura fixa para evitar CLS */}
+        <div className="space-y-8 md:space-y-10 text-center lg:text-left min-h-[400px] md:min-h-[500px] flex flex-col justify-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light" style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}>
             Treino Personalizado com IA que Evolui Junto com Você
           </h1>
 
-          <p className="text-xl md:text-2xl text-light-muted leading-relaxed">
+          <p className="text-xl md:text-2xl text-light-muted leading-relaxed" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
             Seu treino criado automaticamente em menos de 2 minutos. Ajustado a cada sessão. Sem complicação.
           </p>
 

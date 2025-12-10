@@ -17,8 +17,8 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
           {/* Efeito de brilho/glow ao redor */}
           <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl -z-10 scale-110" />
           
-          {/* Frame do telefone com imagem real - borda melhorada */}
-          <div className="relative rounded-[2.5rem] shadow-2xl overflow-visible w-full max-w-[400px]">
+          {/* Frame do telefone com imagem real - borda melhorada - Altura fixa para evitar CLS */}
+          <div className="relative rounded-[2.5rem] shadow-2xl overflow-visible w-full max-w-[400px] min-h-[600px] md:min-h-[800px] flex items-center justify-center">
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <picture className="block w-full">
               {/* Versões responsivas WebP - navegador escolhe automaticamente baseado no tamanho da tela */}
@@ -29,7 +29,7 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
               />
               {/* Fallback para versão original WebP se srcset não funcionar */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Fallback final para PNG */}
+              {/* Fallback final para PNG - Altura fixa para evitar CLS */}
               <img 
                 src={imagemApp} 
                 alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
@@ -39,6 +39,7 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
                 width="400"
                 height="800"
                 sizes="(max-width: 768px) 400px, 800px"
+                style={{ minHeight: '600px' }}
               />
             </picture>
           </div>

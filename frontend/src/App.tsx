@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Login from './pages/Login'
@@ -18,10 +19,12 @@ import AdminGrupos from './pages/AdminGrupos'
 import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
-import Progresso from './pages/Progresso'
 import Termos from './pages/Termos'
 import Privacidade from './pages/Privacidade'
 import Cookies from './pages/Cookies'
+
+// Lazy load Progresso (usa Chart.js - 60KB) - só carrega quando necessário
+const Progresso = lazy(() => import('./pages/Progresso'))
 
 function App() {
   return (
@@ -102,7 +105,9 @@ function App() {
             path="/progresso"
             element={
               <ProtectedRoute>
-                <Progresso />
+                <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+                  <Progresso />
+                </Suspense>
               </ProtectedRoute>
             }
           />
