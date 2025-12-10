@@ -166,118 +166,140 @@ export default function Landing() {
             onScrollToHowItWorks={() => scrollToSection('como-funciona')}
           />
 
-          {/* SEÇÃO 2 – O QUE É O ATHLETIA (CLAREZA DO PRODUTO) */}
-          <section aria-label="O que é o AthletIA" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20 bg-dark-lighter/50">
+          {/* SEÇÃO 2 – POR QUE O ATHLETIA FUNCIONA */}
+          <section aria-label="Por que o AthletIA funciona" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20 bg-dark-lighter/50">
             <div className="max-w-5xl mx-auto space-y-8 md:space-y-10">
               <div className="text-center space-y-4">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  O Que É o AthletIA?
+                  Por Que o AthletIA Funciona?
                 </h2>
                 <p className="text-xl md:text-2xl lg:text-3xl font-semibold text-primary">
-                  Um Aplicativo de Treino Personalizado Criado por Inteligência Artificial
+                  Porque é o único sistema que combina personalização total + progressão automática
+                </p>
+                <p className="text-lg md:text-xl text-light-muted max-w-3xl mx-auto">
+                  Você treina. A IA ajusta. Você evolui.
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Criado por Inteligência Artificial</h3>
-                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
-                        Nossa IA analisa seu perfil completo (corpo, objetivo, rotina, nível) e cria um treino personalizado em segundos. Não é um treino genérico copiado da internet.
-                      </p>
-                    </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-light mb-2">Treino criado com base no seu corpo</h3>
+                    <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                      A IA analisa seu perfil completo e cria um treino personalizado em segundos. Não é um treino genérico.
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Ajuste Automático Contínuo</h3>
-                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
-                        A cada treino, o sistema ajusta automaticamente séries, peso, repetições e volume baseado no seu desempenho. Você só precisa treinar.
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-light mb-2">Progressão inteligente diária</h3>
+                    <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                      A cada treino, o sistema ajusta automaticamente séries, peso, repetições e volume baseado no seu desempenho.
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Mais de 300 Exercícios Mapeados</h3>
-                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
-                        A IA seleciona os exercícios ideais para você entre centenas de opções, considerando seu biotipo, lesões, equipamentos disponíveis e objetivo.
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-light mb-2">Mais de 300 exercícios mapeados</h3>
+                    <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                      A IA seleciona os exercícios ideais para você, considerando seu biotipo, lesões, equipamentos e objetivo.
+                    </p>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-lg md:text-xl font-bold text-light mb-2">Acesso 24/7 no Seu Celular</h3>
-                      <p className="text-sm md:text-base text-light-muted leading-relaxed">
-                        Seu treino sempre disponível no celular. Treine em casa, na academia ou onde preferir. Tudo organizado e pronto para usar.
-                      </p>
-                    </div>
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-light mb-2">Ajuste automático de volume, séries e cargas</h3>
+                    <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                      O sistema calcula automaticamente a carga ideal para você evoluir de forma segura e eficiente.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-light mb-2">Treino adaptado ao tempo que você tem</h3>
+                    <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                      Seu treino é criado considerando o tempo disponível e os equipamentos que você possui.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-light mb-2">Resultados reais, comprovados</h3>
+                    <p className="text-sm md:text-base text-light-muted leading-relaxed">
+                      Sistema testado e validado por milhares de usuários que alcançaram seus objetivos.
+                    </p>
                   </div>
                 </div>
               </div>
 
               <div className="pt-4 text-center">
                 <button
-                  onClick={iniciarOnboarding}
-                  className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                  onClick={() => scrollToSection('como-funciona')}
+                  className="text-base md:text-lg font-semibold text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors px-2 py-1"
                 >
-                  Criar meu treino personalizado agora
+                  Ver como funciona
                 </button>
-                <p className="text-xs md:text-sm text-light-muted mt-3">100% gratuito • Leva menos de 2 minutos</p>
               </div>
             </div>
           </section>
 
-          {/* SEÇÃO 3 – ROMPIMENTO DA CRENÇA */}
-          <section aria-label="Problema dos treinos genéricos" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20">
+          {/* SEÇÃO 3 – POR QUE VOCÊ NÃO EVOLUI */}
+          <section aria-label="Por que você não evolui" className="py-16 md:py-20 px-4 md:px-6 border-t border-grey/20">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center md:text-left">
-                Por Que Você Não Evolui? O Problema Nunca Foi Você.
+                Por Que Você Não Evolui?
               </h2>
               <p className="text-base md:text-lg lg:text-xl text-light-muted leading-relaxed text-center md:text-left">
-                A maioria das pessoas treina por meses e não vê nenhuma mudança real no espelho. Não é falta de esforço.
-                Não é falta de disciplina. É simplesmente seguir treinos genéricos que não foram criados para o seu corpo,
-                para o seu ritmo, para sua rotina e para sua evolução. <strong className="text-light">Treinos personalizados são a solução.</strong>
+                Não é falta de esforço. É seguir treinos genéricos que <strong className="text-light">não foram criados para o seu corpo</strong>.
               </p>
               <div className="grid md:grid-cols-2 gap-3 md:gap-4">
                 {[
                   'Você treina e nada muda',
-                  'Você repete os mesmos exercícios sem progresso',
-                  'Você chega na academia sem saber o que fazer',
-                  'Você não sabe se está treinando demais ou de menos',
-                  'Você tenta treinos do YouTube e não funciona',
+                  'Você repete exercícios aleatórios',
+                  'Você não sabe quanto treinar',
+                  'Você segue vídeos do YouTube e não funciona',
+                  'Você falta clareza e constância',
                   'Você perde tempo, energia e motivação'
                 ].map((dor) => (
                   <div key={dor} className="flex items-start gap-3 rounded-xl bg-dark border border-grey/20 px-4 py-3.5">
-                    <span className="mt-0.5 text-base md:text-lg text-error flex-shrink-0">✕</span>
+                    <svg className="mt-0.5 w-5 h-5 text-error flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                     <p className="text-sm md:text-base text-light-muted leading-relaxed">{dor}</p>
                   </div>
                 ))}
@@ -294,8 +316,11 @@ export default function Landing() {
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Texto e CTA */}
                 <div className="space-y-6 md:space-y-8 text-center lg:text-left order-2 lg:order-1">
-                  <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
-                    <span className="text-sm font-semibold text-primary">✨ Interface Intuitiva e Profissional</span>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-4">
+                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-primary">Interface Intuitiva e Profissional</span>
                   </div>
                   <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-light leading-tight">
                     Esta É a Interface Que Você Vai Usar Todos os Dias
@@ -360,12 +385,12 @@ export default function Landing() {
           <section aria-label="Benefícios do treino personalizado inteligente" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
               <div className="max-w-3xl space-y-4 text-center md:text-left">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                  Como o AthletIA Funciona: Treino Personalizado Que Evolui Com Você
-                </h2>
-                <p className="text-lg md:text-xl text-light-muted">
-                  A inteligência artificial cria seu treino personalizado em segundos, baseado no seu perfil completo. E o melhor: a cada treino, o sistema ajusta automaticamente séries, peso, repetições e volume conforme você evolui. Você só precisa treinar.
-                </p>
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                    Como Funciona o Treino Inteligente
+                  </h2>
+                  <p className="text-lg md:text-xl text-light-muted">
+                    Do zero ao treino completo em menos de 2 minutos. A IA cria, você treina, o sistema evolui.
+                  </p>
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -412,7 +437,7 @@ export default function Landing() {
                 >
                   Criar meu treino personalizado agora
                 </button>
-                <p className="text-xs md:text-sm text-light-muted mt-3">100% gratuito • Leva menos de 2 minutos</p>
+                <p className="text-xs md:text-sm text-light-muted mt-3">Leva menos de 2 minutos • Resultados desde o primeiro treino</p>
               </div>
             </div>
           </section>
@@ -469,10 +494,10 @@ export default function Landing() {
           <section aria-label="Resultados e depoimentos" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center md:text-left">
-                Resultados Reais de Pessoas Reais
+                Resultados Reais
               </h2>
               <p className="text-base md:text-lg text-light-muted text-center md:text-left">
-                Veja como o AthletIA está transformando corpos e vidas
+                Pessoas reais alcançando resultados reais com treino personalizado inteligente
               </p>
 
               <div className="rounded-3xl border border-grey/20 bg-dark-lighter p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-center shadow-xl">
@@ -497,18 +522,101 @@ export default function Landing() {
                     Caso real
                   </p>
                   <p className="text-lg md:text-xl lg:text-2xl font-semibold text-light leading-relaxed">
-                    "A primeira vez que senti evolução contínua foi com o AthletIA. Não preciso pensar em nada, só treinar. O treino se ajusta sozinho conforme eu evoluo."
+                    "Primeira vez que senti evolução contínua. A IA ajusta tudo. Só treino."
                   </p>
-                  <p className="text-sm md:text-base text-light-muted">Miguel, 32 anos – Perdeu 12 kg em 4 meses com AthletIA</p>
+                  <p className="text-sm md:text-base text-light-muted">Miguel – Perdeu 12 kg em 4 meses</p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* SEÇÃO 8 – COMPARAÇÃO */}
+          {/* SEÇÃO 8 – PARA QUEM É / PARA QUEM NÃO É */}
+          <section aria-label="Para quem é o AthletIA" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
+            <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
+              <div className="text-center space-y-3">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                  Para Quem É o AthletIA?
+                </h2>
+                <p className="text-base md:text-lg text-light-muted">
+                  Descubra se o treino personalizado inteligente é para você
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                {/* Para quem é */}
+                <div className="rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-light">Para Quem É</h3>
+                  </div>
+                  <ul className="space-y-4">
+                    {[
+                      'Quem quer resultados reais e consistentes',
+                      'Quem não tem tempo para planejar treinos',
+                      'Quem treina sozinho e precisa de orientação',
+                      'Quem quer evoluir sem complicação',
+                      'Quem já tentou treinos genéricos e não funcionou',
+                      'Quem quer um treino que evolui junto com ele'
+                    ].map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-base text-light leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Para quem não é */}
+                <div className="rounded-3xl border-2 border-grey/30 bg-dark-lighter p-6 md:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-grey/20 border border-grey/30 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-grey" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold text-light">Para Quem Não É</h3>
+                  </div>
+                  <ul className="space-y-4">
+                    {[
+                      'Quem já tem um personal trainer dedicado',
+                      'Quem prefere seguir treinos fixos sem adaptação',
+                      'Quem não quer usar tecnologia no treino',
+                      'Quem está satisfeito com treinos genéricos',
+                      'Quem não tem interesse em evoluir',
+                      'Quem não quer um treino personalizado'
+                    ].map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-grey flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span className="text-base text-light-muted leading-relaxed">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-4 text-center">
+                <button
+                  onClick={iniciarOnboarding}
+                  className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                >
+                  Quero um treino que evolui comigo
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* SEÇÃO 9 – COMPARAÇÃO */}
           <ComparisonTable onStartOnboarding={iniciarOnboarding} />
 
-          {/* SEÇÃO 9 – FAQ */}
+          {/* SEÇÃO 10 – FAQ */}
           <section aria-label="Perguntas frequentes sobre treino personalizado" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
               <div className="text-center space-y-3">
@@ -557,14 +665,14 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 10 – GARANTIA */}
+          {/* SEÇÃO 11 – GARANTIA */}
           <section aria-label="Garantia de satisfação" className="py-16 md:py-20 px-4 md:px-6">
             <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
                 Garantia Incondicional de 7 Dias
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-light-muted leading-relaxed">
-                Use o AthletIA por até 7 dias. Se não gostar, devolvemos 100 por cento do seu dinheiro.
+                Teste por 7 dias. Não gostou? Devolvemos 100% do valor.
               </p>
               <p className="text-base md:text-lg text-light-muted">
                 Sem perguntas. Sem formulários. Sem burocracia. O risco é totalmente nosso.
@@ -572,25 +680,25 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 11 – CTA FINAL ULTRA AGRESSIVO */}
+          {/* SEÇÃO 12 – CTA FINAL */}
           <section aria-label="Chamada para ação final" className="py-20 md:py-28 px-4 md:px-6 bg-primary/10 border-t border-primary/20">
             <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light leading-tight">
-                Seu Treino Personalizado Está a 2 Minutos de Distância
+                Seu Treino Inteligente Está a 2 Minutos de Distância
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-light-muted">
-                Crie seu treino personalizado agora. É 100% gratuito e leva menos de 2 minutos.
+                Comece agora. É rápido, totalmente personalizado e você vê resultados desde o primeiro treino.
               </p>
               <div className="pt-2">
                 <button
                   onClick={iniciarOnboarding}
                   className="btn-primary text-lg md:text-xl px-12 md:px-20 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
                 >
-                  Criar meu treino personalizado agora
+                  Começar agora — sem compromisso
                 </button>
               </div>
               <p className="text-sm md:text-base text-light-muted mt-4">
-                Sem cartão de crédito • Sem compromisso • Resultados garantidos
+                Leva menos de 2 minutos • Resultados garantidos
               </p>
             </div>
           </section>

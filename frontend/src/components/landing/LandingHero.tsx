@@ -10,30 +10,32 @@ export default function LandingHero({ onStartOnboarding, onScrollToHowItWorks }:
         {/* Texto principal */}
         <div className="space-y-6 md:space-y-8 text-center lg:text-left">
           {/* Badge de produto */}
-          <div className="inline-block px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
-            <span className="text-sm font-semibold text-primary">🤖 Treino Personalizado com Inteligência Artificial</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-2">
+            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <span className="text-sm font-semibold text-primary">Treino Personalizado com Inteligência Artificial</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
-            Treino Personalizado Criado por IA
-            <span className="block text-primary mt-2 md:mt-3">Que Se Adapta Automaticamente ao Seu Corpo</span>
+            Treino Personalizado com IA que Evolui Junto com Você
           </h1>
 
           <div className="space-y-3 md:space-y-4">
             <p className="text-lg md:text-xl lg:text-2xl text-light font-semibold">
-              O AthletIA é um aplicativo que cria seu treino personalizado em segundos usando inteligência artificial.
+              Seu treino criado automaticamente, ajustado a cada sessão e pronto para fazer você evoluir — sem treinos genéricos e sem perder tempo.
             </p>
             <p className="text-base md:text-lg lg:text-xl text-light-muted leading-relaxed">
-              <strong className="text-light">Não é um treino genérico.</strong> É um treino criado especificamente para você: seu corpo, seu objetivo, sua rotina e seu nível. E o melhor: ele se ajusta automaticamente conforme você evolui, sem você precisar pensar em nada.
+              Em menos de 2 minutos, a IA cria seu treino 100% personalizado: objetivo, nível, rotina, tempo disponível e equipamentos.
             </p>
           </div>
 
           <ul className="space-y-3 md:space-y-4 pt-2 text-left">
             {[
-              'Treino criado em menos de 2 minutos, baseado no seu perfil completo',
-              'Ajuste automático de séries, peso e repetições a cada treino',
-              'Mais de 300 exercícios mapeados, selecionados pela IA para você',
-              'Progressão inteligente que garante evolução contínua'
+              'Ajusta séries, cargas e repetições automaticamente',
+              'Evolui de acordo com seu desempenho',
+              'Funciona em casa ou na academia',
+              'Zero complicação — você só treina'
             ].map((item) => (
               <li key={item} className="flex items-center gap-3 md:gap-4">
                 <span className="flex-shrink-0 inline-flex h-6 w-6 md:h-7 md:w-7 items-center justify-center rounded-full bg-primary/20 border border-primary/30">
@@ -63,7 +65,7 @@ export default function LandingHero({ onStartOnboarding, onScrollToHowItWorks }:
               </button>
             </div>
             <p className="text-xs md:text-sm text-light-muted text-center lg:text-left">
-              <span className="font-semibold text-primary">100% gratuito</span> para criar seu treino • Leva menos de 2 minutos
+              Leva menos de 2 minutos • Resultados desde o primeiro treino
             </p>
           </div>
         </div>
