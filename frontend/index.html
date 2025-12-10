@@ -37,10 +37,14 @@
         return false;
       }
       
-      // Carregar gtag.js de forma não bloqueante após o carregamento inicial
-      window.addEventListener('load', function() {
+      // Carregar gtag.js de forma não bloqueante após interação do usuário ou timeout
+      var gtagLoaded = false;
+      function loadGtag() {
+        if (gtagLoaded) return;
+        gtagLoaded = true;
         var script = document.createElement('script');
         script.async = true;
+        script.defer = true;
         script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
         document.head.appendChild(script);
         
@@ -48,7 +52,15 @@
           gtag('js', new Date());
           gtag('config', 'AW-448210685');
         };
+      }
+      
+      // Carregar após interação do usuário (melhor performance)
+      ['mousedown', 'touchstart', 'keydown'].forEach(function(event) {
+        document.addEventListener(event, loadGtag, { once: true, passive: true });
       });
+      
+      // Fallback: carregar após 3 segundos se não houver interação
+      setTimeout(loadGtag, 3000);
     </script>
     
     <!-- Primary Meta Tags -->
@@ -110,8 +122,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="AthletIA" />
     
-    <!-- Preload imagem hero WebP (LCP optimization) - Prioridade alta -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen.webp" fetchpriority="high" type="image/webp" />
+    <!-- Preload imagem hero WebP responsiva (LCP optimization) - Prioridade alta -->
+    <!-- Mobile primeiro (mais comum) -->
+    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" media="(max-width: 768px)" />
+    <!-- Desktop -->
+    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-800x1600.webp" fetchpriority="high" type="image/webp" media="(min-width: 769px)" />
     
     <!-- Prefetch imagens críticas do onboarding para reduzir carregamentos sem gerar warnings -->
     <link rel="prefetch" as="image" href="/images/onboarding/18 aos 29.webp" />

@@ -21,17 +21,24 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
           <div className="relative rounded-[2.5rem] shadow-2xl overflow-visible w-full max-w-[400px]">
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <picture className="block w-full">
-              {/* Tentar WebP primeiro (melhor compressão) */}
+              {/* Versões responsivas WebP - navegador escolhe automaticamente baseado no tamanho da tela */}
+              <source 
+                srcSet={`${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w, ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w`}
+                type="image/webp"
+                sizes="(max-width: 768px) 400px, 800px"
+              />
+              {/* Fallback para versão original WebP se srcset não funcionar */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Fallback para PNG */}
+              {/* Fallback final para PNG */}
               <img 
                 src={imagemApp} 
                 alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
-                className="w-full h-auto object-contain rounded-[2.5rem] block"
+                className="w-full h-auto object-contain rounded-[2.5rem] block max-w-[400px] mx-auto"
                 loading="eager"
                 fetchPriority="high"
                 width="400"
                 height="800"
+                sizes="(max-width: 768px) 400px, 800px"
               />
             </picture>
           </div>
