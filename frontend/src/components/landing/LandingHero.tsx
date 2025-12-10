@@ -2,10 +2,9 @@ import AppPreview from './AppPreview'
 
 interface LandingHeroProps {
   onStartOnboarding: () => void
-  onScrollToHowItWorks: () => void
 }
 
-export default function LandingHero({ onStartOnboarding, onScrollToHowItWorks }: LandingHeroProps) {
+export default function LandingHero({ onStartOnboarding }: LandingHeroProps) {
   return (
     <section aria-label="Hero - Treino Personalizado Inteligente" className="min-h-[calc(100vh-80px)] flex items-center px-4 md:px-6 py-12 md:py-20">
       <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center w-full">

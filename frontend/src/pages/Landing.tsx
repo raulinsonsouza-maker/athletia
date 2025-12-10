@@ -163,7 +163,6 @@ export default function Landing() {
           {/* SEÇÃO 1 – HERO ULTRA AGRESSIVO */}
           <LandingHero 
             onStartOnboarding={iniciarOnboarding}
-            onScrollToHowItWorks={() => scrollToSection('como-funciona')}
           />
 
           {/* SEÇÃO 2 – POR QUE O ATHLETIA FUNCIONA - SIMPLIFICADA */}
