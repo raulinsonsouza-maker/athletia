@@ -390,20 +390,60 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 8 – PARA QUEM É - SIMPLIFICADA */}
-          <section aria-label="Para quem é o AthletIA" className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/50 border-y border-grey/20">
-            <div className="max-w-4xl mx-auto space-y-8 text-center">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                Para Quem É o AthletIA?
-              </h2>
-              <p className="text-lg md:text-xl text-light-muted">
-                Para quem quer resultados reais, sem complicação e com um treino que evolui junto.
-              </p>
+          {/* SEÇÃO 8 – PARA QUEM É - AGRESSIVA */}
+          <section aria-label="Para quem é o AthletIA" className="py-20 md:py-28 px-4 md:px-6 bg-gradient-to-br from-primary/20 via-primary/10 to-dark border-y border-primary/30">
+            <div className="max-w-5xl mx-auto space-y-10 text-center">
+              <div className="space-y-4">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light leading-tight">
+                  Para Quem É o AthletIA?
+                </h2>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-primary">
+                  Para quem quer resultados reais, sem complicação e com um treino que evolui junto.
+                </p>
+              </div>
 
-              <div className="pt-6">
+              <div className="grid md:grid-cols-3 gap-6 pt-8">
+                {[
+                  { 
+                    icon: (
+                      <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    ),
+                    title: 'Quem quer resultados',
+                    desc: 'Não treinos genéricos que não funcionam'
+                  },
+                  { 
+                    icon: (
+                      <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    ),
+                    title: 'Quem não tem tempo',
+                    desc: 'Para planejar treinos complexos'
+                  },
+                  { 
+                    icon: (
+                      <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    ),
+                    title: 'Quem quer evoluir',
+                    desc: 'Com um sistema que aprende com você'
+                  }
+                ].map((item) => (
+                  <div key={item.title} className="bg-dark/80 rounded-2xl border-2 border-primary/30 p-6 space-y-3">
+                    <div className="flex justify-center">{item.icon}</div>
+                    <h3 className="text-lg font-bold text-light">{item.title}</h3>
+                    <p className="text-sm text-light-muted">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-8">
                 <button
                   onClick={iniciarOnboarding}
-                  className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
+                  className="btn-primary text-xl md:text-2xl px-12 md:px-20 py-6 md:py-7 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
                 >
                   Quero um treino que evolui comigo
                 </button>
@@ -414,15 +454,15 @@ export default function Landing() {
           {/* SEÇÃO 9 – COMPARAÇÃO */}
           <ComparisonTable onStartOnboarding={iniciarOnboarding} />
 
-          {/* SEÇÃO 10 – FAQ */}
-          <section aria-label="Perguntas frequentes sobre treino personalizado" className="py-16 md:py-20 px-4 md:px-6">
-            <div className="max-w-4xl mx-auto space-y-8 md:space-y-10">
-              <div className="text-center space-y-3">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+          {/* SEÇÃO 10 – FAQ - AGRESSIVA */}
+          <section aria-label="Perguntas frequentes sobre treino personalizado" className="py-20 md:py-28 px-4 md:px-6 bg-dark-lighter/50">
+            <div className="max-w-5xl mx-auto space-y-10 md:space-y-12">
+              <div className="text-center space-y-4">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light">
                   Perguntas Frequentes
                 </h2>
-                <p className="text-base md:text-lg text-light-muted">
-                  Tire suas dúvidas sobre treino personalizado inteligente e como funciona o sistema de treino adaptativo com IA
+                <p className="text-xl md:text-2xl font-semibold text-primary">
+                  Tire suas dúvidas sobre treino personalizado inteligente
                 </p>
               </div>
 
@@ -463,38 +503,85 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 11 – GARANTIA */}
-          <section aria-label="Garantia de satisfação" className="py-16 md:py-20 px-4 md:px-6">
-            <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+          {/* SEÇÃO 11 – GARANTIA - AGRESSIVA */}
+          <section aria-label="Garantia de satisfação" className="py-20 md:py-28 px-4 md:px-6 bg-gradient-to-br from-primary/20 via-primary/10 to-dark border-y-2 border-primary/30">
+            <div className="max-w-5xl mx-auto text-center space-y-8">
+              <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-primary/20 border-2 border-primary/40 mb-4">
+                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span className="text-lg font-bold text-primary">GARANTIA TOTAL</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light leading-tight">
                 Garantia Incondicional de 7 Dias
               </h2>
-              <p className="text-lg md:text-xl lg:text-2xl text-light-muted leading-relaxed">
+              <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary leading-relaxed">
                 Teste por 7 dias. Não gostou? Devolvemos 100% do valor.
               </p>
-              <p className="text-base md:text-lg text-light-muted">
-                Sem perguntas. Sem formulários. Sem burocracia. O risco é totalmente nosso.
+              <div className="grid md:grid-cols-3 gap-4 pt-6 max-w-3xl mx-auto">
+                {[
+                  'Sem perguntas',
+                  'Sem formulários',
+                  'Sem burocracia'
+                ].map((item) => (
+                  <div key={item} className="flex items-center justify-center gap-2 bg-dark/80 rounded-xl p-4 border border-primary/20">
+                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-sm font-semibold text-light">{item}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-lg md:text-xl font-bold text-light-muted pt-4">
+                O risco é totalmente nosso.
               </p>
             </div>
           </section>
 
-          {/* SEÇÃO 12 – CTA FINAL - SIMPLIFICADA */}
-          <section aria-label="Chamada para ação final" className="py-20 md:py-28 px-4 md:px-6 bg-primary/10 border-t border-primary/20">
-            <div className="max-w-4xl mx-auto text-center space-y-8">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold text-light leading-tight">
-                Seu Treino Inteligente Está a 2 Minutos de Distância
-              </h2>
-              <div className="pt-4">
+          {/* SEÇÃO 12 – CTA FINAL - ULTRA AGRESSIVA */}
+          <section aria-label="Chamada para ação final" className="py-24 md:py-32 px-4 md:px-6 bg-gradient-to-br from-primary via-primary/90 to-primary/80 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+            }}></div>
+            <div className="max-w-5xl mx-auto text-center space-y-10 relative z-10">
+              <div className="space-y-6">
+                <h2 className="text-5xl md:text-6xl lg:text-7xl font-display font-black text-dark leading-tight drop-shadow-lg">
+                  Seu Treino Inteligente Está a 2 Minutos de Distância
+                </h2>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-dark/90">
+                  Comece agora. É rápido, totalmente personalizado e você vê resultados desde o primeiro treino.
+                </p>
+              </div>
+              <div className="pt-6">
                 <button
                   onClick={iniciarOnboarding}
-                  className="btn-primary text-xl md:text-2xl px-12 md:px-20 py-6 md:py-7 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
+                  className="bg-dark text-primary text-2xl md:text-3xl px-16 md:px-24 py-8 md:py-10 font-black shadow-2xl shadow-dark/50 hover:scale-[1.05] active:scale-[0.95] transition-all duration-200 rounded-2xl border-4 border-dark/20 hover:border-dark/40"
                 >
                   Começar agora — sem compromisso
                 </button>
               </div>
-              <p className="text-sm md:text-base text-light-muted mt-4">
-                Leva menos de 2 minutos • Resultados garantidos
-              </p>
+              <div className="flex flex-wrap items-center justify-center gap-6 text-dark/80 font-bold text-lg">
+                <div className="flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Leva menos de 2 minutos</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-dark/60"></div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Resultados garantidos</span>
+                </div>
+                <div className="w-1 h-1 rounded-full bg-dark/60"></div>
+                <div className="flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span>Garantia de 7 dias</span>
+                </div>
+              </div>
             </div>
           </section>
         </main>
