@@ -40,6 +40,7 @@ model User {
   configuracoesTreino            ConfiguracaoTreinoUsuario[]
   paymentHistory                 PaymentHistory[]
   passwordResetTokens            PasswordResetToken[]
+  remarketingEmails              RemarketingEmail[]
 
   @@map("users")
 }
@@ -367,4 +368,23 @@ model PasswordResetToken {
   @@index([expiresAt])
   @@index([used])
   @@map("password_reset_tokens")
+}
+
+model RemarketingEmail {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tipo      String // '10min', '24h', '48h'
+  enviado   Boolean   @default(false)
+  dataEnvio DateTime? @map("data_envio")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tipo])
+  @@index([userId])
+  @@index([tipo])
+  @@index([enviado])
+  @@index([userId, tipo, enviado])
+  @@map("remarketing_emails")
 }

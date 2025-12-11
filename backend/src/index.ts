@@ -23,6 +23,8 @@ import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
+import cron from 'node-cron';
+import { executarJobRemarketing } from './jobs/remarketing-email';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -319,5 +321,21 @@ app.listen(PORT, () => {
   sincronizarTodosExerciciosComGrupos()
     .then(() => console.log('🧠 Grupos musculares sincronizados com exercícios.'))
     .catch((error: any) => console.error('⚠️ Falha ao sincronizar grupos musculares:', error));
+
+  // Configurar job de remarketing por e-mail (executa a cada 5 minutos)
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      console.log('[CRON] Executando job de remarketing...');
+      await executarJobRemarketing();
+    } catch (error: any) {
+      console.error('[CRON] Erro ao executar job de remarketing:', error);
+      // Não interromper o servidor em caso de erro no job
+    }
+  }, {
+    scheduled: true,
+    timezone: 'America/Sao_Paulo'
+  });
+
+  console.log('📧 Job de remarketing configurado para executar a cada 5 minutos');
 });
 
