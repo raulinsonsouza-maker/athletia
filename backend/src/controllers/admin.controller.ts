@@ -8,6 +8,7 @@ import fs from 'fs';
 import { slugify } from '../utils/slugify';
 import { ACCEPTED_EXTENSIONS } from '../utils/file-validation';
 import { toUserAdminDTO, sanitizeString, isValidUUID, isValidEmail } from '../utils/dto';
+import { sendRemarketingEmail } from '../services/email.service';
 
 // Funções auxiliares para normalizar dados de onboarding
 const parseNumber = (value: any): number | null => {
@@ -1422,6 +1423,73 @@ export const limparTodasUrlsMidias = async (req: AuthRequest, res: Response) => 
     console.error('Erro ao limpar URLs de mídia:', error);
     res.status(500).json({
       error: 'Erro ao limpar URLs de mídia',
+      message: error.message
+    });
+  }
+};
+
+// Testar envio de e-mail de remarketing para um usuário específico
+export const testarEmailRemarketing = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { tipo } = req.body;
+
+    // Validar tipo
+    if (!tipo || !['10min', '24h', '48h'].includes(tipo)) {
+      return res.status(400).json({
+        error: 'Tipo de e-mail inválido',
+        message: 'O tipo deve ser: 10min, 24h ou 48h'
+      });
+    }
+
+    // Verificar se usuário existe
+    const usuario = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        nome: true
+      }
+    });
+
+    if (!usuario) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    if (!usuario.email) {
+      return res.status(400).json({
+        error: 'Usuário não possui e-mail cadastrado'
+      });
+    }
+
+    // Enviar e-mail de remarketing
+    const resultado = await sendRemarketingEmail(tipo as '10min' | '24h' | '48h', {
+      nome: usuario.nome || 'Treinador',
+      email: usuario.email
+    });
+
+    if (!resultado.success) {
+      console.error(`[Admin] Erro ao enviar e-mail de remarketing ${tipo} para usuário ${id}:`, resultado.error);
+      return res.status(500).json({
+        error: 'Erro ao enviar e-mail',
+        message: resultado.error || 'Erro desconhecido ao enviar e-mail'
+      });
+    }
+
+    console.log(`[Admin] E-mail de remarketing ${tipo} enviado com sucesso para usuário ${id} (${usuario.email.substring(0, 3)}***)`);
+
+    res.json({
+      message: `E-mail de remarketing (${tipo}) enviado com sucesso`,
+      tipo,
+      email: usuario.email.substring(0, 3) + '***',
+      messageId: resultado.messageId
+    });
+  } catch (error: any) {
+    console.error('Erro ao testar envio de e-mail de remarketing:', error);
+    res.status(500).json({
+      error: 'Erro ao testar envio de e-mail',
       message: error.message
     });
   }

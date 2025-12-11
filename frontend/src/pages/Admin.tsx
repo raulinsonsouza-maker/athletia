@@ -8,6 +8,7 @@ import GruposMuscularesAdminList from '../components/GruposMuscularesAdminList'
 import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
 import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
 import TreinoImagensAdmin from '../components/TreinoImagensAdmin'
+import { testarEmailRemarketing } from '../services/admin.service'
 
 
 interface User {
@@ -221,6 +222,9 @@ export default function Admin() {
   const [showRedefinirSenhaModal, setShowRedefinirSenhaModal] = useState(false)
   const [novaSenha, setNovaSenha] = useState('')
   const [redefinindoSenha, setRedefinindoSenha] = useState(false)
+  const [showTestarEmailModal, setShowTestarEmailModal] = useState(false)
+  const [tipoEmailTeste, setTipoEmailTeste] = useState<'10min' | '24h' | '48h'>('10min')
+  const [enviandoEmailTeste, setEnviandoEmailTeste] = useState(false)
 
   useEffect(() => {
     verificarAdmin()
@@ -1544,12 +1548,23 @@ export default function Admin() {
                               <p className="text-base text-light font-mono text-sm">
                                 {userDetails.usuario.senhaHash || 'Não disponível'}
                               </p>
-                              <button
-                                onClick={() => setShowRedefinirSenhaModal(true)}
-                                className="btn-primary text-xs px-3 py-1.5"
-                              >
-                                Redefinir Senha
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => setShowRedefinirSenhaModal(true)}
+                                  className="btn-primary text-xs px-3 py-1.5"
+                                >
+                                  Redefinir Senha
+                                </button>
+                                <button
+                                  onClick={() => setShowTestarEmailModal(true)}
+                                  className="btn-secondary text-xs px-3 py-1.5 flex items-center gap-1"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                  </svg>
+                                  Testar E-mail
+                                </button>
+                              </div>
                             </div>
                             <p className="text-xs text-light-muted mt-1">
                               A senha está armazenada como hash (criptografada) por segurança. Use o botão acima para redefinir.
@@ -2687,6 +2702,147 @@ export default function Admin() {
                   disabled={redefinindoSenha || !novaSenha}
                 >
                   {redefinindoSenha ? 'Redefinindo...' : 'Redefinir Senha'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Testar E-mail de Remarketing */}
+      {showTestarEmailModal && userDetails && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowTestarEmailModal(false)}
+        >
+          <div
+            className="card max-w-md w-full animate-scale-in border border-primary/30"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-grey/30">
+              <h3 className="text-xl font-display font-bold text-light">
+                Testar E-mail de Remarketing
+              </h3>
+              <button
+                onClick={() => setShowTestarEmailModal(false)}
+                className="btn-secondary p-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-light-muted mb-2">
+                  Usuário: <span className="text-light font-medium">{userDetails.usuario.email}</span>
+                </p>
+                <p className="text-xs text-light-muted mb-4">
+                  Selecione qual tipo de e-mail de remarketing deseja enviar para este usuário.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <label className="block space-y-2">
+                  <span className="text-sm font-medium text-light">Tipo de E-mail</span>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 p-3 bg-dark-card border border-grey/30 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="tipoEmail"
+                        value="10min"
+                        checked={tipoEmailTeste === '10min'}
+                        onChange={(e) => setTipoEmailTeste(e.target.value as '10min' | '24h' | '48h')}
+                        className="w-4 h-4 text-primary focus:ring-primary"
+                        disabled={enviandoEmailTeste}
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-light">E-mail 1 (10 minutos)</div>
+                        <div className="text-xs text-light-muted">Seu treino personalizado está quase pronto!</div>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-3 bg-dark-card border border-grey/30 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="tipoEmail"
+                        value="24h"
+                        checked={tipoEmailTeste === '24h'}
+                        onChange={(e) => setTipoEmailTeste(e.target.value as '10min' | '24h' | '48h')}
+                        className="w-4 h-4 text-primary focus:ring-primary"
+                        disabled={enviandoEmailTeste}
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-light">E-mail 2 (24 horas)</div>
+                        <div className="text-xs text-light-muted">Última chance: Seu treino personalizado te espera</div>
+                      </div>
+                    </label>
+                    <label className="flex items-center gap-3 p-3 bg-dark-card border border-grey/30 rounded-lg cursor-pointer hover:border-primary/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="tipoEmail"
+                        value="48h"
+                        checked={tipoEmailTeste === '48h'}
+                        onChange={(e) => setTipoEmailTeste(e.target.value as '10min' | '24h' | '48h')}
+                        className="w-4 h-4 text-primary focus:ring-primary"
+                        disabled={enviandoEmailTeste}
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-light">E-mail 3 (48 horas)</div>
+                        <div className="text-xs text-light-muted">Não deixe seus objetivos para depois</div>
+                      </div>
+                    </label>
+                  </div>
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowTestarEmailModal(false)
+                    setTipoEmailTeste('10min')
+                  }}
+                  className="btn-secondary flex-1"
+                  disabled={enviandoEmailTeste}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!userDetails?.usuario?.id) {
+                      showToast('Erro: ID do usuário não encontrado', 'error')
+                      return
+                    }
+
+                    setEnviandoEmailTeste(true)
+                    try {
+                      await testarEmailRemarketing(userDetails.usuario.id, tipoEmailTeste)
+                      showToast(`E-mail de remarketing (${tipoEmailTeste}) enviado com sucesso!`, 'success')
+                      setShowTestarEmailModal(false)
+                      setTipoEmailTeste('10min')
+                    } catch (error: any) {
+                      console.error('Erro ao enviar e-mail de teste:', error)
+                      showToast(error.response?.data?.error || error.response?.data?.message || 'Erro ao enviar e-mail de teste', 'error')
+                    } finally {
+                      setEnviandoEmailTeste(false)
+                    }
+                  }}
+                  className="btn-primary flex-1 flex items-center justify-center gap-2"
+                  disabled={enviandoEmailTeste}
+                >
+                  {enviandoEmailTeste ? (
+                    <>
+                      <div className="spinner h-4 w-4"></div>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Enviar E-mail de Teste
+                    </>
+                  )}
                 </button>
               </div>
             </div>

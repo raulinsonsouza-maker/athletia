@@ -14,6 +14,7 @@ import {
   obterEstatisticas,
   obterDetalhesUsuario,
   redefinirSenhaUsuario,
+  testarEmailRemarketing,
   listarExercicios,
   obterExercicio,
   criarExercicio,
@@ -249,6 +250,13 @@ router.put('/usuarios/:id', atualizarUsuarioValidation, validateRequest, atualiz
 router.delete('/usuarios/:id', desativarUsuario);
 router.post('/usuarios/:id/reativar', reativarUsuario);
 router.post('/usuarios/:id/redefinir-senha', redefinirSenhaValidation, validateRequest, redefinirSenhaUsuario);
+router.post('/usuarios/:id/testar-email-remarketing', [
+  body('tipo')
+    .notEmpty()
+    .withMessage('Tipo de e-mail é obrigatório')
+    .isIn(['10min', '24h', '48h'])
+    .withMessage('Tipo deve ser: 10min, 24h ou 48h')
+], validateRequest, testarEmailRemarketing);
 router.post('/usuarios/:id/simular-pagamento', simularPagamentoUsuario);
 router.get('/estatisticas', obterEstatisticas);
 
