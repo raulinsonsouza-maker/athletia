@@ -1,7 +1,8 @@
 import resend from '../lib/resend';
 
 const FROM_EMAIL = 'AthletIA <suporte@athletia.site>';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// Usar domínio fixo para evitar IPs e melhorar deliverability
+const FRONTEND_URL = 'https://athletia.site';
 
 interface WelcomeEmailData {
   nome: string;
@@ -27,8 +28,8 @@ function formatarData(data: Date): string {
 function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
   const { nome, email, plano, dataExpiracao } = data;
   const dataFormatada = formatarData(dataExpiracao);
-  const loginUrl = 'https://athletia.site/login';
-  const areaMembrosUrl = 'https://athletia.site/meu-plano';
+  const loginUrl = `${FRONTEND_URL}/login`;
+  const areaMembrosUrl = `${FRONTEND_URL}/meu-plano`;
 
   // SVG para ícone de celebração
   const celebrationIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
@@ -240,7 +241,10 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ succes
       from: FROM_EMAIL,
       to: data.email,
       subject: 'Bem-vindo ao AthletIA Premium!',
-      html: html
+      html: html,
+      headers: {
+        'X-Entity-Ref-ID': `welcome-${Date.now()}`
+      }
     });
 
     console.log('📧 Resposta do Resend:', JSON.stringify({
@@ -437,7 +441,10 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData): Prom
       from: FROM_EMAIL,
       to: data.email,
       subject: 'Redefinir sua senha do AthletIA',
-      html: html
+      html: html,
+      headers: {
+        'X-Entity-Ref-ID': `reset-${Date.now()}`
+      }
     });
 
     if (result.error) {
@@ -893,7 +900,10 @@ export async function sendRemarketingEmail(
       from: FROM_EMAIL,
       to: data.email,
       subject,
-      html
+      html,
+      headers: {
+        'X-Entity-Ref-ID': `remarketing-${tipo}-${Date.now()}`
+      }
     });
 
     if (result.error) {

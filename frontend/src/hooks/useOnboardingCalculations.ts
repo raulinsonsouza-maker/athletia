@@ -110,10 +110,10 @@ export function useOnboardingCalculations(onboardingData: OnboardingData | null)
         return '/images/onboarding/sobrepeso.webp'
       } else if (isFeminino) {
         if (tipoCorpo === 'Em Forma') return '/images/onboarding/Em_forma.webp'
-        if (tipoCorpo === 'Sobrepeso') return '/images/onboarding/Sobrepeso.png'
+        if (tipoCorpo === 'Sobrepeso') return '/images/onboarding/sobrepeso.webp'
         if (tipoCorpo === 'Acima do Peso') return '/images/onboarding/Acima do peso.webp'
         if (tipoCorpo === 'Obesidade') return '/images/onboarding/Obesidade.webp'
-        return '/images/onboarding/Sobrepeso.png'
+        return '/images/onboarding/sobrepeso.webp'
       }
       return null
     }
