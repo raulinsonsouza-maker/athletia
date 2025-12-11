@@ -222,8 +222,8 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ succes
     }
 
     // Verificar se o e-mail de remetente está configurado
-    if (!FROM_EMAIL || FROM_EMAIL === 'suporte@athletia.site') {
-      console.warn('⚠️ RESEND_FROM_EMAIL não configurado ou usando valor padrão. Verifique se está correto.');
+    if (!FROM_EMAIL) {
+      console.warn('⚠️ RESEND_FROM_EMAIL não configurado. Verifique se está correto.');
     }
 
     console.log('📧 Preparando envio de e-mail:', {

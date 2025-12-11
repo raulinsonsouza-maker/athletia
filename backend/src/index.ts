@@ -332,7 +332,6 @@ app.listen(PORT, () => {
       // Não interromper o servidor em caso de erro no job
     }
   }, {
-    scheduled: true,
     timezone: 'America/Sao_Paulo'
   });
 
