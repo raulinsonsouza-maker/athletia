@@ -36,7 +36,7 @@ export const TIPO_CORPO_FEMININO = [
     value: 'Sobrepeso',
     label: 'Sobrepeso',
     desc: 'Pouco acima do peso ideal',
-    image: '/images/onboarding/sobrepeso.webp'
+    image: '/images/onboarding/Mulher_Sobrepeso.png'
   },
   {
     value: 'Acima do Peso',

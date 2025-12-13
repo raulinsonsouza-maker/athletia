@@ -16,6 +16,7 @@ import Perfil from './pages/Perfil'
 import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
 import AdminGrupos from './pages/AdminGrupos'
+import AdminBlog from './pages/AdminBlog'
 import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -147,7 +148,8 @@ function App() {
           <Route path="/exercicios" element={<Navigate to="/treinos" replace />} />
           <Route path="/gerenciar-treinos" element={<Navigate to="/treinos" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/grupos" element={<AdminGrupos />} />
+          <Route path="/admin/grupos" element={<ProtectedRoute><AdminGrupos /></ProtectedRoute>} />
+          <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </Router>

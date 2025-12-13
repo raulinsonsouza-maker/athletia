@@ -388,3 +388,33 @@ model RemarketingEmail {
   @@index([userId, tipo, enviado])
   @@map("remarketing_emails")
 }
+
+model BlogArticle {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  title           String
+  metaTitle       String   @map("meta_title")
+  metaDescription String   @map("meta_description") @db.Text
+  keywords        String[] // Array de palavras-chave
+  author          String   @default("Equipe AthletIA")
+  publishedAt     DateTime? @map("published_at")
+  readingTime     Int      @default(0) @map("reading_time") // em minutos
+  category        String
+  featuredImage   String?  @map("featured_image")
+  featuredImageAlt String? @map("featured_image_alt")
+  excerpt         String   @db.Text
+  content         String   @db.Text // Conteúdo em HTML/Markdown
+  ctaTitle        String?  @map("cta_title")
+  ctaDescription  String?  @map("cta_description") @db.Text
+  ctaButtonText   String?  @map("cta_button_text")
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([slug])
+  @@index([published])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([published, publishedAt])
+  @@map("blog_articles")
+}

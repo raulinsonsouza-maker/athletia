@@ -34,13 +34,22 @@ import {
   salvarImagemPadrao,
   uploadImagemTreinoPadrao
 } from '../controllers/treino-imagem-padrao.controller';
+import {
+  listarArtigos,
+  obterArtigo,
+  criarArtigo,
+  atualizarArtigo,
+  deletarArtigo
+} from '../controllers/blog-admin.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadImagemGrupo, uploadTreinoImagem, validateImageMagicBytes } from '../middleware/upload.middleware';
+import { uploadImagemGrupo, uploadTreinoImagem, uploadBlogImagem, validateImageMagicBytes } from '../middleware/upload.middleware';
+import { PrismaClient } from '@prisma/client';
 import { normalizeMediaUrls } from '../middleware/normalize-media-urls.middleware';
 
 const router = Router();
+const prisma = new PrismaClient();
 
 // Todas as rotas requerem autenticação e ser admin
 router.use(authenticate);
@@ -329,7 +338,74 @@ router.post(
   uploadImagemTreinoPadrao
 );
 
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO DO BLOG
+// ============================================================================
 
+// Listar artigos
+router.get('/blog/artigos', listarArtigos);
+
+// Obter artigo específico
+router.get('/blog/artigos/:id', obterArtigo);
+
+// Criar novo artigo
+router.post('/blog/artigos', criarArtigo);
+
+// Atualizar artigo
+router.put('/blog/artigos/:id', atualizarArtigo);
+
+// Deletar artigo
+router.delete('/blog/artigos/:id', deletarArtigo);
+
+// Upload de imagem de capa do blog
+router.post(
+  '/blog/artigos/:id/imagem',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  async (req: AuthRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      }
+
+      // Atualizar artigo com URL da imagem
+      const imageUrl = `/uploads/blog/${file.filename}`;
+      
+      const artigo = await prisma.blogArticle.update({
+        where: { id },
+        data: { featuredImage: imageUrl }
+      });
+
+      res.json({
+        message: 'Imagem de capa atualizada com sucesso',
+        imagemUrl: imageUrl,
+        artigo
+      });
+    } catch (error: any) {
+      console.error('Erro ao fazer upload da imagem:', error);
+      res.status(500).json({
+        error: 'Erro ao fazer upload da imagem',
+        message: error.message
+      });
+    }
+  }
+);
 
 export default router;
 
