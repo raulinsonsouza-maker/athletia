@@ -251,8 +251,6 @@ export default function AdminBlog() {
             onSave={handleSaveArtigo}
           />
         )}
-          </div>
-        </div>
       </div>
     </div>
   )
