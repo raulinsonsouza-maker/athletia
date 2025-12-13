@@ -7,6 +7,7 @@ import BlogMeta from '../components/blog/BlogMeta'
 import BlogCTA from '../components/blog/BlogCTA'
 import BlogContent from '../components/blog/BlogContent'
 import SEOHead from '../components/blog/SEOHead'
+import OptimizedImage from '../components/blog/OptimizedImage'
 import api from '../services/auth.service'
 
 interface BlogArticleFromDB {
@@ -168,7 +169,7 @@ export default function BlogPost() {
           {/* Hero Image */}
           {article.featuredImage && (
             <div className="mb-10 rounded-2xl overflow-hidden shadow-2xl">
-              <img
+              <OptimizedImage
                 src={article.featuredImage}
                 alt={article.featuredImageAlt || article.title}
                 className="w-full h-auto object-cover"

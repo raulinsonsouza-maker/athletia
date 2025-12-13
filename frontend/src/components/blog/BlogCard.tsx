@@ -1,5 +1,6 @@
 import { BlogArticle } from '../../types/blog.types'
 import BlogMeta from './BlogMeta'
+import OptimizedImage from './OptimizedImage'
 
 interface BlogCardProps {
   article: BlogArticle
@@ -13,7 +14,7 @@ export default function BlogCard({ article, onClick }: BlogCardProps) {
       className="cursor-pointer bg-dark-lighter rounded-2xl border border-grey/20 overflow-hidden hover:border-primary/50 transition-all hover:scale-[1.02] group"
     >
       <div className="relative aspect-video overflow-hidden bg-dark">
-        <img
+        <OptimizedImage
           src={article.featuredImage}
           alt={article.featuredImageAlt}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
