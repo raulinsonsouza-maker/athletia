@@ -49,17 +49,35 @@ console.log(`[INIT] Diretório de upload de exercícios configurado: ${uploadDir
 console.log(`[INIT] Diretório existe: ${fs.existsSync(uploadDir) ? 'SIM' : 'NÃO'}`);
 
 // Rate limiting - Proteção contra brute force e DDoS
-// SEGURANÇA: Reduzido para melhor proteção
+// SEGURANÇA: Balanceado entre segurança e usabilidade
+// Arquivos estáticos (uploads, imagens) são excluídos do rate limiting
+// Requisições GET bem-sucedidas não contam para o limite (melhor UX)
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 300, // Máximo 300 requisições por IP a cada 15 minutos (reduzido de 500)
+  max: 1000, // Máximo 1000 requisições por IP a cada 15 minutos (aumentado para melhor UX)
   message: {
     error: 'Muitas requisições. Por favor, tente novamente mais tarde.'
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skip: (req: any) => req.method === 'OPTIONS', // Pular requisições CORS preflight
-  skipSuccessfulRequests: false // Manter contagem de todas as requisições para proteção geral
+  skip: (req: any) => {
+    // Pular requisições CORS preflight
+    if (req.method === 'OPTIONS') return true;
+    
+    // Excluir rotas de arquivos estáticos do rate limiting
+    const path = req.path || req.url || '';
+    if (
+      path.startsWith('/api/uploads/') ||
+      path.startsWith('/api/imagens-banco/') ||
+      (path.startsWith('/api/exercicios/') && path.includes('/media'))
+    ) {
+      return true;
+    }
+    
+    return false;
+  },
+  // Ignorar requisições GET bem-sucedidas (melhor UX, mantém segurança para POST/PUT/DELETE)
+  skipSuccessfulRequests: true
 });
 
 // Rate limiting específico para endpoints sensíveis
