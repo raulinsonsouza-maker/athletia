@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { resolveApiPath } from '../utils/api-url'
+import OptimizedImage from './blog/OptimizedImage'
 
 interface BlogArticle {
   id: string
@@ -43,8 +43,10 @@ export default function BlogArticleFormModal({
 }: BlogArticleFormModalProps) {
   const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
-  const [uploadingImage, setUploadingImage] = useState(false)
   const [activeTab, setActiveTab] = useState<'basico' | 'seo' | 'conteudo' | 'cta' | 'imagem'>('basico')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({
     title: '',
@@ -130,6 +132,11 @@ export default function BlogArticleFormModal({
       setActiveTab('basico')
     }
     setErrors({})
+    setSelectedImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }, [isOpen, artigo, isCreating])
 
   // Auto-gerar slug quando título mudar
@@ -152,34 +159,39 @@ export default function BlogArticleFormModal({
     setFormData(prev => ({ ...prev, keywords }))
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !artigo?.id) {
-      showToast('Selecione um arquivo e salve o artigo primeiro', 'error')
+    if (!file) return
+
+    // Validar tamanho (5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      showToast('Arquivo muito grande. Tamanho máximo: 5MB', 'error')
       return
     }
 
-    setUploadingImage(true)
-    try {
-      const formData = new FormData()
-      formData.append('imagem', file)
+    // Validar tipo
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      showToast('Formato inválido. Use JPG, PNG ou WEBP', 'error')
+      return
+    }
 
-      const response = await api.post(`/admin/blog/artigos/${artigo.id}/imagem`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+    setSelectedImageFile(file)
+    
+    // Criar preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
 
-      const imageUrl = response.data.imagemUrl || response.data.artigo.featuredImage
-      setFormData(prev => ({
-        ...prev,
-        featuredImage: imageUrl
-      }))
-      showToast('Imagem de capa atualizada com sucesso', 'success')
-    } catch (error: any) {
-      showToast(error.response?.data?.error || 'Erro ao fazer upload da imagem', 'error')
-    } finally {
-      setUploadingImage(false)
+  const handleRemoveImage = () => {
+    setSelectedImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -213,32 +225,78 @@ export default function BlogArticleFormModal({
 
     setSaving(true)
     try {
-      const payload: any = {
-        title: formData.title.trim(),
-        slug: formData.slug.trim(),
-        metaTitle: formData.metaTitle.trim() || formData.title.trim(),
-        metaDescription: formData.metaDescription.trim() || formData.excerpt.trim(),
-        keywords: formData.keywords,
-        author: formData.author.trim(),
-        category: formData.category.trim(),
-        excerpt: formData.excerpt.trim(),
-        content: formData.content,
-        ctaTitle: formData.ctaTitle.trim() || null,
-        ctaDescription: formData.ctaDescription.trim() || null,
-        ctaButtonText: formData.ctaButtonText.trim() || null,
-        readingTime: formData.readingTime || 0,
-        published: formData.published,
-        publishedAt: formData.publishedAt || null,
-        featuredImage: formData.featuredImage,
-        featuredImageAlt: formData.featuredImageAlt.trim() || null
+      // Se houver imagem selecionada, usar FormData
+      if (selectedImageFile) {
+        const formDataToSend = new FormData()
+        formDataToSend.append('title', formData.title.trim())
+        formDataToSend.append('slug', formData.slug.trim())
+        formDataToSend.append('metaTitle', formData.metaTitle.trim() || formData.title.trim())
+        formDataToSend.append('metaDescription', formData.metaDescription.trim() || formData.excerpt.trim())
+        formDataToSend.append('keywords', JSON.stringify(formData.keywords))
+        formDataToSend.append('author', formData.author.trim())
+        formDataToSend.append('category', formData.category.trim())
+        formDataToSend.append('excerpt', formData.excerpt.trim())
+        formDataToSend.append('content', formData.content)
+        formDataToSend.append('ctaTitle', formData.ctaTitle.trim() || '')
+        formDataToSend.append('ctaDescription', formData.ctaDescription.trim() || '')
+        formDataToSend.append('ctaButtonText', formData.ctaButtonText.trim() || '')
+        formDataToSend.append('readingTime', String(formData.readingTime || 0))
+        formDataToSend.append('published', String(formData.published))
+        formDataToSend.append('publishedAt', formData.publishedAt || '')
+        formDataToSend.append('featuredImageAlt', formData.featuredImageAlt.trim() || '')
+        formDataToSend.append('imagem', selectedImageFile)
+
+        if (isCreating) {
+          await api.post('/admin/blog/artigos', formDataToSend, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          })
+          showToast('Artigo criado com sucesso', 'success')
+        } else {
+          await api.put(`/admin/blog/artigos/${artigo!.id}`, formDataToSend, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          })
+          showToast('Artigo atualizado com sucesso', 'success')
+        }
+      } else {
+        // Sem imagem, enviar JSON normal
+        const payload: any = {
+          title: formData.title.trim(),
+          slug: formData.slug.trim(),
+          metaTitle: formData.metaTitle.trim() || formData.title.trim(),
+          metaDescription: formData.metaDescription.trim() || formData.excerpt.trim(),
+          keywords: formData.keywords,
+          author: formData.author.trim(),
+          category: formData.category.trim(),
+          excerpt: formData.excerpt.trim(),
+          content: formData.content,
+          ctaTitle: formData.ctaTitle.trim() || null,
+          ctaDescription: formData.ctaDescription.trim() || null,
+          ctaButtonText: formData.ctaButtonText.trim() || null,
+          readingTime: formData.readingTime || 0,
+          published: formData.published,
+          publishedAt: formData.publishedAt || null,
+          featuredImage: formData.featuredImage,
+          featuredImageAlt: formData.featuredImageAlt.trim() || null
+        }
+
+        if (isCreating) {
+          await api.post('/admin/blog/artigos', payload)
+          showToast('Artigo criado com sucesso', 'success')
+        } else {
+          await api.put(`/admin/blog/artigos/${artigo!.id}`, payload)
+          showToast('Artigo atualizado com sucesso', 'success')
+        }
       }
 
-      if (isCreating) {
-        await api.post('/admin/blog/artigos', payload)
-        showToast('Artigo criado com sucesso', 'success')
-      } else {
-        await api.put(`/admin/blog/artigos/${artigo!.id}`, payload)
-        showToast('Artigo atualizado com sucesso', 'success')
+      // Limpar imagem selecionada após salvar
+      setSelectedImageFile(null)
+      setImagePreview(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
       }
 
       onSave()
@@ -284,23 +342,33 @@ export default function BlogArticleFormModal({
 
         {/* Tabs */}
         <div className="flex gap-2 px-6 pt-4 border-b border-grey/30 overflow-x-auto">
-          {(['basico', 'seo', 'conteudo', 'cta', 'imagem'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light'
-              }`}
-            >
-              {tab === 'basico' && 'Básico'}
-              {tab === 'seo' && 'SEO'}
-              {tab === 'conteudo' && 'Conteúdo'}
-              {tab === 'cta' && 'CTA'}
-              {tab === 'imagem' && 'Imagem'}
-            </button>
-          ))}
+          {(['basico', 'seo', 'conteudo', 'cta', 'imagem'] as const).map(tab => {
+            // Verificar se há erros na tab
+            const hasErrors = 
+              (tab === 'basico' && (errors.title || errors.slug || errors.excerpt || errors.category || errors.content)) ||
+              (tab === 'conteudo' && errors.content);
+            
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap relative ${
+                  activeTab === tab
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-light-muted hover:text-light'
+                }`}
+              >
+                {tab === 'basico' && 'Básico'}
+                {tab === 'seo' && 'SEO'}
+                {tab === 'conteudo' && 'Conteúdo'}
+                {tab === 'cta' && 'CTA'}
+                {tab === 'imagem' && 'Imagem'}
+                {hasErrors && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-400 rounded-full"></span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Form */}
@@ -554,59 +622,70 @@ export default function BlogArticleFormModal({
             {/* Tab Imagem */}
             {activeTab === 'imagem' && (
               <div className="space-y-4">
-                {formData.featuredImage && (
+                {/* Preview da imagem atual ou selecionada */}
+                {(imagePreview || formData.featuredImage) && (
                   <div>
                     <label className="block text-sm font-medium text-light mb-2">
-                      Imagem de Capa Atual
+                      {imagePreview ? 'Preview da Nova Imagem' : 'Imagem de Capa Atual'}
                     </label>
-                    <img
-                      src={resolveApiPath(formData.featuredImage) || formData.featuredImage || ''}
-                      alt={formData.featuredImageAlt || 'Capa do artigo'}
-                      className="w-full max-w-md h-64 object-cover rounded-lg mb-4 border border-grey/20"
-                      onError={(e) => {
-                        console.error('Erro ao carregar imagem:', formData.featuredImage)
-                        const target = e.target as HTMLImageElement
-                        // Tentar com caminho alternativo se falhar
-                        if (formData.featuredImage && !formData.featuredImage.startsWith('http')) {
-                          const altPath = formData.featuredImage.startsWith('/') 
-                            ? `/api${formData.featuredImage}` 
-                            : `/api/uploads/blog/${formData.featuredImage}`
-                          target.src = altPath
-                        }
-                      }}
-                    />
+                    <div className="relative w-full max-w-md">
+                      <OptimizedImage
+                        src={imagePreview || formData.featuredImage || ''}
+                        alt={formData.featuredImageAlt || 'Capa do artigo'}
+                        className="w-full h-64 object-cover rounded-lg border border-grey/20"
+                      />
+                      {imagePreview && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-500 text-white rounded-full p-2 transition-colors"
+                          title="Remover imagem"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
 
-                {artigo?.id && (
-                  <div>
-                    <label className="block text-sm font-medium text-light mb-2">
-                      Upload de Nova Imagem de Capa
-                    </label>
+                {/* Upload de imagem */}
+                <div>
+                  <label className="block text-sm font-medium text-light mb-2">
+                    {formData.featuredImage ? 'Substituir Imagem de Capa' : 'Selecionar Imagem de Capa'}
+                  </label>
+                  <div className="relative">
                     <input
+                      ref={fileInputRef}
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImage}
+                      onChange={handleImageSelect}
+                      disabled={saving}
                       className="input-field w-full"
                     />
-                    {uploadingImage && (
-                      <p className="text-sm text-light-muted mt-2">Fazendo upload...</p>
+                    {selectedImageFile && (
+                      <div className="mt-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div className="flex-1">
+                            <p className="text-sm text-green-400 font-medium">{selectedImageFile.name}</p>
+                            <p className="text-xs text-light-muted">
+                              {(selectedImageFile.size / 1024 / 1024).toFixed(2)} MB • Pronto para salvar
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
-                    <p className="text-xs text-light-muted mt-1">
-                      Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB
-                    </p>
                   </div>
-                )}
+                  <p className="text-xs text-light-muted mt-1">
+                    Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB
+                  </p>
+                </div>
 
-                {!artigo?.id && (
-                  <div className="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
-                    <p className="text-sm text-yellow-400">
-                      Salve o artigo primeiro para fazer upload da imagem de capa.
-                    </p>
-                  </div>
-                )}
-
+                {/* Texto alternativo */}
                 <div>
                   <label className="block text-sm font-medium text-light mb-2">
                     Texto Alternativo da Imagem (Alt Text)
@@ -618,6 +697,9 @@ export default function BlogArticleFormModal({
                     className="input-field w-full"
                     placeholder="Descrição da imagem para acessibilidade e SEO"
                   />
+                  <p className="text-xs text-light-muted mt-1">
+                    Descreva a imagem para melhorar acessibilidade e SEO
+                  </p>
                 </div>
               </div>
             )}
@@ -641,8 +723,14 @@ export default function BlogArticleFormModal({
             <button
               type="submit"
               disabled={saving}
-              className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
+              {saving && (
+                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
               {saving ? 'Salvando...' : isCreating ? 'Criar Artigo' : 'Salvar Alterações'}
             </button>
           </div>

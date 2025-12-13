@@ -348,11 +348,47 @@ router.get('/blog/artigos', listarArtigos);
 // Obter artigo específico
 router.get('/blog/artigos/:id', obterArtigo);
 
-// Criar novo artigo
-router.post('/blog/artigos', criarArtigo);
+// Criar novo artigo (aceita multipart/form-data para upload de imagem)
+router.post(
+  '/blog/artigos',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  criarArtigo
+);
 
-// Atualizar artigo
-router.put('/blog/artigos/:id', atualizarArtigo);
+// Atualizar artigo (aceita multipart/form-data para upload de imagem)
+router.put(
+  '/blog/artigos/:id',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  atualizarArtigo
+);
 
 // Deletar artigo
 router.delete('/blog/artigos/:id', deletarArtigo);

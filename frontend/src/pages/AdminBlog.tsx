@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import BlogArticleFormModal from '../components/BlogArticleFormModal'
-import { resolveApiPath } from '../utils/api-url'
+import OptimizedImage from '../components/blog/OptimizedImage'
 
 // Definir título da página no useEffect
 
@@ -325,20 +325,13 @@ export default function AdminBlog() {
                 className="card card-hover"
               >
                 {artigo.featuredImage && (
-                  <img
-                    src={resolveApiPath(artigo.featuredImage) || artigo.featuredImage}
-                    alt={artigo.featuredImageAlt || artigo.title}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement
-                      if (artigo.featuredImage && !artigo.featuredImage.startsWith('http')) {
-                        const altPath = artigo.featuredImage.startsWith('/') 
-                          ? `/api${artigo.featuredImage}` 
-                          : `/api/uploads/blog/${artigo.featuredImage}`
-                        target.src = altPath
-                      }
-                    }}
-                  />
+                  <div className="w-full h-48 rounded-lg mb-4 overflow-hidden">
+                    <OptimizedImage
+                      src={artigo.featuredImage}
+                      alt={artigo.featuredImageAlt || artigo.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 )}
                 <div className="mb-2">
                   <span

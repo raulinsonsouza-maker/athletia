@@ -90,24 +90,57 @@ export const obterArtigo = async (req: AuthRequest, res: Response) => {
 // Criar novo artigo
 export const criarArtigo = async (req: AuthRequest, res: Response) => {
   try {
-    const {
-      title,
-      metaTitle,
-      metaDescription,
-      keywords,
-      author,
-      category,
-      featuredImage,
-      featuredImageAlt,
-      excerpt,
-      content,
-      ctaTitle,
-      ctaDescription,
-      ctaButtonText,
-      readingTime,
-      published,
-      publishedAt
-    } = req.body;
+    // Processar dados do FormData ou JSON
+    const isMultipart = req.file !== undefined;
+    let title, slug, metaTitle, metaDescription, keywords, author, category, featuredImage, featuredImageAlt, excerpt, content, ctaTitle, ctaDescription, ctaButtonText, readingTime, published, publishedAt;
+
+    if (isMultipart) {
+      // FormData - campos vêm como strings
+      title = req.body.title;
+      slug = req.body.slug;
+      metaTitle = req.body.metaTitle;
+      metaDescription = req.body.metaDescription;
+      keywords = req.body.keywords ? (typeof req.body.keywords === 'string' ? JSON.parse(req.body.keywords) : req.body.keywords) : [];
+      author = req.body.author;
+      category = req.body.category;
+      featuredImageAlt = req.body.featuredImageAlt;
+      excerpt = req.body.excerpt;
+      content = req.body.content;
+      ctaTitle = req.body.ctaTitle;
+      ctaDescription = req.body.ctaDescription;
+      ctaButtonText = req.body.ctaButtonText;
+      readingTime = req.body.readingTime ? parseInt(req.body.readingTime) : 0;
+      published = req.body.published === 'true' || req.body.published === true;
+      publishedAt = req.body.publishedAt || null;
+
+      // Se houver arquivo de imagem, usar URL do arquivo salvo
+      if (req.file) {
+        featuredImage = `/api/uploads/blog/${req.file.filename}`;
+      } else {
+        featuredImage = null;
+      }
+    } else {
+      // JSON normal
+      ({
+        title,
+        metaTitle,
+        metaDescription,
+        keywords,
+        author,
+        category,
+        featuredImage,
+        featuredImageAlt,
+        excerpt,
+        content,
+        ctaTitle,
+        ctaDescription,
+        ctaButtonText,
+        readingTime,
+        published,
+        publishedAt
+      } = req.body);
+      slug = req.body.slug;
+    }
 
     // Validações básicas
     if (!title || !title.trim()) {
@@ -117,7 +150,7 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
     }
 
     // Gerar slug se não fornecido
-    const slug = req.body.slug?.trim() || generateSlug(title);
+    slug = slug?.trim() || generateSlug(title);
 
     // Verificar se slug já existe
     const existingArticle = await prisma.blogArticle.findUnique({
@@ -140,13 +173,13 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
         author: author?.trim() || 'Equipe AthletIA',
         category: category?.trim() || 'Geral',
         featuredImage: featuredImage || null,
-        featuredImageAlt: featuredImageAlt || null,
+        featuredImageAlt: featuredImageAlt?.trim() || null,
         excerpt: excerpt?.trim() || '',
         content: content || '',
-        ctaTitle: ctaTitle || null,
-        ctaDescription: ctaDescription || null,
-        ctaButtonText: ctaButtonText || null,
-        readingTime: readingTime ? parseInt(readingTime) : 0,
+        ctaTitle: ctaTitle?.trim() || null,
+        ctaDescription: ctaDescription?.trim() || null,
+        ctaButtonText: ctaButtonText?.trim() || null,
+        readingTime: readingTime ? parseInt(String(readingTime)) : 0,
         published: published === true || published === 'true',
         publishedAt: publishedAt ? new Date(publishedAt) : (published ? new Date() : null)
       }
@@ -169,26 +202,7 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
 export const atualizarArtigo = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const {
-      title,
-      slug,
-      metaTitle,
-      metaDescription,
-      keywords,
-      author,
-      category,
-      featuredImage,
-      featuredImageAlt,
-      excerpt,
-      content,
-      ctaTitle,
-      ctaDescription,
-      ctaButtonText,
-      readingTime,
-      published,
-      publishedAt
-    } = req.body;
-
+    
     // Verificar se artigo existe
     const existingArticle = await prisma.blogArticle.findUnique({
       where: { id }
@@ -198,6 +212,69 @@ export const atualizarArtigo = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({
         error: 'Artigo não encontrado'
       });
+    }
+
+    // Processar dados do FormData ou JSON
+    const isMultipart = req.file !== undefined;
+    let title, slug, metaTitle, metaDescription, keywords, author, category, featuredImage, featuredImageAlt, excerpt, content, ctaTitle, ctaDescription, ctaButtonText, readingTime, published, publishedAt;
+
+    if (isMultipart) {
+      // FormData - campos vêm como strings
+      title = req.body.title;
+      slug = req.body.slug;
+      metaTitle = req.body.metaTitle;
+      metaDescription = req.body.metaDescription;
+      keywords = req.body.keywords ? (typeof req.body.keywords === 'string' ? JSON.parse(req.body.keywords) : req.body.keywords) : undefined;
+      author = req.body.author;
+      category = req.body.category;
+      featuredImageAlt = req.body.featuredImageAlt;
+      excerpt = req.body.excerpt;
+      content = req.body.content;
+      ctaTitle = req.body.ctaTitle;
+      ctaDescription = req.body.ctaDescription;
+      ctaButtonText = req.body.ctaButtonText;
+      readingTime = req.body.readingTime ? parseInt(req.body.readingTime) : undefined;
+      published = req.body.published === 'true' || req.body.published === true;
+      publishedAt = req.body.publishedAt || undefined;
+
+      // Se houver arquivo de imagem, usar URL do arquivo salvo
+      if (req.file) {
+        // Deletar imagem antiga se existir
+        if (existingArticle.featuredImage) {
+          const oldImagePath = path.join(process.cwd(), 'uploads', 'blog', path.basename(existingArticle.featuredImage));
+          if (fs.existsSync(oldImagePath)) {
+            try {
+              fs.unlinkSync(oldImagePath);
+            } catch (error) {
+              console.error('Erro ao deletar imagem antiga:', error);
+            }
+          }
+        }
+        featuredImage = `/api/uploads/blog/${req.file.filename}`;
+      } else {
+        featuredImage = undefined; // Não atualizar se não houver nova imagem
+      }
+    } else {
+      // JSON normal
+      ({
+        title,
+        slug,
+        metaTitle,
+        metaDescription,
+        keywords,
+        author,
+        category,
+        featuredImage,
+        featuredImageAlt,
+        excerpt,
+        content,
+        ctaTitle,
+        ctaDescription,
+        ctaButtonText,
+        readingTime,
+        published,
+        publishedAt
+      } = req.body);
     }
 
     // Verificar se novo slug já existe (se foi alterado)
@@ -223,13 +300,13 @@ export const atualizarArtigo = async (req: AuthRequest, res: Response) => {
     if (author !== undefined) updateData.author = author.trim();
     if (category !== undefined) updateData.category = category.trim();
     if (featuredImage !== undefined) updateData.featuredImage = featuredImage || null;
-    if (featuredImageAlt !== undefined) updateData.featuredImageAlt = featuredImageAlt || null;
+    if (featuredImageAlt !== undefined) updateData.featuredImageAlt = featuredImageAlt?.trim() || null;
     if (excerpt !== undefined) updateData.excerpt = excerpt.trim();
     if (content !== undefined) updateData.content = content;
-    if (ctaTitle !== undefined) updateData.ctaTitle = ctaTitle || null;
-    if (ctaDescription !== undefined) updateData.ctaDescription = ctaDescription || null;
-    if (ctaButtonText !== undefined) updateData.ctaButtonText = ctaButtonText || null;
-    if (readingTime !== undefined) updateData.readingTime = parseInt(readingTime);
+    if (ctaTitle !== undefined) updateData.ctaTitle = ctaTitle?.trim() || null;
+    if (ctaDescription !== undefined) updateData.ctaDescription = ctaDescription?.trim() || null;
+    if (ctaButtonText !== undefined) updateData.ctaButtonText = ctaButtonText?.trim() || null;
+    if (readingTime !== undefined) updateData.readingTime = parseInt(String(readingTime));
     if (published !== undefined) updateData.published = published === true || published === 'true';
     if (publishedAt !== undefined) {
       updateData.publishedAt = publishedAt ? new Date(publishedAt) : null;
