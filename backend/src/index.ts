@@ -124,8 +124,17 @@ app.use(cors({
   credentials: true
 }));
 // SEGURANÇA: Limitar tamanho de payload para prevenir DoS
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+// Middleware para parsear JSON, mas pular se for multipart/form-data
+app.use((req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('multipart/form-data')) {
+    // Não parsear como JSON se for multipart - multer vai processar
+    return next();
+  }
+  // Parsear como JSON normalmente
+  express.json({ limit: '10mb' })(req, res, next);
+});
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Aplicar rate limiting geral em todas as rotas
 app.use('/api/', generalLimiter);

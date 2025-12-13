@@ -348,10 +348,18 @@ router.get('/blog/artigos', listarArtigos);
 // Obter artigo específico
 router.get('/blog/artigos/:id', obterArtigo);
 
-// Criar novo artigo (aceita multipart/form-data para upload de imagem)
+// Criar novo artigo (aceita multipart/form-data para upload de imagem ou JSON)
 router.post(
   '/blog/artigos',
   (req: AuthRequest, res: Response, next: NextFunction) => {
+    const contentType = req.headers['content-type'] || '';
+    
+    // Se não for multipart, passar direto (será processado como JSON)
+    if (!contentType.includes('multipart/form-data')) {
+      return next();
+    }
+    
+    // Se for multipart, processar com multer
     uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
       if (err) {
         if (err instanceof multer.MulterError) {
@@ -369,10 +377,18 @@ router.post(
   criarArtigo
 );
 
-// Atualizar artigo (aceita multipart/form-data para upload de imagem)
+// Atualizar artigo (aceita multipart/form-data para upload de imagem ou JSON)
 router.put(
   '/blog/artigos/:id',
   (req: AuthRequest, res: Response, next: NextFunction) => {
+    const contentType = req.headers['content-type'] || '';
+    
+    // Se não for multipart, passar direto (será processado como JSON)
+    if (!contentType.includes('multipart/form-data')) {
+      return next();
+    }
+    
+    // Se for multipart, processar com multer
     uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
       if (err) {
         if (err instanceof multer.MulterError) {

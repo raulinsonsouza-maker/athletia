@@ -93,15 +93,16 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
     // Processar dados do FormData ou JSON
     const isMultipart = req.file !== undefined;
     
-    // Log para debug (remover em produção)
-    if (isMultipart) {
-      console.log('[Blog] Recebendo FormData:', {
-        hasFile: !!req.file,
-        bodyKeys: Object.keys(req.body),
-        title: req.body.title,
-        slug: req.body.slug
-      });
-    }
+    // Log para debug
+    console.log('[Blog] Criar artigo:', {
+      isMultipart,
+      hasFile: !!req.file,
+      contentType: req.headers['content-type'],
+      bodyKeys: Object.keys(req.body),
+      bodyTitle: req.body.title,
+      bodySlug: req.body.slug
+    });
+    
     let title, slug, metaTitle, metaDescription, keywords, author, category, featuredImage, featuredImageAlt, excerpt, content, ctaTitle, ctaDescription, ctaButtonText, readingTime, published, publishedAt;
 
     if (isMultipart) {
@@ -172,9 +173,15 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
 
     // Validações básicas
     if (!title || !title.trim()) {
+      console.error('[Blog] Erro de validação - Título vazio:', {
+        title,
+        isMultipart,
+        bodyKeys: Object.keys(req.body),
+        body: req.body
+      });
       return res.status(400).json({
         error: 'Título é obrigatório',
-        received: { title, isMultipart }
+        received: { title, isMultipart, bodyKeys: Object.keys(req.body) }
       });
     }
 

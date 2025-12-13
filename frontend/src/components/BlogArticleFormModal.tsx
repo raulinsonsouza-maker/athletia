@@ -257,21 +257,21 @@ export default function BlogArticleFormModal({
         // Sem imagem, enviar JSON normal
         const payload: any = {
           title: formData.title.trim(),
-          slug: formData.slug.trim(),
+          slug: formData.slug.trim() || generateSlug(formData.title.trim()),
           metaTitle: formData.metaTitle.trim() || formData.title.trim(),
           metaDescription: formData.metaDescription.trim() || formData.excerpt.trim(),
-          keywords: formData.keywords,
+          keywords: formData.keywords || [],
           author: formData.author.trim(),
           category: formData.category.trim(),
           excerpt: formData.excerpt.trim(),
-          content: formData.content,
+          content: formData.content || '',
           ctaTitle: formData.ctaTitle.trim() || null,
           ctaDescription: formData.ctaDescription.trim() || null,
           ctaButtonText: formData.ctaButtonText.trim() || null,
           readingTime: formData.readingTime || 0,
           published: formData.published,
           publishedAt: formData.publishedAt || null,
-          featuredImage: formData.featuredImage,
+          featuredImage: formData.featuredImage || null,
           featuredImageAlt: formData.featuredImageAlt.trim() || null
         }
 
@@ -293,10 +293,20 @@ export default function BlogArticleFormModal({
 
       onSave()
     } catch (error: any) {
-      const errorMsg = error.response?.data?.error || 'Erro ao salvar artigo'
+      console.error('Erro ao salvar artigo:', error)
+      console.error('Response data:', error.response?.data)
+      console.error('Request config:', error.config)
+      
+      const errorMsg = error.response?.data?.error || error.message || 'Erro ao salvar artigo'
       showToast(errorMsg, 'error')
+      
       if (error.response?.data?.message) {
         setErrors({ submit: error.response.data.message })
+      }
+      
+      // Log detalhado para debug
+      if (error.response?.data?.received) {
+        console.error('Dados recebidos pelo backend:', error.response.data.received)
       }
     } finally {
       setSaving(false)
