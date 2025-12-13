@@ -26,6 +26,9 @@ import ResetPassword from './pages/ResetPassword'
 
 // Lazy load Progresso (usa Chart.js - 60KB) - só carrega quando necessário
 const Progresso = lazy(() => import('./pages/Progresso'))
+// Lazy load Blog pages para code splitting
+const Blog = lazy(() => import('./pages/Blog'))
+const BlogPost = lazy(() => import('./pages/BlogPost'))
 
 function App() {
   return (
@@ -44,6 +47,22 @@ function App() {
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/cookies" element={<Cookies />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route 
+            path="/blog" 
+            element={
+              <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+                <Blog />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/blog/:slug" 
+            element={
+              <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+                <BlogPost />
+              </Suspense>
+            } 
+          />
           
           {/* Rotas protegidas */}
           <Route path="/dashboard" element={<Navigate to="/meu-plano" replace />} />
