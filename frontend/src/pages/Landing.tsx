@@ -194,24 +194,80 @@ export default function Landing() {
 
           {/* SEÇÃO 4 – O QUE VOCÊ GANHA */}
           <section aria-label="O que você ganha" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark">
-            <div className="max-w-4xl mx-auto space-y-8 text-center">
+            <div className="max-w-6xl mx-auto space-y-8 text-center">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
                 O que você ganha
               </h2>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 pt-8">
                 {[
-                  'Treinos personalizados',
-                  'Evolução automática',
-                  'Progresso visível',
-                  '300 exercícios validados',
-                  'Funciona em qualquer academia'
-                ].map((beneficio) => (
-                  <div key={beneficio} className="flex items-center gap-3 bg-dark-lighter/50 rounded-xl p-4 border border-primary/20">
-                    <svg className="w-6 h-6 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-lg font-semibold text-light">{beneficio}</span>
+                  {
+                    icon: (
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                    ),
+                    title: 'Treinos personalizados',
+                    description: 'O AthletIA cria um plano de treinamento exclusivo com base no seu nível de condicionamento físico, objetivos e equipamentos disponíveis.'
+                  },
+                  {
+                    icon: (
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    ),
+                    title: 'Evolução automática',
+                    description: 'A IA ajusta automaticamente peso, repetições e volume a cada treino baseado no seu desempenho real. Você só treina, o sistema evolui.'
+                  },
+                  {
+                    icon: (
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    ),
+                    title: 'Progresso visível',
+                    description: 'Mantenha-se motivado com acompanhamento de progresso em tempo real, estatísticas detalhadas e conquistas para comemorar suas vitórias.'
+                  },
+                  {
+                    icon: (
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
+                    ),
+                    title: '300 exercícios validados',
+                    description: 'Do iniciante ao avançado, explore uma biblioteca com mais de 300 exercícios com guias em vídeo para garantir a forma correta e maximizar os resultados.'
+                  },
+                  {
+                    icon: (
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                      </svg>
+                    ),
+                    title: 'Funciona em qualquer academia',
+                    description: 'Em casa ou na academia, o AthletIA adapta seu plano ao seu ambiente. Sem equipamentos? Sem problemas. Treine onde e quando quiser.'
+                  },
+                  {
+                    icon: (
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    ),
+                    title: 'Garantia',
+                    description: 'Teste por 7 dias. Não gostou, devolvemos 100% do valor. Zero riscos. Comece sua jornada de transformação com total segurança e confiança.'
+                  }
+                ].map((beneficio, index) => (
+                  <div key={index} className="bg-dark-lighter/50 rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all h-full flex flex-col">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 mb-4 mx-auto">
+                      <div className="text-primary">
+                        {beneficio.icon}
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-light mb-3">
+                      {beneficio.title}
+                    </h3>
+                    <p className="text-light-muted text-sm leading-relaxed flex-grow">
+                      {beneficio.description}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -317,7 +373,7 @@ export default function Landing() {
                 Garantia
               </h2>
               <p className="text-xl md:text-2xl lg:text-3xl font-bold text-primary leading-relaxed">
-                Teste por 7 dias. Não gostou, devolvemos 100 por cento do valor. Zero riscos.
+                Teste por 7 dias. Não gostou, devolvemos 100% do valor. Zero riscos.
               </p>
             </div>
           </section>
