@@ -12,7 +12,7 @@ const artigo1: BlogArticle = {
   publishedAt: '2025-01-15',
   readingTime: 12,
   category: 'Iniciantes',
-  featuredImage: '/images/blog/iniciantes-academia.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa iniciante treinando na academia com orientação profissional',
   excerpt: 'Começar na academia pode ser intimidador. Este guia completo te ensina tudo que você precisa saber para começar sem erros e evoluir com segurança.',
   content: (
@@ -163,7 +163,7 @@ const artigo2: BlogArticle = {
   publishedAt: '2025-01-16',
   readingTime: 14,
   category: 'Emagrecimento',
-  featuredImage: '/images/blog/perder-gordura.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa treinando para queima de gordura com foco em exercícios eficientes',
   excerpt: 'Perder gordura não é sobre dietas milagrosas. É sobre entender a ciência por trás do déficit calórico e aplicar estratégias práticas de treino e nutrição.',
   content: (
@@ -264,7 +264,7 @@ const artigo3: BlogArticle = {
   publishedAt: '2025-01-17',
   readingTime: 11,
   category: 'Progressão',
-  featuredImage: '/images/blog/progressao-carga.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa aumentando progressivamente o peso nos exercícios na academia',
   excerpt: 'A progressão de carga é fundamental para resultados consistentes. Aprenda como evoluir seu treino de forma inteligente e sustentável.',
   content: (
@@ -349,7 +349,7 @@ const artigo4: BlogArticle = {
   publishedAt: '2025-01-18',
   readingTime: 10,
   category: 'Treino',
-  featuredImage: '/images/blog/casa-vs-academia.webp',
+  featuredImage: '',
   featuredImageAlt: 'Comparação entre treino em casa e na academia mostrando diferentes ambientes',
   excerpt: 'Treino em casa ou academia? Ambos têm vantagens. Descubra qual se adapta melhor à sua rotina e como otimizar seus treinos em qualquer ambiente.',
   content: (
@@ -412,7 +412,7 @@ const artigo5: BlogArticle = {
   publishedAt: '2025-01-19',
   readingTime: 13,
   category: 'Mentalidade',
-  featuredImage: '/images/blog/mentalidade-disciplina.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa meditando e treinando mostrando conexão entre mentalidade e exercício',
   excerpt: 'A disciplina é mais importante que a motivação. Aprenda estratégias práticas para desenvolver mentalidade forte e manter consistência nos treinos.',
   content: (
@@ -482,7 +482,7 @@ const artigo6: BlogArticle = {
   publishedAt: '2025-01-20',
   readingTime: 15,
   category: 'Erros',
-  featuredImage: '/images/blog/erros-comuns.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa cometendo erros comuns no treino e depois corrigindo a técnica',
   excerpt: 'Muitas pessoas treinam por meses sem resultados. Descubra os erros mais comuns que impedem evolução e aprenda como evitá-los.',
   content: (
@@ -572,7 +572,7 @@ const artigo7: BlogArticle = {
   publishedAt: '2025-01-21',
   readingTime: 12,
   category: 'Tecnologia',
-  featuredImage: '/images/blog/treino-ia.webp',
+  featuredImage: '',
   featuredImageAlt: 'Interface de treino inteligente com IA mostrando personalização automática',
   excerpt: 'A inteligência artificial está transformando como treinamos. Descubra como IA pode criar treinos personalizados que aceleram sua evolução física.',
   content: (
@@ -634,7 +634,7 @@ const artigo8: BlogArticle = {
   publishedAt: '2025-01-22',
   readingTime: 10,
   category: 'Eficiência',
-  featuredImage: '/images/blog/treino-rapido.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa fazendo treino eficiente em pouco tempo com foco em resultados',
   excerpt: 'Não tem tempo para treinos longos? Aprenda como maximizar resultados em apenas 30-45 minutos com estratégias de treino eficiente.',
   content: (
@@ -696,7 +696,7 @@ const artigo9: BlogArticle = {
   publishedAt: '2025-01-23',
   readingTime: 11,
   category: 'Saúde',
-  featuredImage: '/images/blog/saude-estetica.webp',
+  featuredImage: '',
   featuredImageAlt: 'Pessoa treinando mostrando benefícios de saúde além da estética',
   excerpt: 'O treino vai muito além da estética. Descubra os benefícios reais para saúde física e mental que o exercício regular proporciona.',
   content: (
@@ -757,7 +757,7 @@ const artigo10: BlogArticle = {
   publishedAt: '2025-01-24',
   readingTime: 14,
   category: 'Periodização',
-  featuredImage: '/images/blog/periodizacao.webp',
+  featuredImage: '',
   featuredImageAlt: 'Gráfico mostrando periodização e evolução de treinos ao longo do tempo',
   excerpt: 'Periodização é a chave para resultados duradouros. Aprenda como estruturar seus treinos em ciclos para evolução contínua e sustentável.',
   content: (
