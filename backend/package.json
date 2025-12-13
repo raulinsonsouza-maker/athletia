@@ -16,7 +16,8 @@
     "tornar-admin": "tsx scripts/tornar-admin.ts",
     "criar-admin": "tsx scripts/criar-admin.ts",
     "atualizar-treinos-periodico": "tsx src/jobs/atualizar-treinos-periodico.ts",
-    "configurar-cron": "node scripts/configurar-cron-treinos.js"
+    "configurar-cron": "node scripts/configurar-cron-treinos.js",
+    "migrate:blog": "tsx scripts/migrate-blog-articles.ts"
   },
   "keywords": [
     "fitness",
