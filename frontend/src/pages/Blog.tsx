@@ -1,12 +1,69 @@
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { blogArticles } from '../data/blog/articles'
 import { getLatestArticles } from '../utils/blog.utils'
 import BlogHeader from '../components/blog/BlogHeader'
 import BlogCard from '../components/blog/BlogCard'
+import api from '../services/auth.service'
+
+interface BlogArticleFromDB {
+  id: string
+  slug: string
+  title: string
+  metaTitle: string
+  category: string
+  featuredImage: string | null
+  featuredImageAlt: string | null
+  excerpt: string
+  author: string
+  publishedAt: string | null
+  readingTime: number
+  createdAt: string
+  updatedAt: string
+}
 
 export default function Blog() {
   const navigate = useNavigate()
-  const articles = getLatestArticles(blogArticles)
+  const [articles, setArticles] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        // Tentar buscar do banco de dados
+        const response = await api.get('/blog/artigos')
+        if (response.data && response.data.length > 0) {
+          // Converter para formato compatível com BlogCard
+          const articlesFromDB = response.data.map((article: BlogArticleFromDB) => ({
+            id: article.id,
+            slug: article.slug,
+            title: article.title,
+            metaTitle: article.metaTitle,
+            category: article.category,
+            featuredImage: article.featuredImage || '',
+            featuredImageAlt: article.featuredImageAlt || article.title,
+            excerpt: article.excerpt,
+            author: article.author,
+            publishedAt: article.publishedAt || article.createdAt,
+            readingTime: article.readingTime,
+            updatedAt: article.updatedAt
+          }))
+          setArticles(articlesFromDB)
+        } else {
+          // Fallback para artigos estáticos
+          setArticles(getLatestArticles(blogArticles))
+        }
+      } catch (error) {
+        console.error('Erro ao buscar artigos do banco, usando arquivo estático:', error)
+        // Fallback para artigos estáticos
+        setArticles(getLatestArticles(blogArticles))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchArticles()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
@@ -23,7 +80,12 @@ export default function Blog() {
           </p>
         </div>
 
-        {articles.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="spinner h-12 w-12 mx-auto mb-4"></div>
+            <p className="text-light-muted text-lg">Carregando artigos...</p>
+          </div>
+        ) : articles.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-light-muted text-lg">Artigos em breve...</p>
           </div>

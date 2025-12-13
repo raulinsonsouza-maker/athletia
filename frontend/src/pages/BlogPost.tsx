@@ -1,17 +1,119 @@
 import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { blogArticles } from '../data/blog/articles'
 import { findArticleBySlug, getRelatedArticles } from '../utils/blog.utils'
 import BlogHeader from '../components/blog/BlogHeader'
 import BlogMeta from '../components/blog/BlogMeta'
 import BlogCTA from '../components/blog/BlogCTA'
+import BlogContent from '../components/blog/BlogContent'
 import SEOHead from '../components/blog/SEOHead'
+import api from '../services/auth.service'
+
+interface BlogArticleFromDB {
+  id: string
+  slug: string
+  title: string
+  metaTitle: string
+  metaDescription: string
+  keywords: string[]
+  author: string
+  publishedAt: string | null
+  readingTime: number
+  category: string
+  featuredImage: string | null
+  featuredImageAlt: string | null
+  excerpt: string
+  content: string
+  ctaTitle: string | null
+  ctaDescription: string | null
+  ctaButtonText: string | null
+  published: boolean
+  createdAt: string
+  updatedAt: string
+}
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const article = slug ? findArticleBySlug(blogArticles, slug) : undefined
+  const [article, setArticle] = useState<BlogArticleFromDB | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!article) {
+  // Primeiro tenta buscar do banco de dados, depois fallback para arquivo estático
+  useEffect(() => {
+    const fetchArticle = async () => {
+      if (!slug) {
+        setError('Slug não fornecido')
+        setLoading(false)
+        return
+      }
+
+      try {
+        // Tentar buscar do banco de dados (rota pública - precisa ser criada)
+        try {
+          const response = await api.get(`/blog/artigos/slug/${slug}`)
+          if (response.data) {
+            setArticle(response.data)
+            setLoading(false)
+            return
+          }
+        } catch (dbError: any) {
+          // Se não encontrar no banco, usar fallback do arquivo estático
+          console.log('Artigo não encontrado no banco, usando arquivo estático')
+        }
+
+        // Fallback: buscar do arquivo estático
+        const staticArticle = findArticleBySlug(blogArticles, slug)
+        if (staticArticle) {
+          // Converter para formato do banco
+          setArticle({
+            id: staticArticle.id,
+            slug: staticArticle.slug,
+            title: staticArticle.title,
+            metaTitle: staticArticle.metaTitle,
+            metaDescription: staticArticle.metaDescription,
+            keywords: staticArticle.keywords,
+            author: staticArticle.author,
+            publishedAt: staticArticle.publishedAt,
+            readingTime: staticArticle.readingTime,
+            category: staticArticle.category,
+            featuredImage: staticArticle.featuredImage,
+            featuredImageAlt: staticArticle.featuredImageAlt,
+            excerpt: staticArticle.excerpt,
+            content: '', // Conteúdo ReactNode será renderizado separadamente
+            ctaTitle: staticArticle.cta?.title || null,
+            ctaDescription: staticArticle.cta?.description || null,
+            ctaButtonText: staticArticle.cta?.buttonText || null,
+            published: true,
+            createdAt: staticArticle.publishedAt,
+            updatedAt: staticArticle.updatedAt || staticArticle.publishedAt
+          })
+        } else {
+          setError('Artigo não encontrado')
+        }
+      } catch (err: any) {
+        console.error('Erro ao buscar artigo:', err)
+        setError('Erro ao carregar artigo')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchArticle()
+  }, [slug])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner h-12 w-12 mx-auto mb-4"></div>
+          <p className="text-light-muted">Carregando artigo...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !article) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark flex items-center justify-center">
         <div className="text-center">
@@ -27,35 +129,52 @@ export default function BlogPost() {
     )
   }
 
-  const relatedArticles = getRelatedArticles(blogArticles, article)
+  // Buscar artigo estático para related articles (temporário até ter API)
+  const staticArticle = slug ? findArticleBySlug(blogArticles, slug) : undefined
+  const relatedArticles = staticArticle ? getRelatedArticles(blogArticles, staticArticle) : []
+
+  // Converter para formato compatível com SEOHead
+  const seoArticle = {
+    slug: article.slug,
+    title: article.title,
+    metaTitle: article.metaTitle,
+    metaDescription: article.metaDescription,
+    keywords: article.keywords,
+    featuredImage: article.featuredImage,
+    publishedAt: article.publishedAt || article.createdAt,
+    updatedAt: article.updatedAt || undefined,
+    author: article.author
+  }
 
   return (
     <>
-      <SEOHead article={article} />
+      <SEOHead article={seoArticle} />
       <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
         <BlogHeader />
         
-        <article className="max-w-4xl mx-auto px-4 md:px-6 py-12 md:py-20">
+        <article className="max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-20">
           {/* Hero Image */}
-          <div className="mb-8 rounded-2xl overflow-hidden">
-            <img
-              src={article.featuredImage}
-              alt={article.featuredImageAlt}
-              className="w-full h-auto object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
+          {article.featuredImage && (
+            <div className="mb-10 rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src={article.featuredImage}
+                alt={article.featuredImageAlt || article.title}
+                className="w-full h-auto object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          )}
 
           {/* Header */}
-          <header className="mb-8">
+          <header className="mb-10">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-6 leading-tight">
               {article.title}
             </h1>
             <BlogMeta
               author={article.author}
-              publishedAt={article.publishedAt}
-              updatedAt={article.updatedAt}
+              publishedAt={article.publishedAt || article.createdAt}
+              updatedAt={article.updatedAt || undefined}
               readingTime={article.readingTime}
               category={article.category}
             />
@@ -63,18 +182,27 @@ export default function BlogPost() {
 
           {/* Content */}
           <div className="mb-12">
-            <div className="text-light leading-relaxed space-y-6 text-base md:text-lg">
-              {article.content}
-            </div>
+            {article.content ? (
+              <BlogContent content={article.content} />
+            ) : (
+              // Fallback para conteúdo ReactNode (artigos estáticos antigos)
+              staticArticle && typeof staticArticle.content !== 'string' && (
+                <div className="blog-content text-light leading-relaxed space-y-6">
+                  {staticArticle.content}
+                </div>
+              )
+            )}
           </div>
 
           {/* CTA */}
-          <BlogCTA
-            title={article.cta.title}
-            description={article.cta.description}
-            buttonText={article.cta.buttonText}
-            href="/"
-          />
+          {(article.ctaTitle || article.ctaDescription || article.ctaButtonText) && (
+            <BlogCTA
+              title={article.ctaTitle || ''}
+              description={article.ctaDescription || ''}
+              buttonText={article.ctaButtonText || ''}
+              href="/"
+            />
+          )}
 
           {/* Related Articles */}
           {relatedArticles.length > 0 && (

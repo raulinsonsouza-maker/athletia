@@ -2,7 +2,17 @@ import { useEffect } from 'react'
 import { BlogArticle } from '../../types/blog.types'
 
 interface SEOHeadProps {
-  article: BlogArticle
+  article: BlogArticle | {
+    slug: string
+    title: string
+    metaTitle: string
+    metaDescription: string
+    keywords: string[]
+    featuredImage: string | null
+    publishedAt: string
+    updatedAt?: string | null
+    author: string
+  }
 }
 
 export default function SEOHead({ article }: SEOHeadProps) {
@@ -23,7 +33,7 @@ export default function SEOHead({ article }: SEOHeadProps) {
     const ogTags = [
       { property: 'og:title', content: article.metaTitle },
       { property: 'og:description', content: article.metaDescription },
-      { property: 'og:image', content: article.featuredImage },
+      { property: 'og:image', content: article.featuredImage || '' },
       { property: 'og:type', content: 'article' },
       { property: 'og:url', content: `${window.location.origin}/blog/${article.slug}` },
     ]
@@ -53,7 +63,7 @@ export default function SEOHead({ article }: SEOHeadProps) {
         tag.setAttribute('name', name)
         document.head.appendChild(tag)
       }
-      tag.setAttribute('content', content)
+      tag.setAttribute('content', content || '')
     })
 
     // Canonical URL
@@ -63,7 +73,8 @@ export default function SEOHead({ article }: SEOHeadProps) {
       canonical.setAttribute('rel', 'canonical')
       document.head.appendChild(canonical)
     }
-    canonical.setAttribute('href', `${window.location.origin}/blog/${article.slug}`)
+    const canonicalUrl = article.slug ? `${window.location.origin}/blog/${article.slug}` : window.location.href
+    canonical.setAttribute('href', canonicalUrl)
 
     // Schema.org structured data
     const schema = {
@@ -71,7 +82,7 @@ export default function SEOHead({ article }: SEOHeadProps) {
       '@type': 'Article',
       headline: article.title,
       description: article.metaDescription,
-      image: article.featuredImage,
+      image: article.featuredImage || '',
       datePublished: article.publishedAt,
       dateModified: article.updatedAt || article.publishedAt,
       author: {
