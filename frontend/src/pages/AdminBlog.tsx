@@ -38,17 +38,16 @@ export default function AdminBlog() {
   const [filterPublished, setFilterPublished] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Verificar autenticação admin
+  // Verificar autenticação admin e carregar artigos
   useEffect(() => {
     const adminToken = localStorage.getItem('adminAccessToken')
     if (!adminToken) {
       navigate('/admin/login')
+      return
     }
-  }, [navigate])
-
-  useEffect(() => {
     carregarArtigos()
-  }, [filterPublished, searchTerm])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, filterPublished, searchTerm])
 
   const carregarArtigos = async () => {
     setLoading(true)

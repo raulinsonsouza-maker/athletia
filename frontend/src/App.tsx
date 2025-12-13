@@ -148,8 +148,8 @@ function App() {
           <Route path="/exercicios" element={<Navigate to="/treinos" replace />} />
           <Route path="/gerenciar-treinos" element={<Navigate to="/treinos" replace />} />
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/grupos" element={<ProtectedRoute><AdminGrupos /></ProtectedRoute>} />
-          <Route path="/admin/blog" element={<ProtectedRoute><AdminBlog /></ProtectedRoute>} />
+          <Route path="/admin/grupos" element={<AdminGrupos />} />
+          <Route path="/admin/blog" element={<AdminBlog />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </Router>
