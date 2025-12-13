@@ -229,14 +229,14 @@ export default function BlogArticleFormModal({
       if (selectedImageFile) {
         const formDataToSend = new FormData()
         formDataToSend.append('title', formData.title.trim())
-        formDataToSend.append('slug', formData.slug.trim())
-        formDataToSend.append('metaTitle', formData.metaTitle.trim() || formData.title.trim())
-        formDataToSend.append('metaDescription', formData.metaDescription.trim() || formData.excerpt.trim())
-        formDataToSend.append('keywords', JSON.stringify(formData.keywords))
+        formDataToSend.append('slug', formData.slug.trim() || generateSlug(formData.title.trim()))
+        formDataToSend.append('metaTitle', (formData.metaTitle.trim() || formData.title.trim()))
+        formDataToSend.append('metaDescription', (formData.metaDescription.trim() || formData.excerpt.trim()))
+        formDataToSend.append('keywords', JSON.stringify(formData.keywords || []))
         formDataToSend.append('author', formData.author.trim())
         formDataToSend.append('category', formData.category.trim())
         formDataToSend.append('excerpt', formData.excerpt.trim())
-        formDataToSend.append('content', formData.content)
+        formDataToSend.append('content', formData.content || '')
         formDataToSend.append('ctaTitle', formData.ctaTitle.trim() || '')
         formDataToSend.append('ctaDescription', formData.ctaDescription.trim() || '')
         formDataToSend.append('ctaButtonText', formData.ctaButtonText.trim() || '')
@@ -247,18 +247,10 @@ export default function BlogArticleFormModal({
         formDataToSend.append('imagem', selectedImageFile)
 
         if (isCreating) {
-          await api.post('/admin/blog/artigos', formDataToSend, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          })
+          await api.post('/admin/blog/artigos', formDataToSend)
           showToast('Artigo criado com sucesso', 'success')
         } else {
-          await api.put(`/admin/blog/artigos/${artigo!.id}`, formDataToSend, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          })
+          await api.put(`/admin/blog/artigos/${artigo!.id}`, formDataToSend)
           showToast('Artigo atualizado com sucesso', 'success')
         }
       } else {

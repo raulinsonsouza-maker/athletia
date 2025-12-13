@@ -92,26 +92,54 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
   try {
     // Processar dados do FormData ou JSON
     const isMultipart = req.file !== undefined;
+    
+    // Log para debug (remover em produção)
+    if (isMultipart) {
+      console.log('[Blog] Recebendo FormData:', {
+        hasFile: !!req.file,
+        bodyKeys: Object.keys(req.body),
+        title: req.body.title,
+        slug: req.body.slug
+      });
+    }
     let title, slug, metaTitle, metaDescription, keywords, author, category, featuredImage, featuredImageAlt, excerpt, content, ctaTitle, ctaDescription, ctaButtonText, readingTime, published, publishedAt;
 
     if (isMultipart) {
       // FormData - campos vêm como strings
-      title = req.body.title;
-      slug = req.body.slug;
-      metaTitle = req.body.metaTitle;
-      metaDescription = req.body.metaDescription;
-      keywords = req.body.keywords ? (typeof req.body.keywords === 'string' ? JSON.parse(req.body.keywords) : req.body.keywords) : [];
-      author = req.body.author;
-      category = req.body.category;
-      featuredImageAlt = req.body.featuredImageAlt;
-      excerpt = req.body.excerpt;
-      content = req.body.content;
-      ctaTitle = req.body.ctaTitle;
-      ctaDescription = req.body.ctaDescription;
-      ctaButtonText = req.body.ctaButtonText;
-      readingTime = req.body.readingTime ? parseInt(req.body.readingTime) : 0;
+      title = req.body.title || '';
+      slug = req.body.slug || '';
+      metaTitle = req.body.metaTitle || '';
+      metaDescription = req.body.metaDescription || '';
+      
+      // Processar keywords - pode vir como string JSON ou array
+      try {
+        if (req.body.keywords) {
+          if (typeof req.body.keywords === 'string') {
+            keywords = req.body.keywords.trim() ? JSON.parse(req.body.keywords) : [];
+          } else if (Array.isArray(req.body.keywords)) {
+            keywords = req.body.keywords;
+          } else {
+            keywords = [];
+          }
+        } else {
+          keywords = [];
+        }
+      } catch (error) {
+        console.error('Erro ao processar keywords:', error);
+        keywords = [];
+      }
+      
+      author = req.body.author || '';
+      category = req.body.category || '';
+      featuredImageAlt = req.body.featuredImageAlt || '';
+      excerpt = req.body.excerpt || '';
+      content = req.body.content || '';
+      ctaTitle = req.body.ctaTitle || '';
+      ctaDescription = req.body.ctaDescription || '';
+      ctaButtonText = req.body.ctaButtonText || '';
+      readingTime = req.body.readingTime ? parseInt(String(req.body.readingTime)) : 0;
       published = req.body.published === 'true' || req.body.published === true;
-      publishedAt = req.body.publishedAt || null;
+      publishedAt = req.body.publishedAt && req.body.publishedAt.trim() ? req.body.publishedAt : null;
 
       // Se houver arquivo de imagem, usar URL do arquivo salvo
       if (req.file) {
@@ -145,12 +173,17 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
     // Validações básicas
     if (!title || !title.trim()) {
       return res.status(400).json({
-        error: 'Título é obrigatório'
+        error: 'Título é obrigatório',
+        received: { title, isMultipart }
       });
     }
 
     // Gerar slug se não fornecido
-    slug = slug?.trim() || generateSlug(title);
+    if (!slug || !slug.trim()) {
+      slug = generateSlug(title);
+    } else {
+      slug = slug.trim();
+    }
 
     // Verificar se slug já existe
     const existingArticle = await prisma.blogArticle.findUnique({
@@ -220,22 +253,40 @@ export const atualizarArtigo = async (req: AuthRequest, res: Response) => {
 
     if (isMultipart) {
       // FormData - campos vêm como strings
-      title = req.body.title;
-      slug = req.body.slug;
-      metaTitle = req.body.metaTitle;
-      metaDescription = req.body.metaDescription;
-      keywords = req.body.keywords ? (typeof req.body.keywords === 'string' ? JSON.parse(req.body.keywords) : req.body.keywords) : undefined;
-      author = req.body.author;
-      category = req.body.category;
-      featuredImageAlt = req.body.featuredImageAlt;
-      excerpt = req.body.excerpt;
-      content = req.body.content;
-      ctaTitle = req.body.ctaTitle;
-      ctaDescription = req.body.ctaDescription;
-      ctaButtonText = req.body.ctaButtonText;
-      readingTime = req.body.readingTime ? parseInt(req.body.readingTime) : undefined;
+      title = req.body.title || '';
+      slug = req.body.slug || '';
+      metaTitle = req.body.metaTitle || '';
+      metaDescription = req.body.metaDescription || '';
+      
+      // Processar keywords - pode vir como string JSON ou array
+      try {
+        if (req.body.keywords) {
+          if (typeof req.body.keywords === 'string') {
+            keywords = req.body.keywords.trim() ? JSON.parse(req.body.keywords) : undefined;
+          } else if (Array.isArray(req.body.keywords)) {
+            keywords = req.body.keywords;
+          } else {
+            keywords = undefined;
+          }
+        } else {
+          keywords = undefined;
+        }
+      } catch (error) {
+        console.error('Erro ao processar keywords:', error);
+        keywords = undefined;
+      }
+      
+      author = req.body.author || '';
+      category = req.body.category || '';
+      featuredImageAlt = req.body.featuredImageAlt || '';
+      excerpt = req.body.excerpt || '';
+      content = req.body.content || '';
+      ctaTitle = req.body.ctaTitle || '';
+      ctaDescription = req.body.ctaDescription || '';
+      ctaButtonText = req.body.ctaButtonText || '';
+      readingTime = req.body.readingTime ? parseInt(String(req.body.readingTime)) : undefined;
       published = req.body.published === 'true' || req.body.published === true;
-      publishedAt = req.body.publishedAt || undefined;
+      publishedAt = req.body.publishedAt && req.body.publishedAt.trim() ? req.body.publishedAt : undefined;
 
       // Se houver arquivo de imagem, usar URL do arquivo salvo
       if (req.file) {
