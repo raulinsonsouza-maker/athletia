@@ -9,7 +9,7 @@ export function getApiBaseUrl(): string {
   
   // Se não houver URL configurada, usar localhost em desenvolvimento
   if (!envUrl) {
-    return 'http://localhost:3001'
+    throw new Error('VITE_API_URL não definida. Build inválido para produção.')
   }
   
   // Remover /api do final se existir (será adicionado por getApiUrl)

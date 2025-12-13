@@ -98,7 +98,11 @@ app.use(helmet({
   }
 }));
 app.use(cors({
-  origin: FRONTEND_URL,
+   origin: [
+    'https://athletia.site',
+    'https://www.athletia.site',
+    'http://191.252.109.144'
+  ],
   credentials: true
 }));
 // SEGURANÇA: Limitar tamanho de payload para prevenir DoS
