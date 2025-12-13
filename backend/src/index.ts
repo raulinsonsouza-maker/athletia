@@ -152,6 +152,20 @@ app.use('/api/uploads/treino-imagens', express.static(uploadTreinoImagensPath, {
   }
 }));
 
+// Servir imagens do blog
+const uploadBlogPath = path.join(path.dirname(uploadExerciciosPath), 'blog');
+app.use('/api/uploads/blog', express.static(uploadBlogPath, {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.webp')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
+
 // Servir imagens do banco com múltiplos caminhos candidatos
 const imagensBancoCandidates = getImagensBancoPathCandidates();
 const resolveImagemBancoArquivo = (nomeArquivo: string): { filePath: string; basePath: string } | null => {

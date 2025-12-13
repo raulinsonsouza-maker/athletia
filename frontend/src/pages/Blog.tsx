@@ -53,8 +53,20 @@ export default function Blog() {
           // Fallback para artigos estáticos
           setArticles(getLatestArticles(blogArticles))
         }
-      } catch (error) {
-        console.error('Erro ao buscar artigos do banco, usando arquivo estático:', error)
+      } catch (error: any) {
+        // Se for erro de rede (backend offline) ou erro silencioso, usar fallback silenciosamente
+        const isNetworkError = !error.response || error.isNetworkError
+        const isSilent = error.silent === true
+        
+        if (isNetworkError && isSilent) {
+          // Backend offline - usar arquivos estáticos sem mostrar erro
+          console.log('Backend offline, usando artigos estáticos')
+        } else if (isNetworkError) {
+          // Erro de rede não silencioso
+          console.warn('Erro de conexão ao buscar artigos do banco')
+        } else {
+          console.error('Erro ao buscar artigos do banco:', error)
+        }
         // Fallback para artigos estáticos
         setArticles(getLatestArticles(blogArticles))
       } finally {

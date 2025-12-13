@@ -59,12 +59,23 @@ api.interceptors.response.use(
       const isAdminRoute = originalRequest?.url?.includes('/admin') ||
         (originalRequest?.url?.includes('/exercicios/') && originalRequest?.url?.includes('/media') && originalRequest?.method?.toLowerCase() !== 'get') ||
         false
+      
+      // Rotas públicas do blog podem usar fallback silenciosamente
+      const isPublicBlogRoute = originalRequest?.url?.includes('/blog/artigos')
+      
       if (isAdminRoute) {
         // Para rotas admin, não fazer nada aqui - deixar o componente tratar
         return Promise.reject({
           ...error,
           isNetworkError: true,
           message: 'Erro de conexão. Verifique se o backend está rodando na porta 3001.'
+        })
+      } else if (isPublicBlogRoute) {
+        // Para rotas públicas do blog, retornar erro silencioso para permitir fallback
+        return Promise.reject({
+          ...error,
+          isNetworkError: true,
+          silent: true // Flag para indicar que é um erro silencioso
         })
       }
       return Promise.reject({

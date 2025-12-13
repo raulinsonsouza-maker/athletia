@@ -58,8 +58,20 @@ export default function BlogPost() {
             return
           }
         } catch (dbError: any) {
-          // Se não encontrar no banco, usar fallback do arquivo estático
-          console.log('Artigo não encontrado no banco, usando arquivo estático')
+          // Se for erro de rede (backend offline) ou erro silencioso, usar fallback silenciosamente
+          const isNetworkError = !dbError.response || dbError.isNetworkError
+          const isSilent = dbError.silent === true
+          
+          if (isNetworkError && isSilent) {
+            // Backend offline - usar arquivo estático sem mostrar erro
+            console.log('Backend offline, usando artigo estático')
+          } else if (isNetworkError) {
+            // Erro de rede não silencioso
+            console.warn('Erro de conexão ao buscar artigo do banco')
+          } else if (dbError.response?.status !== 404) {
+            // Outros erros (exceto 404) são logados
+            console.error('Erro ao buscar artigo do banco:', dbError)
+          }
         }
 
         // Fallback: buscar do arquivo estático

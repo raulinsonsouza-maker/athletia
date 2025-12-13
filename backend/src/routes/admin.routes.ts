@@ -385,7 +385,7 @@ router.post(
       }
 
       // Atualizar artigo com URL da imagem
-      const imageUrl = `/uploads/blog/${file.filename}`;
+      const imageUrl = `/api/uploads/blog/${file.filename}`;
       
       const artigo = await prisma.blogArticle.update({
         where: { id },

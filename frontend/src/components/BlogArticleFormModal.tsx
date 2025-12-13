@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
+import { resolveApiPath } from '../utils/api-url'
 
 interface BlogArticle {
   id: string
@@ -169,9 +170,10 @@ export default function BlogArticleFormModal({
         }
       })
 
+      const imageUrl = response.data.imagemUrl || response.data.artigo.featuredImage
       setFormData(prev => ({
         ...prev,
-        featuredImage: response.data.imagemUrl || response.data.artigo.featuredImage
+        featuredImage: imageUrl
       }))
       showToast('Imagem de capa atualizada com sucesso', 'success')
     } catch (error: any) {
@@ -558,9 +560,20 @@ export default function BlogArticleFormModal({
                       Imagem de Capa Atual
                     </label>
                     <img
-                      src={formData.featuredImage}
+                      src={resolveApiPath(formData.featuredImage) || formData.featuredImage || ''}
                       alt={formData.featuredImageAlt || 'Capa do artigo'}
-                      className="w-full max-w-md h-64 object-cover rounded-lg mb-4"
+                      className="w-full max-w-md h-64 object-cover rounded-lg mb-4 border border-grey/20"
+                      onError={(e) => {
+                        console.error('Erro ao carregar imagem:', formData.featuredImage)
+                        const target = e.target as HTMLImageElement
+                        // Tentar com caminho alternativo se falhar
+                        if (formData.featuredImage && !formData.featuredImage.startsWith('http')) {
+                          const altPath = formData.featuredImage.startsWith('/') 
+                            ? `/api${formData.featuredImage}` 
+                            : `/api/uploads/blog/${formData.featuredImage}`
+                          target.src = altPath
+                        }
+                      }}
                     />
                   </div>
                 )}

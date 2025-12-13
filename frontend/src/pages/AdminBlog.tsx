@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import BlogArticleFormModal from '../components/BlogArticleFormModal'
+import { resolveApiPath } from '../utils/api-url'
 
 // Definir título da página no useEffect
 
@@ -325,9 +326,18 @@ export default function AdminBlog() {
               >
                 {artigo.featuredImage && (
                   <img
-                    src={artigo.featuredImage}
+                    src={resolveApiPath(artigo.featuredImage) || artigo.featuredImage}
                     alt={artigo.featuredImageAlt || artigo.title}
                     className="w-full h-48 object-cover rounded-lg mb-4"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      if (artigo.featuredImage && !artigo.featuredImage.startsWith('http')) {
+                        const altPath = artigo.featuredImage.startsWith('/') 
+                          ? `/api${artigo.featuredImage}` 
+                          : `/api/uploads/blog/${artigo.featuredImage}`
+                        target.src = altPath
+                      }
+                    }}
                   />
                 )}
                 <div className="mb-2">
