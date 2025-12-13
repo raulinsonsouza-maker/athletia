@@ -198,6 +198,9 @@ export default function Landing() {
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
                 O que você ganha
               </h2>
+              <p className="text-lg md:text-xl text-light-muted max-w-3xl mx-auto">
+                Conteúdo sobre treino, saúde, evolução física e qualidade de vida. Aprenda estratégias práticas para acelerar seus resultados.
+              </p>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 pt-8">
                 {[
@@ -256,16 +259,16 @@ export default function Landing() {
                     description: 'Teste por 7 dias. Não gostou, devolvemos 100% do valor. Zero riscos. Comece sua jornada de transformação com total segurança e confiança.'
                   }
                 ].map((beneficio, index) => (
-                  <div key={index} className="bg-dark-lighter/50 rounded-xl p-6 border border-primary/20 hover:border-primary/40 transition-all h-full flex flex-col">
-                    <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 mb-4 mx-auto">
+                  <div key={index} className="bg-dark-lighter rounded-xl p-6 border border-grey/20 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all h-full flex flex-col group">
+                    <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/20 group-hover:bg-primary/30 mb-5 mx-auto transition-colors">
                       <div className="text-primary">
                         {beneficio.icon}
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold text-light mb-3">
+                    <h3 className="text-xl font-bold text-light mb-3 text-center">
                       {beneficio.title}
                     </h3>
-                    <p className="text-light-muted text-sm leading-relaxed flex-grow">
+                    <p className="text-light-muted text-sm leading-relaxed flex-grow text-center">
                       {beneficio.description}
                     </p>
                   </div>
@@ -322,33 +325,62 @@ export default function Landing() {
             </div>
           </section>
 
-          {/* SEÇÃO 5 – RESULTADOS REAIS */}
-          <section aria-label="Resultados reais" className="py-16 md:py-20 px-4 md:px-6">
+          {/* SEÇÃO 5 – DEPOIMENTOS */}
+          <section aria-label="Depoimentos" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-b from-dark-lighter/50 to-dark">
             <div className="max-w-6xl mx-auto space-y-8 md:space-y-10">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light text-center">
-                Resultados reais
-              </h2>
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                  O que as pessoas estão dizendo sobre o <span className="text-primary">AthletIA</span> por aí?
+                </h2>
+                <p className="text-lg md:text-xl text-light-muted max-w-3xl mx-auto">
+                  Junte-se a milhares de usuários em todo o mundo e experimente o futuro do treinamento personalizado. Baixe agora e comece sua jornada!
+                </p>
+              </div>
 
               <div className="grid md:grid-cols-3 gap-6 md:gap-8">
                 {/* Depoimento 1 - Miguel */}
-                <div className="rounded-2xl border border-grey/20 bg-dark-lighter p-6 space-y-4 shadow-xl">
-                  <p className="text-lg md:text-xl font-semibold text-light leading-relaxed">
-                    "Miguel perdeu 12 kg em 4 meses. Nunca tinha evoluído desse jeito."
+                <div className="rounded-2xl border border-grey/20 bg-dark-lighter p-6 space-y-4 shadow-xl h-full flex flex-col">
+                  <div className="flex gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-base md:text-lg font-medium text-light leading-relaxed flex-grow">
+                    "Aplicativo incrível! Os treinos personalizados me mantêm motivado e estou vendo um progresso real!"
                   </p>
+                  <p className="text-sm text-light-muted font-semibold">Miguel S.</p>
                 </div>
 
                 {/* Depoimento 2 - Ana */}
-                <div className="rounded-2xl border border-grey/20 bg-dark-lighter p-6 space-y-4 shadow-xl">
-                  <p className="text-lg md:text-xl font-semibold text-light leading-relaxed">
-                    "Ana conseguiu consistência pela primeira vez. Só abre o app e treina."
+                <div className="rounded-2xl border border-grey/20 bg-dark-lighter p-6 space-y-4 shadow-xl h-full flex flex-col">
+                  <div className="flex gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-base md:text-lg font-medium text-light leading-relaxed flex-grow">
+                    "Super fácil de usar e repleto de recursos incríveis. Acompanhar meu progresso nunca foi tão simples!"
                   </p>
+                  <p className="text-sm text-light-muted font-semibold">Ana M.</p>
                 </div>
 
                 {/* Depoimento 3 - João */}
-                <div className="rounded-2xl border border-grey/20 bg-dark-lighter p-6 space-y-4 shadow-xl">
-                  <p className="text-lg md:text-xl font-semibold text-light leading-relaxed">
-                    "João ganhou 4 kg de massa magra sem adivinhação."
+                <div className="rounded-2xl border border-grey/20 bg-dark-lighter p-6 space-y-4 shadow-xl h-full flex flex-col">
+                  <div className="flex gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <p className="text-base md:text-lg font-medium text-light leading-relaxed flex-grow">
+                    "Em casa ou na academia, o AthletIA adapta seu plano ao seu ambiente. Sem equipamentos? Sem problemas."
                   </p>
+                  <p className="text-sm text-light-muted font-semibold">João R.</p>
                 </div>
               </div>
 
@@ -365,6 +397,69 @@ export default function Landing() {
 
           {/* SEÇÃO 6 – A COMPARAÇÃO QUE IMPORTA */}
           <ComparisonTable onStartOnboarding={iniciarOnboarding} />
+
+          {/* SEÇÃO 6.5 – POR QUE ATHLETIA */}
+          <section aria-label="Por que AthletIA" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-br from-dark via-dark-lighter/30 to-dark">
+            <div className="max-w-6xl mx-auto">
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                {/* Lado esquerdo - Visual placeholder (pode adicionar imagem de app depois) */}
+                <div className="hidden md:block">
+                  <div className="relative">
+                    <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl border border-primary/30 flex items-center justify-center">
+                      <div className="text-center space-y-4">
+                        <div className="w-32 h-56 bg-dark-lighter rounded-3xl mx-auto border-4 border-primary/30 shadow-2xl"></div>
+                        <p className="text-light-muted text-sm">Visualização do App</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lado direito - Benefícios */}
+                <div className="space-y-8">
+                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                    Por que <span className="text-primary">AthletIA</span>?
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    {[
+                      {
+                        title: 'Inteligente e adaptável',
+                        description: 'A IA do AthletIA aprende com seu desempenho e se ajusta para mantê-lo desafiado.'
+                      },
+                      {
+                        title: 'Todos os níveis são bem-vindos',
+                        description: 'De iniciantes a entusiastas do fitness, o AthletIA atende a todos os níveis de experiência.'
+                      },
+                      {
+                        title: 'Conveniência em primeiro lugar',
+                        description: 'Treine quando e onde quiser. Chega de perder treinos por falta de planejamento.'
+                      },
+                      {
+                        title: 'Sem suposições',
+                        description: 'Obtenha orientação especializada sem o alto custo de um personal trainer.'
+                      }
+                    ].map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-light mb-2">
+                            {beneficio.title}
+                          </h3>
+                          <p className="text-light-muted leading-relaxed">
+                            {beneficio.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* SEÇÃO 7 – GARANTIA */}
           <section aria-label="Garantia" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-br from-primary/20 via-primary/10 to-dark border-y border-primary/30">
