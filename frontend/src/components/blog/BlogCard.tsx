@@ -1,5 +1,4 @@
 import { BlogArticle } from '../../types/blog.types'
-import { formatDate } from '../../utils/blog.utils'
 import BlogMeta from './BlogMeta'
 
 interface BlogCardProps {
