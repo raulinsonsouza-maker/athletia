@@ -10,13 +10,14 @@ export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFun
       return res.status(401).json({ error: 'Não autenticado' });
     }
 
-    // Buscar usuário com informações de plano e expiração
+    // Buscar usuário com informações de plano, expiração e trial
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { 
         planoAtivo: true,
         dataExpiracao: true,
-        plano: true
+        plano: true,
+        dataFimTrial: true
       }
     });
 
@@ -24,7 +25,21 @@ export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFun
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // Verificar se plano está ativo
+    // Primeiro verificar se está em período de trial válido
+    let trialAtivo = false;
+    if (user.dataFimTrial) {
+      const agora = new Date();
+      const dataFimTrial = new Date(user.dataFimTrial);
+      // Trial está ativo se não expirou e usuário não tem plano ativo
+      trialAtivo = dataFimTrial > agora && !user.planoAtivo;
+    }
+
+    // Se trial está ativo, permitir acesso
+    if (trialAtivo) {
+      return next();
+    }
+
+    // Se não tem trial ativo, verificar se plano está ativo
     let planoValido = user.planoAtivo;
 
     // Se planoAtivo é true, verificar se não expirou
@@ -48,12 +63,18 @@ export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFun
 
     // Se não tem plano ativo ou expirou, retornar erro 402 (Payment Required)
     if (!planoValido) {
+      const agora = new Date();
+      const trialExpirado = user.dataFimTrial && new Date(user.dataFimTrial) < agora;
+      
       return res.status(402).json({
         error: 'Plano não ativo',
-        message: user.dataExpiracao && new Date(user.dataExpiracao) < new Date()
-          ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
-          : 'É necessário ativar um plano para acessar esta funcionalidade',
-        redirectTo: '/checkout'
+        message: trialExpirado
+          ? 'Seu período de teste acabou. Escolha um plano para continuar usando o Athletia.'
+          : user.dataExpiracao && new Date(user.dataExpiracao) < new Date()
+            ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
+            : 'É necessário ativar um plano para acessar esta funcionalidade',
+        redirectTo: trialExpirado ? '/trial-expirado' : '/checkout',
+        trialExpirado
       });
     }
 
@@ -81,16 +102,30 @@ export const permitirAcessoSemPlano = (allowedPaths: string[]) => {
         return next();
       }
 
-      // Buscar usuário com informações de plano e expiração
+      // Buscar usuário com informações de plano, expiração e trial
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { 
           planoAtivo: true,
-          dataExpiracao: true
+          dataExpiracao: true,
+          dataFimTrial: true
         }
       });
 
       if (!user) {
+        return next();
+      }
+
+      // Verificar se está em período de trial válido
+      let trialAtivo = false;
+      if (user.dataFimTrial) {
+        const agora = new Date();
+        const dataFimTrial = new Date(user.dataFimTrial);
+        trialAtivo = dataFimTrial > agora && !user.planoAtivo;
+      }
+
+      // Se trial está ativo, permitir acesso
+      if (trialAtivo) {
         return next();
       }
 
@@ -106,12 +141,18 @@ export const permitirAcessoSemPlano = (allowedPaths: string[]) => {
 
       // Se não tem plano ativo/válido e a rota não está permitida, bloquear
       if (!planoValido && !allowedPaths.some(allowed => path.startsWith(allowed))) {
+        const agora = new Date();
+        const trialExpirado = user.dataFimTrial && new Date(user.dataFimTrial) < agora;
+        
         return res.status(402).json({
           error: 'Plano não ativo',
-          message: user.dataExpiracao && new Date(user.dataExpiracao) < new Date()
-            ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
-            : 'É necessário ativar um plano para acessar esta funcionalidade',
-          redirectTo: '/checkout'
+          message: trialExpirado
+            ? 'Seu período de teste acabou. Escolha um plano para continuar usando o Athletia.'
+            : user.dataExpiracao && new Date(user.dataExpiracao) < new Date()
+              ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
+              : 'É necessário ativar um plano para acessar esta funcionalidade',
+          redirectTo: trialExpirado ? '/trial-expirado' : '/checkout',
+          trialExpirado
         });
       }
 

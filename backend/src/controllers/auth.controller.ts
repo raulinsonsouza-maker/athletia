@@ -123,33 +123,54 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { email, senha, nome } = req.body;
 
+    const emailNormalizado = (email || '').trim().toLowerCase();
+
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: emailNormalizado }
     });
 
     if (existingUser) {
+      // Se usuário existe e já usou trial, retornar erro específico
+      if (existingUser.trialUtilizado) {
+        return res.status(400).json({
+          error: 'Este e-mail já utilizou o período de trial gratuito. Faça login ou escolha um plano.'
+        });
+      }
       return res.status(400).json({
         error: 'Email já cadastrado'
       });
     }
 
+    // Importar função de trial
+    const { calcularDataFimTrial } = await import('../services/trial.service');
+
     // Hash da senha
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Criar usuário
+    // Calcular datas do trial
+    const dataInicioTrial = new Date();
+    const dataFimTrial = calcularDataFimTrial(dataInicioTrial);
+
+    // Criar usuário com trial iniciado
     const user = await prisma.user.create({
       data: {
-        email,
+        email: emailNormalizado,
         senhaHash,
-        nome: nome || null
+        nome: nome || null,
+        dataInicioTrial,
+        dataFimTrial,
+        trialUtilizado: true
       },
       select: {
         id: true,
         email: true,
         nome: true,
         role: true,
-        createdAt: true
+        createdAt: true,
+        dataInicioTrial: true,
+        dataFimTrial: true,
+        trialUtilizado: true
       }
     });
 
@@ -158,7 +179,7 @@ export const register = async (req: Request, res: Response) => {
     await saveRefreshToken(user.id, refreshToken);
 
     res.status(201).json({
-      message: 'Usuário criado com sucesso',
+      message: 'Usuário criado com sucesso. Você tem 3 dias de teste gratuito!',
       user,
       accessToken,
       refreshToken
@@ -249,6 +270,11 @@ export const login = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = generateTokens(user.id);
     await saveRefreshToken(user.id, refreshToken);
 
+    // Verificar status do trial
+    const { verificarTrialAtivo, obterDiasRestantesTrial } = await import('../services/trial.service');
+    const trialAtivo = await verificarTrialAtivo(user.id);
+    const diasRestantesTrial = await obterDiasRestantesTrial(user.id);
+
     res.json({
       message: 'Login realizado com sucesso',
       user: {
@@ -258,7 +284,14 @@ export const login = async (req: Request, res: Response) => {
         role: user.role,
         planoAtivo: user.planoAtivo,
         plano: user.plano,
-        dataExpiracao: user.dataExpiracao
+        dataExpiracao: user.dataExpiracao,
+        dataInicioTrial: user.dataInicioTrial,
+        dataFimTrial: user.dataFimTrial,
+        trialUtilizado: user.trialUtilizado
+      },
+      trialStatus: {
+        ativo: trialAtivo,
+        diasRestantes: diasRestantesTrial
       },
       accessToken,
       refreshToken
@@ -273,6 +306,28 @@ export const login = async (req: Request, res: Response) => {
 };
 
 // Refresh token
+// Obter status do trial
+export const obterStatusTrial = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Não autenticado' });
+    }
+
+    const { obterStatusTrial: obterStatusTrialService } = await import('../services/trial.service');
+    const status = await obterStatusTrialService(userId);
+
+    res.json(status);
+  } catch (error: any) {
+    console.error('Erro ao obter status do trial:', error);
+    res.status(500).json({
+      error: 'Erro ao obter status do trial',
+      message: error.message
+    });
+  }
+};
+
 export const refreshToken = async (req: Request, res: Response) => {
   try {
     const { refreshToken: token } = req.body;
@@ -352,29 +407,47 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       });
     }
 
+    const emailNormalizado = email.toLowerCase().trim();
+
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() }
+      where: { email: emailNormalizado }
     });
 
     if (existingUser) {
+      // Se usuário existe e já usou trial, retornar erro específico
+      if (existingUser.trialUtilizado) {
+        return res.status(400).json({
+          error: 'Este e-mail já utilizou o período de trial gratuito. Faça login ou escolha um plano.'
+        });
+      }
       return res.status(400).json({
         error: 'E-mail já cadastrado'
       });
     }
 
+    // Importar funções de trial
+    const { calcularDataFimTrial } = await import('../services/trial.service');
+
     // Hash da senha
     const senhaHash = await bcrypt.hash(senha, 10);
 
-    // Criar usuário com planoAtivo = false
+    // Calcular datas do trial
+    const dataInicioTrial = new Date();
+    const dataFimTrial = calcularDataFimTrial(dataInicioTrial);
+
+    // Criar usuário com planoAtivo = false e trial iniciado
     const user = await prisma.user.create({
       data: {
-        email: email.toLowerCase().trim(),
+        email: emailNormalizado,
         senhaHash,
         nome: nome.trim(),
         telefone: telefone.trim(),
         planoAtivo: false, // Ainda não pagou
-        role: 'USER'
+        role: 'USER',
+        dataInicioTrial,
+        dataFimTrial,
+        trialUtilizado: true
       }
     });
 
@@ -424,12 +497,15 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
     await saveRefreshToken(user.id, refreshToken);
 
     res.status(201).json({
-      message: 'Cadastro realizado com sucesso. Redirecione para a página de checkout.',
+      message: 'Cadastro realizado com sucesso. Você tem 3 dias de teste gratuito!',
       user: {
         id: user.id,
         email: user.email,
         nome: user.nome,
-        planoAtivo: user.planoAtivo
+        planoAtivo: user.planoAtivo,
+        dataInicioTrial: user.dataInicioTrial,
+        dataFimTrial: user.dataFimTrial,
+        trialUtilizado: user.trialUtilizado
       },
       accessToken,
       refreshToken

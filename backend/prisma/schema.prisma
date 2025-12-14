@@ -21,6 +21,9 @@ model User {
   planoAtivo            Boolean   @default(false) @map("plano_ativo")
   dataPagamento         DateTime? @map("data_pagamento")
   dataExpiracao         DateTime? @map("data_expiracao") // Data de expiração do plano
+  dataInicioTrial       DateTime? @map("data_inicio_trial") // Data de início do trial
+  dataFimTrial          DateTime? @map("data_fim_trial") // Data de fim do trial (3 dias após início)
+  trialUtilizado        Boolean   @default(false) @map("trial_utilizado") // Flag para garantir apenas um trial por email
   caktoCustomerId       String?   @map("cakto_customer_id") // ID do cliente no Cakto
   caktoTransactionId    String?   @map("cakto_transaction_id") // ID da última transação
   modoTreino            String?   @default("IA") @map("modo_treino") // "IA" ou "MANUAL"

@@ -101,8 +101,8 @@ export default function Cadastro() {
         console.warn('Erro ao limpar localStorage:', error)
       }
 
-      // Redirecionar para checkout
-      navigate('/checkout')
+      // Redirecionar para dashboard (meu-plano) - usuário tem trial de 3 dias ativo
+      navigate('/meu-plano')
     } catch (err: any) {
       console.error('Erro no cadastro:', err)
       

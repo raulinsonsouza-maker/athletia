@@ -9,6 +9,9 @@ interface User {
   planoAtivo?: boolean
   plano?: string
   dataExpiracao?: string
+  dataInicioTrial?: string
+  dataFimTrial?: string
+  trialUtilizado?: boolean
 }
 
 interface AuthContextType {
@@ -20,6 +23,9 @@ interface AuthContextType {
   setUserFromResponse: (user: User, accessToken: string, refreshToken: string) => void
   updateUser: (userData: Partial<User>) => void
   isAuthenticated: boolean
+  isTrialAtivo: () => boolean
+  diasRestantesTrial: () => number
+  isTrialExpirado: () => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -107,6 +113,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const isTrialAtivo = (): boolean => {
+    if (!user || !user.dataFimTrial || user.planoAtivo) {
+      return false
+    }
+    const agora = new Date()
+    const dataFimTrial = new Date(user.dataFimTrial)
+    return dataFimTrial > agora
+  }
+
+  const diasRestantesTrial = (): number => {
+    if (!user || !user.dataFimTrial) {
+      return 0
+    }
+    const agora = new Date()
+    const dataFimTrial = new Date(user.dataFimTrial)
+    
+    if (dataFimTrial <= agora) {
+      return 0
+    }
+
+    const diffMs = dataFimTrial.getTime() - agora.getTime()
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+    
+    return Math.max(0, diffDays)
+  }
+
+  const isTrialExpirado = (): boolean => {
+    if (!user || !user.dataFimTrial) {
+      return false
+    }
+    const agora = new Date()
+    const dataFimTrial = new Date(user.dataFimTrial)
+    return dataFimTrial <= agora && !user.planoAtivo
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -117,7 +158,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         setUserFromResponse,
         updateUser,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        isTrialAtivo,
+        diasRestantesTrial,
+        isTrialExpirado
       }}
     >
       {children}

@@ -259,6 +259,8 @@ export async function processPaymentApproved(webhookData: any) {
     const dataExpiracao = calcularDataExpiracao(plano);
 
     // Atualizar usuário com plano ativo
+    // Nota: Campos de trial (dataInicioTrial, dataFimTrial, trialUtilizado) são preservados
+    // para histórico, mesmo após pagamento ser processado
     const userAtualizado = await prisma.user.update({
       where: { id: user.id },
       data: {
@@ -268,6 +270,7 @@ export async function processPaymentApproved(webhookData: any) {
         dataExpiracao: dataExpiracao,
         caktoCustomerId: customer?.id || customer?.customer_id,
         caktoTransactionId: transactionId
+        // Campos de trial são preservados (não incluídos aqui para manter histórico)
       }
     });
 

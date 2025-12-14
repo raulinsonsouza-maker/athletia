@@ -24,6 +24,7 @@ import Termos from './pages/Termos'
 import Privacidade from './pages/Privacidade'
 import Cookies from './pages/Cookies'
 import ResetPassword from './pages/ResetPassword'
+import TrialExpirado from './pages/TrialExpirado'
 
 // Lazy load Progresso (usa Chart.js - 60KB) - só carrega quando necessário
 const Progresso = lazy(() => import('./pages/Progresso'))
@@ -48,6 +49,7 @@ function App() {
           <Route path="/privacidade" element={<Privacidade />} />
           <Route path="/cookies" element={<Cookies />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/trial-expirado" element={<TrialExpirado />} />
           <Route 
             path="/blog" 
             element={
