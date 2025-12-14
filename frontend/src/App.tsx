@@ -25,6 +25,7 @@ import Privacidade from './pages/Privacidade'
 import Cookies from './pages/Cookies'
 import ResetPassword from './pages/ResetPassword'
 import TrialExpirado from './pages/TrialExpirado'
+import OnePage from './pages/OnePage'
 
 // Lazy load Progresso (usa Chart.js - 60KB) - só carrega quando necessário
 const Progresso = lazy(() => import('./pages/Progresso'))
@@ -39,6 +40,7 @@ function App() {
         <Routes>
           {/* Rotas públicas */}
           <Route path="/" element={<Landing />} />
+          <Route path="/one-page" element={<OnePage />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/confirmacao" element={<Confirmacao />} />

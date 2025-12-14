@@ -496,6 +496,27 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = generateTokens(user.id);
     await saveRefreshToken(user.id, refreshToken);
 
+    // Enviar e-mail de boas-vindas para trial (não crítico - não deve bloquear cadastro)
+    try {
+      const { sendTrialWelcomeEmail } = await import('../services/email.service');
+      sendTrialWelcomeEmail({
+        nome: user.nome || 'Usuário',
+        email: user.email,
+        dataFimTrial: dataFimTrial
+      }).then((result) => {
+        if (result.success) {
+          console.log('✅ E-mail de boas-vindas trial enviado com sucesso para:', user.email.substring(0, 3) + '***');
+        } else {
+          console.warn('⚠️ Falha ao enviar e-mail de boas-vindas trial (não crítico):', result.error);
+        }
+      }).catch((error) => {
+        console.error('⚠️ Erro ao enviar e-mail de boas-vindas trial (não crítico):', error.message);
+      });
+    } catch (error: any) {
+      console.error('⚠️ Erro ao importar/enviar e-mail de boas-vindas trial (não crítico):', error.message);
+      // Não falhar o cadastro se houver erro no envio de email
+    }
+
     res.status(201).json({
       message: 'Cadastro realizado com sucesso. Você tem 3 dias de teste gratuito!',
       user: {

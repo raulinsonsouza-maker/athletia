@@ -301,6 +301,327 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<{ succes
   }
 }
 
+interface TrialWelcomeEmailData {
+  nome: string;
+  email: string;
+  dataFimTrial: Date;
+}
+
+/**
+ * Formata data de expiração do trial para exibição
+ */
+function formatarDataTrial(data: Date): string {
+  return data.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+/**
+ * Gera template HTML do e-mail de boas-vindas para trial
+ */
+function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
+  const { nome, email, dataFimTrial } = data;
+  const dataFormatada = formatarDataTrial(dataFimTrial);
+  const loginUrl = `${FRONTEND_URL}/login`;
+  const areaMembrosUrl = `${FRONTEND_URL}/meu-plano`;
+
+  // SVG para ícone de presente (trial gratuito)
+  const giftIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+    <path d="M20 6H17.82C17.93 5.69 18 5.35 18 5C18 3.34 16.66 2 15 2C13.95 2 13.04 2.54 12.5 3.35L12 4.02L11.5 3.34C10.96 2.54 10.05 2 9 2C7.34 2 6 3.34 6 5C6 5.35 6.07 5.69 6.18 6H4C2.89 6 2.01 6.89 2.01 8L2 19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V8C22 6.89 21.11 6 20 6ZM15 4C15.55 4 16 4.45 16 5C16 5.55 15.55 6 15 6C14.45 6 14 5.55 14 5C14 4.45 14.45 4 15 4ZM9 4C9.55 4 10 4.45 10 5C10 5.55 9.55 6 9 6C8.45 6 8 5.55 8 5C8 4.45 8.45 4 9 4ZM20 19H4V17H20V19ZM20 15H4V8H9.08L7 10.83L8.62 12L11 8.76L12 7.66L13 8.76L15.38 12L17 10.83L14.92 8H20V15Z" fill="#070600"/>
+  </svg>`;
+
+  // SVG para ícone de check
+  const checkIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;">
+    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="#F9A620"/>
+  </svg>`;
+
+  // SVG para ícone de relógio
+  const clockIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;">
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 13H11V7H13V13ZM13 17H11V15H13V17Z" fill="#F9A620"/>
+  </svg>`;
+
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bem-vindo! Você tem 3 dias de teste gratuito</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #141210; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4); border: 1px solid #4A4946;">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #070600; font-size: 28px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center;">
+                ${giftIcon}
+                Bem-vindo ao AthletIA!
+              </h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Olá <strong style="color: #F9A620;">${nome}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Parabéns! Seu cadastro foi realizado com sucesso e você agora tem <strong style="color: #F9A620;">3 dias de acesso completo e gratuito</strong> para testar todos os recursos da plataforma AthletIA.
+              </p>
+              
+              <!-- Trial Info Destacado -->
+              <div style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.3);">
+                <h2 style="margin: 0 0 15px 0; color: #070600; font-size: 24px; font-weight: bold;">
+                  🎁 Teste Gratuito Ativo
+                </h2>
+                <p style="margin: 0 0 20px 0; color: #070600; font-size: 18px; font-weight: 600;">
+                  Você tem acesso completo por <strong>3 dias</strong>
+                </p>
+                <div style="background-color: rgba(7, 6, 0, 0.2); border-radius: 8px; padding: 15px; margin-top: 15px;">
+                  <p style="margin: 0 0 8px 0; color: #070600; font-size: 14px; font-weight: 600;">
+                    Seu teste expira em:
+                  </p>
+                  <p style="margin: 0; color: #070600; font-size: 20px; font-weight: bold;">
+                    ${dataFormatada}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- Como Acessar -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 25px; margin: 30px 0; border-radius: 4px;">
+                <h2 style="margin: 0 0 25px 0; color: #F7F7FF; font-size: 20px; font-weight: bold;">
+                  🔐 Como Acessar Sua Conta
+                </h2>
+                
+                <!-- Passo 1 -->
+                <div style="margin: 0 0 20px 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">1</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Acesse a página de login</p>
+                      <a href="${loginUrl}" style="display: inline-block; color: #F9A620; text-decoration: underline; font-size: 14px; margin-top: 5px;">${loginUrl}</a>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passo 2 -->
+                <div style="margin: 0 0 20px 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">2</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Use seu e-mail e senha</p>
+                      <div style="background-color: #070600; border: 1px solid #F9A620; border-radius: 4px; padding: 10px; margin: 8px 0;">
+                        <p style="margin: 0; color: #F9A620; font-size: 14px; font-weight: bold; word-break: break-all;">E-mail: ${email}</p>
+                        <p style="margin: 8px 0 0 0; color: #E0E0E8; font-size: 12px;">Use a senha que você criou no cadastro</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passo 3 -->
+                <div style="margin: 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">3</div>
+                    <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Comece a treinar!</p>
+                      <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Você já tem acesso completo! Explore treinos personalizados, acompanhe seu progresso e muito mais.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Recursos Disponíveis -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 25px; margin: 30px 0; border-radius: 4px;">
+                <h2 style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 20px; font-weight: bold;">
+                  ✨ O que você pode fazer durante o teste:
+                </h2>
+                <div style="color: #E0E0E8; font-size: 14px; line-height: 2.2;">
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Treinos personalizados por IA</strong> - Criados especialmente para você</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Acompanhamento de progresso</strong> - Veja sua evolução em tempo real</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Exercícios adaptados</strong> - Seus treinos evoluem com você</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Histórico completo</strong> - Acompanhe todos os seus treinos</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Acesso total</strong> - Todos os recursos da plataforma</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Aviso Importante -->
+              <div style="background-color: #1A1814; border: 2px solid #F9A620; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                  ${clockIcon}
+                  <div style="flex: 1;">
+                    <p style="margin: 0 0 10px 0; color: #F9A620; font-size: 16px; font-weight: bold;">
+                      ⏰ Importante
+                    </p>
+                    <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">
+                      Seu período de teste expira em <strong style="color: #F9A620;">${dataFormatada}</strong>. Aproveite para conhecer todos os recursos e, se gostar, escolha um plano para continuar usando o AthletIA sem interrupções!
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- CTA Button Principal -->
+              <table role="presentation" style="width: 100%; margin: 30px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="${areaMembrosUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4); transition: all 0.3s ease;">
+                      🚀 Acessar Minha Conta Agora
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 20px 0 0 0; color: #E0E0E8; font-size: 14px; text-align: center; line-height: 1.6;">
+                💡 <strong>Dica:</strong> Você já está logado! Se estiver no navegador, pode começar a usar imediatamente.
+              </p>
+              
+              <p style="margin: 30px 0 0 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Se você tiver alguma dúvida ou precisar de ajuda, nossa equipe de suporte está pronta para ajudar.
+              </p>
+              
+              <p style="margin: 20px 0 0 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                💪Bons treinos!<br>
+                <strong style="color: #F9A620;">Equipe AthletIA</strong>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0F0E0A; padding: 30px; text-align: center; border-top: 1px solid #4A4946;">
+              <p style="margin: 0 0 10px 0; color: #63625F; font-size: 12px;">
+                Este é um e-mail automático, por favor não responda.
+              </p>
+              <p style="margin: 0; color: #63625F; font-size: 12px;">
+                © ${new Date().getFullYear()} AthletIA. Todos os direitos reservados.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Envia e-mail de boas-vindas para trial de 3 dias
+ */
+export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    // Verificar se Resend está configurado
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY não configurado. E-mail de boas-vindas trial não será enviado.');
+      console.error('❌ Verifique se a variável RESEND_API_KEY está definida no arquivo .env');
+      return {
+        success: false,
+        error: 'RESEND_API_KEY não configurado'
+      };
+    }
+
+    // Verificar se o e-mail de remetente está configurado
+    if (!FROM_EMAIL) {
+      console.warn('⚠️ RESEND_FROM_EMAIL não configurado. Verifique se está correto.');
+    }
+
+    console.log('📧 Preparando envio de e-mail de boas-vindas trial:', {
+      to: data.email,
+      from: FROM_EMAIL,
+      subject: 'Bem-vindo! Você tem 3 dias de teste gratuito no AthletIA'
+    });
+
+    const html = generateTrialWelcomeEmailHTML(data);
+
+    console.log('📧 Chamando Resend API...');
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.email,
+      subject: 'Bem-vindo! Você tem 3 dias de teste gratuito no AthletIA',
+      html: html,
+      headers: {
+        'X-Entity-Ref-ID': `trial-welcome-${Date.now()}`
+      }
+    });
+
+    console.log('📧 Resposta do Resend:', JSON.stringify({
+      hasError: !!result.error,
+      hasData: !!result.data,
+      error: result.error ? {
+        name: result.error.name,
+        message: result.error.message
+      } : null,
+      messageId: result.data?.id
+    }, null, 2));
+
+    if (result.error) {
+      console.error('❌ Erro do Resend ao enviar e-mail:', {
+        name: result.error.name,
+        message: result.error.message,
+        fullError: JSON.stringify(result.error, null, 2)
+      });
+      return {
+        success: false,
+        error: result.error.message || 'Erro desconhecido ao enviar e-mail'
+      };
+    }
+
+    if (!result.data || !result.data.id) {
+      console.error('❌ Resposta do Resend não contém messageId:', result);
+      return {
+        success: false,
+        error: 'Resposta do Resend inválida (sem messageId)'
+      };
+    }
+
+    console.log('✅ E-mail de boas-vindas trial enviado com sucesso:', {
+      email: data.email,
+      messageId: result.data.id,
+      from: FROM_EMAIL
+    });
+
+    return {
+      success: true,
+      messageId: result.data.id
+    };
+
+  } catch (error: any) {
+    console.error('❌ Exceção ao enviar e-mail de boas-vindas trial:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao enviar e-mail'
+    };
+  }
+}
+
 interface PasswordResetEmailData {
   nome: string;
   email: string;
