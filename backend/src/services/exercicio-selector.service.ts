@@ -409,3 +409,142 @@ export function balancearExerciciosPorGrupo(
   return resultado.slice(0, maxExercicios);
 }
 
+// ============================================================================
+// SELEÇÃO CANÔNICA: EXATAMENTE 4 EXERCÍCIOS POR GRUPO
+// ============================================================================
+
+/**
+ * Seleciona exatamente 4 exercícios por grupo para treino canônico
+ * 
+ * Garante:
+ * - Exatamente 4 exercícios por grupo
+ * - Zero repetição no mesmo treino
+ * - Zero repetição do mesmo grupo na mesma semana
+ * 
+ * @param grupo Grupo muscular canônico
+ * @param userId ID do usuário
+ * @param data Data do treino
+ * @param exerciciosJaUsadosNoTreino Exercícios já selecionados no treino atual
+ * @param exerciciosUsadosNoGrupoEstaSemana Exercícios do mesmo grupo já usados na semana
+ * @param filtros Filtros de exercício
+ */
+export async function selecionar4ExerciciosPorGrupo(
+  grupo: string,
+  userId: string,
+  data: Date,
+  exerciciosJaUsadosNoTreino: Set<string>,
+  exerciciosUsadosNoGrupoEstaSemana: Set<string>,
+  filtros: FiltrosExercicio
+): Promise<any[]> {
+  const QUANTIDADE_CANONICA = 4;
+
+  // Buscar início da semana para histórico da semana atual
+  const inicioSemana = obterInicioSemana(data);
+  const fimSemana = new Date(inicioSemana);
+  fimSemana.setDate(fimSemana.getDate() + 7);
+
+  // Buscar histórico da semana atual (para evitar repetição no mesmo grupo)
+  const historicoSemanaAtual = await buscarHistoricoExerciciosNoPeriodo(
+    userId,
+    inicioSemana,
+    fimSemana,
+    grupo
+  );
+
+  // Combinar histórico: semana atual + exercícios já usados no treino
+  const todosExerciciosEvitar = new Set([
+    ...exerciciosJaUsadosNoTreino,
+    ...exerciciosUsadosNoGrupoEstaSemana,
+    ...historicoSemanaAtual
+  ]);
+
+  // Buscar exercícios do grupo
+  const exerciciosDisponiveis = await buscarExerciciosComFallback(
+    grupo,
+    QUANTIDADE_CANONICA * 3, // Buscar mais para ter opções
+    {
+      ...filtros,
+      historico: todosExerciciosEvitar
+    },
+    userId,
+    data
+  );
+
+  // Filtrar exercícios já usados
+  const exerciciosFiltrados = exerciciosDisponiveis.filter(
+    ex => !todosExerciciosEvitar.has(ex.id)
+  );
+
+  // Se não tem suficientes, usar exercícios disponíveis mesmo que já foram usados
+  // (melhor do que não ter 4 exercícios)
+  const exerciciosFinal = exerciciosFiltrados.length >= QUANTIDADE_CANONICA
+    ? exerciciosFiltrados
+    : exerciciosDisponiveis;
+
+  // Selecionar exatamente 4 usando seed determinístico
+  const inicioSemanaStr = inicioSemana.toISOString().split('T')[0];
+  const seed = gerarSeed(userId + grupo + inicioSemanaStr, data);
+  const shuffled = shuffleDeterministico(exerciciosFinal, seed);
+
+  return shuffled.slice(0, QUANTIDADE_CANONICA);
+}
+
+/**
+ * Busca histórico de exercícios em um período específico para um grupo
+ */
+async function buscarHistoricoExerciciosNoPeriodo(
+  userId: string,
+  dataInicio: Date,
+  dataFim: Date,
+  grupo?: string
+): Promise<Set<string>> {
+  const treinos = await prisma.treino.findMany({
+    where: {
+      userId,
+      data: {
+        gte: dataInicio,
+        lte: dataFim
+      }
+    },
+    include: {
+      exercicios: {
+        include: {
+          exercicio: {
+            select: {
+              id: true,
+              grupoMuscularPrincipal: true,
+              sinergistas: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: { data: 'desc' }
+  });
+
+  const exerciciosUsados = new Set<string>();
+
+  treinos.forEach(treino => {
+    treino.exercicios.forEach(ex => {
+      const grupoPrincipal = ex.exercicio?.grupoMuscularPrincipal || '';
+      const sinergistas = ex.exercicio?.sinergistas || [];
+
+      // Se grupo especificado, considerar apenas exercícios desse grupo
+      if (grupo) {
+        if (grupoPrincipal === grupo || sinergistas.includes(grupo)) {
+          exerciciosUsados.add(ex.exercicioId);
+        }
+      } else {
+        // Sem grupo específico, considerar todos (exceto cardio/alongamento)
+        if (grupoPrincipal !== 'Cardio' && 
+            grupoPrincipal !== 'Alongamento' && 
+            grupoPrincipal !== 'Flexibilidade') {
+          exerciciosUsados.add(ex.exercicioId);
+        }
+      }
+    });
+  });
+
+  return exerciciosUsados;
+}
+

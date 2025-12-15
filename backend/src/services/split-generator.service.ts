@@ -244,6 +244,9 @@ export async function gerarSplitsInteligentes(frequencia: number): Promise<strin
 
 /**
  * Obtém grupos do dia baseado na frequência e índice
+ * 
+ * NOTA: Esta função mantém compatibilidade com código legado.
+ * Para treinos IA, use obterGruposCanonicosDoDia do canonical-workout-generator.service
  */
 export async function obterGruposDoDia(frequencia: number, indiceDia: number): Promise<string[]> {
   try {
@@ -253,6 +256,41 @@ export async function obterGruposDoDia(frequencia: number, indiceDia: number): P
     console.error('[ERROR] Erro ao obter grupos do dia:', error);
     const splits = SPLITS_PADRAO[frequencia] || SPLITS_PADRAO[3];
     return splits[indiceDia % splits.length] || splits[0] || [];
+  }
+}
+
+/**
+ * Obtém grupos do dia usando motor canônico (nova versão)
+ * 
+ * Usa o motor canônico para garantir exatamente 2 grupos sinérgicos válidos
+ * 
+ * @param frequencia Frequência semanal de treino
+ * @param indiceDia Índice do dia (0-based)
+ * @param userId ID do usuário (necessário para descanso de 48h)
+ * @param data Data do treino (necessário para descanso de 48h)
+ */
+export async function obterGruposCanonicosDoDiaWrapper(
+  frequencia: number,
+  indiceDia: number,
+  userId: string,
+  data: Date
+): Promise<string[]> {
+  const { obterGruposCanonicosDoDia } = await import('./canonical-workout-generator.service');
+  
+  try {
+    const gruposCanonicos = await obterGruposCanonicosDoDia(frequencia, indiceDia, userId, data);
+    
+    if (gruposCanonicos && gruposCanonicos.length === 2) {
+      return gruposCanonicos;
+    }
+    
+    // Fallback para split antigo se motor canônico não retornar 2 grupos
+    console.warn('[WARN] Motor canônico não retornou 2 grupos, usando split legado');
+    return await obterGruposDoDia(frequencia, indiceDia);
+  } catch (error) {
+    console.error('[ERROR] Erro ao obter grupos canônicos do dia:', error);
+    // Fallback para split antigo
+    return await obterGruposDoDia(frequencia, indiceDia);
   }
 }
 

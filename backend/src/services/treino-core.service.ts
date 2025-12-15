@@ -9,12 +9,15 @@
 
 import { prisma } from '../lib/prisma';
 import { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } from './treino.service';
-import { obterTodosGruposAtivos, validarEMapearGrupos } from './grupo-muscular.service';
+import { obterTodosGruposAtivos, validarEMapearGrupos, normalizarGrupoParaCanonico } from './grupo-muscular.service';
 import { obterGruposDoDia, distribuirDiasSemana, NOMES_SPLITS, LETRAS_TREINO, gerarSplitsInteligentes } from './split-generator.service';
 import { calcularParametrosTreino, calcularConfiguracaoTempo, calcularTempoEstimado, calcularMaxExerciciosPorTempo } from './treino-parameters.service';
 import { FiltrosExercicio } from './exercicio-filters.service';
-import { selecionarExerciciosParaGrupos, balancearExerciciosPorGrupo, buscarHistoricoExercicios } from './exercicio-selector.service';
+import { selecionarExerciciosParaGrupos, balancearExerciciosPorGrupo, buscarHistoricoExercicios, selecionar4ExerciciosPorGrupo } from './exercicio-selector.service';
 import { aplicarDadosOnboarding, filtrarGruposPorLesoes } from './onboarding-adapter.service';
+import { obterGruposCanonicosDoDia } from './canonical-workout-generator.service';
+import { validarTreinoCanonico } from './canonical-workout-validator.service';
+import { GrupoCanonico } from './muscle-group-canonical.service';
 
 // ============================================================================
 // TIPOS E INTERFACES
@@ -123,13 +126,25 @@ function calcularMinimoExercicios(grupos: string[]): number {
 
 /**
  * Determina grupos para treino baseado nas opções (valida e mapeia para grupos visuais)
+ * 
+ * NOVO: Usa motor canônico quando possível (tipo IA com frequência definida)
  */
 export async function determinarGruposParaTreino(
   options: TreinoOptions,
   perfil?: PerfilCompleto
 ): Promise<string[]> {
-  // Se grupos selecionados explicitamente
+  // Se grupos selecionados explicitamente, normalizar para canônicos
   if (options.gruposSelecionados && options.gruposSelecionados.length > 0) {
+    const gruposCanonicos = options.gruposSelecionados
+      .map(g => normalizarGrupoParaCanonico(g))
+      .filter((g): g is GrupoCanonico => g !== null);
+    
+    if (gruposCanonicos.length >= 2) {
+      // Se tem exatamente 2 grupos canônicos, usar eles
+      return gruposCanonicos.slice(0, 2);
+    }
+    
+    // Fallback para validação antiga
     const gruposValidados = await validarEMapearGrupos(options.gruposSelecionados);
     if (gruposValidados.length > 0) {
       return gruposValidados;
@@ -137,7 +152,7 @@ export async function determinarGruposParaTreino(
     console.warn('[WARN] Nenhum grupo válido encontrado nos selecionados. Usando padrão.');
   }
   
-  // Se corpo todo
+  // Se corpo todo (modo legado - não usa canônico)
   if (options.corpoTodo) {
     const todosGrupos = await obterTodosGruposAtivos();
     const gruposForca = todosGrupos.filter(g => 
@@ -146,7 +161,7 @@ export async function determinarGruposParaTreino(
     return gruposForca.length > 0 ? gruposForca : todosGrupos;
   }
   
-  // Se foco muscular
+  // Se foco muscular (modo legado)
   if (options.focoMuscular && options.focoMuscular.length > 0) {
     const gruposValidados = await validarEMapearGrupos(options.focoMuscular);
     if (gruposValidados.length > 0) {
@@ -154,12 +169,41 @@ export async function determinarGruposParaTreino(
     }
   }
   
-  // Se tem frequência e índice do dia, usar split
+  // MODO CANÔNICO: Se tem frequência e índice do dia (tipo IA), usar motor canônico
+  if (options.tipo === 'IA' && options.frequenciaSemanal && options.indiceDia !== undefined) {
+    const gruposCanonicos = await obterGruposCanonicosDoDia(
+      options.frequenciaSemanal,
+      options.indiceDia,
+      options.userId,
+      options.data
+    );
+    
+    if (gruposCanonicos) {
+      return gruposCanonicos;
+    }
+    // Fallback para split antigo se motor canônico falhar
+  }
+  
+  // Se tem perfil e frequência, usar motor canônico
+  if (options.tipo === 'IA' && perfil?.frequenciaSemanal && options.indiceDia !== undefined) {
+    const gruposCanonicos = await obterGruposCanonicosDoDia(
+      perfil.frequenciaSemanal,
+      options.indiceDia,
+      options.userId,
+      options.data
+    );
+    
+    if (gruposCanonicos) {
+      return gruposCanonicos;
+    }
+  }
+  
+  // Se tem frequência e índice do dia (modo legado)
   if (options.frequenciaSemanal && options.indiceDia !== undefined) {
     return await obterGruposDoDia(options.frequenciaSemanal, options.indiceDia);
   }
   
-  // Se tem perfil, usar frequência do perfil
+  // Se tem perfil, usar frequência do perfil (modo legado)
   if (perfil?.frequenciaSemanal && options.indiceDia !== undefined) {
     return await obterGruposDoDia(perfil.frequenciaSemanal, options.indiceDia);
   }
@@ -200,6 +244,12 @@ export async function gerarTreinoUnificado(
   // Determinar grupos musculares
   const grupos = await determinarGruposParaTreino(opcoesAjustadas, perfil);
   
+  // Verificar se estamos em modo canônico (exatamente 2 grupos canônicos)
+  const gruposCanonicos: (GrupoCanonico | null)[] = grupos.map(g => normalizarGrupoParaCanonico(g));
+  const isModoCanonico = gruposCanonicos.length === 2 && 
+                         gruposCanonicos.every(g => g !== null) &&
+                         opcoesAjustadas.tipo === 'IA';
+  
   // Filtrar grupos por lesões
   const lesoes = perfil?.lesoes || opcoesAjustadas.perfil?.lesoes || [];
   const gruposFiltrados = filtrarGruposPorLesoes(grupos, lesoes);
@@ -207,6 +257,16 @@ export async function gerarTreinoUnificado(
   if (gruposFiltrados.length === 0) {
     console.log(`[WARN] Todos os grupos foram filtrados por lesões. Não é possível gerar treino.`);
     return null;
+  }
+  
+  // Em modo canônico, garantir exatamente 2 grupos
+  if (isModoCanonico && gruposFiltrados.length !== 2) {
+    console.log(`[WARN] Modo canônico requer exatamente 2 grupos, encontrado ${gruposFiltrados.length}. Ajustando...`);
+    // Não ajustar, deixar falhar para evitar treino inválido
+    if (gruposFiltrados.length < 2) {
+      return null;
+    }
+    gruposFiltrados.splice(2); // Manter apenas os 2 primeiros
   }
   
   // Calcular parâmetros de treino
@@ -224,16 +284,23 @@ export async function gerarTreinoUnificado(
   const configTempo = calcularConfiguracaoTempo(objetivo, parametros);
   
   // Calcular número de exercícios
-  const minimoExercicios = calcularMinimoExercicios(gruposFiltrados);
-  const tempoDisponivel = Math.max(30, Math.min(
-    perfil?.tempoDisponivel || opcoesAjustadas.tempoDisponivel || 60,
-    120
-  ));
-  const { maxExercicios } = calcularMaxExerciciosPorTempo(
-    tempoDisponivel,
-    configTempo,
-    minimoExercicios
-  );
+  // Em modo canônico: exatamente 8 exercícios (4 por grupo)
+  let maxExercicios: number;
+  if (isModoCanonico) {
+    maxExercicios = 8; // 4 por grupo, 2 grupos
+  } else {
+    const minimoExercicios = calcularMinimoExercicios(gruposFiltrados);
+    const tempoDisponivel = Math.max(30, Math.min(
+      perfil?.tempoDisponivel || opcoesAjustadas.tempoDisponivel || 60,
+      120
+    ));
+    const calculado = calcularMaxExerciciosPorTempo(
+      tempoDisponivel,
+      configTempo,
+      minimoExercicios
+    );
+    maxExercicios = calculado.maxExercicios;
+  }
   
   // Preparar filtros
   const historicoGeral = await buscarHistoricoExercicios(opcoesAjustadas.userId);
@@ -245,25 +312,65 @@ export async function gerarTreinoUnificado(
     preferencias: perfil?.preferencias
   };
   
-  // Selecionar exercícios
-  const todosExercicios = await selecionarExerciciosParaGrupos(
-    gruposFiltrados,
-    maxExercicios,
-    filtros,
-    opcoesAjustadas.userId,
-    opcoesAjustadas.data
-  );
+  // Selecionar exercícios (modo canônico vs legado)
+  let exerciciosFinais: any[];
   
-  if (todosExercicios.length === 0) {
-    return null;
+  if (isModoCanonico && gruposFiltrados.length === 2) {
+    // MODO CANÔNICO: Selecionar exatamente 4 exercícios por grupo
+    const [grupo1, grupo2] = gruposFiltrados;
+    const exerciciosJaUsadosNoTreino = new Set<string>();
+    
+    // Buscar exercícios do grupo 1 (4 exercícios)
+    // A função selecionar4ExerciciosPorGrupo busca o histórico da semana internamente
+    const exerciciosGrupo1 = await selecionar4ExerciciosPorGrupo(
+      grupo1,
+      opcoesAjustadas.userId,
+      opcoesAjustadas.data,
+      exerciciosJaUsadosNoTreino,
+      new Set<string>(), // Histórico adicional vazio (função busca internamente)
+      filtros
+    );
+    
+    // Adicionar exercícios do grupo 1 aos usados para evitar duplicação no mesmo treino
+    exerciciosGrupo1.forEach(ex => exerciciosJaUsadosNoTreino.add(ex.id));
+    
+    // Buscar exercícios do grupo 2 (4 exercícios)
+    const exerciciosGrupo2 = await selecionar4ExerciciosPorGrupo(
+      grupo2,
+      opcoesAjustadas.userId,
+      opcoesAjustadas.data,
+      exerciciosJaUsadosNoTreino,
+      new Set<string>(), // Histórico adicional vazio (função busca internamente)
+      filtros
+    );
+    
+    // Combinar: grupo1 (4) + grupo2 (4) = 8 exercícios
+    exerciciosFinais = [...exerciciosGrupo1, ...exerciciosGrupo2];
+  } else {
+    // MODO LEGADO: Seleção antiga
+    const todosExercicios = await selecionarExerciciosParaGrupos(
+      gruposFiltrados,
+      maxExercicios,
+      filtros,
+      opcoesAjustadas.userId,
+      opcoesAjustadas.data
+    );
+    
+    if (todosExercicios.length === 0) {
+      return null;
+    }
+    
+    // Balancear exercícios
+    exerciciosFinais = balancearExerciciosPorGrupo(
+      todosExercicios,
+      gruposFiltrados,
+      maxExercicios
+    );
   }
   
-  // Balancear exercícios
-  const exerciciosFinais = balancearExerciciosPorGrupo(
-    todosExercicios,
-    gruposFiltrados,
-    maxExercicios
-  );
+  if (exerciciosFinais.length === 0) {
+    return null;
+  }
   
   // Calcular tempo estimado
   const tempoEstimado = calcularTempoEstimado(exerciciosFinais.length, configTempo);
@@ -296,45 +403,81 @@ export async function gerarTreinoUnificado(
     const incluirCardio = opcoesAjustadas.incluirCardio !== false;
     const incluirAlongamento = opcoesAjustadas.incluirAlongamento !== false;
     
-    const todosExerciciosTreino = [
-      // Cardio
-      ...(incluirCardio ? [{
-        treinoId: treinoCriado.id,
-        exercicioId: exercicioCardio.id,
-        ordem: 0,
-        series: 1,
-        repeticoes: `${configTempo.cardio} min`,
-        carga: null,
-        rpe: 5,
-        descanso: 0,
-        concluido: false,
-        observacoes: `Aquecimento cardiovascular - ${configTempo.cardio} minutos`
-      }] : []),
-      // Exercícios de força
-      ...exerciciosFinais.map((exercicio, index) => ({
-        treinoId: treinoCriado.id,
-        exercicioId: exercicio.id,
-        ordem: (incluirCardio ? 1 : 0) + index,
-        series: parametros.series,
-        repeticoes: parametros.repeticoes,
-        rpe: parametros.rpe,
-        descanso: parametros.descanso,
-        concluido: false
-      })),
-      // Alongamento
-      ...(incluirAlongamento ? [{
-        treinoId: treinoCriado.id,
-        exercicioId: exercicioAlongamento.id,
-        ordem: (incluirCardio ? 1 : 0) + exerciciosFinais.length,
-        series: 1,
-        repeticoes: `${configTempo.alongamento} min`,
-        carga: null,
-        rpe: 3,
-        descanso: 0,
-        concluido: false,
-        observacoes: `Alongamento geral - ${configTempo.alongamento} minutos`
-      }] : [])
-    ];
+    // MODO CANÔNICO: Ordem fixa - grupo1(4) → grupo2(4) → cardio(último)
+    // MODO LEGADO: Ordem antiga
+    let todosExerciciosTreino: any[];
+    
+    if (isModoCanonico) {
+      // Ordem canônica: exercícios já estão na ordem correta (grupo1, grupo2)
+      // Cardio sempre no final
+      todosExerciciosTreino = [
+        // Exercícios de força (ordem 0-7)
+        ...exerciciosFinais.map((exercicio, index) => ({
+          treinoId: treinoCriado.id,
+          exercicioId: exercicio.id,
+          ordem: index, // 0-7
+          series: parametros.series,
+          repeticoes: parametros.repeticoes,
+          rpe: parametros.rpe,
+          descanso: parametros.descanso,
+          concluido: false
+        })),
+        // Cardio sempre no final (ordem 8+)
+        ...(incluirCardio ? [{
+          treinoId: treinoCriado.id,
+          exercicioId: exercicioCardio.id,
+          ordem: exerciciosFinais.length, // Sempre após os 8 exercícios de força
+          series: 1,
+          repeticoes: `${configTempo.cardio} min`,
+          carga: null,
+          rpe: 5,
+          descanso: 0,
+          concluido: false,
+          observacoes: `Cardio - ${configTempo.cardio} minutos`
+        }] : [])
+      ];
+    } else {
+      // MODO LEGADO: Ordem antiga (cardio primeiro, depois força)
+      todosExerciciosTreino = [
+        // Cardio (se incluído)
+        ...(incluirCardio ? [{
+          treinoId: treinoCriado.id,
+          exercicioId: exercicioCardio.id,
+          ordem: 0,
+          series: 1,
+          repeticoes: `${configTempo.cardio} min`,
+          carga: null,
+          rpe: 5,
+          descanso: 0,
+          concluido: false,
+          observacoes: `Aquecimento cardiovascular - ${configTempo.cardio} minutos`
+        }] : []),
+        // Exercícios de força
+        ...exerciciosFinais.map((exercicio, index) => ({
+          treinoId: treinoCriado.id,
+          exercicioId: exercicio.id,
+          ordem: (incluirCardio ? 1 : 0) + index,
+          series: parametros.series,
+          repeticoes: parametros.repeticoes,
+          rpe: parametros.rpe,
+          descanso: parametros.descanso,
+          concluido: false
+        })),
+        // Alongamento
+        ...(incluirAlongamento ? [{
+          treinoId: treinoCriado.id,
+          exercicioId: exercicioAlongamento.id,
+          ordem: (incluirCardio ? 1 : 0) + exerciciosFinais.length,
+          series: 1,
+          repeticoes: `${configTempo.alongamento} min`,
+          carga: null,
+          rpe: 3,
+          descanso: 0,
+          concluido: false,
+          observacoes: `Alongamento geral - ${configTempo.alongamento} minutos`
+        }] : [])
+      ];
+    }
     
     await tx.exercicioTreino.createMany({
       data: todosExerciciosTreino
@@ -358,8 +501,53 @@ export async function gerarTreinoUnificado(
     return null;
   }
   
+  // Validar treino canônico se aplicável
+  if (isModoCanonico && gruposFiltrados.length === 2) {
+    // Buscar grupos do dia anterior para validação de descanso
+    const dataAnterior = new Date(opcoesAjustadas.data);
+    dataAnterior.setDate(dataAnterior.getDate() - 1);
+    const treinoAnterior = await prisma.treino.findFirst({
+      where: {
+        userId: opcoesAjustadas.userId,
+        data: normalizarData(dataAnterior),
+        criadoPor: 'IA'
+      },
+      include: {
+        exercicios: {
+          include: { exercicio: true }
+        }
+      }
+    });
+    
+    const gruposDiaAnterior = treinoAnterior
+      ? Array.from(new Set(
+          treinoAnterior.exercicios
+            .map(ex => ex.exercicio?.grupoMuscularPrincipal)
+            .filter((g): g is string => !!g && g !== 'Cardio' && g !== 'Alongamento')
+        ))
+      : undefined;
+    
+    const exercicioCardio = treinoCompleto.exercicios.find(
+      ex => ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
+    );
+    
+    const validacao = validarTreinoCanonico({
+      gruposPrincipais: gruposFiltrados,
+      exercicios: treinoCompleto.exercicios,
+      temCardio: !!exercicioCardio,
+      posicaoCardio: exercicioCardio?.ordem
+    }, gruposDiaAnterior);
+    
+    if (!validacao.valido) {
+      console.error(`[ERROR] Treino canônico inválido: ${validacao.erros.join('; ')}`);
+      // Ainda retorna o treino, mas loga o erro
+    } else if (validacao.avisos.length > 0) {
+      console.warn(`[WARN] Avisos no treino canônico: ${validacao.avisos.join('; ')}`);
+    }
+  }
+  
   // Extrair grupos principais
-  const gruposPrincipais = gruposFiltrados.slice(0, 3);
+  const gruposPrincipais = gruposFiltrados.slice(0, isModoCanonico ? 2 : 3);
   
   // Preparar cardio estruturado
   const exercicioCardio = treinoCompleto.exercicios.find(
@@ -382,7 +570,7 @@ export async function gerarTreinoUnificado(
       tipo,
       tempoMinutos,
       intensidade: 'moderada',
-      momento: 'inicio'
+      momento: isModoCanonico ? 'final' : 'inicio' // No modo canônico, cardio sempre no final
     };
   }
   

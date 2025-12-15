@@ -6,6 +6,7 @@
  */
 
 import { prisma } from '../lib/prisma';
+import { GRUPOS_CANONICOS, isGrupoCanonico, GrupoCanonico } from './muscle-group-canonical.service';
 
 // ============================================================================
 // CACHE INTELIGENTE
@@ -97,6 +98,173 @@ export async function validarEMapearGrupos(grupos: string[]): Promise<string[]> 
  */
 export function invalidarCache(): void {
   cache = null;
+}
+
+// ============================================================================
+// NORMALIZAÇÃO DE GRUPOS PARA FORMATO CANÔNICO
+// ============================================================================
+
+/**
+ * Mapeamento de variações de nomes para grupos canônicos
+ */
+const MAPEAMENTO_NORMALIZACAO: Record<string, GrupoCanonico> = {
+  // PEITO
+  'peito': 'PEITO',
+  'Peito': 'PEITO',
+  'Pectoral': 'PEITO',
+  'Pectorais': 'PEITO',
+  
+  // COSTAS
+  'costas': 'COSTAS',
+  'Costas': 'COSTAS',
+  'Dorsal': 'COSTAS',
+  'Dorsais': 'COSTAS',
+  'Back': 'COSTAS',
+  
+  // OMBROS
+  'ombros': 'OMBROS',
+  'Ombros': 'OMBROS',
+  'Ombro': 'OMBROS',
+  'Deltóides': 'OMBROS',
+  'Deltóide': 'OMBROS',
+  'Shoulders': 'OMBROS',
+  
+  // TRÍCEPS
+  'tríceps': 'TRÍCEPS',
+  'Tríceps': 'TRÍCEPS',
+  'triceps': 'TRÍCEPS',
+  'Triceps': 'TRÍCEPS',
+  
+  // BÍCEPS
+  'bíceps': 'BÍCEPS',
+  'Bíceps': 'BÍCEPS',
+  'biceps': 'BÍCEPS',
+  'Biceps': 'BÍCEPS',
+  
+  // QUADRÍCEPS
+  'quadríceps': 'QUADRÍCEPS',
+  'Quadríceps': 'QUADRÍCEPS',
+  'quadriceps': 'QUADRÍCEPS',
+  'Quadriceps': 'QUADRÍCEPS',
+  'Coxa': 'QUADRÍCEPS',
+  'Coxas': 'QUADRÍCEPS',
+  
+  // POSTERIOR_COXA
+  'posterior coxa': 'POSTERIOR_COXA',
+  'Posterior Coxa': 'POSTERIOR_COXA',
+  'Posteriores': 'POSTERIOR_COXA',
+  'posteriores': 'POSTERIOR_COXA',
+  'Posterior': 'POSTERIOR_COXA',
+  'posterior': 'POSTERIOR_COXA',
+  'Isquiotibiais': 'POSTERIOR_COXA',
+  'Hamstrings': 'POSTERIOR_COXA',
+  
+  // GLÚTEOS
+  'glúteos': 'GLÚTEOS',
+  'Glúteos': 'GLÚTEOS',
+  'gluteos': 'GLÚTEOS',
+  'Gluteos': 'GLÚTEOS',
+  'Glúteo': 'GLÚTEOS',
+  'Gluteo': 'GLÚTEOS',
+  'Glutes': 'GLÚTEOS',
+  
+  // PANTURRILHA
+  'panturrilha': 'PANTURRILHA',
+  'Panturrilha': 'PANTURRILHA',
+  'Panturrilhas': 'PANTURRILHA',
+  'Gêmeos': 'PANTURRILHA',
+  'Gemeos': 'PANTURRILHA',
+  'Calf': 'PANTURRILHA',
+  'Calves': 'PANTURRILHA',
+  
+  // CORE
+  'core': 'CORE',
+  'Core': 'CORE',
+  'abdômen': 'CORE',
+  'Abdômen': 'CORE',
+  'abdomen': 'CORE',
+  'Abdomen': 'CORE',
+  'Abdominal': 'CORE',
+  'Abdominais': 'CORE',
+  'Abs': 'CORE',
+  
+  // LOMBAR
+  'lombar': 'LOMBAR',
+  'Lombar': 'LOMBAR',
+  'Lower Back': 'LOMBAR',
+  'Região Lombar': 'LOMBAR',
+  
+  // TRAPÉZIO
+  'trapézio': 'TRAPÉZIO',
+  'Trapézio': 'TRAPÉZIO',
+  'trapezio': 'TRAPÉZIO',
+  'Trapezio': 'TRAPÉZIO',
+  'Trapézios': 'TRAPÉZIO',
+  'Trapezios': 'TRAPÉZIO',
+  'Trap': 'TRAPÉZIO',
+  'Traps': 'TRAPÉZIO'
+};
+
+/**
+ * Normaliza um nome de grupo para o formato canônico
+ * 
+ * @param nome Nome do grupo (qualquer variação)
+ * @returns Nome canônico ou null se não for válido
+ */
+export function normalizarGrupoParaCanonico(nome: string): GrupoCanonico | null {
+  if (!nome || typeof nome !== 'string') {
+    return null;
+  }
+
+  const nomeNormalizado = nome.trim();
+
+  // Se já é canônico, retornar direto
+  if (isGrupoCanonico(nomeNormalizado)) {
+    return nomeNormalizado;
+  }
+
+  // Buscar no mapeamento
+  const canonico = MAPEAMENTO_NORMALIZACAO[nomeNormalizado] || 
+                   MAPEAMENTO_NORMALIZACAO[nomeNormalizado.toLowerCase()];
+
+  if (canonico) {
+    return canonico;
+  }
+
+  // Tentar match case-insensitive direto nos canônicos
+  for (const grupoCanonico of GRUPOS_CANONICOS) {
+    if (grupoCanonico.toLowerCase() === nomeNormalizado.toLowerCase()) {
+      return grupoCanonico;
+    }
+  }
+
+  // Tentar match parcial
+  const nomeLower = nomeNormalizado.toLowerCase();
+  for (const grupoCanonico of GRUPOS_CANONICOS) {
+    if (grupoCanonico.toLowerCase().includes(nomeLower) || 
+        nomeLower.includes(grupoCanonico.toLowerCase())) {
+      return grupoCanonico;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Normaliza uma lista de grupos para o formato canônico
+ * Remove grupos inválidos
+ */
+export function normalizarGruposParaCanonicos(grupos: string[]): GrupoCanonico[] {
+  const canonicoSet = new Set<GrupoCanonico>();
+
+  for (const grupo of grupos) {
+    const canonico = normalizarGrupoParaCanonico(grupo);
+    if (canonico) {
+      canonicoSet.add(canonico);
+    }
+  }
+
+  return Array.from(canonicoSet);
 }
 
 // ============================================================================

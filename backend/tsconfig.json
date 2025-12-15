@@ -20,6 +20,8 @@
     }
   },
   "include": ["src/**/*", "scripts/**/*"],
-  "exclude": ["node_modules", "dist", "prisma"]
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts","node_modules", "dist", "prisma"]
 }
 
