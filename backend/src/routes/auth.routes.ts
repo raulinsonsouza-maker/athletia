@@ -89,7 +89,8 @@ const cadastroCompletoValidation = [
   body('email')
     .isEmail()
     .withMessage('Email inválido')
-    .normalizeEmail(),
+    .trim()
+    .customSanitizer((value) => value.toLowerCase()),
   body('telefone')
     .notEmpty()
     .withMessage('Telefone é obrigatório')
@@ -112,7 +113,8 @@ const cadastroPrePagamentoValidation = [
   body('email')
     .isEmail()
     .withMessage('Email inválido')
-    .normalizeEmail(),
+    .trim()
+    .customSanitizer((value) => value.toLowerCase()),
   body('telefone')
     .notEmpty()
     .withMessage('Telefone é obrigatório')
