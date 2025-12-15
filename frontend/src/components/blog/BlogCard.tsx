@@ -3,7 +3,18 @@ import BlogMeta from './BlogMeta'
 import OptimizedImage from './OptimizedImage'
 
 interface BlogCardProps {
-  article: BlogArticle
+  article: Partial<BlogArticle> & {
+    id: string
+    slug: string
+    title: string
+    excerpt: string
+    category: string
+    readingTime: number
+    featuredImage: string | null
+    featuredImageAlt?: string | null
+    author?: string
+    publishedAt?: string | null
+  }
   onClick: () => void
 }
 
@@ -13,15 +24,17 @@ export default function BlogCard({ article, onClick }: BlogCardProps) {
       onClick={onClick}
       className="cursor-pointer bg-dark-lighter rounded-2xl border border-grey/20 overflow-hidden hover:border-primary/50 transition-all hover:scale-[1.02] group"
     >
-      <div className="relative aspect-video overflow-hidden bg-dark">
-        <OptimizedImage
-          src={article.featuredImage}
-          alt={article.featuredImageAlt}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
+      {article.featuredImage && (
+        <div className="relative aspect-video overflow-hidden bg-dark">
+          <OptimizedImage
+            src={article.featuredImage}
+            alt={article.featuredImageAlt || article.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      )}
       
       <div className="p-6 space-y-4">
         <div className="flex items-center gap-2">
@@ -39,8 +52,8 @@ export default function BlogCard({ article, onClick }: BlogCardProps) {
         </p>
         
         <BlogMeta
-          author={article.author}
-          publishedAt={article.publishedAt}
+          author={article.author || article.authorRelation?.name || 'Equipe AthletIA'}
+          publishedAt={article.publishedAt || new Date().toISOString()}
           readingTime={article.readingTime}
           category={article.category}
           compact

@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import BlogHeader from '../components/blog/BlogHeader'
 import BlogHero from '../components/blog/BlogHero'
@@ -69,7 +68,6 @@ interface BlogSettings {
 }
 
 export default function Blog() {
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [heroPost, setHeroPost] = useState<BlogArticle | null>(null)
   const [featuredArticles, setFeaturedArticles] = useState<BlogArticle[]>([])
@@ -132,9 +130,14 @@ export default function Blog() {
     <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
       <BlogSEO
         article={{
-          title: settings?.globalMetaTitle || 'Blog AthletIA | Treino, Saúde e Evolução Física',
+          slug: 'blog',
+          title: 'Blog AthletIA',
+          metaTitle: settings?.globalMetaTitle || 'Blog AthletIA | Treino, Saúde e Evolução Física',
           metaDescription: settings?.globalMetaDescription || 'Descubra estratégias práticas de treino, saúde e evolução física. Conteúdo especializado para acelerar seus resultados na academia.',
-          metaTitle: settings?.globalMetaTitle || 'Blog AthletIA | Treino, Saúde e Evolução Física'
+          keywords: [],
+          featuredImage: null,
+          publishedAt: new Date().toISOString(),
+          author: 'Equipe AthletIA'
         }}
       />
       
@@ -159,7 +162,14 @@ export default function Blog() {
 
             {/* Hero Editorial */}
             {heroPost && (
-              <BlogHero article={heroPost} />
+              <BlogHero article={{
+                ...heroPost,
+                authorRelation: heroPost.authorRelation ? {
+                  name: heroPost.authorRelation.name,
+                  role: heroPost.authorRelation.role,
+                  avatar: (heroPost.authorRelation as any).avatar || null
+                } : null
+              }} />
             )}
 
             {/* Destaques Secundários */}

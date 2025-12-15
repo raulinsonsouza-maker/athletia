@@ -495,16 +495,17 @@ model BlogCTA {
 
   // Relacionamentos
   articles BlogArticle[]
+  globalSettings BlogSettings? @relation("BlogGlobalCTA")
 
   @@map("blog_ctas")
 }
 
 model BlogSettings {
   id                String   @id @default("global")
-  heroPostId        String?  @map("hero_post_id")
+  heroPostId        String?  @unique @map("hero_post_id")
   featuredCount     Int      @default(3) @map("featured_count")
   categoriesDisplay  String[] @map("categories_display") // IDs de categorias
-  globalCtaId       String?  @map("global_cta_id")
+  globalCtaId       String?  @unique @map("global_cta_id")
   blogIntroText     String?  @map("blog_intro_text") @db.Text
   globalMetaTitle   String?  @map("global_meta_title")
   globalMetaDescription String? @map("global_meta_description") @db.Text
@@ -512,7 +513,7 @@ model BlogSettings {
 
   // Relacionamentos
   heroPost BlogArticle? @relation("BlogHeroPost", fields: [heroPostId], references: [id], onDelete: SetNull)
-  globalCta BlogCTA? @relation(fields: [globalCtaId], references: [id], onDelete: SetNull)
+  globalCta BlogCTA? @relation("BlogGlobalCTA", fields: [globalCtaId], references: [id], onDelete: SetNull)
 
   @@map("blog_settings")
 }

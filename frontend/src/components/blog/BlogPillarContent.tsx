@@ -47,12 +47,15 @@ export default function BlogPillarContent({ articles }: BlogPillarContentProps) 
               Pilar
             </div>
             <BlogCard
-              article={{
-                ...article,
-                category: article.categoryRelation?.name || 'Geral',
-                featuredImage: article.featuredImage || '',
-                featuredImageAlt: article.featuredImageAlt || article.title
-              }}
+            article={{
+              ...article,
+              category: article.categoryRelation?.name || 'Geral',
+              featuredImage: article.featuredImage || null,
+              featuredImageAlt: article.featuredImageAlt || article.title || '',
+              author: article.author || article.authorRelation?.name || 'Equipe AthletIA',
+              publishedAt: article.publishedAt || new Date().toISOString(),
+              readingTime: article.readingTime || 5
+            }}
               onClick={() => navigate(`/blog/${article.slug}`)}
             />
           </div>

@@ -3,27 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 
-interface BlogSettings {
-  id: string
-  heroPostId: string | null
-  featuredCount: number
-  categoriesDisplay: string[]
-  globalCtaId: string | null
-  blogIntroText: string | null
-  globalMetaTitle: string | null
-  globalMetaDescription: string | null
-  heroPost?: {
-    id: string
-    title: string
-    slug: string
-  } | null
-  globalCta?: {
-    id: string
-    name: string
-    type: string
-  } | null
-}
-
 interface BlogArticle {
   id: string
   title: string
@@ -48,7 +27,6 @@ export default function AdminBlogSettings() {
   const [loading, setLoading] = useState(true)
   const [verificando, setVerificando] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [settings, setSettings] = useState<BlogSettings | null>(null)
   const [articles, setArticles] = useState<BlogArticle[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
   const [ctas, setCtas] = useState<BlogCTA[]>([])
@@ -98,7 +76,6 @@ export default function AdminBlogSettings() {
     try {
       const response = await api.get('/admin/blog/configuracoes')
       const data = response.data
-      setSettings(data)
       setFormData({
         heroPostId: data.heroPostId || '',
         featuredCount: data.featuredCount || 3,

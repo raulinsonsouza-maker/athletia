@@ -12,11 +12,14 @@ interface SEOHeadProps {
     publishedAt: string
     updatedAt?: string | null
     author: string
+    excerpt?: string
     categoryRelation?: {
+      id?: string
       name: string
       slug: string
     } | null
     authorRelation?: {
+      id?: string
       name: string
       role: string | null
       avatar?: string | null
@@ -31,7 +34,7 @@ interface SEOHeadProps {
 export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
   useEffect(() => {
     // Atualizar title
-    document.title = article.metaTitle
+    document.title = article.metaTitle || article.title || 'Blog AthletIA'
 
     // Atualizar ou criar meta description
     let metaDescription = document.querySelector('meta[name="description"]')
@@ -40,7 +43,7 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
       metaDescription.setAttribute('name', 'description')
       document.head.appendChild(metaDescription)
     }
-    metaDescription.setAttribute('content', article.metaDescription)
+    metaDescription.setAttribute('content', article.metaDescription || article.excerpt || '')
 
     // Open Graph tags
     const ogTags = [
@@ -58,7 +61,7 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
         tag.setAttribute('property', property)
         document.head.appendChild(tag)
       }
-      tag.setAttribute('content', content)
+      tag.setAttribute('content', content || '')
     })
 
     // Twitter Card tags
@@ -190,7 +193,7 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
     orgScript.textContent = JSON.stringify(organizationSchema)
 
     // Keywords meta tag
-    if (article.keywords.length > 0) {
+    if (article.keywords && article.keywords.length > 0) {
       let keywordsTag = document.querySelector('meta[name="keywords"]')
       if (!keywordsTag) {
         keywordsTag = document.createElement('meta')

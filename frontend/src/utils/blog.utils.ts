@@ -72,7 +72,12 @@ export function getRelatedArticles(
  */
 export function getLatestArticles(articles: BlogArticle[], limit: number = 6): BlogArticle[] {
   return [...articles]
-    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+    .filter(a => a.publishedAt)
+    .sort((a, b) => {
+      const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0
+      const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0
+      return dateB - dateA
+    })
     .slice(0, limit)
 }
 

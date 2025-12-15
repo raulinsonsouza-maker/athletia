@@ -51,40 +51,6 @@ export const listarArtigos = async (req: AuthRequest, res: Response) => {
             role: true
           }
         }
-      },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        subtitle: true,
-        metaTitle: true,
-        category: true,
-        featuredImage: true,
-        excerpt: true,
-        author: true,
-        published: true,
-        publishedAt: true,
-        readingTime: true,
-        viewsCount: true,
-        isFeatured: true,
-        isPillar: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        categoryRelation: {
-          select: {
-            id: true,
-            name: true,
-            slug: true
-          }
-        },
-        authorRelation: {
-          select: {
-            id: true,
-            name: true,
-            role: true
-          }
-        }
       }
     });
 

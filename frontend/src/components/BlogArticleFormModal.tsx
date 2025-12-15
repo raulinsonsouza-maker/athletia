@@ -62,7 +62,6 @@ export default function BlogArticleFormModal({
   onSave
 }: BlogArticleFormModalProps) {
   const { showToast } = useToast()
-  const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<'basico' | 'seo' | 'conteudo' | 'cta' | 'imagem' | 'configuracoes'>('basico')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -104,7 +103,6 @@ export default function BlogArticleFormModal({
   })
 
   const [keywordsInput, setKeywordsInput] = useState('')
-  const [relatedPostsInput, setRelatedPostsInput] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Carregar categorias, autores e CTAs ao abrir modal
@@ -174,13 +172,12 @@ export default function BlogArticleFormModal({
         status: (artigo.status as 'draft' | 'published') || (artigo.published ? 'published' : 'draft'),
         isFeatured: artigo.isFeatured || false,
         isPillar: artigo.isPillar || false,
-        relatedPosts: Array.isArray(artigo.relatedPosts) ? artigo.relatedPosts : [],
+        relatedPosts: Array.isArray(artigo.relatedPosts) ? artigo.relatedPosts : [] as string[],
         publishedAt: artigo.publishedAt ? new Date(artigo.publishedAt).toISOString().split('T')[0] : '',
         featuredImage: artigo.featuredImage || null,
         featuredImageAlt: artigo.featuredImageAlt || ''
       })
       setKeywordsInput(Array.isArray(artigo.keywords) ? artigo.keywords.join(', ') : '')
-      setRelatedPostsInput(Array.isArray(artigo.relatedPosts) ? artigo.relatedPosts : [])
     } else if (isOpen && isCreating) {
       // Resetar para criação
       setFormData({
@@ -212,7 +209,6 @@ export default function BlogArticleFormModal({
         featuredImageAlt: ''
       })
       setKeywordsInput('')
-      setRelatedPostsInput([])
       setActiveTab('basico')
     }
     setErrors({})

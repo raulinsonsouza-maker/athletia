@@ -65,41 +65,6 @@ export const listarArtigosPublicos = async (req: Request, res: Response) => {
             avatar: true
           }
         }
-      },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        subtitle: true,
-        metaTitle: true,
-        category: true,
-        featuredImage: true,
-        featuredImageAlt: true,
-        excerpt: true,
-        author: true,
-        publishedAt: true,
-        readingTime: true,
-        viewsCount: true,
-        isFeatured: true,
-        isPillar: true,
-        createdAt: true,
-        updatedAt: true,
-        categoryRelation: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            icon: true
-          }
-        },
-        authorRelation: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            avatar: true
-          }
-        }
       }
     });
 
@@ -329,34 +294,6 @@ export const obterCategoriaPublicaPorSlug = async (req: Request, res: Response) 
       skip,
       take: limitNum,
       include: {
-        categoryRelation: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            icon: true
-          }
-        },
-        authorRelation: {
-          select: {
-            id: true,
-            name: true,
-            role: true,
-            avatar: true
-          }
-        }
-      },
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        subtitle: true,
-        featuredImage: true,
-        featuredImageAlt: true,
-        excerpt: true,
-        readingTime: true,
-        viewsCount: true,
-        publishedAt: true,
         categoryRelation: {
           select: {
             id: true,

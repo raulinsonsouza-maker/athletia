@@ -18,6 +18,7 @@ interface BlogHeroProps {
     authorRelation?: {
       name: string
       role: string | null
+      avatar: string | null
     } | null
     author?: string
     publishedAt: string | null
