@@ -14,6 +14,9 @@ import { prisma } from '../lib/prisma';
 import { normalizarGrupoParaCanonico } from '../services/grupo-muscular.service';
 import { GRUPOS_CANONICOS } from '../services/muscle-group-canonical.service';
 
+// Exportar função para uso em outros scripts
+export { normalizarGrupoParaCanonico };
+
 /**
  * Normaliza um grupo muscular para o formato canônico
  */

@@ -456,6 +456,7 @@ export async function selecionar4ExerciciosPorGrupo(
 
   // Buscar histórico da semana atual (para evitar repetição no mesmo grupo)
   // Usar grupo canônico normalizado
+  // NOTA: Se não houver exercícios suficientes, vamos relaxar esta restrição
   const historicoSemanaAtual = await buscarHistoricoExerciciosNoPeriodo(
     userId,
     inicioSemana,
@@ -464,7 +465,8 @@ export async function selecionar4ExerciciosPorGrupo(
   );
 
   // Combinar histórico: semana atual + exercícios já usados no treino
-  const todosExerciciosEvitar = new Set([
+  // IMPORTANTE: Primeiro tentamos com histórico completo, depois relaxamos se necessário
+  let todosExerciciosEvitar = new Set([
     ...exerciciosJaUsadosNoTreino,
     ...exerciciosUsadosNoGrupoEstaSemana,
     ...historicoSemanaAtual
@@ -507,26 +509,18 @@ export async function selecionar4ExerciciosPorGrupo(
       .filter(ex => {
         const grupoPrincipalCanonico = normalizarGrupoParaCanonico(ex.grupoMuscularPrincipal);
         
-        // EXCLUIR: se o grupo principal é o outro grupo do par, não usar
-        if (outroGrupoCanonico && grupoPrincipalCanonico === outroGrupoCanonico) {
-          return false;
-        }
+        // EXCLUIR: se o grupo principal é o outro grupo do par, não usar (exceto se não tiver opções)
+        // Mas vamos fazer essa exclusão depois, se tivermos exercícios suficientes
+        const grupoPrincipalEOutroGrupo = outroGrupoCanonico && grupoPrincipalCanonico === outroGrupoCanonico;
         
-        // Priorizar: grupo solicitado é o grupo principal
-        if (grupoPrincipalCanonico === grupoCanonico) {
-          return true;
-        }
-        
-        // Fallback: grupo solicitado está nos sinergistas
-        // Mas só se o grupo principal NÃO for o outro grupo do par sinérgico
-        if (ex.sinergistas && ex.sinergistas.length > 0) {
-          return ex.sinergistas.some(s => {
+        // Verificar se corresponde ao grupo solicitado
+        const correspondeAoGrupo = grupoPrincipalCanonico === grupoCanonico ||
+          (ex.sinergistas && ex.sinergistas.length > 0 && ex.sinergistas.some(s => {
             const sCanonico = normalizarGrupoParaCanonico(s);
             return sCanonico === grupoCanonico;
-          });
-        }
-        
-        return false;
+          }));
+
+        return correspondeAoGrupo && !grupoPrincipalEOutroGrupo;
       })
       // Priorizar exercícios onde o grupo é principal
       .sort((a, b) => {
@@ -545,39 +539,77 @@ export async function selecionar4ExerciciosPorGrupo(
     // Buscar exercícios completos
     if (exerciciosDoGrupo.length > 0) {
       // Filtrar IDs que não estão no histórico
-      const idsParaBuscar = exerciciosDoGrupo.filter(id => !todosExerciciosEvitar.has(id));
+      let idsParaBuscar = exerciciosDoGrupo.filter(id => !todosExerciciosEvitar.has(id));
       
-      const exerciciosCompletos = await prisma.exercicio.findMany({
-        where: {
-          id: { in: idsParaBuscar },
-          ativo: true
-        },
-        take: QUANTIDADE_CANONICA * 5
-      });
+      // Se não temos suficientes, incluir alguns que estão no histórico (relaxar restrição)
+      if (idsParaBuscar.length < QUANTIDADE_CANONICA) {
+        // Tentar adicionar alguns que estão no histórico mas não foram usados no treino atual
+        const idsNoHistoricoMasNaoNoTreino = exerciciosDoGrupo.filter(
+          id => !exerciciosJaUsadosNoTreino.has(id)
+        );
+        idsParaBuscar = [...new Set([...idsParaBuscar, ...idsNoHistoricoMasNaoNoTreino])];
+      }
+      
+      if (idsParaBuscar.length > 0) {
+        const exerciciosCompletos = await prisma.exercicio.findMany({
+          where: {
+            id: { in: idsParaBuscar },
+            ativo: true
+          },
+          take: QUANTIDADE_CANONICA * 5
+        });
 
-      // Adicionar aos disponíveis (sem duplicatas)
-      const idsJaAdicionados = new Set(exerciciosDisponiveis.map(ex => ex.id));
-      const novosExercicios = exerciciosCompletos.filter(ex => !idsJaAdicionados.has(ex.id));
-      exerciciosDisponiveis.push(...novosExercicios);
+        // Adicionar aos disponíveis (sem duplicatas)
+        const idsJaAdicionados = new Set(exerciciosDisponiveis.map(ex => ex.id));
+        const novosExercicios = exerciciosCompletos.filter(ex => !idsJaAdicionados.has(ex.id));
+        exerciciosDisponiveis.push(...novosExercicios);
 
-      // Aplicar filtros novamente
-      exerciciosDisponiveis = aplicarFiltrosExercicios(exerciciosDisponiveis, {
-        ...filtros,
-        historico: todosExerciciosEvitar
-      });
+        // Aplicar filtros novamente (mas não ser muito restritivo com histórico se não tiver opções)
+        exerciciosDisponiveis = aplicarFiltrosExercicios(exerciciosDisponiveis, {
+          ...filtros,
+          historico: exerciciosDisponiveis.length < QUANTIDADE_CANONICA 
+            ? exerciciosJaUsadosNoTreino // Se não tem opções, só evitar duplicatas no treino
+            : todosExerciciosEvitar // Se tem opções, usar histórico completo
+        });
+      }
     }
   }
 
   // Filtrar exercícios já usados
-  const exerciciosFiltrados = exerciciosDisponiveis.filter(
+  let exerciciosFiltrados = exerciciosDisponiveis.filter(
     ex => !todosExerciciosEvitar.has(ex.id)
   );
 
-  // Se não tem suficientes, usar exercícios disponíveis mesmo que já foram usados
-  // (melhor do que não ter 4 exercícios)
-  const exerciciosFinal = exerciciosFiltrados.length >= QUANTIDADE_CANONICA
-    ? exerciciosFiltrados
-    : exerciciosDisponiveis;
+  // Se não temos suficientes, relaxar restrições progressivamente
+  if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
+    // Tentativa 1: Remover histórico da semana (permitir reutilizar na mesma semana se necessário)
+    const apenasJaUsadosNoTreino = new Set([
+      ...exerciciosJaUsadosNoTreino,
+      ...exerciciosUsadosNoGrupoEstaSemana
+    ]);
+    
+    exerciciosFiltrados = exerciciosDisponiveis.filter(
+      ex => !apenasJaUsadosNoTreino.has(ex.id)
+    );
+
+    // Tentativa 2: Se ainda não tem suficientes, remover apenas exercícios já usados no treino atual
+    if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
+      exerciciosFiltrados = exerciciosDisponiveis.filter(
+        ex => !exerciciosJaUsadosNoTreino.has(ex.id)
+      );
+    }
+
+    // Tentativa 3: Se ainda não tem, usar todos os disponíveis (evitar retornar menos de 4)
+    if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
+      console.warn(
+        `[selecionar4ExerciciosPorGrupo] Apenas ${exerciciosFiltrados.length} exercícios disponíveis após filtros para grupo "${grupo}". ` +
+        `Usando todos os ${exerciciosDisponiveis.length} exercícios disponíveis.`
+      );
+      exerciciosFiltrados = exerciciosDisponiveis;
+    }
+  }
+
+  const exerciciosFinal = exerciciosFiltrados;
 
   // Selecionar exatamente 4 usando seed determinístico
   // IMPORTANTE: Priorizar exercícios onde o grupo solicitado é o grupo principal
@@ -610,14 +642,16 @@ export async function selecionar4ExerciciosPorGrupo(
     resultado.push(...sinergistasShuffled.slice(0, faltam));
   }
   
-  // Limitar exatamente a 4
+  // Limitar exatamente a QUANTIDADE_CANONICA (ou menos se não tiver)
   const resultadoFinal = resultado.slice(0, QUANTIDADE_CANONICA);
   
   // Log de debug se não conseguiu selecionar 4
   if (resultadoFinal.length < QUANTIDADE_CANONICA) {
     console.warn(
-      `[selecionar4ExerciciosPorGrupo] Apenas ${resultadoFinal.length} exercícios encontrados para grupo "${grupo}" (canônico: "${grupoCanonico}"). ` +
-      `Principais: ${exerciciosPrincipais.length}, Sinergistas: ${exerciciosSinergistas.length}, Total após filtros: ${exerciciosFinal.length}`
+      `[selecionar4ExerciciosPorGrupo] Apenas ${resultadoFinal.length}/${QUANTIDADE_CANONICA} exercícios encontrados para grupo "${grupo}" (canônico: "${grupoCanonico}"). ` +
+      `Principais disponíveis: ${exerciciosPrincipais.length}, Sinergistas disponíveis: ${exerciciosSinergistas.length}, ` +
+      `Total após filtros: ${exerciciosFinal.length}. ` +
+      `Isso pode indicar falta de exercícios no banco de dados para este grupo.`
     );
   }
 
