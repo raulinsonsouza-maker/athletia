@@ -131,7 +131,7 @@ function calcularMinimoExercicios(grupos: string[]): number {
  * grupos = [[ex1, ex2, ex3, ex4], [ex5, ex6, ex7, ex8]]
  * retorna [ex1, ex5, ex2, ex6, ex3, ex7, ex4, ex8]
  */
-function intercalarExerciciosPorGrupo(grupos: any[][]): any[] {
+export function intercalarExerciciosPorGrupo(grupos: any[][]): any[] {
   const resultado: any[] = [];
   const maxLength = Math.max(...grupos.map(g => g.length));
   
