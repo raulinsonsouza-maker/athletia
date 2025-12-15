@@ -348,14 +348,64 @@ export async function gerarTreinoUnificado(
     );
     
     // Combinar: grupo1 (4) + grupo2 (4) = 8 exercícios
-    exerciciosFinais = [...exerciciosGrupo1, ...exerciciosGrupo2];
+    // IMPORTANTE: Remover duplicatas (não deveria acontecer, mas garantimos)
+    const idsJaAdicionados = new Set<string>();
+    const exerciciosFinaisSemDuplicatas: any[] = [];
+    
+    // Adicionar exercícios do grupo1
+    for (const ex of exerciciosGrupo1) {
+      if (!idsJaAdicionados.has(ex.id)) {
+        exerciciosFinaisSemDuplicatas.push(ex);
+        idsJaAdicionados.add(ex.id);
+      } else {
+        console.warn(`[WARN] Exercício duplicado detectado no grupo1: ${ex.id} (${ex.nome || 'sem nome'})`);
+      }
+    }
+    
+    // Adicionar exercícios do grupo2 (verificando duplicatas)
+    for (const ex of exerciciosGrupo2) {
+      if (!idsJaAdicionados.has(ex.id)) {
+        exerciciosFinaisSemDuplicatas.push(ex);
+        idsJaAdicionados.add(ex.id);
+      } else {
+        console.warn(`[WARN] Exercício duplicado detectado no grupo2: ${ex.id} (${ex.nome || 'sem nome'}). Já foi adicionado pelo grupo1.`);
+      }
+    }
+    
+    exerciciosFinais = exerciciosFinaisSemDuplicatas;
     
     // Verificação final de integridade
     if (exerciciosFinais.length !== 8) {
       console.warn(
         `[WARN] Treino canônico tem ${exerciciosFinais.length} exercícios ao invés de 8. ` +
-        `Grupo1: ${exerciciosGrupo1.length}, Grupo2: ${exerciciosGrupo2.length}`
+        `Grupo1: ${exerciciosGrupo1.length}, Grupo2: ${exerciciosGrupo2.length}. ` +
+        `Duplicatas removidas: ${exerciciosGrupo1.length + exerciciosGrupo2.length - exerciciosFinais.length}`
       );
+    }
+    
+    // Se temos menos de 8 devido a duplicatas, tentar buscar mais exercícios para o grupo2
+    if (exerciciosFinais.length < 8 && exerciciosGrupo2.length < 4) {
+      const faltam = 8 - exerciciosFinais.length;
+      console.warn(`[WARN] Tentando buscar mais ${faltam} exercício(s) para completar o treino...`);
+      
+      // Buscar exercícios adicionais para o grupo2 (já excluindo os já usados)
+      const exerciciosAdicionais = await selecionar4ExerciciosPorGrupo(
+        grupo2,
+        opcoesAjustadas.userId,
+        opcoesAjustadas.data,
+        idsJaAdicionados, // Usar IDs já adicionados como histórico
+        new Set<string>(),
+        filtros,
+        grupo1
+      );
+      
+      // Adicionar apenas os que faltam
+      for (const ex of exerciciosAdicionais.slice(0, faltam)) {
+        if (!idsJaAdicionados.has(ex.id) && exerciciosFinais.length < 8) {
+          exerciciosFinais.push(ex);
+          idsJaAdicionados.add(ex.id);
+        }
+      }
     }
   } else {
     // MODO LEGADO: Seleção antiga

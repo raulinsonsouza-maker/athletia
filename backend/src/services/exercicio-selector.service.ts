@@ -573,48 +573,63 @@ export async function selecionar4ExerciciosPorGrupo(
         const novosExercicios = exerciciosCompletos.filter(ex => !idsJaAdicionados.has(ex.id));
         exerciciosDisponiveis.push(...novosExercicios);
 
-        // Aplicar filtros novamente (mas não ser muito restritivo com histórico se não tiver opções)
+        // Aplicar filtros novamente
+        // IMPORTANTE: exerciciosJaUsadosNoTreino sempre deve ser respeitado (nunca duplicar no treino)
+        const historicoParaFiltros = new Set([
+          ...exerciciosJaUsadosNoTreino,
+          ...(exerciciosDisponiveis.length >= QUANTIDADE_CANONICA 
+            ? Array.from(todosExerciciosEvitar).filter(id => !exerciciosJaUsadosNoTreino.has(id))
+            : [])
+        ]);
+        
         exerciciosDisponiveis = aplicarFiltrosExercicios(exerciciosDisponiveis, {
           ...filtros,
-          historico: exerciciosDisponiveis.length < QUANTIDADE_CANONICA 
-            ? exerciciosJaUsadosNoTreino // Se não tem opções, só evitar duplicatas no treino
-            : todosExerciciosEvitar // Se tem opções, usar histórico completo
+          historico: historicoParaFiltros
         });
+        
+        // Garantir que exerciciosJaUsadosNoTreino sempre é respeitado (filtro manual final)
+        exerciciosDisponiveis = exerciciosDisponiveis.filter(
+          ex => !exerciciosJaUsadosNoTreino.has(ex.id)
+        );
       }
     }
   }
 
   // Filtrar exercícios já usados
+  // IMPORTANTE: exerciciosJaUsadosNoTreino tem prioridade absoluta - nunca usar esses
   let exerciciosFiltrados = exerciciosDisponiveis.filter(
-    ex => !todosExerciciosEvitar.has(ex.id)
+    ex => !exerciciosJaUsadosNoTreino.has(ex.id) && !todosExerciciosEvitar.has(ex.id)
   );
-
-  // Se não temos suficientes, relaxar restrições progressivamente
+  
+  // Se não temos suficientes após filtrar histórico, remover apenas histórico da semana
+  // Mas SEMPRE manter exerciciosJaUsadosNoTreino (nunca duplicar no mesmo treino)
   if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
-    // Tentativa 1: Remover histórico da semana (permitir reutilizar na mesma semana se necessário)
-    const apenasJaUsadosNoTreino = new Set([
-      ...exerciciosJaUsadosNoTreino,
-      ...exerciciosUsadosNoGrupoEstaSemana
-    ]);
-    
+    const apenasJaUsadosNoTreino = new Set(exerciciosJaUsadosNoTreino);
     exerciciosFiltrados = exerciciosDisponiveis.filter(
       ex => !apenasJaUsadosNoTreino.has(ex.id)
     );
+  }
 
-    // Tentativa 2: Se ainda não tem suficientes, remover apenas exercícios já usados no treino atual
-    if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
-      exerciciosFiltrados = exerciciosDisponiveis.filter(
-        ex => !exerciciosJaUsadosNoTreino.has(ex.id)
-      );
+  // IMPORTANTE: Se ainda não temos suficientes após filtrar, nunca usar exercícios já no treino
+  // A última tentativa só deve usar exercícios que não estão em exerciciosJaUsadosNoTreino
+  if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
+    // Tentativa final: usar todos os disponíveis EXCETO os já usados no treino
+    // Isso evita duplicatas mesmo que tenhamos que usar exercícios já usados na semana
+    const exerciciosSemDuplicatasNoTreino = exerciciosDisponiveis.filter(
+      ex => !exerciciosJaUsadosNoTreino.has(ex.id)
+    );
+    
+    if (exerciciosSemDuplicatasNoTreino.length > exerciciosFiltrados.length) {
+      exerciciosFiltrados = exerciciosSemDuplicatasNoTreino;
     }
-
-    // Tentativa 3: Se ainda não tem, usar todos os disponíveis (evitar retornar menos de 4)
+    
+    // Se ainda não tem, logar aviso mas NUNCA usar exercícios já no treino
     if (exerciciosFiltrados.length < QUANTIDADE_CANONICA) {
       console.warn(
-        `[selecionar4ExerciciosPorGrupo] Apenas ${exerciciosFiltrados.length} exercícios disponíveis após filtros para grupo "${grupo}". ` +
-        `Usando todos os ${exerciciosDisponiveis.length} exercícios disponíveis.`
+        `[selecionar4ExerciciosPorGrupo] Apenas ${exerciciosFiltrados.length} exercícios disponíveis para grupo "${grupo}" ` +
+        `(excluindo ${exerciciosJaUsadosNoTreino.size} já usados no treino). ` +
+        `Total disponível: ${exerciciosDisponiveis.length}.`
       );
-      exerciciosFiltrados = exerciciosDisponiveis;
     }
   }
 
