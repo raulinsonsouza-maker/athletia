@@ -120,6 +120,32 @@ function calcularMinimoExercicios(grupos: string[]): number {
   return Math.max(4, grupos.length);
 }
 
+/**
+ * Intercala exercícios de diferentes grupos musculares
+ * Permite descanso entre exercícios do mesmo grupo
+ * 
+ * @param grupos Array de arrays, onde cada sub-array contém exercícios de um grupo
+ * @returns Array intercalado de exercícios
+ * 
+ * Exemplo:
+ * grupos = [[ex1, ex2, ex3, ex4], [ex5, ex6, ex7, ex8]]
+ * retorna [ex1, ex5, ex2, ex6, ex3, ex7, ex4, ex8]
+ */
+function intercalarExerciciosPorGrupo(grupos: any[][]): any[] {
+  const resultado: any[] = [];
+  const maxLength = Math.max(...grupos.map(g => g.length));
+  
+  for (let i = 0; i < maxLength; i++) {
+    grupos.forEach(grupo => {
+      if (i < grupo.length) {
+        resultado.push(grupo[i]);
+      }
+    });
+  }
+  
+  return resultado;
+}
+
 // ============================================================================
 // DETERMINAÇÃO DE GRUPOS
 // ============================================================================
@@ -314,6 +340,8 @@ export async function gerarTreinoUnificado(
   
   // Selecionar exercícios (modo canônico vs legado)
   let exerciciosFinais: any[];
+  // No modo canônico, manter grupos separados para intercalação
+  let exerciciosPorGrupoCanonico: any[][] | null = null;
   
   if (isModoCanonico && gruposFiltrados.length === 2) {
     // MODO CANÔNICO: Selecionar exatamente 4 exercícios por grupo
@@ -347,45 +375,34 @@ export async function gerarTreinoUnificado(
       grupo1 // Excluir exercícios onde grupo1 é principal
     );
     
-    // Combinar: grupo1 (4) + grupo2 (4) = 8 exercícios
-    // IMPORTANTE: Remover duplicatas (não deveria acontecer, mas garantimos)
+    // Remover duplicatas de cada grupo individualmente
     const idsJaAdicionados = new Set<string>();
-    const exerciciosFinaisSemDuplicatas: any[] = [];
+    const exerciciosGrupo1Limpos: any[] = [];
+    const exerciciosGrupo2Limpos: any[] = [];
     
-    // Adicionar exercícios do grupo1
+    // Limpar grupo1
     for (const ex of exerciciosGrupo1) {
       if (!idsJaAdicionados.has(ex.id)) {
-        exerciciosFinaisSemDuplicatas.push(ex);
+        exerciciosGrupo1Limpos.push(ex);
         idsJaAdicionados.add(ex.id);
       } else {
         console.warn(`[WARN] Exercício duplicado detectado no grupo1: ${ex.id} (${ex.nome || 'sem nome'})`);
       }
     }
     
-    // Adicionar exercícios do grupo2 (verificando duplicatas)
+    // Limpar grupo2
     for (const ex of exerciciosGrupo2) {
       if (!idsJaAdicionados.has(ex.id)) {
-        exerciciosFinaisSemDuplicatas.push(ex);
+        exerciciosGrupo2Limpos.push(ex);
         idsJaAdicionados.add(ex.id);
       } else {
         console.warn(`[WARN] Exercício duplicado detectado no grupo2: ${ex.id} (${ex.nome || 'sem nome'}). Já foi adicionado pelo grupo1.`);
       }
     }
     
-    exerciciosFinais = exerciciosFinaisSemDuplicatas;
-    
-    // Verificação final de integridade
-    if (exerciciosFinais.length !== 8) {
-      console.warn(
-        `[WARN] Treino canônico tem ${exerciciosFinais.length} exercícios ao invés de 8. ` +
-        `Grupo1: ${exerciciosGrupo1.length}, Grupo2: ${exerciciosGrupo2.length}. ` +
-        `Duplicatas removidas: ${exerciciosGrupo1.length + exerciciosGrupo2.length - exerciciosFinais.length}`
-      );
-    }
-    
     // Se temos menos de 8 devido a duplicatas, tentar buscar mais exercícios para o grupo2
-    if (exerciciosFinais.length < 8 && exerciciosGrupo2.length < 4) {
-      const faltam = 8 - exerciciosFinais.length;
+    if (exerciciosGrupo1Limpos.length + exerciciosGrupo2Limpos.length < 8 && exerciciosGrupo2Limpos.length < 4) {
+      const faltam = 8 - (exerciciosGrupo1Limpos.length + exerciciosGrupo2Limpos.length);
       console.warn(`[WARN] Tentando buscar mais ${faltam} exercício(s) para completar o treino...`);
       
       // Buscar exercícios adicionais para o grupo2 (já excluindo os já usados)
@@ -401,11 +418,26 @@ export async function gerarTreinoUnificado(
       
       // Adicionar apenas os que faltam
       for (const ex of exerciciosAdicionais.slice(0, faltam)) {
-        if (!idsJaAdicionados.has(ex.id) && exerciciosFinais.length < 8) {
-          exerciciosFinais.push(ex);
+        if (!idsJaAdicionados.has(ex.id) && exerciciosGrupo2Limpos.length < 4) {
+          exerciciosGrupo2Limpos.push(ex);
           idsJaAdicionados.add(ex.id);
         }
       }
+    }
+    
+    // Manter grupos separados para intercalação posterior
+    exerciciosPorGrupoCanonico = [exerciciosGrupo1Limpos, exerciciosGrupo2Limpos];
+    
+    // Para compatibilidade com código existente, também criar exerciciosFinais combinado
+    exerciciosFinais = [...exerciciosGrupo1Limpos, ...exerciciosGrupo2Limpos];
+    
+    // Verificação final de integridade
+    if (exerciciosFinais.length !== 8) {
+      console.warn(
+        `[WARN] Treino canônico tem ${exerciciosFinais.length} exercícios ao invés de 8. ` +
+        `Grupo1: ${exerciciosGrupo1Limpos.length}, Grupo2: ${exerciciosGrupo2Limpos.length}. ` +
+        `Duplicatas removidas: ${exerciciosGrupo1.length + exerciciosGrupo2.length - exerciciosFinais.length}`
+      );
     }
   } else {
     // MODO LEGADO: Seleção antiga
@@ -469,11 +501,21 @@ export async function gerarTreinoUnificado(
     let todosExerciciosTreino: any[];
     
     if (isModoCanonico) {
-      // Ordem canônica: exercícios já estão na ordem correta (grupo1, grupo2)
+      // Ordem canônica: intercalar exercícios entre grupos para permitir descanso
       // Cardio sempre no final
+      
+      // Aplicar intercalação se temos grupos separados
+      let exerciciosParaTreino: any[];
+      if (exerciciosPorGrupoCanonico && exerciciosPorGrupoCanonico.length === 2) {
+        exerciciosParaTreino = intercalarExerciciosPorGrupo(exerciciosPorGrupoCanonico);
+      } else {
+        // Fallback: usar exerciciosFinais diretamente se não temos grupos separados
+        exerciciosParaTreino = exerciciosFinais;
+      }
+      
       todosExerciciosTreino = [
-        // Exercícios de força (ordem 0-7)
-        ...exerciciosFinais.map((exercicio, index) => ({
+        // Exercícios de força intercalados (ordem 0-7)
+        ...exerciciosParaTreino.map((exercicio, index) => ({
           treinoId: treinoCriado.id,
           exercicioId: exercicio.id,
           ordem: index, // 0-7
@@ -487,7 +529,7 @@ export async function gerarTreinoUnificado(
         ...(incluirCardio ? [{
           treinoId: treinoCriado.id,
           exercicioId: exercicioCardio.id,
-          ordem: exerciciosFinais.length, // Sempre após os 8 exercícios de força
+          ordem: exerciciosParaTreino.length, // Sempre após os exercícios de força
           series: 1,
           repeticoes: `${configTempo.cardio} min`,
           carga: null,
