@@ -7,6 +7,7 @@ interface BlogArticle {
   id: string
   slug: string
   title: string
+  subtitle?: string | null
   metaTitle: string
   metaDescription: string
   keywords: string[]
@@ -22,6 +23,25 @@ interface BlogArticle {
   ctaDescription: string | null
   ctaButtonText: string | null
   published: boolean
+  isFeatured?: boolean
+  isPillar?: boolean
+  viewsCount?: number
+  status?: string
+  categoryId?: string | null
+  authorId?: string | null
+  ctaType?: string | null
+  ctaConfigId?: string | null
+  relatedPosts?: string[]
+  categoryRelation?: {
+    id: string
+    name: string
+    slug: string
+  } | null
+  authorRelation?: {
+    id: string
+    name: string
+    role: string | null
+  } | null
   createdAt: string
   updatedAt: string
 }
@@ -42,20 +62,31 @@ export default function BlogArticleFormModal({
   onSave
 }: BlogArticleFormModalProps) {
   const { showToast } = useToast()
+  const { showToast } = useToast()
   const [saving, setSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState<'basico' | 'seo' | 'conteudo' | 'cta' | 'imagem'>('basico')
+  const [activeTab, setActiveTab] = useState<'basico' | 'seo' | 'conteudo' | 'cta' | 'imagem' | 'configuracoes'>('basico')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([])
+  const [authors, setAuthors] = useState<Array<{ id: string; name: string; role: string | null }>>([])
+  const [ctas, setCtas] = useState<Array<{ id: string; name: string; type: string }>>([])
+  const [allPosts, setAllPosts] = useState<Array<{ id: string; title: string; slug: string }>>([])
+  const [loadingData, setLoadingData] = useState(false)
   
   const [formData, setFormData] = useState({
     title: '',
+    subtitle: '',
     slug: '',
     metaTitle: '',
     metaDescription: '',
     keywords: [] as string[],
     author: 'Equipe AthletIA',
     category: 'Geral',
+    categoryId: null as string | null,
+    authorId: null as string | null,
+    ctaType: null as string | null,
+    ctaConfigId: null as string | null,
     excerpt: '',
     content: '',
     ctaTitle: '',
@@ -63,13 +94,46 @@ export default function BlogArticleFormModal({
     ctaButtonText: '',
     readingTime: 0,
     published: false,
+    status: 'draft' as 'draft' | 'published',
+    isFeatured: false,
+    isPillar: false,
+    relatedPosts: [] as string[],
     publishedAt: '',
     featuredImage: null as string | null,
     featuredImageAlt: ''
   })
 
   const [keywordsInput, setKeywordsInput] = useState('')
+  const [relatedPostsInput, setRelatedPostsInput] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Carregar categorias, autores e CTAs ao abrir modal
+  useEffect(() => {
+    if (isOpen) {
+      loadDropdownData()
+    }
+  }, [isOpen])
+
+  const loadDropdownData = async () => {
+    setLoadingData(true)
+    try {
+      const [categoriesRes, authorsRes, ctasRes, postsRes] = await Promise.all([
+        api.get('/admin/blog/categorias').catch(() => ({ data: [] })),
+        api.get('/admin/blog/autores').catch(() => ({ data: [] })),
+        api.get('/admin/blog/ctas').catch(() => ({ data: [] })),
+        api.get('/admin/blog/artigos?published=true').catch(() => ({ data: [] }))
+      ])
+      
+      setCategories(categoriesRes.data || [])
+      setAuthors(authorsRes.data || [])
+      setCtas(ctasRes.data || [])
+      setAllPosts(postsRes.data || [])
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoadingData(false)
+    }
+  }
 
   // Gerar slug a partir do título
   const generateSlug = (title: string): string => {
@@ -89,12 +153,17 @@ export default function BlogArticleFormModal({
     if (isOpen && artigo) {
       setFormData({
         title: artigo.title || '',
+        subtitle: artigo.subtitle || '',
         slug: artigo.slug || '',
         metaTitle: artigo.metaTitle || '',
         metaDescription: artigo.metaDescription || '',
         keywords: Array.isArray(artigo.keywords) ? artigo.keywords : [],
         author: artigo.author || 'Equipe AthletIA',
         category: artigo.category || 'Geral',
+        categoryId: artigo.categoryId || artigo.categoryRelation?.id || null,
+        authorId: artigo.authorId || artigo.authorRelation?.id || null,
+        ctaType: artigo.ctaType || null,
+        ctaConfigId: artigo.ctaConfigId || null,
         excerpt: artigo.excerpt || '',
         content: artigo.content || '',
         ctaTitle: artigo.ctaTitle || '',
@@ -102,21 +171,31 @@ export default function BlogArticleFormModal({
         ctaButtonText: artigo.ctaButtonText || '',
         readingTime: artigo.readingTime || 0,
         published: artigo.published || false,
+        status: (artigo.status as 'draft' | 'published') || (artigo.published ? 'published' : 'draft'),
+        isFeatured: artigo.isFeatured || false,
+        isPillar: artigo.isPillar || false,
+        relatedPosts: Array.isArray(artigo.relatedPosts) ? artigo.relatedPosts : [],
         publishedAt: artigo.publishedAt ? new Date(artigo.publishedAt).toISOString().split('T')[0] : '',
         featuredImage: artigo.featuredImage || null,
         featuredImageAlt: artigo.featuredImageAlt || ''
       })
       setKeywordsInput(Array.isArray(artigo.keywords) ? artigo.keywords.join(', ') : '')
+      setRelatedPostsInput(Array.isArray(artigo.relatedPosts) ? artigo.relatedPosts : [])
     } else if (isOpen && isCreating) {
       // Resetar para criação
       setFormData({
         title: '',
+        subtitle: '',
         slug: '',
         metaTitle: '',
         metaDescription: '',
         keywords: [],
         author: 'Equipe AthletIA',
         category: 'Geral',
+        categoryId: null,
+        authorId: null,
+        ctaType: null,
+        ctaConfigId: null,
         excerpt: '',
         content: '',
         ctaTitle: '',
@@ -124,11 +203,16 @@ export default function BlogArticleFormModal({
         ctaButtonText: '',
         readingTime: 0,
         published: false,
+        status: 'draft',
+        isFeatured: false,
+        isPillar: false,
+        relatedPosts: [],
         publishedAt: '',
         featuredImage: null,
         featuredImageAlt: ''
       })
       setKeywordsInput('')
+      setRelatedPostsInput([])
       setActiveTab('basico')
     }
     setErrors({})
@@ -232,9 +316,14 @@ export default function BlogArticleFormModal({
         formDataToSend.append('slug', formData.slug.trim() || generateSlug(formData.title.trim()))
         formDataToSend.append('metaTitle', (formData.metaTitle.trim() || formData.title.trim()))
         formDataToSend.append('metaDescription', (formData.metaDescription.trim() || formData.excerpt.trim()))
+        formDataToSend.append('subtitle', formData.subtitle.trim() || '')
         formDataToSend.append('keywords', JSON.stringify(formData.keywords || []))
         formDataToSend.append('author', formData.author.trim())
         formDataToSend.append('category', formData.category.trim())
+        if (formData.categoryId) formDataToSend.append('categoryId', formData.categoryId)
+        if (formData.authorId) formDataToSend.append('authorId', formData.authorId)
+        if (formData.ctaType) formDataToSend.append('ctaType', formData.ctaType)
+        if (formData.ctaConfigId) formDataToSend.append('ctaConfigId', formData.ctaConfigId)
         formDataToSend.append('excerpt', formData.excerpt.trim())
         formDataToSend.append('content', formData.content || '')
         formDataToSend.append('ctaTitle', formData.ctaTitle.trim() || '')
@@ -242,6 +331,10 @@ export default function BlogArticleFormModal({
         formDataToSend.append('ctaButtonText', formData.ctaButtonText.trim() || '')
         formDataToSend.append('readingTime', String(formData.readingTime || 0))
         formDataToSend.append('published', String(formData.published))
+        formDataToSend.append('status', formData.status)
+        formDataToSend.append('isFeatured', String(formData.isFeatured))
+        formDataToSend.append('isPillar', String(formData.isPillar))
+        formDataToSend.append('relatedPosts', JSON.stringify(formData.relatedPosts || []))
         formDataToSend.append('publishedAt', formData.publishedAt || '')
         formDataToSend.append('featuredImageAlt', formData.featuredImageAlt.trim() || '')
         formDataToSend.append('imagem', selectedImageFile)
@@ -257,12 +350,17 @@ export default function BlogArticleFormModal({
         // Sem imagem, enviar JSON normal
         const payload: any = {
           title: formData.title.trim(),
+          subtitle: formData.subtitle.trim() || null,
           slug: formData.slug.trim() || generateSlug(formData.title.trim()),
           metaTitle: formData.metaTitle.trim() || formData.title.trim(),
           metaDescription: formData.metaDescription.trim() || formData.excerpt.trim(),
           keywords: formData.keywords || [],
           author: formData.author.trim(),
           category: formData.category.trim(),
+          categoryId: formData.categoryId || null,
+          authorId: formData.authorId || null,
+          ctaType: formData.ctaType || null,
+          ctaConfigId: formData.ctaConfigId || null,
           excerpt: formData.excerpt.trim(),
           content: formData.content || '',
           ctaTitle: formData.ctaTitle.trim() || null,
@@ -270,6 +368,10 @@ export default function BlogArticleFormModal({
           ctaButtonText: formData.ctaButtonText.trim() || null,
           readingTime: formData.readingTime || 0,
           published: formData.published,
+          status: formData.status,
+          isFeatured: formData.isFeatured,
+          isPillar: formData.isPillar,
+          relatedPosts: formData.relatedPosts || [],
           publishedAt: formData.publishedAt || null,
           featuredImage: formData.featuredImage || null,
           featuredImageAlt: formData.featuredImageAlt.trim() || null
@@ -315,18 +417,6 @@ export default function BlogArticleFormModal({
 
   if (!isOpen) return null
 
-  const categories = [
-    'Geral',
-    'Iniciantes',
-    'Emagrecimento',
-    'Hipertrofia',
-    'Saúde',
-    'Nutrição',
-    'Motivação',
-    'Técnicas',
-    'Equipamentos'
-  ]
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="bg-dark-lighter rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col border border-grey/30">
@@ -344,7 +434,7 @@ export default function BlogArticleFormModal({
 
         {/* Tabs */}
         <div className="flex gap-2 px-6 pt-4 border-b border-grey/30 overflow-x-auto">
-          {(['basico', 'seo', 'conteudo', 'cta', 'imagem'] as const).map(tab => {
+          {(['basico', 'seo', 'conteudo', 'cta', 'imagem', 'configuracoes'] as const).map(tab => {
             // Verificar se há erros na tab
             const hasErrors = 
               (tab === 'basico' && (errors.title || errors.slug || errors.excerpt || errors.category || errors.content)) ||
@@ -365,6 +455,7 @@ export default function BlogArticleFormModal({
                 {tab === 'conteudo' && 'Conteúdo'}
                 {tab === 'cta' && 'CTA'}
                 {tab === 'imagem' && 'Imagem'}
+                {tab === 'configuracoes' && 'Configurações'}
                 {hasErrors && (
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-400 rounded-full"></span>
                 )}
@@ -395,6 +486,19 @@ export default function BlogArticleFormModal({
 
                 <div>
                   <label className="block text-sm font-medium text-light mb-2">
+                    Subtítulo
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.subtitle}
+                    onChange={(e) => setFormData(prev => ({ ...prev, subtitle: e.target.value }))}
+                    className="input-field w-full"
+                    placeholder="Subtítulo editorial do artigo"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-light mb-2">
                     Slug (URL) <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -415,28 +519,72 @@ export default function BlogArticleFormModal({
                     <label className="block text-sm font-medium text-light mb-2">
                       Categoria <span className="text-red-400">*</span>
                     </label>
-                    <select
-                      value={formData.category}
-                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className={`input-field w-full ${errors.category ? 'border-red-400' : ''}`}
-                    >
-                      {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
+                    {loadingData ? (
+                      <div className="input-field w-full">Carregando...</div>
+                    ) : categories.length > 0 ? (
+                      <select
+                        value={formData.categoryId || ''}
+                        onChange={(e) => {
+                          const selected = categories.find(c => c.id === e.target.value)
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            categoryId: e.target.value || null,
+                            category: selected?.name || prev.category
+                          }))
+                        }}
+                        className={`input-field w-full ${errors.category ? 'border-red-400' : ''}`}
+                      >
+                        <option value="">Selecione uma categoria</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={formData.category}
+                        onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                        className={`input-field w-full ${errors.category ? 'border-red-400' : ''}`}
+                        placeholder="Categoria"
+                      />
+                    )}
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-light mb-2">
                       Autor
                     </label>
-                    <input
-                      type="text"
-                      value={formData.author}
-                      onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
-                      className="input-field w-full"
-                      placeholder="Equipe AthletIA"
-                    />
+                    {loadingData ? (
+                      <div className="input-field w-full">Carregando...</div>
+                    ) : authors.length > 0 ? (
+                      <select
+                        value={formData.authorId || ''}
+                        onChange={(e) => {
+                          const selected = authors.find(a => a.id === e.target.value)
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            authorId: e.target.value || null,
+                            author: selected?.name || prev.author
+                          }))
+                        }}
+                        className="input-field w-full"
+                      >
+                        <option value="">Selecione um autor</option>
+                        {authors.map(author => (
+                          <option key={author.id} value={author.id}>
+                            {author.name} {author.role ? `(${author.role})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={formData.author}
+                        onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+                        className="input-field w-full"
+                        placeholder="Equipe AthletIA"
+                      />
+                    )}
                   </div>
                 </div>
 
@@ -480,16 +628,148 @@ export default function BlogArticleFormModal({
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">
+                      Status
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        status: e.target.value as 'draft' | 'published',
+                        published: e.target.value === 'published'
+                      }))}
+                      className="input-field w-full"
+                    >
+                      <option value="draft">Rascunho</option>
+                      <option value="published">Publicado</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tab Configurações */}
+            {activeTab === 'configuracoes' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isFeatured}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm text-light">Marcar como Destaque</span>
+                    </label>
+                    <p className="text-xs text-light-muted mt-1">
+                      Aparecerá na seção de destaques da home do blog
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isPillar}
+                        onChange={(e) => setFormData(prev => ({ ...prev, isPillar: e.target.checked }))}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm text-light">Marcar como Pilar (Evergreen)</span>
+                    </label>
+                    <p className="text-xs text-light-muted mt-1">
+                      Conteúdo profundo que permanece relevante
+                    </p>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.published}
-                      onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm text-light">Publicar artigo</span>
+                  <label className="block text-sm font-medium text-light mb-2">
+                    Tipo de CTA
                   </label>
+                  <select
+                    value={formData.ctaType || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ctaType: e.target.value || null }))}
+                    className="input-field w-full"
+                  >
+                    <option value="">Nenhum</option>
+                    <option value="cadastro">Cadastro AthletIA</option>
+                    <option value="criar_treino">Criar Treino</option>
+                    <option value="conhecer_plataforma">Conhecer Plataforma</option>
+                  </select>
+                </div>
+
+                {loadingData ? (
+                  <div className="text-light-muted">Carregando CTAs...</div>
+                ) : ctas.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-light mb-2">
+                      CTA Configurável (Opcional)
+                    </label>
+                    <select
+                      value={formData.ctaConfigId || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, ctaConfigId: e.target.value || null }))}
+                      className="input-field w-full"
+                    >
+                      <option value="">Nenhum</option>
+                      {ctas.map(cta => (
+                        <option key={cta.id} value={cta.id}>
+                          {cta.name} ({cta.type})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-light-muted mt-1">
+                      Selecione um CTA pré-configurado para usar neste artigo
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-light mb-2">
+                    Posts Relacionados
+                  </label>
+                  {loadingData ? (
+                    <div className="text-light-muted">Carregando posts...</div>
+                  ) : (
+                    <>
+                      <select
+                        multiple
+                        value={formData.relatedPosts}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value)
+                          setFormData(prev => ({ ...prev, relatedPosts: selected }))
+                        }}
+                        className="input-field w-full min-h-[150px]"
+                        size={5}
+                      >
+                        {allPosts.filter(p => p.id !== artigo?.id).map(post => (
+                          <option key={post.id} value={post.id}>
+                            {post.title}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="text-xs text-light-muted mt-1">
+                        Segure Ctrl/Cmd para selecionar múltiplos posts relacionados
+                      </p>
+                      {formData.relatedPosts.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {formData.relatedPosts.map(postId => {
+                            const post = allPosts.find(p => p.id === postId)
+                            return post ? (
+                              <span
+                                key={postId}
+                                className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-semibold"
+                              >
+                                {post.title}
+                              </span>
+                            ) : null
+                          })}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -564,6 +844,95 @@ export default function BlogArticleFormModal({
                   <label className="block text-sm font-medium text-light mb-2">
                     Conteúdo do Artigo <span className="text-red-400">*</span>
                   </label>
+                  
+                  {/* Botões de Blocos Especiais */}
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cursorPos = (document.activeElement as HTMLTextAreaElement)?.selectionStart || formData.content.length
+                        const newContent = formData.content.slice(0, cursorPos) + 
+                          '\n<div class="blog-highlight" data-block="highlight">\n  <p><strong>Destaque:</strong> Seu texto importante aqui.</p>\n</div>\n' + 
+                          formData.content.slice(cursorPos)
+                        setFormData(prev => ({ ...prev, content: newContent }))
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors"
+                      title="Inserir bloco de destaque"
+                    >
+                      📌 Destaque
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cursorPos = (document.activeElement as HTMLTextAreaElement)?.selectionStart || formData.content.length
+                        const newContent = formData.content.slice(0, cursorPos) + 
+                          '\n<div class="blog-alert" data-block="alert">\n  <p><strong>⚠️ Alerta:</strong> Informação importante aqui.</p>\n</div>\n' + 
+                          formData.content.slice(cursorPos)
+                        setFormData(prev => ({ ...prev, content: newContent }))
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-yellow-500/20 text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-colors"
+                      title="Inserir bloco de alerta"
+                    >
+                      ⚠️ Alerta
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cursorPos = (document.activeElement as HTMLTextAreaElement)?.selectionStart || formData.content.length
+                        const newContent = formData.content.slice(0, cursorPos) + 
+                          '\n<div class="blog-science" data-block="science">\n  <p><strong>🔬 Ciência:</strong> Informação científica baseada em estudos aqui.</p>\n</div>\n' + 
+                          formData.content.slice(cursorPos)
+                        setFormData(prev => ({ ...prev, content: newContent }))
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
+                      title="Inserir bloco científico"
+                    >
+                      🔬 Ciência
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cursorPos = (document.activeElement as HTMLTextAreaElement)?.selectionStart || formData.content.length
+                        const newContent = formData.content.slice(0, cursorPos) + 
+                          '\n<div class="blog-error" data-block="error">\n  <p><strong>❌ Erro Comum:</strong> Evite este erro comum aqui.</p>\n</div>\n' + 
+                          formData.content.slice(cursorPos)
+                        setFormData(prev => ({ ...prev, content: newContent }))
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                      title="Inserir bloco de erro comum"
+                    >
+                      ❌ Erro Comum
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cursorPos = (document.activeElement as HTMLTextAreaElement)?.selectionStart || formData.content.length
+                        const newContent = formData.content.slice(0, cursorPos) + 
+                          '\n<h2>Seu Título H2 Aqui</h2>\n' + 
+                          formData.content.slice(cursorPos)
+                        setFormData(prev => ({ ...prev, content: newContent }))
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-grey/20 text-light rounded-lg hover:bg-grey/30 transition-colors"
+                      title="Inserir H2 (para índice automático)"
+                    >
+                      H2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cursorPos = (document.activeElement as HTMLTextAreaElement)?.selectionStart || formData.content.length
+                        const newContent = formData.content.slice(0, cursorPos) + 
+                          '\n<h3>Seu Título H3 Aqui</h3>\n' + 
+                          formData.content.slice(cursorPos)
+                        setFormData(prev => ({ ...prev, content: newContent }))
+                      }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-grey/20 text-light rounded-lg hover:bg-grey/30 transition-colors"
+                      title="Inserir H3 (para índice automático)"
+                    >
+                      H3
+                    </button>
+                  </div>
+                  
                   <textarea
                     value={formData.content}
                     onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
@@ -572,7 +941,7 @@ export default function BlogArticleFormModal({
                   />
                   {errors.content && <p className="text-red-400 text-xs mt-1">{errors.content}</p>}
                   <p className="text-xs text-light-muted mt-1">
-                    Use HTML ou Markdown para formatar o conteúdo. O conteúdo será renderizado no blog.
+                    Use HTML para formatar o conteúdo. Use os botões acima para inserir blocos especiais. H2 e H3 serão usados para gerar o índice automático.
                   </p>
                 </div>
               </div>

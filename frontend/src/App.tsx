@@ -17,6 +17,10 @@ import Admin from './pages/Admin'
 import AdminLogin from './pages/AdminLogin'
 import AdminGrupos from './pages/AdminGrupos'
 import AdminBlog from './pages/AdminBlog'
+import AdminBlogCategories from './pages/AdminBlogCategories'
+import AdminBlogAuthors from './pages/AdminBlogAuthors'
+import AdminBlogCTAs from './pages/AdminBlogCTAs'
+import AdminBlogSettings from './pages/AdminBlogSettings'
 import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
 import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -32,6 +36,7 @@ const Progresso = lazy(() => import('./pages/Progresso'))
 // Lazy load Blog pages para code splitting
 const Blog = lazy(() => import('./pages/Blog'))
 const BlogPost = lazy(() => import('./pages/BlogPost'))
+const BlogCategory = lazy(() => import('./pages/BlogCategory'))
 
 function App() {
   return (
@@ -57,6 +62,14 @@ function App() {
             element={
               <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
                 <Blog />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/blog/categoria/:slug" 
+            element={
+              <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+                <BlogCategory />
               </Suspense>
             } 
           />
@@ -154,6 +167,10 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/grupos" element={<AdminGrupos />} />
           <Route path="/admin/blog" element={<AdminBlog />} />
+          <Route path="/admin/blog/categorias" element={<AdminBlogCategories />} />
+          <Route path="/admin/blog/autores" element={<AdminBlogAuthors />} />
+          <Route path="/admin/blog/ctas" element={<AdminBlogCTAs />} />
+          <Route path="/admin/blog/configuracoes" element={<AdminBlogSettings />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </Router>

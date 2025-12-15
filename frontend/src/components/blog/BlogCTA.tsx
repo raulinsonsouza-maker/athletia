@@ -4,10 +4,10 @@ interface BlogCTAProps {
   title: string
   description: string
   buttonText: string
-  href?: string
+  link?: string
 }
 
-export default function BlogCTA({ title, description, buttonText, href = '/' }: BlogCTAProps) {
+export default function BlogCTA({ title, description, buttonText, link = '/' }: BlogCTAProps) {
   const navigate = useNavigate()
 
   const handleClick = () => {
@@ -15,7 +15,11 @@ export default function BlogCTA({ title, description, buttonText, href = '/' }: 
     if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
       (window as any).gtag_report_conversion()
     }
-    navigate(href)
+    if (link.startsWith('http')) {
+      window.open(link, '_blank')
+    } else {
+      navigate(link)
+    }
   }
 
   return (

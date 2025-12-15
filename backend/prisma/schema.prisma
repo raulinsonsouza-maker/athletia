@@ -396,13 +396,14 @@ model BlogArticle {
   id              String   @id @default(uuid())
   slug            String   @unique
   title           String
+  subtitle        String?  @db.Text
   metaTitle       String   @map("meta_title")
   metaDescription String   @map("meta_description") @db.Text
   keywords        String[] // Array de palavras-chave
-  author          String   @default("Equipe AthletIA")
+  author          String   @default("Equipe AthletIA") // Mantido para compatibilidade
   publishedAt     DateTime? @map("published_at")
   readingTime     Int      @default(0) @map("reading_time") // em minutos
-  category        String
+  category        String   // Mantido para compatibilidade durante migração
   featuredImage   String?  @map("featured_image")
   featuredImageAlt String? @map("featured_image_alt")
   excerpt         String   @db.Text
@@ -411,13 +412,107 @@ model BlogArticle {
   ctaDescription  String?  @map("cta_description") @db.Text
   ctaButtonText   String?  @map("cta_button_text")
   published       Boolean  @default(false)
+  isFeatured      Boolean  @default(false) @map("is_featured")
+  isPillar        Boolean  @default(false) @map("is_pillar")
+  viewsCount      Int      @default(0) @map("views_count")
+  status          String   @default("draft") // draft, published
+  categoryId      String?  @map("category_id")
+  authorId        String?  @map("author_id")
+  ctaType         String?  @map("cta_type") // cadastro, criar_treino, conhecer_plataforma
+  ctaConfigId     String?  @map("cta_config_id")
+  relatedPosts    String[] @map("related_posts") // Array de IDs de posts relacionados
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  categoryRelation BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  authorRelation   BlogAuthor?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  ctaConfig         BlogCTA?      @relation(fields: [ctaConfigId], references: [id], onDelete: SetNull)
+  heroSettings      BlogSettings? @relation("BlogHeroPost")
 
   @@index([slug])
   @@index([published])
   @@index([category])
   @@index([publishedAt])
   @@index([published, publishedAt])
+  @@index([isFeatured])
+  @@index([isPillar])
+  @@index([viewsCount])
+  @@index([status])
+  @@index([categoryId])
+  @@index([authorId])
+  @@index([published, isFeatured])
+  @@index([published, isPillar])
   @@map("blog_articles")
+}
+
+model BlogCategory {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text // SEO
+  introText       String?  @map("intro_text") @db.Text // Editorial
+  icon            String?
+  metaTitle       String?  @map("meta_title")
+  metaDescription String?  @map("meta_description") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  articles BlogArticle[]
+
+  @@index([slug])
+  @@map("blog_categories")
+}
+
+model BlogAuthor {
+  id           String   @id @default(uuid())
+  name         String
+  role         String?  // Especialidade
+  bio          String?  @db.Text
+  avatar       String?
+  externalLink String?  @map("external_link")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  articles BlogArticle[]
+
+  @@map("blog_authors")
+}
+
+model BlogCTA {
+  id          String   @id @default(uuid())
+  name        String   // Nome interno
+  type        String   // cadastro, criar_treino, conhecer_plataforma
+  title       String
+  description String   @db.Text
+  buttonText  String   @map("button_text")
+  link        String
+  style       String?  // Visual style
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  articles BlogArticle[]
+
+  @@map("blog_ctas")
+}
+
+model BlogSettings {
+  id                String   @id @default("global")
+  heroPostId        String?  @map("hero_post_id")
+  featuredCount     Int      @default(3) @map("featured_count")
+  categoriesDisplay  String[] @map("categories_display") // IDs de categorias
+  globalCtaId       String?  @map("global_cta_id")
+  blogIntroText     String?  @map("blog_intro_text") @db.Text
+  globalMetaTitle   String?  @map("global_meta_title")
+  globalMetaDescription String? @map("global_meta_description") @db.Text
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  heroPost BlogArticle? @relation("BlogHeroPost", fields: [heroPostId], references: [id], onDelete: SetNull)
+  globalCta BlogCTA? @relation(fields: [globalCtaId], references: [id], onDelete: SetNull)
+
+  @@map("blog_settings")
 }

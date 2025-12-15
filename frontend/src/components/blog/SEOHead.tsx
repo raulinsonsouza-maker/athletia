@@ -12,10 +12,23 @@ interface SEOHeadProps {
     publishedAt: string
     updatedAt?: string | null
     author: string
+    categoryRelation?: {
+      name: string
+      slug: string
+    } | null
+    authorRelation?: {
+      name: string
+      role: string | null
+      avatar?: string | null
+    } | null
   }
+  breadcrumbItems?: Array<{
+    label: string
+    href?: string
+  }>
 }
 
-export default function SEOHead({ article }: SEOHeadProps) {
+export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
   useEffect(() => {
     // Atualizar title
     document.title = article.metaTitle
@@ -76,18 +89,23 @@ export default function SEOHead({ article }: SEOHeadProps) {
     const canonicalUrl = article.slug ? `${window.location.origin}/blog/${article.slug}` : window.location.href
     canonical.setAttribute('href', canonicalUrl)
 
-    // Schema.org structured data
-    const schema = {
+    // Schema.org structured data - Article
+    const articleSchema: any = {
       '@context': 'https://schema.org',
       '@type': 'Article',
       headline: article.title,
       description: article.metaDescription,
-      image: article.featuredImage || '',
+      image: article.featuredImage ? (article.featuredImage.startsWith('http') ? article.featuredImage : `${window.location.origin}${article.featuredImage}`) : '',
       datePublished: article.publishedAt,
       dateModified: article.updatedAt || article.publishedAt,
-      author: {
+      author: (article as any).authorRelation ? {
         '@type': 'Person',
-        name: article.author
+        name: (article as any).authorRelation.name,
+        jobTitle: (article as any).authorRelation.role || undefined,
+        image: (article as any).authorRelation.avatar ? ((article as any).authorRelation.avatar.startsWith('http') ? (article as any).authorRelation.avatar : `${window.location.origin}${(article as any).authorRelation.avatar}`) : undefined
+      } : {
+        '@type': 'Person',
+        name: article.author || 'Equipe AthletIA'
       },
       publisher: {
         '@type': 'Organization',
@@ -96,7 +114,28 @@ export default function SEOHead({ article }: SEOHeadProps) {
           '@type': 'ImageObject',
           url: `${window.location.origin}/favicon.svg`
         }
+      },
+      mainEntityOfPage: {
+        '@type': 'WebPage',
+        '@id': `${window.location.origin}/blog/${article.slug}`
       }
+    }
+
+    if ((article as any).categoryRelation) {
+      articleSchema.articleSection = (article as any).categoryRelation.name
+    }
+
+    // Remover propriedades undefined
+    Object.keys(articleSchema).forEach(key => {
+      if (articleSchema[key] === undefined) {
+        delete articleSchema[key]
+      }
+    })
+    if (articleSchema.author && articleSchema.author.image === undefined) {
+      delete articleSchema.author.image
+    }
+    if (articleSchema.author && articleSchema.author.jobTitle === undefined) {
+      delete articleSchema.author.jobTitle
     }
 
     let schemaScript = document.querySelector('script[type="application/ld+json"][data-article-schema]')
@@ -106,7 +145,49 @@ export default function SEOHead({ article }: SEOHeadProps) {
       schemaScript.setAttribute('data-article-schema', 'true')
       document.head.appendChild(schemaScript)
     }
-    schemaScript.textContent = JSON.stringify(schema)
+    schemaScript.textContent = JSON.stringify(articleSchema)
+
+    // Schema.org BreadcrumbList
+    if (breadcrumbItems && breadcrumbItems.length > 0) {
+      const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumbItems.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.label,
+          item: item.href ? (item.href.startsWith('http') ? item.href : `${window.location.origin}${item.href}`) : window.location.href
+        }))
+      }
+
+      let breadcrumbScript = document.querySelector('script[type="application/ld+json"][data-breadcrumb-schema]')
+      if (!breadcrumbScript) {
+        breadcrumbScript = document.createElement('script')
+        breadcrumbScript.setAttribute('type', 'application/ld+json')
+        breadcrumbScript.setAttribute('data-breadcrumb-schema', 'true')
+        document.head.appendChild(breadcrumbScript)
+      }
+      breadcrumbScript.textContent = JSON.stringify(breadcrumbSchema)
+    }
+
+    // Schema.org Organization
+    const organizationSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'AthletIA',
+      url: window.location.origin,
+      logo: `${window.location.origin}/favicon.svg`,
+      description: 'Sistema Inteligente de Treinos Personalizados'
+    }
+
+    let orgScript = document.querySelector('script[type="application/ld+json"][data-organization-schema]')
+    if (!orgScript) {
+      orgScript = document.createElement('script')
+      orgScript.setAttribute('type', 'application/ld+json')
+      orgScript.setAttribute('data-organization-schema', 'true')
+      document.head.appendChild(orgScript)
+    }
+    orgScript.textContent = JSON.stringify(organizationSchema)
 
     // Keywords meta tag
     if (article.keywords.length > 0) {

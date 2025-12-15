@@ -11,6 +11,7 @@ interface BlogArticle {
   id: string
   slug: string
   title: string
+  subtitle?: string | null
   metaTitle: string
   metaDescription: string
   keywords: string[]
@@ -26,6 +27,20 @@ interface BlogArticle {
   ctaDescription: string | null
   ctaButtonText: string | null
   published: boolean
+  isFeatured?: boolean
+  isPillar?: boolean
+  viewsCount?: number
+  status?: string
+  categoryRelation?: {
+    id: string
+    name: string
+    slug: string
+  } | null
+  authorRelation?: {
+    id: string
+    name: string
+    role: string | null
+  } | null
   createdAt: string
   updatedAt: string
 }
@@ -280,6 +295,60 @@ export default function AdminBlog() {
               + Novo Artigo
             </button>
           </div>
+          
+          {/* Navegação Rápida */}
+          <div className="flex flex-wrap gap-2 pt-4 border-t border-grey/30">
+            <button
+              onClick={() => navigate('/admin/blog')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                window.location.pathname === '/admin/blog'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-dark border border-grey/30 text-light-muted hover:text-light hover:border-grey/50'
+              }`}
+            >
+              Posts
+            </button>
+            <button
+              onClick={() => navigate('/admin/blog/categorias')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                window.location.pathname === '/admin/blog/categorias'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-dark border border-grey/30 text-light-muted hover:text-light hover:border-grey/50'
+              }`}
+            >
+              Categorias
+            </button>
+            <button
+              onClick={() => navigate('/admin/blog/autores')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                window.location.pathname === '/admin/blog/autores'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-dark border border-grey/30 text-light-muted hover:text-light hover:border-grey/50'
+              }`}
+            >
+              Autores
+            </button>
+            <button
+              onClick={() => navigate('/admin/blog/ctas')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                window.location.pathname === '/admin/blog/ctas'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-dark border border-grey/30 text-light-muted hover:text-light hover:border-grey/50'
+              }`}
+            >
+              CTAs
+            </button>
+            <button
+              onClick={() => navigate('/admin/blog/configuracoes')}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                window.location.pathname === '/admin/blog/configuracoes'
+                  ? 'bg-primary/20 text-primary border border-primary/30'
+                  : 'bg-dark border border-grey/30 text-light-muted hover:text-light hover:border-grey/50'
+              }`}
+            >
+              Configurações
+            </button>
+          </div>
 
           {/* Filtros */}
           <div className="flex flex-col md:flex-row gap-4">
@@ -333,7 +402,7 @@ export default function AdminBlog() {
                     />
                   </div>
                 )}
-                <div className="mb-2">
+                <div className="mb-2 flex flex-wrap gap-2">
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
                       artigo.published
@@ -343,19 +412,45 @@ export default function AdminBlog() {
                   >
                     {artigo.published ? 'Publicado' : 'Rascunho'}
                   </span>
-                  <span className="ml-2 text-xs text-light-muted">
-                    {artigo.category}
+                  {artigo.isFeatured && (
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary">
+                      Destaque
+                    </span>
+                  )}
+                  {artigo.isPillar && (
+                    <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400">
+                      Pilar
+                    </span>
+                  )}
+                  <span className="text-xs text-light-muted">
+                    {artigo.categoryRelation?.name || artigo.category}
                   </span>
                 </div>
                 <h3 className="text-xl font-display font-bold text-light mb-2 line-clamp-2">
                   {artigo.title}
                 </h3>
+                {artigo.subtitle && (
+                  <p className="text-sm text-light-muted mb-2 line-clamp-1">
+                    {artigo.subtitle}
+                  </p>
+                )}
                 <p className="text-sm text-light-muted mb-4 line-clamp-2">
                   {artigo.excerpt}
                 </p>
                 <div className="flex items-center justify-between text-xs text-light-muted mb-4">
                   <span>{formatDate(artigo.publishedAt)}</span>
-                  <span>{artigo.readingTime} min</span>
+                  <div className="flex gap-3">
+                    <span>{artigo.readingTime} min</span>
+                    {artigo.viewsCount !== undefined && (
+                      <span className="flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        {artigo.viewsCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button

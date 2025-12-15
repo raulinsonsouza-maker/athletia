@@ -180,6 +180,42 @@ export const uploadBlogImagem = multer({
   }
 });
 
+// ============================================================================
+// UPLOAD DE AVATAR DE AUTOR DO BLOG
+// ============================================================================
+
+const storageBlogAuthorAvatar = multer.diskStorage({
+  destination: (req, file, cb) => {
+    try {
+      const basePath = getUploadExerciciosPath();
+      const baseDir = path.dirname(basePath);
+      const uploadPath = path.join(baseDir, 'blog', 'authors');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    } catch (error: any) {
+      cb(new Error(`Erro ao criar diretório de upload: ${error.message}`), undefined as any);
+    }
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+    const finalExt = validExts.includes(ext) ? ext : '.jpg';
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    cb(null, `avatar-${timestamp}-${randomStr}${finalExt}`);
+  }
+});
+
+export const uploadBlogAuthorAvatar = multer({
+  storage: storageBlogAuthorAvatar,
+  fileFilter: fileFilterBlogImagem,
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
+
 /**
  * Middleware para validar magic bytes de arquivos de imagem após upload
  * SEGURANÇA: Validação de magic bytes para prevenir upload de arquivos maliciosos

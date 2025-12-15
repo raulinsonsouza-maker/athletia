@@ -39,12 +39,41 @@ import {
   obterArtigo,
   criarArtigo,
   atualizarArtigo,
-  deletarArtigo
+  deletarArtigo,
+  marcarComoHero,
+  marcarComoDestaque,
+  marcarComoPilar,
+  relacionarPosts
 } from '../controllers/blog-admin.controller';
+import {
+  listarCategorias,
+  obterCategoria,
+  criarCategoria,
+  atualizarCategoria,
+  deletarCategoria
+} from '../controllers/blog-category-admin.controller';
+import {
+  listarAutores,
+  obterAutor,
+  criarAutor,
+  atualizarAutor,
+  deletarAutor
+} from '../controllers/blog-author-admin.controller';
+import {
+  listarCTAs,
+  obterCTA,
+  criarCTA,
+  atualizarCTA,
+  deletarCTA
+} from '../controllers/blog-cta-admin.controller';
+import {
+  obterConfiguracoes,
+  atualizarConfiguracoes
+} from '../controllers/blog-settings-admin.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { requireAdmin } from '../middleware/admin.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
-import { uploadImagemGrupo, uploadTreinoImagem, uploadBlogImagem, validateImageMagicBytes } from '../middleware/upload.middleware';
+import { uploadImagemGrupo, uploadTreinoImagem, uploadBlogImagem, uploadBlogAuthorAvatar, validateImageMagicBytes } from '../middleware/upload.middleware';
 import { PrismaClient } from '@prisma/client';
 import { normalizeMediaUrls } from '../middleware/normalize-media-urls.middleware';
 
@@ -458,6 +487,96 @@ router.post(
     }
   }
 );
+
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO - CATEGORIAS DO BLOG
+// ============================================================================
+
+router.get('/blog/categorias', listarCategorias);
+router.get('/blog/categorias/:id', obterCategoria);
+router.post('/blog/categorias', criarCategoria);
+router.put('/blog/categorias/:id', atualizarCategoria);
+router.delete('/blog/categorias/:id', deletarCategoria);
+
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO - AUTORES DO BLOG
+// ============================================================================
+
+router.get('/blog/autores', listarAutores);
+router.get('/blog/autores/:id', obterAutor);
+router.post(
+  '/blog/autores',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    const contentType = req.headers['content-type'] || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return next();
+    }
+    uploadBlogAuthorAvatar.single('avatar')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  criarAutor
+);
+router.put(
+  '/blog/autores/:id',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    const contentType = req.headers['content-type'] || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return next();
+    }
+    uploadBlogAuthorAvatar.single('avatar')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  atualizarAutor
+);
+router.delete('/blog/autores/:id', deletarAutor);
+
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO - CTAs DO BLOG
+// ============================================================================
+
+router.get('/blog/ctas', listarCTAs);
+router.get('/blog/ctas/:id', obterCTA);
+router.post('/blog/ctas', criarCTA);
+router.put('/blog/ctas/:id', atualizarCTA);
+router.delete('/blog/ctas/:id', deletarCTA);
+
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO - CONFIGURAÇÕES DO BLOG
+// ============================================================================
+
+router.get('/blog/configuracoes', obterConfiguracoes);
+router.put('/blog/configuracoes', atualizarConfiguracoes);
+
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO - AÇÕES ESPECIAIS DO BLOG
+// ============================================================================
+
+router.put('/blog/artigos/:id/hero', marcarComoHero);
+router.put('/blog/artigos/:id/featured', marcarComoDestaque);
+router.put('/blog/artigos/:id/pillar', marcarComoPilar);
+router.put('/blog/artigos/:id/related', relacionarPosts);
 
 export default router;
 

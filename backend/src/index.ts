@@ -22,6 +22,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import blogRoutes from './routes/blog.routes';
+import sitemapRoutes from './routes/sitemap.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import cron from 'node-cron';
@@ -336,6 +337,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/blog', blogRoutes);
+app.use('/api', sitemapRoutes);
 
 // 404 handler
 app.use((req, res) => {
