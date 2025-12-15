@@ -9,6 +9,7 @@ import { prisma } from '../lib/prisma';
 import { mapearGrupoParaVisual } from './grupo-muscular.service';
 import { aplicarFiltrosExercicios, FiltrosExercicio } from './exercicio-filters.service';
 import { obterInicioSemana } from './treino-utils.service';
+import { normalizarGrupoParaCanonico } from './grupo-muscular.service';
 
 // ============================================================================
 // FUNÇÕES AUXILIARES
@@ -438,17 +439,26 @@ export async function selecionar4ExerciciosPorGrupo(
 ): Promise<any[]> {
   const QUANTIDADE_CANONICA = 4;
 
+  // Normalizar grupo para garantir busca correta
+  const grupoCanonico = normalizarGrupoParaCanonico(grupo);
+  
+  if (!grupoCanonico) {
+    console.warn(`[selecionar4ExerciciosPorGrupo] Grupo "${grupo}" não pode ser normalizado para canônico`);
+    return [];
+  }
+
   // Buscar início da semana para histórico da semana atual
   const inicioSemana = obterInicioSemana(data);
   const fimSemana = new Date(inicioSemana);
   fimSemana.setDate(fimSemana.getDate() + 7);
 
   // Buscar histórico da semana atual (para evitar repetição no mesmo grupo)
+  // Usar grupo canônico normalizado
   const historicoSemanaAtual = await buscarHistoricoExerciciosNoPeriodo(
     userId,
     inicioSemana,
     fimSemana,
-    grupo
+    grupoCanonico
   );
 
   // Combinar histórico: semana atual + exercícios já usados no treino
@@ -458,9 +468,10 @@ export async function selecionar4ExerciciosPorGrupo(
     ...historicoSemanaAtual
   ]);
 
-  // Buscar exercícios do grupo
-  const exerciciosDisponiveis = await buscarExerciciosComFallback(
-    grupo,
+  // Buscar exercícios do grupo usando o grupo canônico
+  // A função buscarExerciciosComFallback tentará mapear para grupo visual primeiro
+  let exerciciosDisponiveis = await buscarExerciciosComFallback(
+    grupoCanonico,
     QUANTIDADE_CANONICA * 3, // Buscar mais para ter opções
     {
       ...filtros,
@@ -469,6 +480,69 @@ export async function selecionar4ExerciciosPorGrupo(
     userId,
     data
   );
+
+  // Se não encontrou exercícios suficientes, buscar diretamente por variações
+  // O PostgreSQL não suporta "mode: 'insensitive'" diretamente, então vamos buscar todos e filtrar
+  if (exerciciosDisponiveis.length < QUANTIDADE_CANONICA) {
+    // Buscar todos os exercícios ativos para filtrar localmente
+    const todosExercicios = await prisma.exercicio.findMany({
+      where: {
+        ativo: true
+      },
+      take: 1000, // Limite razoável
+      select: {
+        id: true,
+        nome: true,
+        grupoMuscularPrincipal: true,
+        sinergistas: true
+      }
+    });
+
+    // Filtrar localmente por normalização
+    const exerciciosDoGrupo = todosExercicios.filter(ex => {
+      const grupoPrincipalCanonico = normalizarGrupoParaCanonico(ex.grupoMuscularPrincipal);
+      
+      // Verificar se corresponde ao grupo canônico
+      if (grupoPrincipalCanonico === grupoCanonico) {
+        return true;
+      }
+      
+      // Verificar sinergistas
+      if (ex.sinergistas && ex.sinergistas.length > 0) {
+        return ex.sinergistas.some(s => {
+          const sCanonico = normalizarGrupoParaCanonico(s);
+          return sCanonico === grupoCanonico;
+        });
+      }
+      
+      return false;
+    }).map(ex => ex.id);
+
+    // Buscar exercícios completos
+    if (exerciciosDoGrupo.length > 0) {
+      // Filtrar IDs que não estão no histórico
+      const idsParaBuscar = exerciciosDoGrupo.filter(id => !todosExerciciosEvitar.has(id));
+      
+      const exerciciosCompletos = await prisma.exercicio.findMany({
+        where: {
+          id: { in: idsParaBuscar },
+          ativo: true
+        },
+        take: QUANTIDADE_CANONICA * 5
+      });
+
+      // Adicionar aos disponíveis (sem duplicatas)
+      const idsJaAdicionados = new Set(exerciciosDisponiveis.map(ex => ex.id));
+      const novosExercicios = exerciciosCompletos.filter(ex => !idsJaAdicionados.has(ex.id));
+      exerciciosDisponiveis.push(...novosExercicios);
+
+      // Aplicar filtros novamente
+      exerciciosDisponiveis = aplicarFiltrosExercicios(exerciciosDisponiveis, {
+        ...filtros,
+        historico: todosExerciciosEvitar
+      });
+    }
+  }
 
   // Filtrar exercícios já usados
   const exerciciosFiltrados = exerciciosDisponiveis.filter(
@@ -483,10 +557,20 @@ export async function selecionar4ExerciciosPorGrupo(
 
   // Selecionar exatamente 4 usando seed determinístico
   const inicioSemanaStr = inicioSemana.toISOString().split('T')[0];
-  const seed = gerarSeed(userId + grupo + inicioSemanaStr, data);
+  const seed = gerarSeed(userId + (grupoCanonico || grupo) + inicioSemanaStr, data);
   const shuffled = shuffleDeterministico(exerciciosFinal, seed);
 
-  return shuffled.slice(0, QUANTIDADE_CANONICA);
+  const resultado = shuffled.slice(0, QUANTIDADE_CANONICA);
+  
+  // Log de debug se não conseguiu selecionar 4
+  if (resultado.length < QUANTIDADE_CANONICA) {
+    console.warn(
+      `[selecionar4ExerciciosPorGrupo] Apenas ${resultado.length} exercícios encontrados para grupo "${grupo}" (canônico: "${grupoCanonico}"). ` +
+      `Total disponível após filtros: ${exerciciosFinal.length}`
+    );
+  }
+
+  return resultado;
 }
 
 /**

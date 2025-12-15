@@ -18,7 +18,9 @@
     "atualizar-treinos-periodico": "tsx src/jobs/atualizar-treinos-periodico.ts",
     "configurar-cron": "node scripts/configurar-cron-treinos.js",
     "migrate:blog": "tsx scripts/migrate-blog-articles.ts",
-    "regenerate-workouts": "tsx src/scripts/regenerate-all-workouts.ts"
+    "regenerate-workouts": "tsx src/scripts/regenerate-all-workouts.ts",
+    "normalize-muscle-groups": "tsx src/scripts/normalize-muscle-groups.ts",
+    "normalize-and-regenerate": "tsx src/scripts/normalize-and-regenerate.ts"
   },
   "keywords": [
     "fitness",

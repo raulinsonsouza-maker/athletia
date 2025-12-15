@@ -114,16 +114,40 @@ export function validarTreinoCanonico(
     const grupo1 = treino.gruposPrincipais[0];
     const grupo2 = treino.gruposPrincipais[1];
 
+    // Normalizar grupos para comparação (aceitar variações)
+    const grupo1Canonico = normalizarGrupoParaCanonico(grupo1);
+    const grupo2Canonico = normalizarGrupoParaCanonico(grupo2);
+
     const exerciciosGrupo1 = exerciciosForca.filter(ex => {
       const grupoPrincipal = ex.exercicio?.grupoMuscularPrincipal || '';
       const sinergistas = ex.exercicio?.sinergistas || [];
-      return grupoPrincipal === grupo1 || sinergistas.includes(grupo1);
+      
+      // Normalizar para comparar
+      const grupoPrincipalCanonico = normalizarGrupoParaCanonico(grupoPrincipal);
+      
+      // Verificar se corresponde ao grupo1 (direto ou sinergista)
+      return grupoPrincipalCanonico === grupo1Canonico || 
+             grupoPrincipal === grupo1 ||
+             sinergistas.some(s => {
+               const sCanonico = normalizarGrupoParaCanonico(s);
+               return sCanonico === grupo1Canonico || s === grupo1;
+             });
     });
 
     const exerciciosGrupo2 = exerciciosForca.filter(ex => {
       const grupoPrincipal = ex.exercicio?.grupoMuscularPrincipal || '';
       const sinergistas = ex.exercicio?.sinergistas || [];
-      return grupoPrincipal === grupo2 || sinergistas.includes(grupo2);
+      
+      // Normalizar para comparar
+      const grupoPrincipalCanonico = normalizarGrupoParaCanonico(grupoPrincipal);
+      
+      // Verificar se corresponde ao grupo2 (direto ou sinergista)
+      return grupoPrincipalCanonico === grupo2Canonico || 
+             grupoPrincipal === grupo2 ||
+             sinergistas.some(s => {
+               const sCanonico = normalizarGrupoParaCanonico(s);
+               return sCanonico === grupo2Canonico || s === grupo2;
+             });
     });
 
     if (exerciciosGrupo1.length !== 4) {
