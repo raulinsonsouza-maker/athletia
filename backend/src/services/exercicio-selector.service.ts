@@ -509,18 +509,27 @@ export async function selecionar4ExerciciosPorGrupo(
       .filter(ex => {
         const grupoPrincipalCanonico = normalizarGrupoParaCanonico(ex.grupoMuscularPrincipal);
         
-        // EXCLUIR: se o grupo principal é o outro grupo do par, não usar (exceto se não tiver opções)
-        // Mas vamos fazer essa exclusão depois, se tivermos exercícios suficientes
-        const grupoPrincipalEOutroGrupo = outroGrupoCanonico && grupoPrincipalCanonico === outroGrupoCanonico;
+        // EXCLUIR: se o grupo principal é o outro grupo do par, não usar este exercício aqui
+        // Este exercício deve ser buscado quando buscar para o outro grupo
+        if (outroGrupoCanonico && grupoPrincipalCanonico === outroGrupoCanonico) {
+          return false; // Este exercício pertence ao outro grupo do par
+        }
         
         // Verificar se corresponde ao grupo solicitado
-        const correspondeAoGrupo = grupoPrincipalCanonico === grupoCanonico ||
-          (ex.sinergistas && ex.sinergistas.length > 0 && ex.sinergistas.some(s => {
+        // Priorizar exercícios onde o grupo solicitado é o principal
+        if (grupoPrincipalCanonico === grupoCanonico) {
+          return true; // Grupo principal corresponde - usar
+        }
+        
+        // Se não é principal, verificar sinergistas
+        if (ex.sinergistas && ex.sinergistas.length > 0) {
+          return ex.sinergistas.some(s => {
             const sCanonico = normalizarGrupoParaCanonico(s);
             return sCanonico === grupoCanonico;
-          }));
-
-        return correspondeAoGrupo && !grupoPrincipalEOutroGrupo;
+          });
+        }
+        
+        return false;
       })
       // Priorizar exercícios onde o grupo é principal
       .sort((a, b) => {

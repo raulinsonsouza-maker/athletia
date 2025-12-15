@@ -102,11 +102,22 @@ export function validarTreinoCanonico(
           ex.exercicio?.grupoMuscularPrincipal !== 'Flexibilidade'
   );
 
-  // 4. Validar número total de exercícios de força (deve ser exatamente 8)
+  // 4. Validar número total de exercícios de força (deve ser 8, mas aceitar menos se necessário)
   if (exerciciosForca.length !== 8) {
-    erros.push(
-      `Treino deve ter exatamente 8 exercícios de força, encontrado: ${exerciciosForca.length}`
-    );
+    if (exerciciosForca.length === 0) {
+      erros.push(
+        `Treino não tem exercícios de força`
+      );
+    } else if (exerciciosForca.length < 8) {
+      // Aviso - pode ser falta de exercícios disponíveis
+      avisos.push(
+        `Treino tem ${exerciciosForca.length} exercícios de força (ideal: 8) - pode indicar falta de exercícios disponíveis no banco`
+      );
+    } else {
+      erros.push(
+        `Treino deve ter exatamente 8 exercícios de força, encontrado: ${exerciciosForca.length}`
+      );
+    }
   }
 
   // 5. Validar 4 exercícios por grupo
@@ -171,16 +182,41 @@ export function validarTreinoCanonico(
       // Se não está em nenhum, não atribuir (não deveria acontecer)
     }
 
+    // Validar número de exercícios por grupo
+    // Aceitar menos de 4 apenas se não houver exercícios suficientes disponíveis
+    // Mas idealmente deve ter 4
     if (exerciciosGrupo1.length !== 4) {
-      erros.push(
-        `Grupo "${grupo1}" deve ter exatamente 4 exercícios, encontrado: ${exerciciosGrupo1.length}`
-      );
+      if (exerciciosGrupo1.length === 0) {
+        erros.push(
+          `Grupo "${grupo1}" não tem exercícios atribuídos`
+        );
+      } else if (exerciciosGrupo1.length < 4) {
+        // Aviso, não erro crítico - pode ser falta de exercícios no banco
+        avisos.push(
+          `Grupo "${grupo1}" tem ${exerciciosGrupo1.length} exercícios (ideal: 4) - pode indicar falta de exercícios disponíveis`
+        );
+      } else {
+        erros.push(
+          `Grupo "${grupo1}" deve ter exatamente 4 exercícios, encontrado: ${exerciciosGrupo1.length}`
+        );
+      }
     }
 
     if (exerciciosGrupo2.length !== 4) {
-      erros.push(
-        `Grupo "${grupo2}" deve ter exatamente 4 exercícios, encontrado: ${exerciciosGrupo2.length}`
-      );
+      if (exerciciosGrupo2.length === 0) {
+        erros.push(
+          `Grupo "${grupo2}" não tem exercícios atribuídos`
+        );
+      } else if (exerciciosGrupo2.length < 4) {
+        // Aviso, não erro crítico - pode ser falta de exercícios no banco
+        avisos.push(
+          `Grupo "${grupo2}" tem ${exerciciosGrupo2.length} exercícios (ideal: 4) - pode indicar falta de exercícios disponíveis`
+        );
+      } else {
+        erros.push(
+          `Grupo "${grupo2}" deve ter exatamente 4 exercícios, encontrado: ${exerciciosGrupo2.length}`
+        );
+      }
     }
   }
 

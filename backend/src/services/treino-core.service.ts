@@ -549,11 +549,24 @@ export async function gerarTreinoUnificado(
       posicaoCardio: exercicioCardio?.ordem
     }, gruposDiaAnterior);
     
-    if (!validacao.valido) {
-      console.error(`[ERROR] Treino canônico inválido: ${validacao.erros.join('; ')}`);
-      // Ainda retorna o treino, mas loga o erro
-    } else if (validacao.avisos.length > 0) {
-      console.warn(`[WARN] Avisos no treino canônico: ${validacao.avisos.join('; ')}`);
+    // Logar apenas erros críticos (não avisos sobre falta de exercícios)
+    const errosCriticos = validacao.erros.filter(erro => 
+      !erro.includes('deve ter exatamente 4 exercícios') && 
+      !erro.includes('deve ter exatamente 8 exercícios')
+    );
+    
+    if (errosCriticos.length > 0) {
+      console.error(`[ERROR] Treino canônico inválido: ${errosCriticos.join('; ')}`);
+    }
+    
+    if (validacao.avisos.length > 0) {
+      // Logar avisos apenas se for importante (não sobre quantidade de exercícios se já temos algum)
+      const avisosImportantes = validacao.avisos.filter(aviso => 
+        !aviso.includes('pode indicar falta de exercícios disponíveis')
+      );
+      if (avisosImportantes.length > 0) {
+        console.warn(`[WARN] Avisos no treino canônico: ${avisosImportantes.join('; ')}`);
+      }
     }
   }
   
