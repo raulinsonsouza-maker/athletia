@@ -476,6 +476,15 @@ export const incrementarVisualizacoes = async (req: Request, res: Response) => {
 // Obter configurações públicas do blog
 export const obterConfiguracoesPublicas = async (req: Request, res: Response) => {
   try {
+    // Verificar se o modelo existe
+    if (!prisma.blogSettings) {
+      console.error('❌ Prisma Client não tem blogSettings. Execute: npx prisma generate');
+      return res.status(500).json({
+        error: 'Modelo não disponível',
+        message: 'Prisma Client precisa ser regenerado. Execute: npx prisma generate'
+      });
+    }
+
     let settings = await prisma.blogSettings.findUnique({
       where: { id: 'global' },
       include: {
