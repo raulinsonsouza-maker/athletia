@@ -492,6 +492,18 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       });
     }
 
+    // Gerar treinos para trial (permite acesso imediato ao sistema por 3 dias)
+    try {
+      const { gerarTreinos30Dias } = await import('../services/treino.service');
+      console.log(`🔄 Gerando treinos para trial de 3 dias para o usuário ${user.id}...`);
+      
+      await gerarTreinos30Dias(user.id);
+      console.log('✅ Treinos gerados com sucesso para trial');
+    } catch (error: any) {
+      console.error('⚠️ Erro ao gerar treinos para trial (não crítico):', error.message);
+      // Não falhar o cadastro se houver erro ao gerar treinos
+    }
+
     // Gerar tokens para login automático
     const { accessToken, refreshToken } = generateTokens(user.id);
     await saveRefreshToken(user.id, refreshToken);
