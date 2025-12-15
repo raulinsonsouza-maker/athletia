@@ -435,12 +435,14 @@ export async function selecionar4ExerciciosPorGrupo(
   data: Date,
   exerciciosJaUsadosNoTreino: Set<string>,
   exerciciosUsadosNoGrupoEstaSemana: Set<string>,
-  filtros: FiltrosExercicio
+  filtros: FiltrosExercicio,
+  outroGrupoDoPar?: string // Grupo sinérgico do par (para excluir exercícios onde esse é o principal)
 ): Promise<any[]> {
   const QUANTIDADE_CANONICA = 4;
 
   // Normalizar grupo para garantir busca correta
   const grupoCanonico = normalizarGrupoParaCanonico(grupo);
+  const outroGrupoCanonico = outroGrupoDoPar ? normalizarGrupoParaCanonico(outroGrupoDoPar) : null;
   
   if (!grupoCanonico) {
     console.warn(`[selecionar4ExerciciosPorGrupo] Grupo "${grupo}" não pode ser normalizado para canônico`);
@@ -499,24 +501,46 @@ export async function selecionar4ExerciciosPorGrupo(
     });
 
     // Filtrar localmente por normalização
-    const exerciciosDoGrupo = todosExercicios.filter(ex => {
-      const grupoPrincipalCanonico = normalizarGrupoParaCanonico(ex.grupoMuscularPrincipal);
-      
-      // Verificar se corresponde ao grupo canônico
-      if (grupoPrincipalCanonico === grupoCanonico) {
-        return true;
-      }
-      
-      // Verificar sinergistas
-      if (ex.sinergistas && ex.sinergistas.length > 0) {
-        return ex.sinergistas.some(s => {
-          const sCanonico = normalizarGrupoParaCanonico(s);
-          return sCanonico === grupoCanonico;
-        });
-      }
-      
-      return false;
-    }).map(ex => ex.id);
+    // IMPORTANTE: Priorizar exercícios onde o grupo solicitado é o grupo PRINCIPAL
+    // Isso evita que um exercício seja atribuído a múltiplos grupos
+    const exerciciosDoGrupo = todosExercicios
+      .filter(ex => {
+        const grupoPrincipalCanonico = normalizarGrupoParaCanonico(ex.grupoMuscularPrincipal);
+        
+        // EXCLUIR: se o grupo principal é o outro grupo do par, não usar
+        if (outroGrupoCanonico && grupoPrincipalCanonico === outroGrupoCanonico) {
+          return false;
+        }
+        
+        // Priorizar: grupo solicitado é o grupo principal
+        if (grupoPrincipalCanonico === grupoCanonico) {
+          return true;
+        }
+        
+        // Fallback: grupo solicitado está nos sinergistas
+        // Mas só se o grupo principal NÃO for o outro grupo do par sinérgico
+        if (ex.sinergistas && ex.sinergistas.length > 0) {
+          return ex.sinergistas.some(s => {
+            const sCanonico = normalizarGrupoParaCanonico(s);
+            return sCanonico === grupoCanonico;
+          });
+        }
+        
+        return false;
+      })
+      // Priorizar exercícios onde o grupo é principal
+      .sort((a, b) => {
+        const aPrincipalCanonico = normalizarGrupoParaCanonico(a.grupoMuscularPrincipal);
+        const bPrincipalCanonico = normalizarGrupoParaCanonico(b.grupoMuscularPrincipal);
+        
+        const aIsPrincipal = aPrincipalCanonico === grupoCanonico;
+        const bIsPrincipal = bPrincipalCanonico === grupoCanonico;
+        
+        if (aIsPrincipal && !bIsPrincipal) return -1;
+        if (!aIsPrincipal && bIsPrincipal) return 1;
+        return 0;
+      })
+      .map(ex => ex.id);
 
     // Buscar exercícios completos
     if (exerciciosDoGrupo.length > 0) {
@@ -556,21 +580,48 @@ export async function selecionar4ExerciciosPorGrupo(
     : exerciciosDisponiveis;
 
   // Selecionar exatamente 4 usando seed determinístico
+  // IMPORTANTE: Priorizar exercícios onde o grupo solicitado é o grupo principal
   const inicioSemanaStr = inicioSemana.toISOString().split('T')[0];
   const seed = gerarSeed(userId + (grupoCanonico || grupo) + inicioSemanaStr, data);
-  const shuffled = shuffleDeterministico(exerciciosFinal, seed);
-
-  const resultado = shuffled.slice(0, QUANTIDADE_CANONICA);
+  
+  // Separar exercícios por prioridade
+  const exerciciosPrincipais: any[] = [];
+  const exerciciosSinergistas: any[] = [];
+  
+  exerciciosFinal.forEach(ex => {
+    const grupoPrincipalCanonico = normalizarGrupoParaCanonico(ex.grupoMuscularPrincipal || '');
+    if (grupoPrincipalCanonico === grupoCanonico) {
+      exerciciosPrincipais.push(ex);
+    } else {
+      exerciciosSinergistas.push(ex);
+    }
+  });
+  
+  // Embaralhar cada grupo separadamente
+  const principaisShuffled = shuffleDeterministico(exerciciosPrincipais, seed);
+  const sinergistasShuffled = shuffleDeterministico(exerciciosSinergistas, seed + 1000);
+  
+  // Combinar: primeiro os principais (até 4), depois sinergistas se necessário
+  const resultado: any[] = [];
+  resultado.push(...principaisShuffled.slice(0, QUANTIDADE_CANONICA));
+  
+  if (resultado.length < QUANTIDADE_CANONICA) {
+    const faltam = QUANTIDADE_CANONICA - resultado.length;
+    resultado.push(...sinergistasShuffled.slice(0, faltam));
+  }
+  
+  // Limitar exatamente a 4
+  const resultadoFinal = resultado.slice(0, QUANTIDADE_CANONICA);
   
   // Log de debug se não conseguiu selecionar 4
-  if (resultado.length < QUANTIDADE_CANONICA) {
+  if (resultadoFinal.length < QUANTIDADE_CANONICA) {
     console.warn(
-      `[selecionar4ExerciciosPorGrupo] Apenas ${resultado.length} exercícios encontrados para grupo "${grupo}" (canônico: "${grupoCanonico}"). ` +
-      `Total disponível após filtros: ${exerciciosFinal.length}`
+      `[selecionar4ExerciciosPorGrupo] Apenas ${resultadoFinal.length} exercícios encontrados para grupo "${grupo}" (canônico: "${grupoCanonico}"). ` +
+      `Principais: ${exerciciosPrincipais.length}, Sinergistas: ${exerciciosSinergistas.length}, Total após filtros: ${exerciciosFinal.length}`
     );
   }
 
-  return resultado;
+  return resultadoFinal;
 }
 
 /**

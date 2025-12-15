@@ -118,37 +118,58 @@ export function validarTreinoCanonico(
     const grupo1Canonico = normalizarGrupoParaCanonico(grupo1);
     const grupo2Canonico = normalizarGrupoParaCanonico(grupo2);
 
-    const exerciciosGrupo1 = exerciciosForca.filter(ex => {
-      const grupoPrincipal = ex.exercicio?.grupoMuscularPrincipal || '';
-      const sinergistas = ex.exercicio?.sinergistas || [];
-      
-      // Normalizar para comparar
-      const grupoPrincipalCanonico = normalizarGrupoParaCanonico(grupoPrincipal);
-      
-      // Verificar se corresponde ao grupo1 (direto ou sinergista)
-      return grupoPrincipalCanonico === grupo1Canonico || 
-             grupoPrincipal === grupo1 ||
-             sinergistas.some(s => {
-               const sCanonico = normalizarGrupoParaCanonico(s);
-               return sCanonico === grupo1Canonico || s === grupo1;
-             });
-    });
+    // Atribuir cada exercício a apenas UM grupo
+    // Prioridade: grupo principal do exercício > sinergista
+    // Se o grupo principal do exercício for grupo1 OU grupo2, atribui a ele
+    // Senão, verifica sinergistas
+    
+    const exerciciosGrupo1: ExercicioTreino[] = [];
+    const exerciciosGrupo2: ExercicioTreino[] = [];
+    const exerciciosAtribuidos = new Set<string>(); // IDs já atribuídos
+    
+    for (const ex of exerciciosForca) {
+      if (exerciciosAtribuidos.has(ex.exercicioId)) {
+        continue; // Já foi atribuído a um grupo
+      }
 
-    const exerciciosGrupo2 = exerciciosForca.filter(ex => {
       const grupoPrincipal = ex.exercicio?.grupoMuscularPrincipal || '';
       const sinergistas = ex.exercicio?.sinergistas || [];
-      
-      // Normalizar para comparar
       const grupoPrincipalCanonico = normalizarGrupoParaCanonico(grupoPrincipal);
       
-      // Verificar se corresponde ao grupo2 (direto ou sinergista)
-      return grupoPrincipalCanonico === grupo2Canonico || 
-             grupoPrincipal === grupo2 ||
-             sinergistas.some(s => {
-               const sCanonico = normalizarGrupoParaCanonico(s);
-               return sCanonico === grupo2Canonico || s === grupo2;
-             });
-    });
+      // Verificar grupo principal primeiro (maior prioridade)
+      if (grupoPrincipalCanonico === grupo1Canonico || grupoPrincipal === grupo1) {
+        exerciciosGrupo1.push(ex);
+        exerciciosAtribuidos.add(ex.exercicioId);
+        continue;
+      }
+      
+      if (grupoPrincipalCanonico === grupo2Canonico || grupoPrincipal === grupo2) {
+        exerciciosGrupo2.push(ex);
+        exerciciosAtribuidos.add(ex.exercicioId);
+        continue;
+      }
+      
+      // Se não foi atribuído pelo grupo principal, verificar sinergistas
+      const grupo1NosSinergistas = sinergistas.some(s => {
+        const sCanonico = normalizarGrupoParaCanonico(s);
+        return sCanonico === grupo1Canonico || s === grupo1;
+      });
+      
+      const grupo2NosSinergistas = sinergistas.some(s => {
+        const sCanonico = normalizarGrupoParaCanonico(s);
+        return sCanonico === grupo2Canonico || s === grupo2;
+      });
+      
+      // Se está em ambos os sinergistas, priorizar grupo1 (ordem)
+      if (grupo1NosSinergistas) {
+        exerciciosGrupo1.push(ex);
+        exerciciosAtribuidos.add(ex.exercicioId);
+      } else if (grupo2NosSinergistas) {
+        exerciciosGrupo2.push(ex);
+        exerciciosAtribuidos.add(ex.exercicioId);
+      }
+      // Se não está em nenhum, não atribuir (não deveria acontecer)
+    }
 
     if (exerciciosGrupo1.length !== 4) {
       erros.push(

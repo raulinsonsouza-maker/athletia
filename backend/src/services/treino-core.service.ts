@@ -321,31 +321,42 @@ export async function gerarTreinoUnificado(
     const exerciciosJaUsadosNoTreino = new Set<string>();
     
     // Buscar exercícios do grupo 1 (4 exercícios)
-    // A função selecionar4ExerciciosPorGrupo busca o histórico da semana internamente
+    // Passar grupo2 como outroGrupoDoPar para excluir exercícios onde grupo2 é principal
     const exerciciosGrupo1 = await selecionar4ExerciciosPorGrupo(
       grupo1,
       opcoesAjustadas.userId,
       opcoesAjustadas.data,
       exerciciosJaUsadosNoTreino,
       new Set<string>(), // Histórico adicional vazio (função busca internamente)
-      filtros
+      filtros,
+      grupo2 // Excluir exercícios onde grupo2 é principal
     );
     
     // Adicionar exercícios do grupo 1 aos usados para evitar duplicação no mesmo treino
     exerciciosGrupo1.forEach(ex => exerciciosJaUsadosNoTreino.add(ex.id));
     
     // Buscar exercícios do grupo 2 (4 exercícios)
+    // Passar grupo1 como outroGrupoDoPar para excluir exercícios onde grupo1 é principal
     const exerciciosGrupo2 = await selecionar4ExerciciosPorGrupo(
       grupo2,
       opcoesAjustadas.userId,
       opcoesAjustadas.data,
       exerciciosJaUsadosNoTreino,
       new Set<string>(), // Histórico adicional vazio (função busca internamente)
-      filtros
+      filtros,
+      grupo1 // Excluir exercícios onde grupo1 é principal
     );
     
     // Combinar: grupo1 (4) + grupo2 (4) = 8 exercícios
     exerciciosFinais = [...exerciciosGrupo1, ...exerciciosGrupo2];
+    
+    // Verificação final de integridade
+    if (exerciciosFinais.length !== 8) {
+      console.warn(
+        `[WARN] Treino canônico tem ${exerciciosFinais.length} exercícios ao invés de 8. ` +
+        `Grupo1: ${exerciciosGrupo1.length}, Grupo2: ${exerciciosGrupo2.length}`
+      );
+    }
   } else {
     // MODO LEGADO: Seleção antiga
     const todosExercicios = await selecionarExerciciosParaGrupos(
