@@ -20,16 +20,29 @@ export default function Login() {
 
     try {
       await login(email, senha)
-      
-      // Redirecionar após login bem-sucedido baseado no plano
+
+      // Redirecionar após login bem-sucedido baseado no plano/trial
       // Buscar dados atualizados do usuário após login
       const userData = JSON.parse(localStorage.getItem('user') || '{}')
       const planoValido = userData.planoAtivo && (
         !userData.dataExpiracao || new Date(userData.dataExpiracao) > new Date()
       )
-      
-      if (planoValido) {
+
+      // Considerar período de teste (trial) também
+      const agora = new Date()
+      let trialAtivo = false
+      let trialExpirado = false
+
+      if (userData.dataFimTrial) {
+        const dataFimTrial = new Date(userData.dataFimTrial)
+        trialAtivo = !userData.planoAtivo && dataFimTrial > agora
+        trialExpirado = !userData.planoAtivo && dataFimTrial <= agora
+      }
+
+      if (planoValido || trialAtivo) {
         navigate('/meu-plano', { replace: true })
+      } else if (trialExpirado) {
+        navigate('/trial-expirado', { replace: true })
       } else {
         navigate('/checkout', { replace: true })
       }
