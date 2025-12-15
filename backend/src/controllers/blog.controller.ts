@@ -1,34 +1,34 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { Request, Response } from 'express'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 // Listar artigos públicos (apenas publicados)
 export const listarArtigosPublicos = async (req: Request, res: Response) => {
   try {
-    const { category, categorySlug, search, limit, featured, pillar } = req.query;
+    const { category, categorySlug, search, limit, featured, pillar } = req.query
 
     const where: any = {
       published: true,
       status: 'published'
-    };
+    }
 
     if (category) {
-      where.category = category as string;
+      where.category = category as string
     }
 
     if (categorySlug) {
       where.categoryRelation = {
         slug: categorySlug as string
-      };
+      }
     }
 
     if (featured === 'true') {
-      where.isFeatured = true;
+      where.isFeatured = true
     }
 
     if (pillar === 'true') {
-      where.isPillar = true;
+      where.isPillar = true
     }
 
     if (search) {
@@ -36,10 +36,10 @@ export const listarArtigosPublicos = async (req: Request, res: Response) => {
         { title: { contains: search as string, mode: 'insensitive' } },
         { excerpt: { contains: search as string, mode: 'insensitive' } },
         { subtitle: { contains: search as string, mode: 'insensitive' } }
-      ];
+      ]
     }
 
-    const take = limit ? parseInt(limit as string) : undefined;
+    const take = limit ? parseInt(limit as string) : undefined
 
     const artigos = await prisma.blogArticle.findMany({
       where,
@@ -66,25 +66,25 @@ export const listarArtigosPublicos = async (req: Request, res: Response) => {
           }
         }
       }
-    });
+    })
 
-    res.json(artigos);
+    res.json(artigos)
   } catch (error: any) {
-    console.error('Erro ao listar artigos públicos:', error);
+    console.error('Erro ao listar artigos públicos:', error)
     res.status(500).json({
       error: 'Erro ao listar artigos',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Obter artigo público por slug
 export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => {
   try {
-    const { slug } = req.params;
+    const { slug } = req.params
 
     const artigo = await prisma.blogArticle.findFirst({
-      where: { 
+      where: {
         slug,
         published: true,
         status: 'published'
@@ -122,16 +122,16 @@ export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => 
           }
         }
       }
-    });
+    })
 
     if (!artigo) {
       return res.status(404).json({
         error: 'Artigo não encontrado'
-      });
+      })
     }
 
     // Buscar posts relacionados
-    let relatedPosts: any[] = [];
+    let relatedPosts: any[] = []
     if (artigo.relatedPosts && artigo.relatedPosts.length > 0) {
       relatedPosts = await prisma.blogArticle.findMany({
         where: {
@@ -163,29 +163,29 @@ export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => 
           }
         },
         take: 3
-      });
+      })
     }
 
     res.json({
       ...artigo,
       relatedPosts
-    });
+    })
   } catch (error: any) {
-    console.error('Erro ao obter artigo público:', error);
+    console.error('Erro ao obter artigo público:', error)
     res.status(500).json({
       error: 'Erro ao obter artigo',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Obter artigo público por ID (para compatibilidade)
 export const obterArtigoPublicoPorId = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params
 
     const artigo = await prisma.blogArticle.findUnique({
-      where: { 
+      where: {
         id
       },
       include: {
@@ -193,23 +193,23 @@ export const obterArtigoPublicoPorId = async (req: Request, res: Response) => {
         authorRelation: true,
         ctaConfig: true
       }
-    });
+    })
 
     if (!artigo || !artigo.published || artigo.status !== 'published') {
       return res.status(404).json({
         error: 'Artigo não encontrado'
-      });
+      })
     }
 
-    res.json(artigo);
+    res.json(artigo)
   } catch (error: any) {
-    console.error('Erro ao obter artigo público:', error);
+    console.error('Erro ao obter artigo público:', error)
     res.status(500).json({
       error: 'Erro ao obter artigo',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Listar categorias públicas
 export const listarCategoriasPublicas = async (req: Request, res: Response) => {
@@ -235,27 +235,27 @@ export const listarCategoriasPublicas = async (req: Request, res: Response) => {
           }
         }
       }
-    });
+    })
 
-    res.json(categorias);
+    res.json(categorias)
   } catch (error: any) {
-    console.error('Erro ao listar categorias:', error);
+    console.error('Erro ao listar categorias:', error)
     res.status(500).json({
       error: 'Erro ao listar categorias',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Obter categoria pública por slug
 export const obterCategoriaPublicaPorSlug = async (req: Request, res: Response) => {
   try {
-    const { slug } = req.params;
-    const { page = '1', limit = '10' } = req.query;
+    const { slug } = req.params
+    const { page = '1', limit = '10' } = req.query
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
-    const skip = (pageNum - 1) * limitNum;
+    const pageNum = parseInt(page as string)
+    const limitNum = parseInt(limit as string)
+    const skip = (pageNum - 1) * limitNum
 
     const categoria = await prisma.blogCategory.findUnique({
       where: { slug },
@@ -271,12 +271,12 @@ export const obterCategoriaPublicaPorSlug = async (req: Request, res: Response) 
           }
         }
       }
-    });
+    })
 
     if (!categoria) {
       return res.status(404).json({
         error: 'Categoria não encontrada'
-      });
+      })
     }
 
     const artigos = await prisma.blogArticle.findMany({
@@ -311,7 +311,7 @@ export const obterCategoriaPublicaPorSlug = async (req: Request, res: Response) 
           }
         }
       }
-    });
+    })
 
     const total = await prisma.blogArticle.count({
       where: {
@@ -321,7 +321,7 @@ export const obterCategoriaPublicaPorSlug = async (req: Request, res: Response) 
         published: true,
         status: 'published'
       }
-    });
+    })
 
     res.json({
       ...categoria,
@@ -332,21 +332,21 @@ export const obterCategoriaPublicaPorSlug = async (req: Request, res: Response) 
         total,
         totalPages: Math.ceil(total / limitNum)
       }
-    });
+    })
   } catch (error: any) {
-    console.error('Erro ao obter categoria:', error);
+    console.error('Erro ao obter categoria:', error)
     res.status(500).json({
       error: 'Erro ao obter categoria',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Listar artigos em destaque
 export const listarArtigosDestaque = async (req: Request, res: Response) => {
   try {
-    const { limit } = req.query;
-    const take = limit ? parseInt(limit as string) : 3;
+    const { limit } = req.query
+    const take = limit ? parseInt(limit as string) : 3
 
     const artigos = await prisma.blogArticle.findMany({
       where: {
@@ -377,23 +377,23 @@ export const listarArtigosDestaque = async (req: Request, res: Response) => {
           }
         }
       }
-    });
+    })
 
-    res.json(artigos);
+    res.json(artigos)
   } catch (error: any) {
-    console.error('Erro ao listar artigos em destaque:', error);
+    console.error('Erro ao listar artigos em destaque:', error)
     res.status(500).json({
       error: 'Erro ao listar artigos em destaque',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Listar artigos pilar (evergreen)
 export const listarArtigosPilar = async (req: Request, res: Response) => {
   try {
-    const { limit } = req.query;
-    const take = limit ? parseInt(limit as string) : 6;
+    const { limit } = req.query
+    const take = limit ? parseInt(limit as string) : 6
 
     const artigos = await prisma.blogArticle.findMany({
       where: {
@@ -424,31 +424,31 @@ export const listarArtigosPilar = async (req: Request, res: Response) => {
           }
         }
       }
-    });
+    })
 
-    res.json(artigos);
+    res.json(artigos)
   } catch (error: any) {
-    console.error('Erro ao listar artigos pilar:', error);
+    console.error('Erro ao listar artigos pilar:', error)
     res.status(500).json({
       error: 'Erro ao listar artigos pilar',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Incrementar visualizações de um artigo
 export const incrementarVisualizacoes = async (req: Request, res: Response) => {
   try {
-    const { slug } = req.params;
+    const { slug } = req.params
 
     const artigo = await prisma.blogArticle.findUnique({
       where: { slug }
-    });
+    })
 
     if (!artigo) {
       return res.status(404).json({
         error: 'Artigo não encontrado'
-      });
+      })
     }
 
     const updated = await prisma.blogArticle.update({
@@ -461,28 +461,28 @@ export const incrementarVisualizacoes = async (req: Request, res: Response) => {
       select: {
         viewsCount: true
       }
-    });
+    })
 
-    res.json({ viewsCount: updated.viewsCount });
+    res.json({ viewsCount: updated.viewsCount })
   } catch (error: any) {
-    console.error('Erro ao incrementar visualizações:', error);
+    console.error('Erro ao incrementar visualizações:', error)
     res.status(500).json({
       error: 'Erro ao incrementar visualizações',
       message: error.message
-    });
+    })
   }
-};
+}
 
 // Obter configurações públicas do blog
 export const obterConfiguracoesPublicas = async (req: Request, res: Response) => {
   try {
     // Verificar se o modelo existe
     if (!prisma.blogSettings) {
-      console.error('❌ Prisma Client não tem blogSettings. Execute: npx prisma generate');
+      console.error('❌ Prisma Client não tem blogSettings. Execute: npx prisma generate')
       return res.status(500).json({
         error: 'Modelo não disponível',
         message: 'Prisma Client precisa ser regenerado. Execute: npx prisma generate'
-      });
+      })
     }
 
     let settings = await prisma.blogSettings.findUnique({
@@ -522,11 +522,11 @@ export const obterConfiguracoesPublicas = async (req: Request, res: Response) =>
         },
         globalCta: true
       }
-    });
+    })
 
     // Filtrar heroPost se não estiver publicado
     if (settings?.heroPost && (!settings.heroPost.published || settings.heroPost.status !== 'published')) {
-      settings.heroPost = null;
+      settings.heroPost = null
     }
 
     // Se não existir, criar configurações padrão
@@ -534,12 +534,12 @@ export const obterConfiguracoesPublicas = async (req: Request, res: Response) =>
       const firstPublished = await prisma.blogArticle.findFirst({
         where: { published: true, status: 'published' },
         orderBy: { publishedAt: 'desc' }
-      });
+      })
 
       const categoriesForHome = await prisma.blogCategory.findMany({
         take: 6,
         orderBy: { name: 'asc' }
-      });
+      })
 
       settings = await prisma.blogSettings.create({
         data: {
@@ -586,20 +586,20 @@ export const obterConfiguracoesPublicas = async (req: Request, res: Response) =>
           },
           globalCta: true
         }
-      });
+      })
 
       // Filtrar heroPost se não estiver publicado após criar
       if (settings?.heroPost && (!settings.heroPost.published || settings.heroPost.status !== 'published')) {
-        settings.heroPost = null;
+        settings.heroPost = null
       }
     }
 
-    res.json(settings);
+    res.json(settings)
   } catch (error: any) {
-    console.error('Erro ao obter configurações:', error);
+    console.error('Erro ao obter configurações:', error)
     res.status(500).json({
       error: 'Erro ao obter configurações',
       message: error.message
-    });
+    })
   }
-};
+}
