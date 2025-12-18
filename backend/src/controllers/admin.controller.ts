@@ -70,7 +70,8 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
     }
 
     // CORREÇÃO: Validar e limitar paginação
-    const maxLimit = 100;
+    // Permitir limite maior para listagem completa no painel administrativo
+    const maxLimit = 10000;
     const finalLimit = Math.min(limitNum, maxLimit);
     const finalSkip = Math.max(0, skip);
 

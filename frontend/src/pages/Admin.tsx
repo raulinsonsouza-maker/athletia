@@ -298,6 +298,8 @@ export default function Admin() {
       const params = new URLSearchParams()
       if (search) params.append('search', search)
       if (mostrarDesabilitados) params.append('incluirDesabilitados', 'true')
+      // Passar um limite alto para listar todos os usuários
+      params.append('limit', '10000')
       const queryString = params.toString()
       const url = `/admin/usuarios${queryString ? `?${queryString}` : ''}`
       const response = await api.get(url)

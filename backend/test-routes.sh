@@ -105,3 +105,4 @@ if [ "$CONFIG_CODE" != "200" ] || [ "$FEATURED_CODE" != "200" ]; then
   echo "   2. Reinicie: pm2 restart athletia-backend"
   echo "   3. Verifique se o servidor está rodando: pm2 status"
 fi
+
