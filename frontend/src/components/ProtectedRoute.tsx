@@ -30,27 +30,35 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const precisaPlanoAtivo = !rotasPermitidasSemPlano.includes(location.pathname)
 
   if (precisaPlanoAtivo && user) {
-    // Primeiro verificar se trial está ativo
-    const trialAtivo = user.dataFimTrial && !user.planoAtivo && new Date(user.dataFimTrial) > new Date()
-    
-    if (trialAtivo) {
-      // Trial ativo, permitir acesso
+    // Verificar se plano está ativo e não expirado
+    const agora = new Date()
+    const planoValido = user.planoAtivo && (
+      !user.dataExpiracao || new Date(user.dataExpiracao) > agora
+    )
+
+    // Se plano está válido, permitir acesso
+    if (planoValido) {
       return <>{children}</>
     }
 
-    // Se não tem trial ativo, verificar se plano está ativo e não expirado
-    const planoValido = user.planoAtivo && (
-      !user.dataExpiracao || new Date(user.dataExpiracao) > new Date()
-    )
+    // Se não tem plano válido, verificar trial
+    if (user.dataFimTrial) {
+      const dataFimTrial = new Date(user.dataFimTrial)
+      const trialAtivo = !user.planoAtivo && dataFimTrial > agora
+      
+      if (trialAtivo) {
+        // Trial ativo, permitir acesso
+        return <>{children}</>
+      }
 
-    if (!planoValido) {
-      // Verificar se trial expirou para redirecionar para tela específica
-      const trialExpirado = user.dataFimTrial && new Date(user.dataFimTrial) <= new Date() && !user.planoAtivo
-      if (trialExpirado) {
+      // Trial expirado - redirecionar para tela específica
+      if (dataFimTrial <= agora && !user.planoAtivo) {
         return <Navigate to="/trial-expirado" replace />
       }
-      return <Navigate to="/checkout" replace />
     }
+
+    // Sem trial e sem plano válido - redirecionar para checkout
+    return <Navigate to="/checkout" replace />
   }
 
   return <>{children}</>

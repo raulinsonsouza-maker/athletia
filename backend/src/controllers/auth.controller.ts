@@ -305,6 +305,65 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// Obter dados do usuário autenticado
+export const obterUsuario = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Não autenticado' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        nome: true,
+        role: true,
+        planoAtivo: true,
+        plano: true,
+        dataPagamento: true,
+        dataExpiracao: true,
+        dataInicioTrial: true,
+        dataFimTrial: true,
+        trialUtilizado: true,
+        createdAt: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    // Verificar status do trial
+    const { verificarTrialAtivo, obterDiasRestantesTrial } = await import('../services/trial.service');
+    const trialAtivo = await verificarTrialAtivo(userId);
+    const diasRestantesTrial = await obterDiasRestantesTrial(userId);
+
+    res.json({
+      user: {
+        ...user,
+        dataPagamento: user.dataPagamento?.toISOString() || null,
+        dataExpiracao: user.dataExpiracao?.toISOString() || null,
+        dataInicioTrial: user.dataInicioTrial?.toISOString() || null,
+        dataFimTrial: user.dataFimTrial?.toISOString() || null,
+        createdAt: user.createdAt.toISOString()
+      },
+      trialStatus: {
+        ativo: trialAtivo,
+        diasRestantes: diasRestantesTrial
+      }
+    });
+  } catch (error: any) {
+    console.error('Erro ao obter usuário:', error);
+    res.status(500).json({
+      error: 'Erro ao obter dados do usuário',
+      message: error.message
+    });
+  }
+};
+
 // Refresh token
 // Obter status do trial
 export const obterStatusTrial = async (req: any, res: Response) => {

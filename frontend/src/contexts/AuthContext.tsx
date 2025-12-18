@@ -22,6 +22,7 @@ interface AuthContextType {
   logout: () => void
   setUserFromResponse: (user: User, accessToken: string, refreshToken: string) => void
   updateUser: (userData: Partial<User>) => void
+  refreshUser: () => Promise<void>
   isAuthenticated: boolean
   isTrialAtivo: () => boolean
   diasRestantesTrial: () => number
@@ -113,6 +114,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const refreshUser = async () => {
+    try {
+      const token = localStorage.getItem('accessToken')
+      if (!token) {
+        console.warn('[AuthContext] Tentativa de refresh sem token')
+        return
+      }
+
+      const response = await authService.getMe()
+      if (response?.user) {
+        const userData: User = {
+          id: response.user.id,
+          email: response.user.email,
+          nome: response.user.nome || undefined,
+          role: response.user.role,
+          planoAtivo: response.user.planoAtivo || false,
+          plano: response.user.plano || undefined,
+          dataExpiracao: response.user.dataExpiracao || undefined,
+          dataInicioTrial: response.user.dataInicioTrial || undefined,
+          dataFimTrial: response.user.dataFimTrial || undefined,
+          trialUtilizado: response.user.trialUtilizado || false
+        }
+        localStorage.setItem('user', JSON.stringify(userData))
+        setUser(userData)
+      }
+    } catch (error: any) {
+      console.error('[AuthContext] Erro ao atualizar dados do usuário:', error)
+      // Se for erro 401, limpar tokens e redirecionar para login
+      if (error.response?.status === 401) {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+        setUser(null)
+      }
+      throw error
+    }
+  }
+
   const isTrialAtivo = (): boolean => {
     if (!user || !user.dataFimTrial || user.planoAtivo) {
       return false
@@ -158,6 +197,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         setUserFromResponse,
         updateUser,
+        refreshUser,
         isAuthenticated: !!user,
         isTrialAtivo,
         diasRestantesTrial,

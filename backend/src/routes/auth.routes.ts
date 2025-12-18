@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento, requestPasswordReset, resetPassword, obterStatusTrial } from '../controllers/auth.controller';
+import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento, requestPasswordReset, resetPassword, obterStatusTrial, obterUsuario } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
 import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 import { authenticate } from '../middleware/auth.middleware';
@@ -170,6 +170,7 @@ const resetPasswordValidation = [
 router.post('/register', authLimiter, registerValidation, validateRequest, register);
 router.post('/login', authLimiter, loginValidation, validateRequest, login);
 router.post('/refresh', authLimiter, refreshTokenValidation, validateRequest, refreshToken);
+router.get('/me', authenticate, obterUsuario);
 router.get('/trial-status', authenticate, obterStatusTrial);
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);

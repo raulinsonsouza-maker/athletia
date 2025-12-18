@@ -24,33 +24,39 @@ interface SubscriptionStatus {
 
 export default function PagamentoSucesso() {
   const navigate = useNavigate()
-  const { updateUser } = useAuth()
+  const { refreshUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const maxRetries = 5
 
   useEffect(() => {
-    const verificarPagamento = async () => {
+    const verificarPagamento = async (attempt: number = 0) => {
       try {
         // Aguardar alguns segundos para garantir que o webhook foi processado
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // Aumentar delay progressivamente em tentativas subsequentes
+        const delay = attempt === 0 ? 2000 : 3000 + (attempt * 1000)
+        await new Promise(resolve => setTimeout(resolve, delay))
 
         // Verificar status da assinatura
         const response = await api.get('/payment/status')
         
         if (response.data?.success && response.data?.user) {
-          setSubscriptionStatus(response.data.user)
+          const userData = response.data.user
+          setSubscriptionStatus(userData)
           
-          // Atualizar dados do usuário no contexto
-          if (updateUser) {
-            updateUser({
-              planoAtivo: response.data.user.planoAtivo,
-              plano: response.data.user.plano
-            })
+          // Sincronizar dados do usuário do backend usando refreshUser
+          try {
+            await refreshUser()
+            console.log('✅ Dados do usuário sincronizados após pagamento')
+          } catch (refreshError) {
+            console.error('Erro ao sincronizar dados do usuário:', refreshError)
+            // Não bloquear o fluxo se refresh falhar, mas logar o erro
           }
 
           // Disparar evento de conversão do Google Ads quando plano estiver ativo
-          if (response.data.user.planoAtivo && typeof window !== 'undefined' && (window as any).gtag) {
+          if (userData.planoAtivo && typeof window !== 'undefined' && (window as any).gtag) {
             console.log('✅ Disparando evento de conversão do Google Ads na página de pagamento sucesso')
             ;(window as any).gtag('event', 'conversion', {
               'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
@@ -59,20 +65,53 @@ export default function PagamentoSucesso() {
               'transaction_id': ''
             })
           }
+
+          // Se plano ainda não está ativo e ainda temos tentativas, tentar novamente
+          if (!userData.planoAtivo && attempt < maxRetries) {
+            console.log(`⏳ Plano ainda não ativado. Tentativa ${attempt + 1}/${maxRetries}...`)
+            setRetryCount(attempt + 1)
+            setTimeout(() => verificarPagamento(attempt + 1), 3000)
+            return
+          }
+
+          // Se plano não está ativo após todas as tentativas
+          if (!userData.planoAtivo) {
+            setError('O pagamento foi processado, mas o plano ainda não foi ativado. Isso pode levar alguns minutos. Se o problema persistir, entre em contato com o suporte.')
+            setLoading(false)
+          } else {
+            // Plano ativado com sucesso
+            setLoading(false)
+          }
         } else {
+          // Se ainda temos tentativas, tentar novamente
+          if (attempt < maxRetries) {
+            console.log(`⏳ Status não disponível. Tentativa ${attempt + 1}/${maxRetries}...`)
+            setRetryCount(attempt + 1)
+            setTimeout(() => verificarPagamento(attempt + 1), 3000)
+            return
+          }
           setError('Não foi possível verificar o status do pagamento. Mas não se preocupe, se o pagamento foi aprovado, seu plano será ativado em breve.')
+          setLoading(false)
         }
       } catch (err: any) {
         console.error('Erro ao verificar pagamento:', err)
+        
+        // Se ainda temos tentativas e não é erro de autenticação, tentar novamente
+        if (attempt < maxRetries && err.response?.status !== 401 && err.response?.status !== 403) {
+          console.log(`⏳ Erro ao verificar. Tentativa ${attempt + 1}/${maxRetries}...`)
+          setRetryCount(attempt + 1)
+          setTimeout(() => verificarPagamento(attempt + 1), 3000)
+          return
+        }
+        
         // Não mostrar erro crítico, pois o webhook pode ainda estar processando
         setError('Verificando status do pagamento... Se o pagamento foi aprovado, seu plano será ativado em breve.')
-      } finally {
         setLoading(false)
       }
     }
 
     verificarPagamento()
-  }, [updateUser])
+  }, [refreshUser])
 
   const getPlanoLabel = (plano?: string) => {
     switch (plano) {
@@ -129,6 +168,11 @@ export default function PagamentoSucesso() {
             <div className="text-center py-8">
               <div className="spinner h-12 w-12 mx-auto mb-4"></div>
               <p className="text-light-muted">Verificando status do pagamento...</p>
+              {retryCount > 0 && (
+                <p className="text-sm text-light-muted mt-2">
+                  Tentativa {retryCount} de {maxRetries}...
+                </p>
+              )}
             </div>
           ) : error ? (
             <div className="bg-warning/20 border-2 border-warning/50 rounded-xl p-6 mb-6 text-center">
