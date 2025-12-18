@@ -1,39 +1,47 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import LoadingFallback from './components/LoadingFallback'
+
+// Páginas críticas - manter no bundle inicial (Login e Register)
 import Login from './pages/Login'
 import Register from './pages/Register'
-import Landing from './pages/Landing'
-import Cadastro from './pages/Cadastro'
-import Checkout from './pages/Checkout'
-import Confirmacao from './pages/Confirmacao'
-import PagamentoSucesso from './pages/PagamentoSucesso'
-import Treinos from './pages/Treinos'
-import TreinoAtual from './pages/TreinoAtual'
-import MeuPlano from './pages/MeuPlano'
-import Historico from './pages/Historico'
-import Perfil from './pages/Perfil'
-import Admin from './pages/Admin'
-import AdminLogin from './pages/AdminLogin'
-import AdminGrupos from './pages/AdminGrupos'
-import AdminBlog from './pages/AdminBlog'
-import AdminBlogCategories from './pages/AdminBlogCategories'
-import AdminBlogAuthors from './pages/AdminBlogAuthors'
-import AdminBlogCTAs from './pages/AdminBlogCTAs'
-import AdminBlogSettings from './pages/AdminBlogSettings'
-import TreinoRapidoSelecaoGrupos from './pages/TreinoRapidoSelecaoGrupos'
-import TreinoRapidoConfiguracao from './pages/TreinoRapidoConfiguracao'
-import ProtectedRoute from './components/ProtectedRoute'
-import Termos from './pages/Termos'
-import Privacidade from './pages/Privacidade'
-import Cookies from './pages/Cookies'
-import ResetPassword from './pages/ResetPassword'
-import TrialExpirado from './pages/TrialExpirado'
-import OnePage from './pages/OnePage'
 
-// Lazy load Progresso (usa Chart.js - 60KB) - só carrega quando necessário
+// Lazy load - Rotas públicas secundárias
+const Landing = lazy(() => import('./pages/Landing'))
+const Cadastro = lazy(() => import('./pages/Cadastro'))
+const Checkout = lazy(() => import('./pages/Checkout'))
+const Confirmacao = lazy(() => import('./pages/Confirmacao'))
+const PagamentoSucesso = lazy(() => import('./pages/PagamentoSucesso'))
+const Termos = lazy(() => import('./pages/Termos'))
+const Privacidade = lazy(() => import('./pages/Privacidade'))
+const Cookies = lazy(() => import('./pages/Cookies'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const TrialExpirado = lazy(() => import('./pages/TrialExpirado'))
+const OnePage = lazy(() => import('./pages/OnePage'))
+
+// Lazy load - Rotas protegidas
+const Treinos = lazy(() => import('./pages/Treinos'))
+const TreinoAtual = lazy(() => import('./pages/TreinoAtual'))
+const MeuPlano = lazy(() => import('./pages/MeuPlano'))
+const Historico = lazy(() => import('./pages/Historico'))
+const Perfil = lazy(() => import('./pages/Perfil'))
+const TreinoRapidoSelecaoGrupos = lazy(() => import('./pages/TreinoRapidoSelecaoGrupos'))
+const TreinoRapidoConfiguracao = lazy(() => import('./pages/TreinoRapidoConfiguracao'))
 const Progresso = lazy(() => import('./pages/Progresso'))
-// Lazy load Blog pages para code splitting
+
+// Lazy load - Páginas Admin (todas em chunk separado)
+const Admin = lazy(() => import('./pages/Admin'))
+const AdminLogin = lazy(() => import('./pages/AdminLogin'))
+const AdminGrupos = lazy(() => import('./pages/AdminGrupos'))
+const AdminBlog = lazy(() => import('./pages/AdminBlog'))
+const AdminBlogCategories = lazy(() => import('./pages/AdminBlogCategories'))
+const AdminBlogAuthors = lazy(() => import('./pages/AdminBlogAuthors'))
+const AdminBlogCTAs = lazy(() => import('./pages/AdminBlogCTAs'))
+const AdminBlogSettings = lazy(() => import('./pages/AdminBlogSettings'))
+
+// Lazy load - Blog pages
 const Blog = lazy(() => import('./pages/Blog'))
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const BlogCategory = lazy(() => import('./pages/BlogCategory'))
@@ -44,23 +52,100 @@ function App() {
       <Router>
         <Routes>
           {/* Rotas públicas */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/one-page" element={<OnePage />} />
-          <Route path="/cadastro" element={<Cadastro />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/confirmacao" element={<Confirmacao />} />
-          <Route path="/pagamento-sucesso" element={<PagamentoSucesso />} />
+          <Route 
+            path="/" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Landing />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/one-page" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <OnePage />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/cadastro" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Cadastro />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/checkout" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Checkout />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/confirmacao" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Confirmacao />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/pagamento-sucesso" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <PagamentoSucesso />
+              </Suspense>
+            } 
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/termos" element={<Termos />} />
-          <Route path="/privacidade" element={<Privacidade />} />
-          <Route path="/cookies" element={<Cookies />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/trial-expirado" element={<TrialExpirado />} />
+          <Route 
+            path="/termos" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Termos />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/privacidade" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Privacidade />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/cookies" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Cookies />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/reset-password" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <ResetPassword />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/trial-expirado" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <TrialExpirado />
+              </Suspense>
+            } 
+          />
           <Route 
             path="/blog" 
             element={
-              <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+              <Suspense fallback={<LoadingFallback />}>
                 <Blog />
               </Suspense>
             } 
@@ -68,7 +153,7 @@ function App() {
           <Route 
             path="/blog/categoria/:slug" 
             element={
-              <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+              <Suspense fallback={<LoadingFallback />}>
                 <BlogCategory />
               </Suspense>
             } 
@@ -76,7 +161,7 @@ function App() {
           <Route 
             path="/blog/:slug" 
             element={
-              <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+              <Suspense fallback={<LoadingFallback />}>
                 <BlogPost />
               </Suspense>
             } 
@@ -88,7 +173,9 @@ function App() {
             path="/meu-plano"
             element={
               <ProtectedRoute>
-                <MeuPlano />
+                <Suspense fallback={<LoadingFallback />}>
+                  <MeuPlano />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -104,7 +191,9 @@ function App() {
             path="/treinos"
             element={
               <ProtectedRoute>
-                <Treinos />
+                <Suspense fallback={<LoadingFallback />}>
+                  <Treinos />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -112,7 +201,9 @@ function App() {
             path="/treino/atual"
             element={
               <ProtectedRoute>
-                <TreinoAtual />
+                <Suspense fallback={<LoadingFallback />}>
+                  <TreinoAtual />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -120,7 +211,9 @@ function App() {
             path="/treino-rapido"
             element={
               <ProtectedRoute>
-                <TreinoRapidoSelecaoGrupos />
+                <Suspense fallback={<LoadingFallback />}>
+                  <TreinoRapidoSelecaoGrupos />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -128,7 +221,9 @@ function App() {
             path="/treino-rapido/configuracao"
             element={
               <ProtectedRoute>
-                <TreinoRapidoConfiguracao />
+                <Suspense fallback={<LoadingFallback />}>
+                  <TreinoRapidoConfiguracao />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -136,7 +231,9 @@ function App() {
             path="/historico"
             element={
               <ProtectedRoute>
-                <Historico />
+                <Suspense fallback={<LoadingFallback />}>
+                  <Historico />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -144,7 +241,7 @@ function App() {
             path="/progresso"
             element={
               <ProtectedRoute>
-                <Suspense fallback={<div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Carregando...</div>}>
+                <Suspense fallback={<LoadingFallback />}>
                   <Progresso />
                 </Suspense>
               </ProtectedRoute>
@@ -155,7 +252,9 @@ function App() {
             path="/perfil"
             element={
               <ProtectedRoute>
-                <Perfil />
+                <Suspense fallback={<LoadingFallback />}>
+                  <Perfil />
+                </Suspense>
               </ProtectedRoute>
             }
           />
@@ -164,14 +263,72 @@ function App() {
           <Route path="/evolucao" element={<Navigate to="/progresso" replace />} />
           <Route path="/exercicios" element={<Navigate to="/treinos" replace />} />
           <Route path="/gerenciar-treinos" element={<Navigate to="/treinos" replace />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/grupos" element={<AdminGrupos />} />
-          <Route path="/admin/blog" element={<AdminBlog />} />
-          <Route path="/admin/blog/categorias" element={<AdminBlogCategories />} />
-          <Route path="/admin/blog/autores" element={<AdminBlogAuthors />} />
-          <Route path="/admin/blog/ctas" element={<AdminBlogCTAs />} />
-          <Route path="/admin/blog/configuracoes" element={<AdminBlogSettings />} />
-          <Route path="/admin" element={<Admin />} />
+          
+          {/* Rotas Admin - todas lazy loaded */}
+          <Route 
+            path="/admin/login" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminLogin />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin/grupos" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminGrupos />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin/blog" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBlog />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin/blog/categorias" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBlogCategories />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin/blog/autores" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBlogAuthors />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin/blog/ctas" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBlogCTAs />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin/blog/configuracoes" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AdminBlogSettings />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Admin />
+              </Suspense>
+            } 
+          />
         </Routes>
       </Router>
     </AuthProvider>
