@@ -821,6 +821,7 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
 
     // Receita mensal (mês atual) - considerar apenas planos ativos no mês atual
     const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     const usuariosComPagamentoMes = await prisma.user.count({
       where: {
@@ -874,14 +875,11 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
       : 0;
 
     // Calcular cadastros por período
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
     const inicioSemana = new Date(hoje);
     const diaSemana = hoje.getDay(); // 0 = domingo, 1 = segunda, etc.
     // Calcular segunda-feira da semana (se for domingo, voltar 6 dias; caso contrário, voltar diaSemana - 1)
     const diasParaSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
     inicioSemana.setDate(hoje.getDate() - diasParaSegunda);
-    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
     const inicioMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
     const fimMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
     const inicio30Dias = new Date(hoje);
