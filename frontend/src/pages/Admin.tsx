@@ -159,6 +159,7 @@ export default function Admin() {
   const [errorEstatisticas, setErrorEstatisticas] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas' | 'grupos' | 'imagens'>('estatisticas')
   const [usuarios, setUsuarios] = useState<User[]>([])
+  const [totalUsuarios, setTotalUsuarios] = useState(0)
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [search, setSearch] = useState('')
   const [exercicios, setExercicios] = useState<any[]>([])
@@ -304,6 +305,7 @@ export default function Admin() {
       const url = `/admin/usuarios${queryString ? `?${queryString}` : ''}`
       const response = await api.get(url)
       setUsuarios(response.data.usuarios || [])
+      setTotalUsuarios(response.data.paginacao?.total || 0)
 
       if (response.data.usuarios && response.data.usuarios.length === 0 && search) {
         setErrorUsuarios(`Nenhum usuário encontrado para "${search}"`)
@@ -900,9 +902,9 @@ export default function Admin() {
                 </div>
               ) : (
                 <>
-                  {usuarios.length > 0 && (
+                  {totalUsuarios > 0 && (
                     <div className="mb-4 text-sm text-light-muted">
-                      {usuarios.length} {usuarios.length === 1 ? 'usuário encontrado' : 'usuários encontrados'}
+                      {totalUsuarios} {totalUsuarios === 1 ? 'usuário encontrado' : 'usuários encontrados'}
                     </div>
                   )}
 
@@ -1018,6 +1020,9 @@ export default function Admin() {
                                 {user.nome || 'Sem nome'}
                               </h3>
                               <p className="text-light-muted text-sm truncate">{user.email}</p>
+                              <p className="text-light-muted text-xs mt-1">
+                                Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                              </p>
                             </div>
                             <div className="flex flex-wrap gap-2">
                               {user.role === 'ADMIN' ? (
