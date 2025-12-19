@@ -873,6 +873,88 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
       ? (usuariosComPlanoAtivo / usuariosNormais) * 100 
       : 0;
 
+    // Calcular cadastros por período
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const inicioSemana = new Date(hoje);
+    const diaSemana = hoje.getDay(); // 0 = domingo, 1 = segunda, etc.
+    // Calcular segunda-feira da semana (se for domingo, voltar 6 dias; caso contrário, voltar diaSemana - 1)
+    const diasParaSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
+    inicioSemana.setDate(hoje.getDate() - diasParaSegunda);
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const inicioMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+    const fimMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+    const inicio30Dias = new Date(hoje);
+    inicio30Dias.setDate(hoje.getDate() - 30);
+
+    // Cadastros por período
+    const [cadastrosHoje, cadastrosEstaSemana, cadastrosEsteMes, cadastrosMesAnterior] = await Promise.all([
+      prisma.user.count({
+        where: {
+          createdAt: { gte: hoje }
+        }
+      }),
+      prisma.user.count({
+        where: {
+          createdAt: { gte: inicioSemana }
+        }
+      }),
+      prisma.user.count({
+        where: {
+          createdAt: { gte: inicioMes }
+        }
+      }),
+      prisma.user.count({
+        where: {
+          createdAt: {
+            gte: inicioMesAnterior,
+            lte: fimMesAnterior
+          }
+        }
+      })
+    ]);
+
+    // Calcular crescimento percentual (comparar mês atual com mês anterior)
+    const crescimentoPercentual = cadastrosMesAnterior > 0
+      ? ((cadastrosEsteMes - cadastrosMesAnterior) / cadastrosMesAnterior) * 100
+      : cadastrosEsteMes > 0 ? 100 : 0;
+
+    // Buscar cadastros agrupados por dia (últimos 30 dias)
+    const usuarios30Dias = await prisma.user.findMany({
+      where: {
+        createdAt: { gte: inicio30Dias }
+      },
+      select: {
+        createdAt: true
+      }
+    });
+
+    // Agrupar por dia
+    const cadastrosPorDiaMap = new Map<string, number>();
+    
+    // Inicializar todos os dias dos últimos 30 dias com 0
+    for (let i = 0; i < 30; i++) {
+      const data = new Date(inicio30Dias);
+      data.setDate(inicio30Dias.getDate() + i);
+      const dataStr = data.toISOString().split('T')[0]; // YYYY-MM-DD
+      cadastrosPorDiaMap.set(dataStr, 0);
+    }
+
+    // Contar cadastros por dia
+    usuarios30Dias.forEach(user => {
+      const dataStr = user.createdAt.toISOString().split('T')[0];
+      const atual = cadastrosPorDiaMap.get(dataStr) || 0;
+      cadastrosPorDiaMap.set(dataStr, atual + 1);
+    });
+
+    // Converter para array e ordenar por data
+    const cadastrosPorDia = Array.from(cadastrosPorDiaMap.entries())
+      .map(([data, quantidade]) => ({
+        data,
+        quantidade
+      }))
+      .sort((a, b) => a.data.localeCompare(b.data));
+
     res.json({
       usuarios: {
         total: totalUsuarios,
@@ -913,6 +995,13 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
         taxaConclusaoTreinos: Math.round(taxaConclusaoTreinos * 100) / 100,
         perfilCompleto: usuariosComPerfil,
         perfilIncompleto: usuariosNormais - usuariosComPerfil
+      },
+      cadastros: {
+        hoje: cadastrosHoje,
+        estaSemana: cadastrosEstaSemana,
+        esteMes: cadastrosEsteMes,
+        crescimentoPercentual: Math.round(crescimentoPercentual * 100) / 100,
+        porDia: cadastrosPorDia
       }
     });
   } catch (error: any) {

@@ -9,6 +9,7 @@ import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
 import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
 import TreinoImagensAdmin from '../components/TreinoImagensAdmin'
 import { testarEmailRemarketing } from '../services/admin.service'
+import { LineChart } from '../components/ChartWrapper'
 
 
 interface User {
@@ -146,6 +147,13 @@ interface Estatisticas {
     taxaConclusaoTreinos: number
     perfilCompleto: number
     perfilIncompleto: number
+  }
+  cadastros?: {
+    hoje: number
+    estaSemana: number
+    esteMes: number
+    crescimentoPercentual: number
+    porDia: Array<{ data: string, quantidade: number }>
   }
 }
 
@@ -1326,6 +1334,103 @@ export default function Admin() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Cadastros de Usuários */}
+                  {estatisticas.cadastros && (
+                    <div className="card">
+                      <h2 className="text-2xl font-display font-bold text-light mb-6 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        Cadastros de Usuários
+                      </h2>
+                      
+                      {/* Cards de Métricas */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Cadastros Hoje</p>
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-primary">{estatisticas.cadastros.hoje}</p>
+                          <p className="text-xs text-light-muted mt-1">Novos usuários hoje</p>
+                        </div>
+                        
+                        <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Esta Semana</p>
+                            <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-success">{estatisticas.cadastros.estaSemana}</p>
+                          <p className="text-xs text-light-muted mt-1">Desde segunda-feira</p>
+                        </div>
+                        
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Este Mês</p>
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <p className="text-3xl font-bold text-primary">{estatisticas.cadastros.esteMes}</p>
+                          <p className="text-xs text-light-muted mt-1">Mês atual</p>
+                        </div>
+                        
+                        <div className={`card-hover p-4 bg-gradient-to-br ${
+                          estatisticas.cadastros.crescimentoPercentual >= 0 
+                            ? 'from-success/20 to-success/5 border border-success/30' 
+                            : 'from-error/20 to-error/5 border border-error/30'
+                        }`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="text-sm text-light-muted">Crescimento</p>
+                            <svg className={`w-5 h-5 ${estatisticas.cadastros.crescimentoPercentual >= 0 ? 'text-success' : 'text-error'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {estatisticas.cadastros.crescimentoPercentual >= 0 ? (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                              ) : (
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                              )}
+                            </svg>
+                          </div>
+                          <p className={`text-3xl font-bold ${estatisticas.cadastros.crescimentoPercentual >= 0 ? 'text-success' : 'text-error'}`}>
+                            {estatisticas.cadastros.crescimentoPercentual >= 0 ? '+' : ''}{estatisticas.cadastros.crescimentoPercentual.toFixed(1)}%
+                          </p>
+                          <p className="text-xs text-light-muted mt-1">vs. mês anterior</p>
+                        </div>
+                      </div>
+
+                      {/* Gráfico de Cadastros Diários */}
+                      {estatisticas.cadastros.porDia && estatisticas.cadastros.porDia.length > 0 && (
+                        <div className="mt-6">
+                          <h3 className="text-lg font-semibold text-light mb-4">Cadastros por Dia (Últimos 30 dias)</h3>
+                          <div className="bg-dark-lighter rounded-lg p-4 border border-grey/30" style={{ height: '300px' }}>
+                            <LineChart
+                              data={{
+                                labels: estatisticas.cadastros.porDia.map(item => {
+                                  const dataObj = new Date(item.data + 'T00:00:00')
+                                  return dataObj.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                                }),
+                                datasets: [
+                                  {
+                                    label: 'Cadastros',
+                                    data: estatisticas.cadastros.porDia.map(item => item.quantidade),
+                                    borderColor: 'rgb(255, 152, 0)',
+                                    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                  }
+                                ]
+                              }}
+                              title="Evolução de Cadastros Diários"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Dados Financeiros */}
                   {estatisticas.financeiro && (
