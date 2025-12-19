@@ -884,21 +884,27 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
     };
 
     try {
-      const inicioSemana = new Date(hoje);
-      const diaSemana = hoje.getDay(); // 0 = domingo, 1 = segunda, etc.
+      // Usar UTC para evitar problemas de timezone
+      const hojeUTC = new Date(Date.UTC(hoje.getFullYear(), hoje.getMonth(), hoje.getDate(), 0, 0, 0, 0));
+      
+      const inicioSemana = new Date(hojeUTC);
+      const diaSemana = hojeUTC.getUTCDay(); // 0 = domingo, 1 = segunda, etc.
       // Calcular segunda-feira da semana (se for domingo, voltar 6 dias; caso contrário, voltar diaSemana - 1)
       const diasParaSegunda = diaSemana === 0 ? 6 : diaSemana - 1;
-      inicioSemana.setDate(hoje.getDate() - diasParaSegunda);
-      const inicioMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
-      const fimMesAnterior = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
-      const inicio30Dias = new Date(hoje);
-      inicio30Dias.setDate(hoje.getDate() - 30);
+      inicioSemana.setUTCDate(hojeUTC.getUTCDate() - diasParaSegunda);
+      
+      const inicioMesAnterior = new Date(Date.UTC(hojeUTC.getUTCFullYear(), hojeUTC.getUTCMonth() - 1, 1, 0, 0, 0, 0));
+      const fimMesAnterior = new Date(Date.UTC(hojeUTC.getUTCFullYear(), hojeUTC.getUTCMonth(), 0, 23, 59, 59, 999));
+      const inicio30Dias = new Date(hojeUTC);
+      inicio30Dias.setUTCDate(hojeUTC.getUTCDate() - 30);
+      
+      const inicioMesUTC = new Date(Date.UTC(hojeUTC.getUTCFullYear(), hojeUTC.getUTCMonth(), 1, 0, 0, 0, 0));
 
       // Cadastros por período
       const [cadastrosHoje, cadastrosEstaSemana, cadastrosEsteMes, cadastrosMesAnterior] = await Promise.all([
         prisma.user.count({
           where: {
-            createdAt: { gte: hoje }
+            createdAt: { gte: hojeUTC }
           }
         }),
         prisma.user.count({
@@ -908,7 +914,7 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
         }),
         prisma.user.count({
           where: {
-            createdAt: { gte: inicioMes }
+            createdAt: { gte: inicioMesUTC }
           }
         }),
         prisma.user.count({
@@ -942,14 +948,21 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
       // Inicializar todos os dias dos últimos 30 dias com 0
       for (let i = 0; i < 30; i++) {
         const data = new Date(inicio30Dias);
-        data.setDate(inicio30Dias.getDate() + i);
+        data.setUTCDate(inicio30Dias.getUTCDate() + i);
+        data.setUTCHours(0, 0, 0, 0);
         const dataStr = data.toISOString().split('T')[0]; // YYYY-MM-DD
         cadastrosPorDiaMap.set(dataStr, 0);
       }
 
       // Contar cadastros por dia
       usuarios30Dias.forEach(user => {
-        const dataStr = user.createdAt.toISOString().split('T')[0];
+        // Converter para UTC e pegar apenas a data (sem hora)
+        const userDate = new Date(user.createdAt);
+        const dataStr = new Date(Date.UTC(
+          userDate.getUTCFullYear(),
+          userDate.getUTCMonth(),
+          userDate.getUTCDate()
+        )).toISOString().split('T')[0];
         const atual = cadastrosPorDiaMap.get(dataStr) || 0;
         cadastrosPorDiaMap.set(dataStr, atual + 1);
       });
@@ -971,6 +984,7 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
       };
     } catch (error: any) {
       console.error('Erro ao calcular cadastros:', error);
+      console.error('Stack trace:', error.stack);
       // Usar valores padrão (já inicializados acima)
     }
 

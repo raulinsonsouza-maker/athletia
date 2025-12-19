@@ -587,3 +587,4 @@ O projeto AthletIA est√° **bem estruturado e funcional**, com uma arquitetura s√
 
 
 
+
