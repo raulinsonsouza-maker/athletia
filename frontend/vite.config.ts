@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { imagetools } from 'vite-imagetools'
+import { cssNonBlocking } from './vite-plugin-css-non-blocking'
+import { removeNonCriticalPreloads } from './vite-plugin-remove-preloads'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    cssNonBlocking(), // CSS não bloqueante - carrega de forma assíncrona
+    removeNonCriticalPreloads(), // Remove preload de chunks não críticos
     imagetools({
       defaultDirectives: (url) => {
         // Para imagens PNG/JPG, gerar WebP automaticamente

@@ -21,11 +21,12 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
           <div className="relative rounded-[2.5rem] shadow-2xl overflow-visible w-full max-w-[400px] min-h-[600px] md:min-h-[800px] flex items-center justify-center">
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <picture className="block w-full">
-              {/* Versões responsivas WebP otimizadas - dimensões exatas para LCP */}
-              {/* Mobile: 400px width, Desktop: 665px width (proporção mantida) */}
+              {/* Versões responsivas WebP otimizadas - priorizar versão menor para melhor LCP */}
+              {/* Mobile: 400px width, Desktop: 665px width - usar 400x800 para ambos inicialmente */}
               <source 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 665w,
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
                 `}
                 type="image/webp"
@@ -33,11 +34,12 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
               />
               {/* Fallback para versão original WebP se srcset não funcionar */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Imagem otimizada - Mobile usa 400x800, Desktop usa 800x1600 mas renderiza em 665px */}
+              {/* Imagem otimizada - Priorizar 400x800 para melhor LCP, usar 800x1600 apenas se necessário */}
               <img 
                 src={imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp') || imagemApp} 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 665w,
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
                 `}
                 alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"

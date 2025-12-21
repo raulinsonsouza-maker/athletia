@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- Preconnect para recursos externos (melhora performance) -->
+    <!-- Domínio próprio - importante para assets estáticos -->
+    <link rel="preconnect" href="https://athletia.site" />
+    <link rel="dns-prefetch" href="https://athletia.site" />
+    <!-- Google Tag Manager -->
     <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     
     <!-- Preload direto das fontes WOFF2 críticas (sem CSS intermediário para evitar bloqueio) -->
     <!-- Inter 400 (regular) - fonte principal do body -->
@@ -193,10 +200,8 @@
     <!-- O Vite injeta o CSS automaticamente, mas preload ajuda o navegador -->
     
     <!-- Preload imagem hero WebP responsiva (LCP optimization) - Prioridade alta -->
-    <!-- Mobile primeiro (mais comum) - Preload crítico - 400px width -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" imagesrcset="/images/app-preview/treinos-screen-400x800.webp 400w, /images/app-preview/treinos-screen-800x1600.webp 800w" imagesizes="(max-width: 768px) 400px, 665px" />
-    <!-- Desktop - Preload condicional apenas se viewport for grande -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-800x1600.webp" fetchpriority="high" type="image/webp" media="(min-width: 769px)" />
+    <!-- Usar versão 400x800 para melhor LCP (menor tamanho, carrega mais rápido) -->
+    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" imagesrcset="/images/app-preview/treinos-screen-400x800.webp 400w, /images/app-preview/treinos-screen-400x800.webp 665w, /images/app-preview/treinos-screen-800x1600.webp 800w" imagesizes="(max-width: 768px) 400px, 665px" />
     
     <!-- CSS crítico inline para evitar bloqueio de renderização -->
     <style>
