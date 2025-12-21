@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import LegalModal from '../components/legal/LegalModal'
 import TermosContent from '../components/legal/TermosContent'
 import PrivacidadeContent from '../components/legal/PrivacidadeContent'
@@ -34,6 +34,7 @@ import {
 
 export default function Landing() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [step, setStep] = useState<OnboardingStep>(0)
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     lesoes: [],
@@ -136,6 +137,17 @@ export default function Landing() {
     setStep(1)
   }, [])
 
+  // Detectar parâmetro start=true na URL e iniciar onboarding automaticamente
+  useEffect(() => {
+    const startParam = searchParams.get('start')
+    if (startParam === 'true' && step === 0) {
+      // Remover parâmetro da URL para limpar
+      setSearchParams({}, { replace: true })
+      // Iniciar onboarding
+      iniciarOnboarding()
+    }
+  }, [searchParams, step, setSearchParams, iniciarOnboarding])
+
   // Tela inicial - Landing Page Completa
   if (step === 0) {
     return (
@@ -156,7 +168,7 @@ export default function Landing() {
             </div>
             <button
               onClick={() => navigate('/login')}
-              className="text-sm md:text-base font-medium text-light-muted hover:text-primary transition-colors px-3 py-1.5"
+              className="text-sm md:text-base font-semibold bg-primary/10 border border-primary/30 text-primary hover:bg-primary hover:text-dark px-4 py-2 md:px-5 md:py-2.5 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-200 hover:scale-105 active:scale-95"
             >
               Entrar
             </button>

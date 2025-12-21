@@ -216,7 +216,7 @@ export default function Login() {
             </button>
             <p className="text-white/60 text-sm">
               Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary font-semibold hover:underline">
+              <Link to="/?start=true" className="text-primary font-semibold hover:underline">
                 Cadastre-se
               </Link>
             </p>
