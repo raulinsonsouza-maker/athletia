@@ -33,7 +33,11 @@ export default defineConfig({
     assetsInlineLimit: 4096, // Inline imagens pequenas (< 4KB)
     chunkSizeWarningLimit: 500, // Limite reduzido após otimizações
     cssCodeSplit: true, // Separar CSS para melhor cache
-    cssMinify: true, // Minificar CSS
+    cssMinify: 'esbuild', // Usar esbuild para minificação mais rápida
+    minify: 'esbuild', // Minificar JS com esbuild (mais rápido que terser)
+    sourcemap: false, // Desabilitar sourcemaps em produção para reduzir tamanho
+    reportCompressedSize: false, // Desabilitar relatório de tamanho comprimido (acelera build)
+    target: 'es2015', // Suportar navegadores modernos (melhor otimização)
     // Vite já minifica automaticamente com esbuild (mais rápido que terser)
     rollupOptions: {
       output: {
@@ -42,7 +46,12 @@ export default defineConfig({
           // Separar node_modules em chunks específicos
           if (id.includes('node_modules')) {
             // React core (necessário desde o início)
-            if (id.includes('react') && !id.includes('react-router') && !id.includes('react-chartjs')) {
+            if (id.includes('react') && !id.includes('react-router') && !id.includes('react-chartjs') && !id.includes('react-dom')) {
+              return 'react-vendor'
+            }
+            
+            // React DOM (necessário desde o início)
+            if (id.includes('react-dom')) {
               return 'react-vendor'
             }
             
@@ -51,13 +60,18 @@ export default defineConfig({
               return 'router-vendor'
             }
             
-            // Chart.js (usado apenas em Progresso)
-            if (id.includes('chart.js') || id.includes('react-chartjs')) {
+            // Chart.js (usado apenas em Progresso - NUNCA carregar na landing)
+            if (id.includes('chart.js') || id.includes('react-chartjs') || id.includes('chartjs')) {
               return 'chart-vendor'
             }
             
-            // Axios (utilitário HTTP)
+            // Axios (utilitário HTTP - usado em várias páginas)
             if (id.includes('axios')) {
+              return 'utils'
+            }
+            
+            // React Input Mask (usado apenas em algumas páginas)
+            if (id.includes('react-input-mask')) {
               return 'utils'
             }
             
@@ -65,9 +79,22 @@ export default defineConfig({
             return 'vendor'
           }
           
-          // Agrupar páginas admin em chunk separado
-          if (id.includes('/pages/Admin') || id.includes('/pages/AdminBlog') || id.includes('/pages/AdminGrupos')) {
+          // Agrupar TODAS as páginas admin em chunk separado (nunca carregar na landing)
+          if (id.includes('/pages/Admin') || 
+              id.includes('/pages/AdminBlog') || 
+              id.includes('/pages/AdminGrupos') ||
+              id.includes('/pages/AdminLogin')) {
             return 'admin-pages'
+          }
+          
+          // Separar página Progresso (usa Chart.js)
+          if (id.includes('/pages/Progresso')) {
+            return 'progresso-page'
+          }
+          
+          // Separar páginas de blog (não críticas para landing)
+          if (id.includes('/pages/Blog')) {
+            return 'blog-pages'
           }
         },
         // Organizar assets por tipo

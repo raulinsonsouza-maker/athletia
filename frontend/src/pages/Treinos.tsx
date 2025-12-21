@@ -154,6 +154,20 @@ export default function Treinos() {
   const [loading, setLoading] = useState(true)
   const [genero, setGenero] = useState<Genero>(null)
 
+  const recarregarTreinos = async () => {
+    try {
+      const [response, plano] = await Promise.all([
+        obterHomeTreinos(),
+        obterPlanoAtualResumo()
+      ])
+      setDados(response)
+      setGenero(normalizarGenero(plano.genero))
+    } catch (error: any) {
+      console.error('Erro ao recarregar treinos:', error)
+      // Não mostrar toast em recarregamentos automáticos para não incomodar o usuário
+    }
+  }
+
   useEffect(() => {
     const carregar = async () => {
       try {
@@ -173,6 +187,41 @@ export default function Treinos() {
 
     carregar()
   }, [showToast])
+
+  // Atualizar treinos quando a página recebe foco (usuário volta para a aba)
+  useEffect(() => {
+    const handleFocus = () => {
+      recarregarTreinos()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
+  // Atualizar treinos quando a página fica visível (usuário volta para o app)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        recarregarTreinos()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [])
+
+  // Polling: atualizar a cada 30 segundos quando a página está visível
+  useEffect(() => {
+    if (loading) return // Não fazer polling enquanto carrega inicialmente
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        recarregarTreinos()
+      }
+    }, 30000) // 30 segundos
+
+    return () => clearInterval(interval)
+  }, [loading])
 
   const handleNavegar = (treinoId: string) => {
     navigate(`/treino/atual?treino=${treinoId}`)

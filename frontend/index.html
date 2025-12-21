@@ -6,13 +6,25 @@
     
     <!-- Preconnect para recursos externos (melhora performance) -->
     <link rel="preconnect" href="https://www.googletagmanager.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Preload de fontes críticas -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" as="style" />
-    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- Preload direto das fontes WOFF2 críticas (sem CSS intermediário para evitar bloqueio) -->
+    <!-- Inter 400 (regular) - fonte principal do body -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <!-- Inter 500 (medium) -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <!-- Inter 600 (semibold) -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <!-- Inter 700 (bold) -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZ9hiA-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <!-- Poppins 600 (semibold) - para títulos -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6Z1xlFd2JQEk8JLyVg00-O6F8.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <!-- Poppins 700 (bold) - para títulos principais -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    
+    <!-- Carregar CSS do Google Fonts de forma não bloqueante (após renderização inicial) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" /></noscript>
     
     <!-- Google tag (gtag.js) - Deferido para não bloquear renderização -->
     <script>
@@ -37,26 +49,84 @@
         return false;
       }
       
-      // Carregar gtag.js APÓS FCP (First Contentful Paint) - não bloqueia renderização inicial
-      // Usar requestIdleCallback se disponível, senão usar setTimeout após load
+      // Carregar gtag.js APÓS LCP (Largest Contentful Paint) - não bloqueia renderização inicial
+      // Estratégia otimizada para evitar tarefas longas na thread principal
       function loadGtag() {
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
-        document.head.appendChild(script);
-        
-        script.onload = function() {
-          gtag('js', new Date());
-          gtag('config', 'AW-448210685');
-        };
+        // Usar setTimeout para quebrar tarefas longas em chunks menores
+        setTimeout(function() {
+          var script = document.createElement('script');
+          script.async = true;
+          script.defer = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
+          document.head.appendChild(script);
+          
+          script.onload = function() {
+            // Executar configuração em chunk separado para não bloquear
+            setTimeout(function() {
+              gtag('js', new Date());
+              gtag('config', 'AW-448210685', {
+                // Configurações para reduzir impacto na performance
+                'send_page_view': true,
+                'transport_type': 'beacon'
+              });
+            }, 0);
+          };
+        }, 0);
       }
       
-      // Carregar após FCP (quando página está renderizada)
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadGtag, { timeout: 2000 });
+      // Carregar após LCP ou após 3 segundos (o que vier primeiro)
+      // Isso garante que recursos críticos sejam carregados primeiro
+      function scheduleGtagLoad() {
+        // Verificar se LCP já ocorreu
+        if (window.performance && window.performance.getEntriesByType) {
+          var paintEntries = window.performance.getEntriesByType('paint');
+          var lcpEntry = paintEntries.find(function(entry) {
+            return entry.name === 'largest-contentful-paint';
+          });
+          
+          // Se LCP já ocorreu, carregar imediatamente
+          if (lcpEntry) {
+            loadGtag();
+            return;
+          }
+        }
+        
+        // Usar PerformanceObserver para detectar LCP
+        if ('PerformanceObserver' in window) {
+          try {
+            var lcpObserver = new PerformanceObserver(function(list) {
+              var entries = list.getEntries();
+              if (entries.length > 0) {
+                loadGtag();
+                lcpObserver.disconnect();
+              }
+            });
+            lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+            
+            // Timeout de segurança: carregar após 3 segundos mesmo se LCP não for detectado
+            setTimeout(function() {
+              lcpObserver.disconnect();
+              loadGtag();
+            }, 3000);
+          } catch (e) {
+            // Fallback se PerformanceObserver falhar
+            loadGtag();
+          }
+        } else {
+          // Fallback: usar requestIdleCallback ou setTimeout
+          if ('requestIdleCallback' in window) {
+            requestIdleCallback(loadGtag, { timeout: 3000 });
+          } else {
+            setTimeout(loadGtag, 3000);
+          }
+        }
+      }
+      
+      // Iniciar carregamento após DOM estar pronto
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scheduleGtagLoad);
       } else {
-        // Fallback: carregar após load event (página completamente carregada)
-        window.addEventListener('load', loadGtag, { once: true });
+        scheduleGtagLoad();
       }
     </script>
     
@@ -123,23 +193,63 @@
     <!-- O Vite injeta o CSS automaticamente, mas preload ajuda o navegador -->
     
     <!-- Preload imagem hero WebP responsiva (LCP optimization) - Prioridade alta -->
-    <!-- Mobile primeiro (mais comum) - Preload crítico - dimensão exata 665px -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" />
-    <!-- Desktop - Preload condicional - usar 800x1600 para telas maiores -->
+    <!-- Mobile primeiro (mais comum) - Preload crítico - 400px width -->
+    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" imagesrcset="/images/app-preview/treinos-screen-400x800.webp 400w, /images/app-preview/treinos-screen-800x1600.webp 800w" imagesizes="(max-width: 768px) 400px, 665px" />
+    <!-- Desktop - Preload condicional apenas se viewport for grande -->
     <link rel="preload" as="image" href="/images/app-preview/treinos-screen-800x1600.webp" fetchpriority="high" type="image/webp" media="(min-width: 769px)" />
     
     <!-- CSS crítico inline para evitar bloqueio de renderização -->
     <style>
-      /* CSS crítico mínimo para evitar CLS */
-      body { 
-        font-family: system-ui, -apple-system, sans-serif; 
-        margin: 0; 
-        background: #070600; 
-        color: #F7F7FF;
+      /* CSS crítico mínimo para evitar CLS e FOUC */
+      * {
+        border-color: #4A4946;
       }
-      #root { min-height: 100vh; }
+      body { 
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        margin: 0; 
+        padding: 0;
+        background: linear-gradient(135deg, #070600 0%, #0F0E0A 100%);
+        background-color: #070600;
+        color: #F7F7FF;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        min-height: 100vh;
+      }
+      #root { 
+        min-height: 100vh; 
+        display: flex;
+        flex-direction: column;
+      }
+      /* Fontes customizadas - serão aplicadas quando carregarem */
+      h1, h2, h3, h4, h5, h6 {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-weight: 700;
+        color: #F7F7FF;
+        margin: 0;
+      }
+      h1 {
+        font-size: 2.25rem;
+        min-height: 3.5rem;
+        line-height: 1.1;
+      }
+      @media (min-width: 768px) {
+        h1 {
+          font-size: 3rem;
+          min-height: 4rem;
+        }
+      }
       /* Evitar flash de conteúdo não estilizado */
-      .font-display { font-family: system-ui, sans-serif; }
+      .font-display { 
+        font-family: system-ui, sans-serif; 
+      }
+      /* Loading state básico */
+      .loading {
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .loaded {
+        opacity: 1;
+      }
     </style>
     
     <!-- Prefetch imagens críticas do onboarding para reduzir carregamentos sem gerar warnings -->
@@ -308,6 +418,23 @@
         }
       ]
     }
+    </script>
+    
+    <!-- Script para otimizar carregamento de CSS (deferir CSS não crítico) -->
+    <script>
+      // Preload CSS principal quando disponível (após DOM estar pronto)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          // CSS será injetado pelo Vite, mas podemos otimizar com preload
+          var cssLinks = document.querySelectorAll('link[rel="stylesheet"]');
+          cssLinks.forEach(function(link) {
+            if (link.href && !link.media || link.media === 'all') {
+              // Marcar como não crítico após FCP
+              link.media = 'all';
+            }
+          });
+        });
+      }
     </script>
   </head>
   <body>

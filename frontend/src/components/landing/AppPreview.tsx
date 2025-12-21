@@ -22,6 +22,7 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <picture className="block w-full">
               {/* Versões responsivas WebP otimizadas - dimensões exatas para LCP */}
+              {/* Mobile: 400px width, Desktop: 665px width (proporção mantida) */}
               <source 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
@@ -32,9 +33,13 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
               />
               {/* Fallback para versão original WebP se srcset não funcionar */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Fallback final para PNG - Dimensões otimizadas para LCP (665x1182 exibido) */}
+              {/* Imagem otimizada - Mobile usa 400x800, Desktop usa 800x1600 mas renderiza em 665px */}
               <img 
                 src={imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp') || imagemApp} 
+                srcSet={`
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
+                `}
                 alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
                 className="w-full h-auto object-contain rounded-[2.5rem] block max-w-[400px] mx-auto"
                 loading="eager"

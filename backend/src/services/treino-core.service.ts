@@ -106,13 +106,74 @@ export type { FiltrosExercicio } from './exercicio-filters.service';
 // ============================================================================
 
 import { normalizarData, obterInicioSemana } from './treino-utils.service';
+import { filtrarPorLocalTreino } from './exercicio-filters.service';
 
-function gerarNomeTreino(frequencia: number, indiceDia: number): string {
-  const letra = LETRAS_TREINO[indiceDia];
+/**
+ * Valida e filtra exercícios por equipamento de forma centralizada
+ * Garante que apenas exercícios compatíveis com o local de treino sejam selecionados
+ */
+export function validarFiltrosEquipamento(
+  exercicios: any[],
+  localTreino?: string | null
+): any[] {
+  if (!localTreino || exercicios.length === 0) {
+    return exercicios;
+  }
+  
+  const exerciciosAntes = exercicios.length;
+  const exerciciosFiltrados = filtrarPorLocalTreino(exercicios, localTreino);
+  const exerciciosDepois = exerciciosFiltrados.length;
+  
+  if (exerciciosAntes !== exerciciosDepois) {
+    console.log(
+      `[TREINO-CORE] Filtro de equipamento aplicado: ${exerciciosAntes} → ${exerciciosDepois} exercícios ` +
+      `(local: "${localTreino}")`
+    );
+  }
+  
+  return exerciciosFiltrados;
+}
+
+/**
+ * Gera nome de treino baseado em grupos musculares reais
+ * Prioriza grupos musculares dos exercícios sobre nomes padrão de splits
+ */
+function gerarNomeTreino(
+  frequencia: number, 
+  indiceDia: number, 
+  gruposMusculares?: string[]
+): string {
+  const letra = LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
+  
+  // Se temos grupos musculares reais, usar eles para gerar nome descritivo
+  if (gruposMusculares && gruposMusculares.length > 0) {
+    // Filtrar apenas grupos de força (excluir Cardio, Alongamento, etc)
+    const gruposForca = gruposMusculares.filter(g => 
+      !['Cardio', 'Alongamento', 'Flexibilidade'].includes(g)
+    );
+    
+    if (gruposForca.length > 0) {
+      // Limitar a 2-3 grupos principais para nome não ficar muito longo
+      const gruposPrincipais = gruposForca.slice(0, 3);
+      
+      // Formatar nome baseado nos grupos
+      if (gruposPrincipais.length === 1) {
+        return `Treino ${letra} - ${gruposPrincipais[0]}`;
+      } else if (gruposPrincipais.length === 2) {
+        return `Treino ${letra} - ${gruposPrincipais[0]} e ${gruposPrincipais[1]}`;
+      } else {
+        // 3 ou mais grupos: usar os 2 primeiros + "e mais"
+        return `Treino ${letra} - ${gruposPrincipais[0]}, ${gruposPrincipais[1]} e mais`;
+      }
+    }
+  }
+  
+  // Fallback: usar nome padrão do split se grupos não disponíveis
   const nomeBase = NOMES_SPLITS[frequencia]?.[indiceDia % frequencia];
   if (nomeBase) {
     return `Treino ${letra} - ${nomeBase}`;
   }
+  
   return `Treino ${letra}`;
 }
 
@@ -330,9 +391,16 @@ export async function gerarTreinoUnificado(
   
   // Preparar filtros
   const historicoGeral = await buscarHistoricoExercicios(opcoesAjustadas.userId);
+  const localTreino = perfil?.localTreino || opcoesAjustadas.localTreino;
+  
+  // Log de debug para rastrear filtros de equipamento
+  if (localTreino) {
+    console.log(`[TREINO-CORE] Aplicando filtro de local de treino: "${localTreino}"`);
+  }
+  
   const filtros: FiltrosExercicio = {
     historico: historicoGeral,
-    localTreino: perfil?.localTreino || opcoesAjustadas.localTreino,
+    localTreino: localTreino,
     dificuldade: opcoesAjustadas.dificuldade || experiencia,
     problemasAnteriores: perfil?.problemasAnteriores,
     preferencias: perfil?.preferencias
@@ -471,7 +539,10 @@ export async function gerarTreinoUnificado(
   // Determinar frequência e índice do dia
   const frequencia = perfil?.frequenciaSemanal || opcoesAjustadas.frequenciaSemanal || 3;
   const indiceDia = opcoesAjustadas.indiceDia ?? 0;
-  const nomeTreino = opcoesAjustadas.nome || gerarNomeTreino(frequencia, indiceDia);
+  
+  // Gerar nome baseado nos grupos musculares reais (se disponível)
+  // Usar gruposFiltrados que já foram determinados
+  const nomeTreino = opcoesAjustadas.nome || gerarNomeTreino(frequencia, indiceDia, gruposFiltrados);
   const letraTreino = opcoesAjustadas.letraTreino || LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
   
   // Criar treino no banco
@@ -604,6 +675,29 @@ export async function gerarTreinoUnificado(
     return null;
   }
   
+  // Extrair grupos musculares reais dos exercícios selecionados
+  const gruposReais = Array.from(new Set(
+    treinoCompleto.exercicios
+      .map(ex => ex.exercicio?.grupoMuscularPrincipal)
+      .filter((g): g is string => !!g && g !== 'Cardio' && g !== 'Alongamento' && g !== 'Flexibilidade')
+  ));
+  
+  // Atualizar nome do treino se não foi fornecido explicitamente e temos grupos reais
+  // Isso garante que o nome sempre reflita os exercícios realmente selecionados
+  if (!opcoesAjustadas.nome && gruposReais.length > 0) {
+    const nomeAtualizado = gerarNomeTreino(frequencia, indiceDia, gruposReais);
+    
+    // Atualizar no banco apenas se o nome mudou
+    if (nomeAtualizado !== treinoCompleto.nome) {
+      await prisma.treino.update({
+        where: { id: treinoCompleto.id },
+        data: { nome: nomeAtualizado }
+      });
+      treinoCompleto.nome = nomeAtualizado;
+      console.log(`[TREINO-CORE] Nome do treino atualizado: "${nomeAtualizado}" (grupos: ${gruposReais.join(', ')})`);
+    }
+  }
+  
   // Validar treino canônico se aplicável
   if (isModoCanonico && gruposFiltrados.length === 2) {
     // Buscar grupos do dia anterior para validação de descanso
@@ -692,7 +786,7 @@ export async function gerarTreinoUnificado(
   
   return {
     id: treino.id,
-    nome: nomeTreino,
+    nome: treinoCompleto.nome, // Usar nome atualizado (pode ter sido modificado após seleção de exercícios)
     data: treino.data,
     gruposPrincipais,
     totalExercicios: treinoCompleto.exercicios.length,

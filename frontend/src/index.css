@@ -1,5 +1,5 @@
-/* Fontes com display swap para evitar CLS */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
+/* Fontes removidas do @import - agora carregadas via preload direto no HTML para melhor performance */
+/* @import bloqueia renderização, então movemos para preload de fontes WOFF2 no HTML */
 
 @tailwind base;
 @tailwind components;

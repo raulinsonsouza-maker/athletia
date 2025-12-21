@@ -36,41 +36,99 @@ const MAPEAMENTO_PROBLEMAS: Record<string, string[]> = {
 
 /**
  * Filtra exercícios por local de treino
+ * 
+ * Regras:
+ * - Academia Comercial: permite todos os equipamentos
+ * - Academia Pequena: permite halteres, barras, máquinas básicas e peso corporal
+ * - Sem Equipamento: APENAS peso corporal ou sem equipamentos listados
  */
 export function filtrarPorLocalTreino(exercicios: any[], localTreino?: string | null): any[] {
   if (!localTreino) return exercicios;
 
-  const localLower = localTreino.toLowerCase();
+  const localLower = localTreino.toLowerCase().trim();
   
+  // Academia comercial: permite todos os equipamentos
   if (localLower.includes('comercial') || localLower === 'academia') {
     return exercicios;
   }
 
+  // Academia Pequena: permite halteres, barras, máquinas básicas e peso corporal
   if (localLower.includes('pequena')) {
     return exercicios.filter(ex => {
       const equipamentos = ex.equipamentoNecessario || [];
+      
+      // Se não tem equipamentos listados, permitir (assumir peso corporal)
+      if (equipamentos.length === 0) {
+        return true;
+      }
+      
+      // Verificar se tem equipamento básico permitido
       return equipamentos.some((eq: string) => {
-        const eqLower = eq.toLowerCase();
+        const eqLower = eq.toLowerCase().trim();
         return eqLower.includes('halter') || 
                eqLower.includes('dumbbell') ||
                eqLower.includes('barra') ||
                eqLower.includes('peso corporal') ||
                eqLower.includes('corpo') ||
                eqLower.includes('máquina básica') ||
-               eqLower.includes('esteira') ||
-               equipamentos.length === 0;
+               eqLower.includes('esteira');
       });
     });
   }
 
-  if (localLower.includes('sem equipamento')) {
+  // Sem equipamento: APENAS peso corporal ou sem equipamentos listados
+  // REJEITAR exercícios que requerem equipamentos específicos
+  if (localLower.includes('sem equipamento') || localLower.includes('casa') || localLower.includes('domicílio')) {
     return exercicios.filter(ex => {
       const equipamentos = ex.equipamentoNecessario || [];
-      return equipamentos.some((eq: string) => 
-        eq.toLowerCase().includes('peso corporal') || 
-        eq.toLowerCase().includes('corpo')
-      ) || equipamentos.length === 0;
+      
+      // Se não tem equipamentos listados, permitir (assumir peso corporal)
+      if (equipamentos.length === 0) {
+        return true;
+      }
+      
+      // Verificar se TODOS os equipamentos são apenas peso corporal
+      const todosPesoCorporal = equipamentos.every((eq: string) => {
+        const eqLower = eq.toLowerCase().trim();
+        return eqLower.includes('peso corporal') || 
+               eqLower.includes('corpo') ||
+               eqLower === '' ||
+               eqLower === 'nenhum';
+      });
+      
+      if (!todosPesoCorporal) {
+        // Rejeitar se tem qualquer equipamento específico
+        const temEquipamentoEspecifico = equipamentos.some((eq: string) => {
+          const eqLower = eq.toLowerCase().trim();
+          return eqLower.includes('halter') ||
+                 eqLower.includes('dumbbell') ||
+                 eqLower.includes('barra') ||
+                 eqLower.includes('máquina') ||
+                 eqLower.includes('aparelho') ||
+                 eqLower.includes('esteira') ||
+                 eqLower.includes('bicicleta') ||
+                 eqLower.includes('eliptico') ||
+                 eqLower.includes('elíptico') ||
+                 eqLower.includes('remada') ||
+                 eqLower.includes('cabo') ||
+                 eqLower.includes('polia') ||
+                 eqLower.includes('smith') ||
+                 eqLower.includes('hack') ||
+                 eqLower.includes('leg press');
+        });
+        
+        if (temEquipamentoEspecifico) {
+          return false; // Rejeitar exercícios que requerem equipamentos
+        }
+      }
+      
+      return todosPesoCorporal;
     });
+  }
+
+  // Customizado: sem filtro (usuário escolhe)
+  if (localLower.includes('customizado')) {
+    return exercicios;
   }
 
   return exercicios;

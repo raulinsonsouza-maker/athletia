@@ -138,8 +138,17 @@ export async function buscarExerciciosComFallback(
     }
   }
   
-  // Aplicar filtros
+  // Aplicar filtros (inclui filtro de local de treino/equipamento)
+  const exerciciosAntesFiltros = exercicios.length;
   exercicios = aplicarFiltrosExercicios(exercicios, filtros);
+  const exerciciosDepoisFiltros = exercicios.length;
+  
+  if (filtros.localTreino && exerciciosAntesFiltros !== exerciciosDepoisFiltros) {
+    console.log(
+      `[EXERCICIO-SELECTOR] Filtro de local aplicado para grupo "${grupo}": ` +
+      `${exerciciosAntesFiltros} → ${exerciciosDepoisFiltros} exercícios (local: "${filtros.localTreino}")`
+    );
+  }
   
   // Se não tem suficientes, buscar qualquer exercício do grupo (fallback)
   if (exercicios.length < quantidadeMinima) {
