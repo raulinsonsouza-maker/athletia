@@ -124,10 +124,17 @@ print_step "4/8 Executando migrations do banco de dados..."
 read -p "Deseja executar as migrations? Isso pode alterar o banco de dados. (S/N) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Ss]$ ]]; then
-    if npm run prisma:migrate deploy; then
+    # Em produção, usar 'prisma migrate deploy' diretamente
+    # Isso aplica migrations sem criar shadow database (mais seguro para produção)
+    cd "$BACKEND_DIR"
+    if npx prisma migrate deploy; then
         print_success "Migrations executadas com sucesso"
+        cd "$PROJECT_DIR"
     else
         print_error "Falha ao executar migrations. Verifique a conexão com o banco de dados."
+        print_warning "Dica: O comando 'prisma migrate deploy' é para produção e não cria shadow database."
+        print_warning "Se o erro persistir, verifique se o banco de dados está acessível e se as migrations estão corretas."
+        cd "$PROJECT_DIR"
         exit 1
     fi
 else
