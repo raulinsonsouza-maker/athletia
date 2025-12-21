@@ -66,7 +66,7 @@ echo ""
 # 1. GIT PULL
 # ============================================================================
 
-print_step "1/8 Atualizando código do repositório (git pull)..."
+print_step "1/9 Atualizando código do repositório (git pull)..."
 
 # Verificar se há mudanças não commitadas
 if [ -n "$(git status --porcelain)" ]; then
@@ -92,13 +92,15 @@ fi
 # 2. BACKEND - INSTALAR DEPENDÊNCIAS
 # ============================================================================
 
-print_step "2/8 Instalando dependências do backend..."
+print_step "2/9 Instalando dependências do backend..."
 
 cd "$BACKEND_DIR"
 if npm install; then
     print_success "Dependências do backend instaladas"
+    cd "$PROJECT_DIR"
 else
     print_error "Falha ao instalar dependências do backend"
+    cd "$PROJECT_DIR"
     exit 1
 fi
 
@@ -106,12 +108,15 @@ fi
 # 3. BACKEND - GERAR PRISMA CLIENT
 # ============================================================================
 
-print_step "3/8 Gerando Prisma Client..."
+print_step "3/9 Gerando Prisma Client..."
 
+cd "$BACKEND_DIR"
 if npm run prisma:generate; then
     print_success "Prisma Client gerado com sucesso"
+    cd "$PROJECT_DIR"
 else
     print_error "Falha ao gerar Prisma Client"
+    cd "$PROJECT_DIR"
     exit 1
 fi
 
@@ -119,7 +124,7 @@ fi
 # 4. BACKEND - EXECUTAR MIGRATIONS
 # ============================================================================
 
-print_step "4/8 Executando migrations do banco de dados..."
+print_step "4/9 Executando migrations do banco de dados..."
 
 read -p "Deseja executar as migrations? Isso pode alterar o banco de dados. (S/N) " -n 1 -r
 echo
@@ -145,12 +150,16 @@ fi
 # 5. BACKEND - BUILD
 # ============================================================================
 
-print_step "5/8 Fazendo build do backend..."
+print_step "5/9 Fazendo build do backend..."
 
+# Garantir que estamos no diretório do backend
+cd "$BACKEND_DIR"
 if npm run build; then
     print_success "Build do backend concluído"
+    cd "$PROJECT_DIR"
 else
     print_error "Falha ao fazer build do backend. Verifique os erros de TypeScript acima."
+    cd "$PROJECT_DIR"
     exit 1
 fi
 
@@ -158,7 +167,7 @@ fi
 # 6. BACKEND - REINICIAR PM2
 # ============================================================================
 
-print_step "6/8 Reiniciando backend no PM2..."
+print_step "6/9 Reiniciando backend no PM2..."
 
 if pm2 restart "$BACKEND_PROCESS" 2>/dev/null || pm2 start npm --name "$BACKEND_PROCESS" -- start; then
     print_success "Backend reiniciado no PM2"
