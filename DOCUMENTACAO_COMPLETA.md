@@ -765,13 +765,20 @@ Cria usuário e perfil após onboarding, sem gerar treinos.
 ```
 
 #### `POST /api/auth/ativar-plano-pagamento`
-Ativa plano após pagamento confirmado e gera treinos.
+⚠️ **ATENÇÃO: Este endpoint é apenas para uso interno/testes.**
+
+**IMPORTANTE:** Em produção, planos devem ser ativados **APENAS via webhook do Cakto** (endpoint: `/api/webhooks/cakto` com evento `purchase_approved`).
+
+Este endpoint requer:
+- Autenticação JWT obrigatória
+- Pagamento válido no `PaymentHistory` com status `completed`
+- `transactionId` válido (opcional, mas recomendado)
 
 **Body:**
 ```json
 {
-  "userId": "user-id",
-  "plano": "TRIMESTRAL"
+  "plano": "TRIMESTRAL",
+  "transactionId": "optional-transaction-id"
 }
 ```
 
@@ -784,10 +791,30 @@ Ativa plano após pagamento confirmado e gera treinos.
     "planoAtivo": true,
     "plano": "TRIMESTRAL",
     "dataPagamento": "2024-12-20T..."
-  },
-  "treinosGerados": 12
+  }
 }
 ```
+
+#### `POST /api/webhooks/cakto` (Recomendado para Produção)
+Webhook do Cakto para processar eventos de pagamento automaticamente.
+
+**Eventos suportados:**
+- `purchase_approved`: Ativa plano automaticamente após pagamento confirmado
+- `refund`: Processa reembolso e desativa plano
+- `subscription_cancelled`: Processa cancelamento de assinatura
+
+**Fluxo recomendado:**
+1. Usuário escolhe plano no checkout
+2. Redireciona para Cakto para pagamento
+3. Cakto processa pagamento
+4. Cakto envia webhook para `/api/webhooks/cakto` com evento `purchase_approved`
+5. Sistema ativa plano automaticamente via `processPaymentApproved`
+6. Treinos são gerados automaticamente
+7. E-mail de confirmação é enviado
+
+**Segurança:**
+- Validação de assinatura HMAC SHA256 via header `x-cakto-signature`
+- Rate limiting: 100 requisições por IP a cada 15 minutos
 
 ### Middleware de Verificação de Plano
 

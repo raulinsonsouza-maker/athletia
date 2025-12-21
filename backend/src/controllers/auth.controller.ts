@@ -752,53 +752,53 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
   }
 };
 
-// Ativar plano após pagamento e gerar treinos
+/**
+ * ATENÇÃO: Este endpoint é apenas para uso interno/testes.
+ * 
+ * IMPORTANTE: Em produção, planos devem ser ativados APENAS via webhook do Cakto
+ * (endpoint: /api/webhooks/cakto com evento 'purchase_approved').
+ * 
+ * Este endpoint requer:
+ * 1. Autenticação obrigatória (JWT)
+ * 2. Pagamento válido no PaymentHistory com status 'completed'
+ * 3. caktoTransactionId válido associado ao pagamento
+ * 
+ * Ativar plano após pagamento e gerar treinos
+ */
 export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
   const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
   const timestamp = new Date().toISOString();
   
   try {
+    // SEGURANÇA: Autenticação obrigatória
+    if (!req.userId) {
+      console.warn(`[Ativação Plano] [${requestId}] [SEGURANÇA] Tentativa sem autenticação:`, {
+        timestamp,
+        ip: clientIp,
+        userAgent: req.headers['user-agent'] || 'unknown'
+      });
+      return res.status(401).json({
+        error: 'Autenticação obrigatória. Use o webhook do Cakto para ativar planos em produção.'
+      });
+    }
+
     // SEGURANÇA: Log de monitoramento para todas as tentativas
     console.log(`[Ativação Plano] [${requestId}] Tentativa de ativação de plano:`, {
       timestamp,
       ip: clientIp,
-      hasAuth: !!req.userId,
-      hasUserIdInBody: !!req.body.userId,
+      userId: req.userId,
       userAgent: req.headers['user-agent'] || 'unknown'
     });
 
-    // SEGURANÇA: Se autenticado via JWT, usar req.userId (mais seguro)
-    // Se não autenticado, permitir userId do body apenas para chamadas internas (webhooks)
-    const userId = req.userId || req.body.userId;
-    const { plano } = req.body;
+    const userId = req.userId; // Sempre usar do token JWT (mais seguro)
+    const { plano, transactionId } = req.body;
 
-    // Validações
-    if (!userId || !plano) {
-      console.log(`[Ativação Plano] [${requestId}] Validação falhou: userId ou plano ausente`);
+    // Validações básicas
+    if (!plano) {
+      console.log(`[Ativação Plano] [${requestId}] Validação falhou: plano ausente`);
       return res.status(400).json({
-        error: 'UserId e plano são obrigatórios'
-      });
-    }
-
-    // SEGURANÇA: Se autenticado via JWT, garantir que userId do body (se presente) corresponde ao token
-    if (req.userId && req.body.userId && req.userId !== req.body.userId) {
-      console.warn(`[Ativação Plano] [${requestId}] [SEGURANÇA] Tentativa de ativar plano de outro usuário:`, {
-        authenticatedUserId: req.userId,
-        requestedUserId: req.body.userId,
-        ip: clientIp
-      });
-      return res.status(403).json({
-        error: 'Não autorizado a ativar plano de outro usuário'
-      });
-    }
-
-    // SEGURANÇA: Log quando userId vem do body sem autenticação (chamada interna)
-    if (!req.userId && req.body.userId) {
-      console.log(`[Ativação Plano] [${requestId}] [MONITORAMENTO] Chamada sem autenticação JWT (chamada interna):`, {
-        userId: req.body.userId,
-        ip: clientIp,
-        userAgent: req.headers['user-agent'] || 'unknown'
+        error: 'Plano é obrigatório'
       });
     }
 
@@ -821,13 +821,102 @@ export const ativarPlanoAposPagamento = async (req: any, res: Response) => {
       });
     }
 
-    // Atualizar usuário com plano ativo
+    // SEGURANÇA: Verificar se existe pagamento válido no PaymentHistory
+    // Se transactionId foi fornecido, verificar especificamente esse pagamento
+    // Caso contrário, verificar o último pagamento válido do usuário
+    let pagamentoValido = null;
+    
+    if (transactionId) {
+      // Verificar pagamento específico
+      pagamentoValido = await prisma.paymentHistory.findFirst({
+        where: {
+          userId: userId,
+          transactionId: transactionId,
+          status: 'completed',
+          eventType: 'purchase_approved'
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      if (!pagamentoValido) {
+        console.warn(`[Ativação Plano] [${requestId}] [SEGURANÇA] Pagamento não encontrado ou inválido:`, {
+          userId,
+          transactionId,
+          ip: clientIp
+        });
+        return res.status(403).json({
+          error: 'Pagamento não encontrado ou não aprovado. Não é possível ativar o plano sem um pagamento válido.',
+          message: 'Em produção, use o webhook do Cakto para ativar planos automaticamente após pagamento.'
+        });
+      }
+    } else {
+      // Verificar último pagamento válido do usuário
+      pagamentoValido = await prisma.paymentHistory.findFirst({
+        where: {
+          userId: userId,
+          status: 'completed',
+          eventType: 'purchase_approved'
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      if (!pagamentoValido) {
+        console.warn(`[Ativação Plano] [${requestId}] [SEGURANÇA] Nenhum pagamento válido encontrado para o usuário:`, {
+          userId,
+          ip: clientIp
+        });
+        return res.status(403).json({
+          error: 'Nenhum pagamento válido encontrado. Não é possível ativar o plano sem um pagamento aprovado.',
+          message: 'Em produção, use o webhook do Cakto para ativar planos automaticamente após pagamento.'
+        });
+      }
+    }
+
+    // SEGURANÇA: Verificar se o usuário já tem caktoTransactionId válido
+    // Se o pagamento tem transactionId, verificar se corresponde
+    if (pagamentoValido.transactionId && user.caktoTransactionId) {
+      if (user.caktoTransactionId !== pagamentoValido.transactionId) {
+        console.warn(`[Ativação Plano] [${requestId}] [SEGURANÇA] TransactionId não corresponde:`, {
+          userId,
+          userTransactionId: user.caktoTransactionId,
+          paymentTransactionId: pagamentoValido.transactionId,
+          ip: clientIp
+        });
+      }
+    }
+
+    // Calcular data de expiração baseada no plano
+    const calcularDataExpiracao = (plano: string): Date => {
+      const hoje = new Date();
+      switch (plano.toUpperCase()) {
+        case 'MENSAL':
+          hoje.setMonth(hoje.getMonth() + 1);
+          break;
+        case 'TRIMESTRAL':
+          hoje.setMonth(hoje.getMonth() + 3);
+          break;
+        case 'SEMESTRAL':
+          hoje.setMonth(hoje.getMonth() + 6);
+          break;
+        default:
+          hoje.setMonth(hoje.getMonth() + 1);
+      }
+      return hoje;
+    };
+
+    const dataExpiracao = calcularDataExpiracao(plano);
+
+    // Atualizar usuário com plano ativo (usando dados do pagamento válido)
     const userAtualizado = await prisma.user.update({
       where: { id: userId },
       data: {
         planoAtivo: true,
         plano: plano.toUpperCase(),
-        dataPagamento: new Date()
+        dataPagamento: pagamentoValido.createdAt, // Usar data do pagamento, não data atual
+        dataExpiracao: dataExpiracao,
+        caktoTransactionId: pagamentoValido.transactionId, // Atualizar com transactionId do pagamento
+        // Preservar caktoCustomerId se já existir
+        caktoCustomerId: user.caktoCustomerId || undefined
       }
     });
 

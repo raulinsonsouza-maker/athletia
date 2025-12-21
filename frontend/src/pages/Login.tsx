@@ -42,7 +42,8 @@ export default function Login() {
       if (planoValido || trialAtivo) {
         navigate('/meu-plano', { replace: true })
       } else if (trialExpirado) {
-        navigate('/trial-expirado', { replace: true })
+        // Trial expirado: redirecionar direto para checkout para escolher plano
+        navigate('/checkout', { replace: true })
       } else {
         navigate('/checkout', { replace: true })
       }

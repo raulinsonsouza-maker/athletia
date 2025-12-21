@@ -73,7 +73,7 @@ export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFun
           : user.dataExpiracao && new Date(user.dataExpiracao) < new Date()
             ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
             : 'É necessário ativar um plano para acessar esta funcionalidade',
-        redirectTo: trialExpirado ? '/trial-expirado' : '/checkout',
+        redirectTo: '/checkout', // Sempre redirecionar para checkout quando trial expirado ou sem plano
         trialExpirado
       });
     }
@@ -151,7 +151,7 @@ export const permitirAcessoSemPlano = (allowedPaths: string[]) => {
             : user.dataExpiracao && new Date(user.dataExpiracao) < new Date()
               ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
               : 'É necessário ativar um plano para acessar esta funcionalidade',
-          redirectTo: trialExpirado ? '/trial-expirado' : '/checkout',
+          redirectTo: '/checkout', // Sempre redirecionar para checkout quando trial expirado ou sem plano
           trialExpirado
         });
       }

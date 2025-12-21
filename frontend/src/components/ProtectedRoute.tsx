@@ -51,9 +51,9 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
         return <>{children}</>
       }
 
-      // Trial expirado - redirecionar para tela específica
+      // Trial expirado - redirecionar direto para checkout para escolher plano
       if (dataFimTrial <= agora && !user.planoAtivo) {
-        return <Navigate to="/trial-expirado" replace />
+        return <Navigate to="/checkout" replace />
       }
     }
 

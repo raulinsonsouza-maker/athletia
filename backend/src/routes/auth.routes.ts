@@ -174,7 +174,18 @@ router.get('/me', authenticate, obterUsuario);
 router.get('/trial-status', authenticate, obterStatusTrial);
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
-router.post('/ativar-plano-pagamento', optionalAuthenticate, ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);
+/**
+ * ATENÇÃO: Este endpoint requer autenticação obrigatória e validação de pagamento.
+ * 
+ * IMPORTANTE: Em produção, planos devem ser ativados APENAS via webhook do Cakto
+ * (endpoint: /api/webhooks/cakto com evento 'purchase_approved').
+ * 
+ * Este endpoint é mantido apenas para casos especiais/testes e requer:
+ * - Autenticação JWT obrigatória
+ * - Pagamento válido no PaymentHistory com status 'completed'
+ * - transactionId válido (opcional, mas recomendado)
+ */
+router.post('/ativar-plano-pagamento', authenticate, ativarPlanoValidation, validateRequest, ativarPlanoAposPagamento);
 router.post('/forgot-password', passwordResetLimiter, forgotPasswordValidation, validateRequest, requestPasswordReset);
 router.post('/reset-password', passwordResetLimiter, resetPasswordValidation, validateRequest, resetPassword);
 
