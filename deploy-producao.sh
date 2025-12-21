@@ -68,11 +68,11 @@ echo ""
 
 print_step "1/9 Atualizando código do repositório (git pull)..."
 
-# Verificar se há mudanças não commitadas (apenas avisar, não bloquear)
+# Verificar se há mudanças não commitadas e fazer stash se necessário
 if [ -n "$(git status --porcelain)" ]; then
-    print_warning "Há mudanças não commitadas no repositório:"
-    git status --short
-    print_warning "Continuando com o deploy mesmo assim..."
+    print_warning "Há mudanças não commitadas no repositório. Fazendo stash automático..."
+    git stash push -m "Auto-stash antes do deploy $(date +%Y-%m-%d_%H-%M-%S)"
+    print_success "Mudanças salvas em stash"
 fi
 
 # Fazer pull
