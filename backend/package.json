@@ -25,7 +25,8 @@
     "normalize-muscle-groups": "tsx src/scripts/normalize-muscle-groups.ts",
     "normalize-and-regenerate": "tsx src/scripts/normalize-and-regenerate.ts",
     "analyze-exercises": "tsx src/scripts/analyze-exercises-by-group.ts",
-    "refatorar-treinos-intercalacao": "tsx src/scripts/refatorar-treinos-intercalacao.ts"
+    "refatorar-treinos-intercalacao": "tsx src/scripts/refatorar-treinos-intercalacao.ts",
+    "refatorar-nomes-treinos": "tsx src/scripts/refatorar-nomes-treinos.ts"
   },
   "keywords": [
     "fitness",

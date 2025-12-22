@@ -1,5 +1,37 @@
 import { prisma } from '../lib/prisma';
 import { calcularTempoEstimado as calcularTempoEstimadoCore, calcularConfiguracaoTempo, calcularParametrosTreino } from './treino-parameters.service';
+import { extrairGruposMuscularesDeTreino } from './treino-core.service';
+
+/**
+ * Gera nome de treino personalizado baseado em grupos musculares
+ * Formato: "Personalizado - [Grupo1] e [Grupo2]" ou "Personalizado - [Grupo1], [Grupo2] e mais"
+ */
+export function gerarNomeTreinoPersonalizado(grupos: string[]): string {
+  if (!grupos || grupos.length === 0) {
+    return 'Personalizado';
+  }
+  
+  // Filtrar apenas grupos de força (excluir Cardio, Alongamento, etc)
+  const gruposForca = grupos.filter(g => 
+    !['Cardio', 'Alongamento', 'Flexibilidade'].includes(g)
+  );
+  
+  if (gruposForca.length === 0) {
+    return 'Personalizado';
+  }
+  
+  // Limitar a 2-3 grupos principais para nome não ficar muito longo
+  const gruposPrincipais = gruposForca.slice(0, 3);
+  
+  if (gruposPrincipais.length === 1) {
+    return `Personalizado - ${gruposPrincipais[0]}`;
+  } else if (gruposPrincipais.length === 2) {
+    return `Personalizado - ${gruposPrincipais[0]} e ${gruposPrincipais[1]}`;
+  } else {
+    // 3 ou mais grupos: usar os 2 primeiros + "e mais"
+    return `Personalizado - ${gruposPrincipais[0]}, ${gruposPrincipais[1]} e mais`;
+  }
+}
 
 /**
  * Calcula tempo estimado do treino baseado nos exercícios
@@ -129,6 +161,27 @@ export async function criarTreinoPersonalizado(
       }
     }
   });
+
+  if (!treinoCompleto) {
+    throw new Error('Erro ao buscar treino criado');
+  }
+
+  // Gerar nome baseado nos grupos musculares reais dos exercícios
+  // Se o nome fornecido não começar com "Personalizado -", atualizar para seguir o padrão
+  const gruposReais = extrairGruposMuscularesDeTreino(treinoCompleto);
+  if (gruposReais.length > 0 && !data.nome.startsWith('Personalizado -')) {
+    const nomeGerado = gerarNomeTreinoPersonalizado(gruposReais);
+    
+    // Atualizar nome no banco se diferente
+    if (nomeGerado !== treinoCompleto.nome) {
+      await prisma.treino.update({
+        where: { id: treinoCompleto.id },
+        data: { nome: nomeGerado, tipo: nomeGerado }
+      });
+      treinoCompleto.nome = nomeGerado;
+      treinoCompleto.tipo = nomeGerado;
+    }
+  }
 
   return treinoCompleto;
 }

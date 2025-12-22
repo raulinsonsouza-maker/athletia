@@ -135,6 +135,35 @@ export function validarFiltrosEquipamento(
 }
 
 /**
+ * Extrai grupos musculares principais de um treino baseado nos exercícios
+ * Filtra Cardio, Alongamento e Flexibilidade
+ * Retorna array ordenado de grupos únicos
+ */
+export function extrairGruposMuscularesDeTreino(treino: any): string[] {
+  if (!treino || !treino.exercicios || !Array.isArray(treino.exercicios)) {
+    return [];
+  }
+  
+  const grupos = new Set<string>();
+  
+  treino.exercicios.forEach((exercicioTreino: any) => {
+    const exercicio = exercicioTreino.exercicio || exercicioTreino;
+    const grupoPrincipal = exercicio?.grupoMuscularPrincipal;
+    
+    // Filtrar grupos de força (excluir Cardio, Alongamento, Flexibilidade)
+    if (grupoPrincipal && 
+        grupoPrincipal !== 'Cardio' && 
+        grupoPrincipal !== 'Alongamento' && 
+        grupoPrincipal !== 'Flexibilidade') {
+      grupos.add(grupoPrincipal);
+    }
+  });
+  
+  // Retornar array ordenado
+  return Array.from(grupos).sort();
+}
+
+/**
  * Gera nome de treino baseado em grupos musculares reais
  * Prioriza grupos musculares dos exercícios sobre nomes padrão de splits
  */

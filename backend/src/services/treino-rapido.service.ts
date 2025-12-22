@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma'
 import { GRUPOS_ESPECIFICOS_LISTA } from './inteligencia-treinos.service'
 import { buscarVisuaisAtivos, gerarSlugGrupo } from './grupo-muscular-visual.service'
 import { calcularCargaExercicio } from './workout-intelligence.service'
-import { gerarTreinoUnificado, PerfilCompleto } from './treino-core.service'
+import { gerarTreinoUnificado, PerfilCompleto, extrairGruposMuscularesDeTreino } from './treino-core.service'
 
 /**
  * Gera treino rápido baseado nas escolhas do usuário
@@ -137,9 +137,36 @@ export async function gerarTreinoRapido(
     }
   });
 
+  if (!treinoFinal) {
+    throw new Error('Erro ao buscar treino final');
+  }
+
+  // Atualizar nome baseado nos grupos musculares reais dos exercícios
+  const gruposReais = extrairGruposMuscularesDeTreino(treinoFinal);
+  if (gruposReais.length > 0) {
+    // Formatar nome: "Treino Rápido - [Grupo1], [Grupo2] e mais" ou "Treino Rápido - [Grupo1] e [Grupo2]"
+    let nomeAtualizado: string;
+    if (gruposReais.length === 1) {
+      nomeAtualizado = `Treino Rápido - ${gruposReais[0]}`;
+    } else if (gruposReais.length === 2) {
+      nomeAtualizado = `Treino Rápido - ${gruposReais[0]} e ${gruposReais[1]}`;
+    } else {
+      nomeAtualizado = `Treino Rápido - ${gruposReais[0]}, ${gruposReais[1]} e mais`;
+    }
+    
+    // Atualizar nome no banco se diferente
+    if (nomeAtualizado !== treinoFinal.nome) {
+      await prisma.treino.update({
+        where: { id: treinoFinal.id },
+        data: { nome: nomeAtualizado }
+      });
+      treinoFinal.nome = nomeAtualizado;
+    }
+  }
+
   console.log(`[TREINO RÁPIDO] Treino criado com sucesso! ID: ${treinoGerado.id}`);
 
-  return treinoFinal || treinoCompleto;
+  return treinoFinal;
 }
 
 type VisualItem = Awaited<ReturnType<typeof buscarVisuaisAtivos>>[number]
