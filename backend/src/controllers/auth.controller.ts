@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../lib/prisma';
 import { logAuthFailed, logSecurityEvent, SecurityEventType, SecurityEventSeverity } from '../utils/security-logger';
+import { sendTemplateMessage, normalizePhoneNumber } from '../services/whatsapp.service';
+import { isTemplateApproved } from '../services/whatsapp-template.service';
 
 // Validar variáveis de ambiente críticas para segurança
 if (!process.env.JWT_SECRET) {
@@ -17,6 +19,66 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
+/**
+ * Envia mensagem WhatsApp de boas-vindas após cadastro
+ */
+async function enviarMensagemBoasVindasWhatsApp(
+  userId: string,
+  phoneNumber: string,
+  nome: string
+): Promise<void> {
+  try {
+    // Verificar se integração está ativa
+    const config = await prisma.whatsAppConfig.findFirst({
+      where: { isActive: true }
+    });
+
+    if (!config) {
+      console.log('[WHATSAPP] Integração não configurada, pulando envio de boas-vindas');
+      return;
+    }
+
+    // Verificar se template está aprovado
+    const templateName = 'trial_welcome';
+    const isApproved = await isTemplateApproved(templateName);
+
+    if (!isApproved) {
+      console.warn(`[WHATSAPP] Template ${templateName} não aprovado, pulando envio`);
+      return;
+    }
+
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    const frontendUrl = process.env.FRONTEND_URL || 'https://athletia.site';
+    const loginUrl = `${frontendUrl}/login`;
+
+    // Enviar template
+    const result = await sendTemplateMessage(
+      normalizedPhone,
+      templateName,
+      'pt_BR',
+      [
+        {
+          type: 'body',
+          parameters: [
+            { type: 'text', text: nome },
+            { type: 'text', text: loginUrl }
+          ]
+        }
+      ],
+      userId
+    );
+
+    if (result.success) {
+      console.log(`[WHATSAPP] Mensagem de boas-vindas enviada para ${normalizedPhone}`);
+    } else {
+      console.error(`[WHATSAPP] Erro ao enviar boas-vindas:`, result.error);
+    }
+  } catch (error: any) {
+    console.error('[WHATSAPP] Erro ao enviar mensagem de boas-vindas:', error);
+    // Não lançar erro - não deve quebrar o cadastro
+  }
+}
 
 // Gerar tokens
 const generateTokens = (userId: string) => {
@@ -449,66 +511,6 @@ const generateRandomPassword = (length: number = 12): string => {
 };
 
 // Cadastro pré-pagamento (cria usuário sem plano ativo, sem gerar treinos)
-/**
- * Envia mensagem WhatsApp de boas-vindas após cadastro
- */
-async function enviarMensagemBoasVindasWhatsApp(
-  userId: string,
-  phoneNumber: string,
-  nome: string
-): Promise<void> {
-  try {
-    // Verificar se integração está ativa
-    const config = await prisma.whatsAppConfig.findFirst({
-      where: { isActive: true }
-    });
-
-    if (!config) {
-      console.log('[WHATSAPP] Integração não configurada, pulando envio de boas-vindas');
-      return;
-    }
-
-    // Verificar se template está aprovado
-    const templateName = 'trial_welcome';
-    const isApproved = await isTemplateApproved(templateName);
-
-    if (!isApproved) {
-      console.warn(`[WHATSAPP] Template ${templateName} não aprovado, pulando envio`);
-      return;
-    }
-
-    const normalizedPhone = normalizePhoneNumber(phoneNumber);
-    const frontendUrl = process.env.FRONTEND_URL || 'https://athletia.site';
-    const loginUrl = `${frontendUrl}/login`;
-
-    // Enviar template
-    const result = await sendTemplateMessage(
-      normalizedPhone,
-      templateName,
-      'pt_BR',
-      [
-        {
-          type: 'body',
-          parameters: [
-            { type: 'text', text: nome },
-            { type: 'text', text: loginUrl }
-          ]
-        }
-      ],
-      userId
-    );
-
-    if (result.success) {
-      console.log(`[WHATSAPP] Mensagem de boas-vindas enviada para ${normalizedPhone}`);
-    } else {
-      console.error(`[WHATSAPP] Erro ao enviar boas-vindas:`, result.error);
-    }
-  } catch (error: any) {
-    console.error('[WHATSAPP] Erro ao enviar mensagem de boas-vindas:', error);
-    // Não lançar erro - não deve quebrar o cadastro
-  }
-}
-
 export const cadastroPrePagamento = async (req: Request, res: Response) => {
   try {
     const { nome, telefone, email, senha, onboarding } = req.body;
@@ -1287,63 +1289,4 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Envia mensagem WhatsApp de boas-vindas após cadastro
- */
-async function enviarMensagemBoasVindasWhatsApp(
-  userId: string,
-  phoneNumber: string,
-  nome: string
-): Promise<void> {
-  try {
-    // Verificar se integração está ativa
-    const config = await prisma.whatsAppConfig.findFirst({
-      where: { isActive: true }
-    });
-
-    if (!config) {
-      console.log('[WHATSAPP] Integração não configurada, pulando envio de boas-vindas');
-      return;
-    }
-
-    // Verificar se template está aprovado
-    const templateName = 'trial_welcome';
-    const isApproved = await isTemplateApproved(templateName);
-
-    if (!isApproved) {
-      console.warn(`[WHATSAPP] Template ${templateName} não aprovado, pulando envio`);
-      return;
-    }
-
-    const normalizedPhone = normalizePhoneNumber(phoneNumber);
-    const frontendUrl = process.env.FRONTEND_URL || 'https://athletia.site';
-    const loginUrl = `${frontendUrl}/login`;
-
-    // Enviar template
-    const result = await sendTemplateMessage(
-      normalizedPhone,
-      templateName,
-      'pt_BR',
-      [
-        {
-          type: 'body',
-          parameters: [
-            { type: 'text', text: nome },
-            { type: 'text', text: loginUrl }
-          ]
-        }
-      ],
-      userId
-    );
-
-    if (result.success) {
-      console.log(`[WHATSAPP] Mensagem de boas-vindas enviada para ${normalizedPhone}`);
-    } else {
-      console.error(`[WHATSAPP] Erro ao enviar boas-vindas:`, result.error);
-    }
-  } catch (error: any) {
-    console.error('[WHATSAPP] Erro ao enviar mensagem de boas-vindas:', error);
-    // Não lançar erro - não deve quebrar o cadastro
-  }
-}
 

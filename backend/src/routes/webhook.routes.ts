@@ -361,7 +361,10 @@ async function handleIncomingMessage(message: any, contact?: any) {
     // Identificar usuário pelo número
     const user = await prisma.user.findFirst({
       where: { whatsappPhoneNumber: normalizedPhone },
-      select: { id: true }
+      select: { 
+        id: true,
+        whatsappOptIn: true
+      }
     });
 
     // Buscar ou criar conversa

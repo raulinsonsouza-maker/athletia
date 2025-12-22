@@ -55,11 +55,14 @@ export async function executarCadenciaWhatsApp() {
         }
 
         // Calcular estágio do trial
-        const estagio = calcularEstagioTrial(
+        const estagioRaw = calcularEstagioTrial(
           usuario.dataInicioTrial,
           usuario.dataFimTrial,
           agora
         );
+        
+        // Converter 'EXPIrado' para 'EXPIRED' (enum do Prisma)
+        const estagio = estagioRaw === 'EXPIrado' ? 'EXPIRED' : estagioRaw;
 
         // Buscar ou criar cadência
         let cadence = await prisma.whatsAppCadence.findUnique({
@@ -85,7 +88,7 @@ export async function executarCadenciaWhatsApp() {
         } else if (estagio === 'D3' && !cadence.d3Sent) {
           await enviarMensagemD3(usuario, cadence);
           enviadas++;
-        } else if (estagio === 'EXPIrado' && !cadence.expiredSent) {
+        } else if (estagio === 'EXPIRED' && !cadence.expiredSent) {
           await enviarMensagemExpirado(usuario, cadence);
           enviadas++;
         }
