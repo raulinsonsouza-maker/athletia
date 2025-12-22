@@ -380,7 +380,6 @@ export default function BlogArticleFormModal({
           isFeatured: formData.isFeatured,
           isPillar: formData.isPillar,
           relatedPosts: formData.relatedPosts || [],
-          publishedAt: formData.publishedAt || null,
           featuredImage: formData.featuredImage || null,
           featuredImageAlt: formData.featuredImageAlt.trim() || null
         }
