@@ -8,6 +8,7 @@ import GruposMuscularesAdminList from '../components/GruposMuscularesAdminList'
 import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
 import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
 import TreinoImagensAdmin from '../components/TreinoImagensAdmin'
+import AdminWhatsApp from './AdminWhatsApp'
 import { testarEmailRemarketing, estenderTrial, converterManual, encerrarTrial } from '../services/admin.service'
 import { BarChart } from '../components/ChartWrapper'
 
@@ -170,7 +171,7 @@ export default function Admin() {
   const [loadingEstatisticas, setLoadingEstatisticas] = useState(false)
   const [errorUsuarios, setErrorUsuarios] = useState<string | null>(null)
   const [errorEstatisticas, setErrorEstatisticas] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas' | 'grupos' | 'imagens'>('estatisticas')
+  const [activeTab, setActiveTab] = useState<'usuarios' | 'exercicios' | 'estatisticas' | 'grupos' | 'imagens' | 'whatsapp'>('estatisticas')
   const [usuarios, setUsuarios] = useState<User[]>([])
   const [totalUsuarios, setTotalUsuarios] = useState(0)
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
@@ -798,6 +799,18 @@ export default function Admin() {
                 </svg>
                 Imagens de Treino
               </button>
+              <button
+                onClick={() => setActiveTab('whatsapp')}
+                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'whatsapp'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                  }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                WhatsApp
+              </button>
               <div className="relative group">
                 <button
                   className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
@@ -890,6 +903,7 @@ export default function Admin() {
         </div>
 
         {activeTab === 'imagens' && <TreinoImagensAdmin />}
+        {activeTab === 'whatsapp' && <AdminWhatsApp />}
 
         {
           activeTab === 'usuarios' && (
