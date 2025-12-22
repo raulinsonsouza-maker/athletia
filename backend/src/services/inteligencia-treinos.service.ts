@@ -294,33 +294,21 @@ async function criarTreinoPersistido(params: {
   })
 }
 
+/**
+ * @deprecated Esta função está DEPRECADA. 
+ * 
+ * REGRAS ATUALIZADAS:
+ * - Cardio deve estar SEMPRE no final (não no início)
+ * - Flexibilidade/Alongamento foi REMOVIDO completamente
+ * 
+ * Use gerarTreinoUnificado() de treino-core.service.ts que já aplica essas regras corretamente.
+ */
 async function adicionarCardioEAlongamento(exercicios: TreinoExercicioInput[]) {
-  const lista = [...exercicios]
-  const cardio = await buscarOuCriarExercicioAerobico('Esteira')
-  lista.unshift({
-    exercicioId: cardio.id,
-    ordem: 0,
-    series: 1,
-    repeticoes: '10-15 min',
-    carga: null,
-    rpe: 5,
-    descanso: 0,
-    observacoes: 'Aquecimento'
-  })
-
-  const alongamento = await buscarOuCriarExercicioAlongamento()
-  lista.push({
-    exercicioId: alongamento.id,
-    ordem: lista.length,
-    series: 1,
-    repeticoes: '5-10 min',
-    carga: null,
-    rpe: 3,
-    descanso: 0,
-    observacoes: 'Desaceleração'
-  })
-
-  return lista
+  console.warn('[DEPRECATED] adicionarCardioEAlongamento() está deprecada. Use gerarTreinoUnificado() de treino-core.service.ts');
+  
+  // Retornar apenas exercícios de força (cardio será adicionado depois pela função centralizada)
+  // NÃO adicionar cardio no início nem alongamento
+  return exercicios
 }
 
 // Re-exportar do treino-engine para compatibilidade
@@ -414,6 +402,14 @@ export async function criarTreinoPersonalizadoManual(
         concluido: false
       }
     })
+  }
+
+  // Validar e corrigir estrutura (remover flexibilidade, garantir cardio no final)
+  try {
+    const { corrigirEstruturaTreino } = await import('./treino-core.service');
+    await corrigirEstruturaTreino(treino.id);
+  } catch (error: any) {
+    console.warn(`[TREINO MANUAL] Erro ao corrigir estrutura:`, error.message);
   }
 
   return prisma.treino.findUnique({

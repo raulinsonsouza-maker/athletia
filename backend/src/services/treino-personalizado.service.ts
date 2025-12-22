@@ -151,6 +151,14 @@ export async function criarTreinoPersonalizado(
     exerciciosTreino.push(exercicioTreino);
   }
 
+  // Validar e corrigir estrutura (remover flexibilidade, garantir cardio no final)
+  try {
+    const { corrigirEstruturaTreino } = await import('./treino-core.service');
+    await corrigirEstruturaTreino(treino.id);
+  } catch (error: any) {
+    console.warn(`[TREINO PERSONALIZADO] Erro ao corrigir estrutura:`, error.message);
+  }
+
   // Buscar treino completo
   const treinoCompleto = await prisma.treino.findUnique({
     where: { id: treino.id },

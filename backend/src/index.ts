@@ -387,5 +387,21 @@ app.listen(PORT, () => {
   });
 
   console.log('📧 Job de remarketing configurado para executar a cada 5 minutos');
+
+  // Configurar job de validação semanal de treinos (executa todo domingo às 23:00)
+  const { executarValidacaoSemanal } = await import('./jobs/validar-treinos-semanais');
+  cron.schedule('0 23 * * 0', async () => {
+    try {
+      console.log('[CRON] Executando validação semanal de treinos...');
+      await executarValidacaoSemanal();
+    } catch (error: any) {
+      console.error('[CRON] Erro ao executar validação semanal de treinos:', error);
+      // Não interromper o servidor em caso de erro no job
+    }
+  }, {
+    timezone: 'America/Sao_Paulo'
+  });
+
+  console.log('✅ Job de validação semanal configurado para executar todo domingo às 23:00');
 });
 

@@ -177,143 +177,27 @@ export async function selecionarExercicioAerobicoDoDia(data: Date): Promise<any>
  * Garante que um treino tenha exercícios de cardio e alongamento
  * Adiciona os exercícios faltantes se necessário
  */
+/**
+ * @deprecated Esta função está DEPRECADA. Use corrigirEstruturaTreino() de treino-core.service.ts
+ * 
+ * REGRAS ATUALIZADAS:
+ * - Cardio deve estar SEMPRE no final (não no início)
+ * - Flexibilidade/Alongamento foi REMOVIDO completamente
+ * 
+ * Esta função mantida apenas para compatibilidade, mas redireciona para corrigirEstruturaTreino()
+ */
 export async function garantirCardioEAlongamento(treinoId: string, data: Date): Promise<{ cardioAdicionado: boolean; alongamentoAdicionado: boolean }> {
-  logger.debug(`[INFO] Verificando cardio e alongamento para treino ${treinoId}...`, 'treino.service');
+  console.warn(`[DEPRECATED] garantirCardioEAlongamento() está deprecada. Use corrigirEstruturaTreino() de treino-core.service.ts`);
   
-  // Buscar treino com exercícios
-  const treino = await prisma.treino.findUnique({
-    where: { id: treinoId },
-    include: {
-      exercicios: {
-        include: { exercicio: true },
-        orderBy: { ordem: 'asc' }
-      }
-    }
-  });
-
-  if (!treino) {
-    console.error(`[ERROR] Treino ${treinoId} não encontrado`);
-    return { cardioAdicionado: false, alongamentoAdicionado: false };
-  }
-
-  // Verificar se já tem cardio
-  const temCardio = treino.exercicios.some((ex: any) => 
-    ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
-  );
-
-  // Verificar se já tem alongamento
-  const temAlongamento = treino.exercicios.some((ex: any) => 
-    ex.exercicio?.grupoMuscularPrincipal === 'Flexibilidade'
-  );
-
-  let cardioAdicionado = false;
-  let alongamentoAdicionado = false;
-
-  // Adicionar cardio se não tiver (sempre primeiro - ordem 0)
-  if (!temCardio) {
-    try {
-      const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
-      
-      await prisma.exercicioTreino.create({
-        data: {
-          treinoId: treino.id,
-          exercicioId: exercicioAerobico.id,
-          ordem: -1, // Temporário, será ajustado para 0 depois
-          series: 1,
-          repeticoes: '20-30 min',
-          carga: null,
-          rpe: 5,
-          descanso: 0,
-          concluido: false,
-          observacoes: 'Aquecimento cardiovascular'
-        }
-      });
-      cardioAdicionado = true;
-      logger.debug(`[OK] Exercício de cardio adicionado: ${exercicioAerobico.nome}`, 'treino.service');
-    } catch (error: any) {
-      console.error(`[ERROR] Erro ao adicionar exercício de cardio:`, error.message);
-    }
-  } else {
-    logger.debug(`[OK] Treino já possui exercício de cardio`, 'treino.service');
-  }
-
-  // Adicionar alongamento se não tiver (sempre último)
-  if (!temAlongamento) {
-    try {
-      const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
-      
-      await prisma.exercicioTreino.create({
-        data: {
-          treinoId: treino.id,
-          exercicioId: exercicioAlongamento.id,
-          ordem: 999, // Temporário, será ajustado para último depois
-          series: 1,
-          repeticoes: '5-10 min',
-          carga: null,
-          rpe: 3,
-          descanso: 0,
-          concluido: false,
-          observacoes: 'Alongamento geral de todos os grupos musculares'
-        }
-      });
-      alongamentoAdicionado = true;
-      logger.debug(`[OK] Exercício de alongamento adicionado`, 'treino.service');
-    } catch (error: any) {
-      console.error(`[ERROR] Erro ao adicionar exercício de alongamento:`, error.message);
-    }
-  } else {
-    logger.debug(`[OK] Treino já possui exercício de alongamento`, 'treino.service');
-  }
-
-  // Sempre reordenar exercícios: cardio = 0, força no meio, alongamento = último
-  try {
-    // Buscar todos os exercícios atualizados
-    const todosExercicios = await prisma.exercicioTreino.findMany({
-      where: { treinoId: treino.id },
-      include: { exercicio: true }
-    });
-
-    // Separar por tipo
-    const cardio = todosExercicios.find((ex: any) => 
-      ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
-    );
-    const alongamento = todosExercicios.find((ex: any) => 
-      ex.exercicio?.grupoMuscularPrincipal === 'Flexibilidade'
-    );
-    const exerciciosForca = todosExercicios.filter((ex: any) => {
-      const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
-      return grupo !== 'Cardio' && grupo !== 'Flexibilidade';
-    });
-
-    // Reordenar: cardio primeiro (0), força no meio, alongamento último
-    if (cardio) {
-      await prisma.exercicioTreino.update({
-        where: { id: cardio.id },
-        data: { ordem: 0 }
-      });
-    }
-
-    // Atualizar exercícios de força (ordem 1, 2, 3...)
-    let ordem = 1;
-    for (const ex of exerciciosForca) {
-      await prisma.exercicioTreino.update({
-        where: { id: ex.id },
-        data: { ordem: ordem++ }
-      });
-    }
-
-    // Atualizar alongamento para última ordem
-    if (alongamento) {
-      await prisma.exercicioTreino.update({
-        where: { id: alongamento.id },
-        data: { ordem: ordem }
-      });
-    }
-  } catch (error: any) {
-    console.error(`⚠️ Erro ao reordenar exercícios:`, error.message);
-  }
-
-  return { cardioAdicionado, alongamentoAdicionado };
+  // Usar função centralizada de correção
+  const { corrigirEstruturaTreino } = await import('./treino-core.service');
+  const resultado = await corrigirEstruturaTreino(treinoId);
+  
+  // Retornar formato compatível (mas alongamento sempre false agora)
+  return {
+    cardioAdicionado: resultado.alteracoes.some(a => a.includes('Cardio')),
+    alongamentoAdicionado: false // Sempre false - flexibilidade removida
+  };
 }
 
 /**
@@ -1359,13 +1243,17 @@ export async function buscarTreinosSemanais(userId: string): Promise<any[]> {
     if (exerciciosForca.length > 0) {
       if (!temCardio || !temAlongamento) {
         console.log(`🔧 Corrigindo treino ${new Date(treino.data).toLocaleDateString('pt-BR')}: faltando ${!temCardio ? 'cardio' : ''} ${!temAlongamento ? 'alongamento' : ''}`);
-        const resultado = await garantirCardioEAlongamento(treino.id, new Date(treino.data));
+        // Usar função centralizada de correção (cardio no final, sem flexibilidade)
+        const { corrigirEstruturaTreino } = await import('./treino-core.service');
+        await corrigirEstruturaTreino(treino.id);
         if (resultado.cardioAdicionado || resultado.alongamentoAdicionado) {
           treinosCorrigidos++;
         }
       } else {
         // Mesmo que já existam, garantir ordem correta
-        await garantirCardioEAlongamento(treino.id, new Date(treino.data));
+        // Usar função centralizada de correção (cardio no final, sem flexibilidade)
+        const { corrigirEstruturaTreino } = await import('./treino-core.service');
+        await corrigirEstruturaTreino(treino.id);
       }
     }
   }

@@ -8,7 +8,7 @@
  */
 
 import { prisma } from '../lib/prisma';
-import { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } from './treino.service';
+import { selecionarExercicioAerobicoDoDia } from './treino.service';
 import { obterTodosGruposAtivos, validarEMapearGrupos, normalizarGrupoParaCanonico } from './grupo-muscular.service';
 import { obterGruposDoDia, distribuirDiasSemana, NOMES_SPLITS, LETRAS_TREINO, gerarSplitsInteligentes } from './split-generator.service';
 import { calcularParametrosTreino, calcularConfiguracaoTempo, calcularTempoEstimado, calcularMaxExerciciosPorTempo } from './treino-parameters.service';
@@ -590,97 +590,52 @@ export async function gerarTreinoUnificado(
     });
     
     // Preparar exercícios
+    // REGRA DEFINITIVA: Cardio SEMPRE no final, Flexibilidade/Alongamento REMOVIDO completamente
     const exercicioCardio = await selecionarExercicioAerobicoDoDia(opcoesAjustadas.data);
-    const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
     
+    // SEMPRE incluir cardio (padrão), mas pode ser desabilitado explicitamente
     const incluirCardio = opcoesAjustadas.incluirCardio !== false;
-    const incluirAlongamento = opcoesAjustadas.incluirAlongamento !== false;
+    // SEMPRE desabilitar alongamento/flexibilidade
+    const incluirAlongamento = false;
     
-    // MODO CANÔNICO: Ordem fixa - grupo1(4) → grupo2(4) → cardio(último)
-    // MODO LEGADO: Ordem antiga
-    let todosExerciciosTreino: any[];
-    
-    if (isModoCanonico) {
-      // Ordem canônica: intercalar exercícios entre grupos para permitir descanso
-      // Cardio sempre no final
-      
-      // Aplicar intercalação se temos grupos separados
-      let exerciciosParaTreino: any[];
-      if (exerciciosPorGrupoCanonico && exerciciosPorGrupoCanonico.length === 2) {
-        exerciciosParaTreino = intercalarExerciciosPorGrupo(exerciciosPorGrupoCanonico);
-      } else {
-        // Fallback: usar exerciciosFinais diretamente se não temos grupos separados
-        exerciciosParaTreino = exerciciosFinais;
-      }
-      
-      todosExerciciosTreino = [
-        // Exercícios de força intercalados (ordem 0-7)
-        ...exerciciosParaTreino.map((exercicio, index) => ({
-          treinoId: treinoCriado.id,
-          exercicioId: exercicio.id,
-          ordem: index, // 0-7
-          series: parametros.series,
-          repeticoes: parametros.repeticoes,
-          rpe: parametros.rpe,
-          descanso: parametros.descanso,
-          concluido: false
-        })),
-        // Cardio sempre no final (ordem 8+)
-        ...(incluirCardio ? [{
-          treinoId: treinoCriado.id,
-          exercicioId: exercicioCardio.id,
-          ordem: exerciciosParaTreino.length, // Sempre após os exercícios de força
-          series: 1,
-          repeticoes: `${configTempo.cardio} min`,
-          carga: null,
-          rpe: 5,
-          descanso: 0,
-          concluido: false,
-          observacoes: `Cardio - ${configTempo.cardio} minutos`
-        }] : [])
-      ];
+    // ORDEM UNIFICADA: Exercícios de força primeiro → Cardio no final
+    // Aplicar intercalação se temos grupos separados (modo canônico)
+    let exerciciosParaTreino: any[];
+    if (isModoCanonico && exerciciosPorGrupoCanonico && exerciciosPorGrupoCanonico.length === 2) {
+      exerciciosParaTreino = intercalarExerciciosPorGrupo(exerciciosPorGrupoCanonico);
     } else {
-      // MODO LEGADO: Ordem antiga (cardio primeiro, depois força)
-      todosExerciciosTreino = [
-        // Cardio (se incluído)
-        ...(incluirCardio ? [{
-          treinoId: treinoCriado.id,
-          exercicioId: exercicioCardio.id,
-          ordem: 0,
-          series: 1,
-          repeticoes: `${configTempo.cardio} min`,
-          carga: null,
-          rpe: 5,
-          descanso: 0,
-          concluido: false,
-          observacoes: `Aquecimento cardiovascular - ${configTempo.cardio} minutos`
-        }] : []),
-        // Exercícios de força
-        ...exerciciosFinais.map((exercicio, index) => ({
-          treinoId: treinoCriado.id,
-          exercicioId: exercicio.id,
-          ordem: (incluirCardio ? 1 : 0) + index,
-          series: parametros.series,
-          repeticoes: parametros.repeticoes,
-          rpe: parametros.rpe,
-          descanso: parametros.descanso,
-          concluido: false
-        })),
-        // Alongamento
-        ...(incluirAlongamento ? [{
-          treinoId: treinoCriado.id,
-          exercicioId: exercicioAlongamento.id,
-          ordem: (incluirCardio ? 1 : 0) + exerciciosFinais.length,
-          series: 1,
-          repeticoes: `${configTempo.alongamento} min`,
-          carga: null,
-          rpe: 3,
-          descanso: 0,
-          concluido: false,
-          observacoes: `Alongamento geral - ${configTempo.alongamento} minutos`
-        }] : [])
-      ];
+      exerciciosParaTreino = exerciciosFinais;
     }
+    
+    // Construir lista de exercícios: força primeiro, cardio no final
+    const todosExerciciosTreino: any[] = [
+      // Exercícios de força (ordem 0, 1, 2...)
+      ...exerciciosParaTreino.map((exercicio, index) => ({
+        treinoId: treinoCriado.id,
+        exercicioId: exercicio.id,
+        ordem: index, // Começa em 0
+        series: parametros.series,
+        repeticoes: parametros.repeticoes,
+        rpe: parametros.rpe,
+        descanso: parametros.descanso,
+        concluido: false
+      })),
+      // Cardio SEMPRE no final (última ordem)
+      ...(incluirCardio ? [{
+        treinoId: treinoCriado.id,
+        exercicioId: exercicioCardio.id,
+        ordem: exerciciosParaTreino.length, // Sempre após todos os exercícios de força
+        series: 1,
+        repeticoes: `${configTempo.cardio} min`,
+        carga: null,
+        rpe: 5,
+        descanso: 0,
+        concluido: false,
+        observacoes: `Cardio - ${configTempo.cardio} minutos`
+      }] : [])
+    ];
+    
+    // NÃO ADICIONAR ALONGAMENTO/FLEXIBILIDADE - REMOVIDO COMPLETAMENTE
     
     await tx.exercicioTreino.createMany({
       data: todosExerciciosTreino
@@ -809,7 +764,7 @@ export async function gerarTreinoUnificado(
       tipo,
       tempoMinutos,
       intensidade: 'moderada',
-      momento: isModoCanonico ? 'final' : 'inicio' // No modo canônico, cardio sempre no final
+      momento: 'final' // SEMPRE no final - regra unificada
     };
   }
   
@@ -876,6 +831,207 @@ export async function regenerarTreinos30Dias(
   }
   
   console.log(`[REGENERAÇÃO] ${treinosGerados.length} treinos gerados para usuário ${userId}`);
+}
+
+// ============================================================================
+// VALIDAÇÃO E CORREÇÃO DE TREINOS
+// ============================================================================
+
+/**
+ * Valida estrutura de um treino
+ * Verifica ordem de exercícios, ausência de flexibilidade, grupos corretos, etc.
+ */
+export async function validarEstruturaTreino(treino: any): Promise<{
+  valido: boolean;
+  problemas: string[];
+  detalhes: {
+    temCardio: boolean;
+    cardioNoFinal: boolean;
+    temFlexibilidade: boolean;
+    quantidadeExerciciosForca: number;
+    gruposMusculares: string[];
+  };
+}> {
+  const problemas: string[] = [];
+  
+  if (!treino || !treino.exercicios || !Array.isArray(treino.exercicios)) {
+    return {
+      valido: false,
+      problemas: ['Treino sem exercícios'],
+      detalhes: {
+        temCardio: false,
+        cardioNoFinal: false,
+        temFlexibilidade: false,
+        quantidadeExerciciosForca: 0,
+        gruposMusculares: []
+      }
+    };
+  }
+  
+  const exercicios = treino.exercicios.sort((a: any, b: any) => a.ordem - b.ordem);
+  const exerciciosForca = exercicios.filter((ex: any) => {
+    const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
+    return grupo !== 'Cardio' && grupo !== 'Flexibilidade' && grupo !== 'Alongamento';
+  });
+  
+  const exercicioCardio = exercicios.find((ex: any) => 
+    ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
+  );
+  
+  const exerciciosFlexibilidade = exercicios.filter((ex: any) => {
+    const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
+    return grupo === 'Flexibilidade' || grupo === 'Alongamento';
+  });
+  
+  // Validar quantidade mínima de exercícios de força
+  if (exerciciosForca.length < 4) {
+    problemas.push(`Treino tem apenas ${exerciciosForca.length} exercícios de força (mínimo: 4)`);
+  }
+  
+  // Validar presença de cardio
+  const temCardio = !!exercicioCardio;
+  if (!temCardio) {
+    problemas.push('Treino não possui exercício de cardio');
+  }
+  
+  // Validar posição do cardio (deve estar no final)
+  let cardioNoFinal = false;
+  if (exercicioCardio) {
+    const ultimaOrdem = Math.max(...exercicios.map((ex: any) => ex.ordem));
+    cardioNoFinal = exercicioCardio.ordem === ultimaOrdem;
+    
+    if (!cardioNoFinal) {
+      problemas.push(`Cardio está na ordem ${exercicioCardio.ordem}, mas deveria estar na ordem ${ultimaOrdem} (final)`);
+    }
+  }
+  
+  // Validar ausência de flexibilidade/alongamento
+  const temFlexibilidade = exerciciosFlexibilidade.length > 0;
+  if (temFlexibilidade) {
+    problemas.push(`Treino possui ${exerciciosFlexibilidade.length} exercício(s) de flexibilidade/alongamento (deve ser removido)`);
+  }
+  
+  // Extrair grupos musculares
+  const gruposMusculares = Array.from(new Set(
+    exerciciosForca.map((ex: any) => ex.exercicio?.grupoMuscularPrincipal).filter(Boolean)
+  ));
+  
+  return {
+    valido: problemas.length === 0,
+    problemas,
+    detalhes: {
+      temCardio,
+      cardioNoFinal,
+      temFlexibilidade,
+      quantidadeExerciciosForca: exerciciosForca.length,
+      gruposMusculares
+    }
+  };
+}
+
+/**
+ * Corrige estrutura de um treino
+ * Move cardio para o final, remove flexibilidade, reordena exercícios
+ */
+export async function corrigirEstruturaTreino(treinoId: string): Promise<{
+  corrigido: boolean;
+  alteracoes: string[];
+}> {
+  const alteracoes: string[] = [];
+  
+  // Buscar treino completo
+  const treino = await prisma.treino.findUnique({
+    where: { id: treinoId },
+    include: {
+      exercicios: {
+        include: { exercicio: true },
+        orderBy: { ordem: 'asc' }
+      }
+    }
+  });
+  
+  if (!treino) {
+    throw new Error(`Treino ${treinoId} não encontrado`);
+  }
+  
+  // Separar exercícios
+  const exerciciosForca = treino.exercicios.filter((ex: any) => {
+    const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
+    return grupo !== 'Cardio' && grupo !== 'Flexibilidade' && grupo !== 'Alongamento';
+  });
+  
+  const exercicioCardio = treino.exercicios.find((ex: any) => 
+    ex.exercicio?.grupoMuscularPrincipal === 'Cardio'
+  );
+  
+  const exerciciosFlexibilidade = treino.exercicios.filter((ex: any) => {
+    const grupo = ex.exercicio?.grupoMuscularPrincipal || '';
+    return grupo === 'Flexibilidade' || grupo === 'Alongamento';
+  });
+  
+  // Remover exercícios de flexibilidade/alongamento
+  if (exerciciosFlexibilidade.length > 0) {
+    await prisma.exercicioTreino.deleteMany({
+      where: {
+        id: { in: exerciciosFlexibilidade.map((ex: any) => ex.id) }
+      }
+    });
+    alteracoes.push(`Removidos ${exerciciosFlexibilidade.length} exercício(s) de flexibilidade/alongamento`);
+  }
+  
+  // Reordenar exercícios: força primeiro, cardio no final
+  let ordem = 0;
+  
+  // Atualizar ordem dos exercícios de força
+  for (const ex of exerciciosForca) {
+    await prisma.exercicioTreino.update({
+      where: { id: ex.id },
+      data: { ordem: ordem++ }
+    });
+  }
+  
+  // Mover cardio para o final (se existir)
+  if (exercicioCardio) {
+    const ordemAnterior = exercicioCardio.ordem;
+    await prisma.exercicioTreino.update({
+      where: { id: exercicioCardio.id },
+      data: { ordem: ordem }
+    });
+    
+    if (ordemAnterior !== ordem) {
+      alteracoes.push(`Cardio movido da ordem ${ordemAnterior} para ordem ${ordem} (final)`);
+    }
+  } else {
+    // Se não tem cardio, adicionar no final
+    const exercicioCardioNovo = await selecionarExercicioAerobicoDoDia(treino.data);
+    const configTempo = calcularConfiguracaoTempo('Hipertrofia', {
+      series: 3,
+      repeticoes: '8-12',
+      rpe: 8,
+      descanso: 60
+    });
+    
+    await prisma.exercicioTreino.create({
+      data: {
+        treinoId: treino.id,
+        exercicioId: exercicioCardioNovo.id,
+        ordem: ordem,
+        series: 1,
+        repeticoes: `${configTempo.cardio} min`,
+        carga: null,
+        rpe: 5,
+        descanso: 0,
+        concluido: false,
+        observacoes: `Cardio - ${configTempo.cardio} minutos`
+      }
+    });
+    alteracoes.push(`Cardio adicionado no final (ordem ${ordem})`);
+  }
+  
+  return {
+    corrigido: alteracoes.length > 0,
+    alteracoes
+  };
 }
 
 // Re-exportar funções usadas por outros serviços (fachada única)

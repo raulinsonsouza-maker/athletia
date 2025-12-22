@@ -410,34 +410,12 @@ export async function criarTreinoDoTemplate(
     }
   });
 
-  // Adicionar exercício aeróbico PRIMEIRO (ordem 0)
-  const { selecionarExercicioAerobicoDoDia, buscarOuCriarExercicioAlongamento } = await import('./treino.service');
-  const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
+  // REGRA UNIFICADA: Exercícios de força primeiro, cardio no final, SEM alongamento/flexibilidade
+  const { selecionarExercicioAerobicoDoDia } = await import('./treino.service');
   const exerciciosTreino = [];
   
-  try {
-    const exercicioAerobicoTreino = await prisma.exercicioTreino.create({
-      data: {
-        treinoId: treino.id,
-        exercicioId: exercicioAerobico.id,
-        ordem: 0, // PRIMEIRO - Aquecimento cardiovascular
-        series: 1,
-        repeticoes: '20-30 min',
-        carga: null,
-        rpe: 5,
-        descanso: 0,
-        concluido: false,
-        observacoes: 'Exercício aeróbico - ritmo moderado'
-      }
-    });
-    exerciciosTreino.push(exercicioAerobicoTreino);
-    console.log(`[OK] Exercício aeróbico adicionado PRIMEIRO: ${exercicioAerobico.nome}`);
-  } catch (error: any) {
-    console.error(`[ERROR] Erro ao adicionar exercício aeróbico:`, error.message);
-  }
-
-  // Criar exercícios de força do treino (ordem 1, 2, 3...)
-  let ordem = 1;
+  // Criar exercícios de força do treino (ordem 0, 1, 2...)
+  let ordem = 0;
   for (let i = 0; i < exerciciosAdaptados.length; i++) {
     const templateEx = exerciciosAdaptados[i];
     const exercicio = templateEx.exercicio;
@@ -463,7 +441,7 @@ export async function criarTreinoDoTemplate(
         data: {
           treinoId: treino.id,
           exercicioId: exercicio.id,
-          ordem: ordem++, // Ordem 1, 2, 3... (após o aeróbico)
+          ordem: ordem++, // Ordem 0, 1, 2... (exercícios de força primeiro)
           series: templateEx.series || 3,
           repeticoes: templateEx.repeticoes || '10-12',
           carga: carga && carga > 0 ? carga : null,
@@ -481,29 +459,39 @@ export async function criarTreinoDoTemplate(
     }
   }
 
-  // Adicionar exercício de alongamento no FINAL (última ordem)
-  const exercicioAlongamento = await buscarOuCriarExercicioAlongamento();
+  // Adicionar exercício de cardio no FINAL (última ordem)
+  // REGRA: Cardio sempre no final, alongamento/flexibilidade REMOVIDO
+  const exercicioAerobico = await selecionarExercicioAerobicoDoDia(data);
+  const { calcularConfiguracaoTempo } = await import('./treino-parameters.service');
+  const configTempo = calcularConfiguracaoTempo(perfil?.objetivo || 'Hipertrofia', {
+    series: 3,
+    repeticoes: '8-12',
+    rpe: 8,
+    descanso: 60
+  });
   
   try {
-    const exercicioAlongamentoTreino = await prisma.exercicioTreino.create({
+    const exercicioCardioTreino = await prisma.exercicioTreino.create({
       data: {
         treinoId: treino.id,
-        exercicioId: exercicioAlongamento.id,
+        exercicioId: exercicioAerobico.id,
         ordem: ordem, // ÚLTIMO - Após todos os exercícios de força
         series: 1,
-        repeticoes: '5-10 min',
+        repeticoes: `${configTempo.cardio} min`,
         carga: null,
-        rpe: 3,
+        rpe: 5,
         descanso: 0,
         concluido: false,
-        observacoes: 'Alongamento geral de todos os grupos musculares'
+        observacoes: `Cardio - ${configTempo.cardio} minutos`
       }
     });
-    exerciciosTreino.push(exercicioAlongamentoTreino);
-    console.log(`[OK] Exercício de alongamento adicionado ÚLTIMO`);
+    exerciciosTreino.push(exercicioCardioTreino);
+    console.log(`[OK] Exercício de cardio adicionado no FINAL: ${exercicioAerobico.nome}`);
   } catch (error: any) {
-    console.error(`[ERROR] Erro ao adicionar exercício de alongamento:`, error.message);
+    console.error(`[ERROR] Erro ao adicionar exercício de cardio:`, error.message);
   }
+  
+  // NÃO ADICIONAR ALONGAMENTO/FLEXIBILIDADE - REMOVIDO COMPLETAMENTE
 
   console.log(`[OK] Treino criado: ${treino.id}`);
   console.log(`   Exercícios criados: ${exerciciosTreino.length}`);
@@ -539,7 +527,15 @@ export async function criarTreinoDoTemplate(
   const { garantirCardioEAlongamento } = await import('./treino.service');
   await garantirCardioEAlongamento(treino.id, data);
   
-  // Retornar treino atualizado após garantir cardio/alongamento
+  // Usar função centralizada para garantir estrutura correta (cardio no final, sem flexibilidade)
+  const { corrigirEstruturaTreino } = await import('./treino-core.service');
+  try {
+    await corrigirEstruturaTreino(treino.id);
+  } catch (error: any) {
+    console.warn(`[TEMPLATE] Erro ao corrigir estrutura do treino:`, error.message);
+  }
+  
+  // Retornar treino atualizado
   const treinoFinal = await prisma.treino.findUnique({
     where: { id: treino.id },
     include: {
