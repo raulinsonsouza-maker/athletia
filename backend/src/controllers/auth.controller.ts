@@ -5,6 +5,7 @@ import { prisma } from '../lib/prisma';
 import { logAuthFailed, logSecurityEvent, SecurityEventType, SecurityEventSeverity } from '../utils/security-logger';
 import { sendTemplateMessage, normalizePhoneNumber } from '../services/whatsapp.service';
 import { isTemplateApproved } from '../services/whatsapp-template.service';
+import { safeFindUserByEmail, safeFindUserById } from '../utils/safe-prisma-user';
 
 // Validar variáveis de ambiente críticas para segurança
 if (!process.env.JWT_SECRET) {
@@ -282,9 +283,8 @@ export const login = async (req: Request, res: Response) => {
 
     // Buscar usuário por email (pode ser email ou username)
     // O campo email no banco pode conter tanto email quanto username
-    const user = await prisma.user.findUnique({
-      where: { email: emailNormalizado }
-    });
+    // Usar função segura que funciona mesmo se campos WhatsApp não existirem
+    const user = await safeFindUserByEmail(emailNormalizado);
 
     if (!user) {
       // SEGURANÇA: Logar tentativa de login falhada
@@ -454,9 +454,26 @@ export const refreshToken = async (req: Request, res: Response) => {
     const { refreshToken: token } = req.body;
 
     // Verificar token no banco
+    // Usar select explícito para evitar erro se campos WhatsApp não existirem ainda
     const storedToken = await prisma.refreshToken.findUnique({
       where: { token },
-      include: { user: true }
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            nome: true,
+            role: true,
+            planoAtivo: true,
+            dataExpiracao: true,
+            dataInicioTrial: true,
+            dataFimTrial: true,
+            trialUtilizado: true,
+            ativo: true
+            // Campos WhatsApp omitidos intencionalmente para compatibilidade
+          }
+        }
+      }
     });
 
     if (!storedToken || storedToken.expiresAt < new Date()) {

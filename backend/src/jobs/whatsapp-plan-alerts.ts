@@ -10,9 +10,20 @@ export async function executarAlertasExpiracaoPlano() {
 
   try {
     // Verificar se integração está ativa
-    const config = await prisma.whatsAppConfig.findFirst({
-      where: { isActive: true }
-    });
+    // Usar try-catch para evitar erro se tabela não existir ainda
+    let config;
+    try {
+      config = await prisma.whatsAppConfig.findFirst({
+        where: { isActive: true }
+      });
+    } catch (error: any) {
+      // Se tabela não existe, silenciosamente retornar
+      if (error.code === 'P2021' || error.message?.includes('does not exist')) {
+        console.log('[WHATSAPP PLAN ALERTS] Tabela whatsapp_config não existe ainda');
+        return;
+      }
+      throw error;
+    }
 
     if (!config) {
       console.log('[WHATSAPP PLAN ALERTS] Integração não configurada ou inativa');
