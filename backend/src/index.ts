@@ -24,6 +24,7 @@ import paymentRoutes from './routes/payment.routes';
 import blogRoutes from './routes/blog.routes';
 import sitemapRoutes from './routes/sitemap.routes';
 import testRoutes from './routes/test-routes';
+import whatsappRoutes from './routes/whatsapp.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import cron from 'node-cron';
@@ -340,6 +341,7 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api', sitemapRoutes);
 app.use('/api/test', testRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -403,5 +405,35 @@ app.listen(PORT, () => {
   });
 
   console.log('✅ Job de validação semanal configurado para executar todo domingo às 23:00');
+
+  // Configurar job de cadência WhatsApp (executa a cada hora)
+  cron.schedule('0 * * * *', async () => {
+    try {
+      const { executarCadenciaWhatsApp } = await import('./jobs/whatsapp-cadence');
+      console.log('[CRON] Executando job de cadência WhatsApp...');
+      await executarCadenciaWhatsApp();
+    } catch (error: any) {
+      console.error('[CRON] Erro ao executar job de cadência WhatsApp:', error);
+    }
+  }, {
+    timezone: 'America/Sao_Paulo'
+  });
+
+  console.log('📱 Job de cadência WhatsApp configurado para executar a cada hora');
+
+  // Configurar job de alertas de expiração de plano (executa diariamente às 9h)
+  cron.schedule('0 9 * * *', async () => {
+    try {
+      const { executarAlertasExpiracaoPlano } = await import('./jobs/whatsapp-plan-alerts');
+      console.log('[CRON] Executando job de alertas de expiração de plano...');
+      await executarAlertasExpiracaoPlano();
+    } catch (error: any) {
+      console.error('[CRON] Erro ao executar job de alertas de expiração:', error);
+    }
+  }, {
+    timezone: 'America/Sao_Paulo'
+  });
+
+  console.log('📱 Job de alertas de expiração configurado para executar diariamente às 9h');
 });
 

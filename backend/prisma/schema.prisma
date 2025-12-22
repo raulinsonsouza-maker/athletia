@@ -24,6 +24,9 @@ model User {
   dataInicioTrial       DateTime? @map("data_inicio_trial") // Data de início do trial
   dataFimTrial          DateTime? @map("data_fim_trial") // Data de fim do trial (3 dias após início)
   trialUtilizado        Boolean   @default(false) @map("trial_utilizado") // Flag para garantir apenas um trial por email
+  whatsappOptIn         Boolean   @default(false) @map("whatsapp_opt_in") // Consentimento WhatsApp
+  whatsappOptInDate     DateTime? @map("whatsapp_opt_in_date") // Data do consentimento
+  whatsappPhoneNumber   String?   @unique @map("whatsapp_phone_number") // Número WhatsApp (E.164 format)
   caktoCustomerId       String?   @map("cakto_customer_id") // ID do cliente no Cakto
   caktoTransactionId    String?   @map("cakto_transaction_id") // ID da última transação
   modoTreino            String?   @default("IA") @map("modo_treino") // "IA" ou "MANUAL"
@@ -44,6 +47,10 @@ model User {
   paymentHistory                 PaymentHistory[]
   passwordResetTokens            PasswordResetToken[]
   remarketingEmails              RemarketingEmail[]
+  whatsappConversations          WhatsAppConversation[]
+  whatsappCadence                WhatsAppCadence?
+  whatsappMessages               WhatsAppMessageLog[]
+  adminAuditLogs                 AdminAuditLog[]
 
   @@map("users")
 }
@@ -393,42 +400,42 @@ model RemarketingEmail {
 }
 
 model BlogArticle {
-  id              String   @id @default(uuid())
-  slug            String   @unique
-  title           String
-  subtitle        String?  @db.Text
-  metaTitle       String   @map("meta_title")
-  metaDescription String   @map("meta_description") @db.Text
-  keywords        String[] // Array de palavras-chave
-  author          String   @default("Equipe AthletIA") // Mantido para compatibilidade
-  publishedAt     DateTime? @map("published_at")
-  readingTime     Int      @default(0) @map("reading_time") // em minutos
-  category        String   // Mantido para compatibilidade durante migração
-  featuredImage   String?  @map("featured_image")
-  featuredImageAlt String? @map("featured_image_alt")
-  excerpt         String   @db.Text
-  content         String   @db.Text // Conteúdo em HTML/Markdown
-  ctaTitle        String?  @map("cta_title")
-  ctaDescription  String?  @map("cta_description") @db.Text
-  ctaButtonText   String?  @map("cta_button_text")
-  published       Boolean  @default(false)
-  isFeatured      Boolean  @default(false) @map("is_featured")
-  isPillar        Boolean  @default(false) @map("is_pillar")
-  viewsCount      Int      @default(0) @map("views_count")
-  status          String   @default("draft") // draft, published
-  categoryId      String?  @map("category_id")
-  authorId        String?  @map("author_id")
-  ctaType         String?  @map("cta_type") // cadastro, criar_treino, conhecer_plataforma
-  ctaConfigId     String?  @map("cta_config_id")
-  relatedPosts    String[] @map("related_posts") // Array de IDs de posts relacionados
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id               String    @id @default(uuid())
+  slug             String    @unique
+  title            String
+  subtitle         String?   @db.Text
+  metaTitle        String    @map("meta_title")
+  metaDescription  String    @map("meta_description") @db.Text
+  keywords         String[] // Array de palavras-chave
+  author           String    @default("Equipe AthletIA") // Mantido para compatibilidade
+  publishedAt      DateTime? @map("published_at")
+  readingTime      Int       @default(0) @map("reading_time") // em minutos
+  category         String // Mantido para compatibilidade durante migração
+  featuredImage    String?   @map("featured_image")
+  featuredImageAlt String?   @map("featured_image_alt")
+  excerpt          String    @db.Text
+  content          String    @db.Text // Conteúdo em HTML/Markdown
+  ctaTitle         String?   @map("cta_title")
+  ctaDescription   String?   @map("cta_description") @db.Text
+  ctaButtonText    String?   @map("cta_button_text")
+  published        Boolean   @default(false)
+  isFeatured       Boolean   @default(false) @map("is_featured")
+  isPillar         Boolean   @default(false) @map("is_pillar")
+  viewsCount       Int       @default(0) @map("views_count")
+  status           String    @default("draft") // draft, published
+  categoryId       String?   @map("category_id")
+  authorId         String?   @map("author_id")
+  ctaType          String?   @map("cta_type") // cadastro, criar_treino, conhecer_plataforma
+  ctaConfigId      String?   @map("cta_config_id")
+  relatedPosts     String[]  @map("related_posts") // Array de IDs de posts relacionados
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relacionamentos
   categoryRelation BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   authorRelation   BlogAuthor?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  ctaConfig         BlogCTA?      @relation(fields: [ctaConfigId], references: [id], onDelete: SetNull)
-  heroSettings      BlogSettings? @relation("BlogHeroPost")
+  ctaConfig        BlogCTA?      @relation(fields: [ctaConfigId], references: [id], onDelete: SetNull)
+  heroSettings     BlogSettings? @relation("BlogHeroPost")
 
   @@index([slug])
   @@index([published])
@@ -468,7 +475,7 @@ model BlogCategory {
 model BlogAuthor {
   id           String   @id @default(uuid())
   name         String
-  role         String?  // Especialidade
+  role         String? // Especialidade
   bio          String?  @db.Text
   avatar       String?
   externalLink String?  @map("external_link")
@@ -483,37 +490,195 @@ model BlogAuthor {
 
 model BlogCTA {
   id          String   @id @default(uuid())
-  name        String   // Nome interno
-  type        String   // cadastro, criar_treino, conhecer_plataforma
+  name        String // Nome interno
+  type        String // cadastro, criar_treino, conhecer_plataforma
   title       String
   description String   @db.Text
   buttonText  String   @map("button_text")
   link        String
-  style       String?  // Visual style
+  style       String? // Visual style
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relacionamentos
-  articles BlogArticle[]
+  articles       BlogArticle[]
   globalSettings BlogSettings? @relation("BlogGlobalCTA")
 
   @@map("blog_ctas")
 }
 
 model BlogSettings {
-  id                String   @id @default("global")
-  heroPostId        String?  @unique @map("hero_post_id")
-  featuredCount     Int      @default(3) @map("featured_count")
-  categoriesDisplay  String[] @map("categories_display") // IDs de categorias
-  globalCtaId       String?  @unique @map("global_cta_id")
-  blogIntroText     String?  @map("blog_intro_text") @db.Text
-  globalMetaTitle   String?  @map("global_meta_title")
-  globalMetaDescription String? @map("global_meta_description") @db.Text
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default("global")
+  heroPostId            String?  @unique @map("hero_post_id")
+  featuredCount         Int      @default(3) @map("featured_count")
+  categoriesDisplay     String[] @map("categories_display") // IDs de categorias
+  globalCtaId           String?  @unique @map("global_cta_id")
+  blogIntroText         String?  @map("blog_intro_text") @db.Text
+  globalMetaTitle       String?  @map("global_meta_title")
+  globalMetaDescription String?  @map("global_meta_description") @db.Text
+  updatedAt             DateTime @updatedAt @map("updated_at")
 
   // Relacionamentos
-  heroPost BlogArticle? @relation("BlogHeroPost", fields: [heroPostId], references: [id], onDelete: SetNull)
-  globalCta BlogCTA? @relation("BlogGlobalCTA", fields: [globalCtaId], references: [id], onDelete: SetNull)
+  heroPost  BlogArticle? @relation("BlogHeroPost", fields: [heroPostId], references: [id], onDelete: SetNull)
+  globalCta BlogCTA?     @relation("BlogGlobalCTA", fields: [globalCtaId], references: [id], onDelete: SetNull)
 
   @@map("blog_settings")
+}
+
+// WhatsApp Business API Models
+
+model WhatsAppConfig {
+  id                 String    @id @default(uuid())
+  phoneNumberId      String    @unique @map("phone_number_id") // ID do número na Meta
+  phoneNumber        String    @map("phone_number") // Número formatado
+  accessToken        String    @map("access_token") // Token de acesso (criptografado)
+  webhookVerifyToken String    @map("webhook_verify_token") // Token para verificação de webhook
+  businessAccountId  String    @map("business_account_id") // ID da conta business
+  appId              String?   @map("app_id") // ID do app Meta
+  appSecret          String?   @map("app_secret") // Secret do app (criptografado)
+  apiVersion         String    @default("v21.0") @map("api_version")
+  isActive           Boolean   @default(false) @map("is_active")
+  qualityRating      String?   @map("quality_rating") // GREEN, YELLOW, RED
+  qualityScore       Int?      @map("quality_score") // 0-100
+  lastHealthCheck    DateTime? @map("last_health_check")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@map("whatsapp_config")
+}
+
+enum WhatsAppConversationStatus {
+  open
+  closed
+  pending
+}
+
+model WhatsAppConversation {
+  id                String                     @id @default(uuid())
+  userId            String?                    @map("user_id")
+  phoneNumber       String                     @map("phone_number") // E.164 format
+  status            WhatsAppConversationStatus @default(open)
+  lastMessageAt     DateTime                   @default(now()) @map("last_message_at")
+  lastMessageSentAt DateTime?                  @map("last_message_sent_at")
+  messageCount      Int                        @default(0) @map("message_count")
+  context           Json? // Contexto da conversa (estado do chatbot)
+  optIn             Boolean                    @default(false) @map("opt_in")
+  optInDate         DateTime?                  @map("opt_in_date")
+  optOutDate        DateTime?                  @map("opt_out_date")
+  createdAt         DateTime                   @default(now()) @map("created_at")
+  updatedAt         DateTime                   @updatedAt @map("updated_at")
+
+  user     User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages WhatsAppMessageLog[]
+
+  @@index([phoneNumber])
+  @@index([userId])
+  @@index([status])
+  @@map("whatsapp_conversations")
+}
+
+enum WhatsAppMessageDirection {
+  inbound
+  outbound
+}
+
+enum WhatsAppMessageType {
+  text
+  template
+  image
+  document
+  interactive
+}
+
+enum WhatsAppMessageStatus {
+  pending
+  sent
+  delivered
+  read
+  failed
+}
+
+model WhatsAppMessageLog {
+  id             String                   @id @default(uuid())
+  userId         String?                  @map("user_id")
+  conversationId String?                  @map("conversation_id")
+  direction      WhatsAppMessageDirection
+  messageId      String                   @unique @map("message_id") // ID da mensagem na Meta
+  templateName   String?                  @map("template_name")
+  messageType    WhatsAppMessageType      @map("message_type")
+  messageBody    String                   @map("message_body") @db.Text
+  toPhone        String                   @map("to_phone")
+  fromPhone      String                   @map("from_phone")
+  status         WhatsAppMessageStatus    @default(pending)
+  statusDetails  Json?                    @map("status_details")
+  errorCode      Int?                     @map("error_code")
+  errorMessage   String?                  @map("error_message")
+  metadata       Json?
+  createdAt      DateTime                 @default(now()) @map("created_at")
+  updatedAt      DateTime                 @updatedAt @map("updated_at")
+
+  user         User?                 @relation(fields: [userId], references: [id], onDelete: SetNull)
+  conversation WhatsAppConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([messageId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("whatsapp_message_logs")
+}
+
+enum WhatsAppTrialStage {
+  D1
+  D2
+  D3
+  EXPIRED
+}
+
+model WhatsAppCadence {
+  id                   String             @id @default(uuid())
+  userId               String             @unique @map("user_id")
+  trialStage           WhatsAppTrialStage @map("trial_stage")
+  d1Sent               Boolean            @default(false) @map("d1_sent")
+  d1SentAt             DateTime?          @map("d1_sent_at")
+  d2Sent               Boolean            @default(false) @map("d2_sent")
+  d2SentAt             DateTime?          @map("d2_sent_at")
+  d3Sent               Boolean            @default(false) @map("d3_sent")
+  d3SentAt             DateTime?          @map("d3_sent_at")
+  expiredSent          Boolean            @default(false) @map("expired_sent")
+  expiredSentAt        DateTime?          @map("expired_sent_at")
+  planExpiring3dSent   Boolean            @default(false) @map("plan_expiring_3d_sent")
+  planExpiring3dSentAt DateTime?          @map("plan_expiring_3d_sent_at")
+  planExpiring1dSent   Boolean            @default(false) @map("plan_expiring_1d_sent")
+  planExpiring1dSentAt DateTime?          @map("plan_expiring_1d_sent_at")
+  planExpiredSent      Boolean            @default(false) @map("plan_expired_sent")
+  planExpiredSentAt    DateTime?          @map("plan_expired_sent_at")
+  lastUpdated          DateTime           @default(now()) @updatedAt @map("last_updated")
+  createdAt            DateTime           @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([trialStage])
+  @@map("whatsapp_cadence")
+}
+
+model AdminAuditLog {
+  id           String   @id @default(uuid())
+  adminUserId  String   @map("admin_user_id")
+  action       String // Tipo de ação (ex: "whatsapp_template_created")
+  resourceType String   @map("resource_type") // Tipo de recurso (template, message, config, etc)
+  resourceId   String?  @map("resource_id")
+  details      Json? // Detalhes da ação (antes/depois, etc)
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  adminUser User @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }

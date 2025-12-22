@@ -38,6 +38,7 @@ import {
   salvarImagemPadrao,
   uploadImagemTreinoPadrao
 } from '../controllers/treino-imagem-padrao.controller';
+import whatsappAdminRoutes from './whatsapp-admin.routes';
 import {
   listarArtigos,
   obterArtigo,
@@ -585,6 +586,12 @@ router.put('/blog/artigos/:id/hero', marcarComoHero);
 router.put('/blog/artigos/:id/featured', marcarComoDestaque);
 router.put('/blog/artigos/:id/pillar', marcarComoPilar);
 router.put('/blog/artigos/:id/related', relacionarPosts);
+
+// ============================================================================
+// ROTAS DE ADMINISTRAÇÃO - WHATSAPP
+// ============================================================================
+
+router.use('/whatsapp', whatsappAdminRoutes);
 
 export default router;
 
