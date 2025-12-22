@@ -2,6 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import OptimizedImage from './blog/OptimizedImage'
+import { 
+  calculateReadingTime, 
+  generateMetaDescription, 
+  generateImageAlt, 
+  suggestKeywords,
+  generateSlug as generateSlugUtil
+} from '../utils/blog-form.utils'
 
 interface BlogArticle {
   id: string
@@ -104,6 +111,8 @@ export default function BlogArticleFormModal({
 
   const [keywordsInput, setKeywordsInput] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isDragging, setIsDragging] = useState(false)
+  const [suggestedKeywords, setSuggestedKeywords] = useState<string[]>([])
 
   // Carregar categorias, autores e CTAs ao abrir modal
   useEffect(() => {
@@ -133,18 +142,8 @@ export default function BlogArticleFormModal({
     }
   }
 
-  // Gerar slug a partir do título
-  const generateSlug = (title: string): string => {
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w-]+/g, '')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-  }
+  // Usar função utilitária para gerar slug
+  const generateSlug = generateSlugUtil
 
   // Carregar dados do artigo quando modal abrir
   useEffect(() => {
@@ -210,10 +209,13 @@ export default function BlogArticleFormModal({
       })
       setKeywordsInput('')
       setActiveTab('basico')
+      setMetaDescriptionManuallyEdited(false)
+      setImageAltManuallyEdited(false)
     }
     setErrors({})
     setSelectedImageFile(null)
     setImagePreview(null)
+    setIsDragging(false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -233,29 +235,75 @@ export default function BlogArticleFormModal({
     }
   }, [formData.title])
 
+  // Auto-gerar meta description do excerpt (apenas se vazio e ao criar)
+  const [metaDescriptionManuallyEdited, setMetaDescriptionManuallyEdited] = useState(false)
+  
+  useEffect(() => {
+    if (formData.excerpt && !formData.metaDescription && !metaDescriptionManuallyEdited && isCreating) {
+      const metaDesc = generateMetaDescription(formData.excerpt)
+      setFormData(prev => ({ ...prev, metaDescription: metaDesc }))
+    }
+  }, [formData.excerpt, isCreating, metaDescriptionManuallyEdited])
+
+  // Calcular reading time automaticamente quando conteúdo mudar
+  useEffect(() => {
+    if (formData.content) {
+      const readingTime = calculateReadingTime(formData.content)
+      if (readingTime > 0 && readingTime !== formData.readingTime) {
+        setFormData(prev => ({ ...prev, readingTime }))
+      }
+    } else if (formData.readingTime > 0) {
+      setFormData(prev => ({ ...prev, readingTime: 0 }))
+    }
+  }, [formData.content])
+
+  // Auto-gerar featured image alt do título (apenas se vazio e ao criar)
+  const [imageAltManuallyEdited, setImageAltManuallyEdited] = useState(false)
+  
+  useEffect(() => {
+    if (formData.title && !formData.featuredImageAlt && !selectedImageFile && !imageAltManuallyEdited && isCreating) {
+      const altText = generateImageAlt(formData.title)
+      setFormData(prev => ({ ...prev, featuredImageAlt: altText }))
+    }
+  }, [formData.title, selectedImageFile, isCreating, imageAltManuallyEdited])
+
+  // Sugerir keywords baseadas em título e categoria
+  useEffect(() => {
+    if (formData.title) {
+      const categoryName = categories.find(c => c.id === formData.categoryId)?.name || formData.category
+      const suggestions = suggestKeywords(formData.title, categoryName)
+      setSuggestedKeywords(suggestions)
+    } else {
+      setSuggestedKeywords([])
+    }
+  }, [formData.title, formData.categoryId, formData.category, categories])
+
   const handleKeywordsChange = (value: string) => {
     setKeywordsInput(value)
     const keywords = value.split(',').map(k => k.trim()).filter(k => k.length > 0)
     setFormData(prev => ({ ...prev, keywords }))
   }
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const validateImageFile = (file: File): boolean => {
     // Validar tamanho (5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       showToast('Arquivo muito grande. Tamanho máximo: 5MB', 'error')
-      return
+      return false
     }
 
     // Validar tipo
     const validTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!validTypes.includes(file.type)) {
       showToast('Formato inválido. Use JPG, PNG ou WEBP', 'error')
-      return
+      return false
     }
+
+    return true
+  }
+
+  const processImageFile = (file: File) => {
+    if (!validateImageFile(file)) return
 
     setSelectedImageFile(file)
     
@@ -263,8 +311,42 @@ export default function BlogArticleFormModal({
     const reader = new FileReader()
     reader.onloadend = () => {
       setImagePreview(reader.result as string)
+      // Auto-gerar alt text se vazio ou não foi editado manualmente
+      if (!formData.featuredImageAlt || (!imageAltManuallyEdited && isCreating)) {
+        const altText = generateImageAlt(formData.title || file.name.replace(/\.[^/.]+$/, ''))
+        setFormData(prev => ({ ...prev, featuredImageAlt: altText }))
+      }
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    processImageFile(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      processImageFile(file)
+    }
   }
 
   const handleRemoveImage = () => {
@@ -342,7 +424,6 @@ export default function BlogArticleFormModal({
         formDataToSend.append('isFeatured', String(formData.isFeatured))
         formDataToSend.append('isPillar', String(formData.isPillar))
         formDataToSend.append('relatedPosts', JSON.stringify(formData.relatedPosts || []))
-        formDataToSend.append('publishedAt', formData.publishedAt || '')
         formDataToSend.append('featuredImageAlt', formData.featuredImageAlt.trim() || '')
         formDataToSend.append('imagem', selectedImageFile)
 
@@ -484,11 +565,27 @@ export default function BlogArticleFormModal({
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className={`input-field w-full ${errors.title ? 'border-red-400' : ''}`}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, title: e.target.value }))
+                      // Limpar erro quando usuário começar a digitar
+                      if (errors.title) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev }
+                          delete newErrors.title
+                          return newErrors
+                        })
+                      }
+                    }}
+                    className={`input-field w-full ${
+                      errors.title ? 'border-red-400' : 
+                      formData.title.trim().length > 0 ? 'border-green-400/50' : ''
+                    }`}
                     placeholder="Ex: Guia Completo de Treino para Iniciantes"
                   />
                   {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title}</p>}
+                  {!errors.title && formData.title.trim().length > 0 && (
+                    <p className="text-green-400 text-xs mt-1">✓ Campo válido</p>
+                  )}
                 </div>
 
                 <div>
@@ -601,17 +698,36 @@ export default function BlogArticleFormModal({
                   </label>
                   <textarea
                     value={formData.excerpt}
-                    onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
-                    className={`input-field w-full min-h-[100px] ${errors.excerpt ? 'border-red-400' : ''}`}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, excerpt: e.target.value }))
+                      // Limpar erro quando usuário começar a digitar
+                      if (errors.excerpt) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev }
+                          delete newErrors.excerpt
+                          return newErrors
+                        })
+                      }
+                    }}
+                    className={`input-field w-full min-h-[100px] ${
+                      errors.excerpt ? 'border-red-400' : 
+                      formData.excerpt.trim().length > 0 ? 'border-green-400/50' : ''
+                    }`}
                     placeholder="Breve descrição do artigo que aparecerá na listagem..."
                   />
                   {errors.excerpt && <p className="text-red-400 text-xs mt-1">{errors.excerpt}</p>}
+                  {!errors.excerpt && formData.excerpt.trim().length > 0 && (
+                    <p className="text-green-400 text-xs mt-1">✓ Campo válido</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-light mb-2">
                       Tempo de Leitura (minutos)
+                      {formData.content && (
+                        <span className="text-xs text-primary ml-2">(calculado automaticamente)</span>
+                      )}
                     </label>
                     <input
                       type="number"
@@ -619,7 +735,13 @@ export default function BlogArticleFormModal({
                       onChange={(e) => setFormData(prev => ({ ...prev, readingTime: parseInt(e.target.value) || 0 }))}
                       className="input-field w-full"
                       min="0"
+                      readOnly={!!formData.content}
                     />
+                    {formData.content && (
+                      <p className="text-xs text-light-muted mt-1">
+                        Baseado em ~200 palavras por minuto
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -792,29 +914,62 @@ export default function BlogArticleFormModal({
                     type="text"
                     value={formData.metaTitle}
                     onChange={(e) => setFormData(prev => ({ ...prev, metaTitle: e.target.value }))}
-                    className="input-field w-full"
+                    className={`input-field w-full ${
+                      formData.metaTitle.length > 60 ? 'border-yellow-400' : 
+                      formData.metaTitle.length >= 50 && formData.metaTitle.length <= 60 ? 'border-green-400' : ''
+                    }`}
                     placeholder="Título otimizado para SEO (50-60 caracteres)"
                     maxLength={60}
                   />
-                  <p className="text-xs text-light-muted mt-1">
-                    {formData.metaTitle.length}/60 caracteres
-                  </p>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className={`text-xs ${
+                      formData.metaTitle.length > 60 ? 'text-yellow-400' : 
+                      formData.metaTitle.length >= 50 && formData.metaTitle.length <= 60 ? 'text-green-400' : 
+                      'text-light-muted'
+                    }`}>
+                      {formData.metaTitle.length}/60 caracteres
+                    </p>
+                    {formData.metaTitle.length > 0 && formData.metaTitle.length < 50 && (
+                      <p className="text-xs text-yellow-400">Recomendado: 50-60 caracteres</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-light mb-2">
                     Meta Description (Descrição SEO)
+                    {!formData.metaDescription && formData.excerpt && (
+                      <span className="text-xs text-primary ml-2">(gerado automaticamente do resumo)</span>
+                    )}
                   </label>
                   <textarea
                     value={formData.metaDescription}
-                    onChange={(e) => setFormData(prev => ({ ...prev, metaDescription: e.target.value }))}
-                    className="input-field w-full min-h-[100px]"
+                    onChange={(e) => {
+                      setMetaDescriptionManuallyEdited(true)
+                      const value = e.target.value
+                      // Limitar a 160 caracteres
+                      const limited = value.length > 160 ? value.substring(0, 160) : value
+                      setFormData(prev => ({ ...prev, metaDescription: limited }))
+                    }}
+                    className={`input-field w-full min-h-[100px] ${
+                      formData.metaDescription.length > 160 ? 'border-yellow-400' : 
+                      formData.metaDescription.length >= 150 && formData.metaDescription.length <= 160 ? 'border-green-400' : ''
+                    }`}
                     placeholder="Descrição otimizada para SEO (150-160 caracteres)"
                     maxLength={160}
                   />
-                  <p className="text-xs text-light-muted mt-1">
-                    {formData.metaDescription.length}/160 caracteres
-                  </p>
+                  <div className="flex items-center justify-between mt-1">
+                    <p className={`text-xs ${
+                      formData.metaDescription.length > 160 ? 'text-yellow-400' : 
+                      formData.metaDescription.length >= 150 && formData.metaDescription.length <= 160 ? 'text-green-400' : 
+                      'text-light-muted'
+                    }`}>
+                      {formData.metaDescription.length}/160 caracteres
+                    </p>
+                    {formData.metaDescription.length > 0 && formData.metaDescription.length < 150 && (
+                      <p className="text-xs text-yellow-400">Recomendado: 150-160 caracteres</p>
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -828,16 +983,55 @@ export default function BlogArticleFormModal({
                     className="input-field w-full"
                     placeholder="treino, fitness, emagrecimento, hipertrofia (separadas por vírgula)"
                   />
+                  
+                  {/* Sugestões de keywords */}
+                  {suggestedKeywords.length > 0 && formData.keywords.length === 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-light-muted mb-2">Sugestões baseadas no título:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestedKeywords.map((keyword, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => {
+                              const newKeywords = [...formData.keywords, keyword]
+                              setFormData(prev => ({ ...prev, keywords: newKeywords }))
+                              setKeywordsInput(newKeywords.join(', '))
+                            }}
+                            className="px-3 py-1 bg-grey/20 text-light rounded-full text-xs font-semibold hover:bg-primary/20 hover:text-primary transition-colors border border-grey/30"
+                          >
+                            + {keyword}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Keywords selecionadas */}
                   {formData.keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {formData.keywords.map((keyword, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-semibold"
-                        >
-                          {keyword}
-                        </span>
-                      ))}
+                    <div className="mt-2">
+                      <p className="text-xs text-light-muted mb-2">Palavras-chave selecionadas:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.keywords.map((keyword, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-primary/20 text-primary rounded-full text-xs font-semibold flex items-center gap-2"
+                          >
+                            {keyword}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newKeywords = formData.keywords.filter((_, i) => i !== index)
+                                setFormData(prev => ({ ...prev, keywords: newKeywords }))
+                                setKeywordsInput(newKeywords.join(', '))
+                              }}
+                              className="hover:text-red-400"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -942,11 +1136,33 @@ export default function BlogArticleFormModal({
                   
                   <textarea
                     value={formData.content}
-                    onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                    className={`input-field w-full min-h-[400px] font-mono text-sm ${errors.content ? 'border-red-400' : ''}`}
+                    onChange={(e) => {
+                      setFormData(prev => ({ ...prev, content: e.target.value }))
+                      // Limpar erro quando usuário começar a digitar
+                      if (errors.content) {
+                        setErrors(prev => {
+                          const newErrors = { ...prev }
+                          delete newErrors.content
+                          return newErrors
+                        })
+                      }
+                    }}
+                    className={`input-field w-full min-h-[400px] font-mono text-sm ${
+                      errors.content ? 'border-red-400' : 
+                      formData.content.trim().length > 0 ? 'border-green-400/50' : ''
+                    }`}
                     placeholder="Digite o conteúdo do artigo em HTML ou Markdown..."
                   />
                   {errors.content && <p className="text-red-400 text-xs mt-1">{errors.content}</p>}
+                  {!errors.content && formData.content.trim().length > 0 && (
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-green-400 text-xs">✓ Campo válido</p>
+                      <p className="text-light-muted text-xs">
+                        {formData.content.split(/\s+/).filter(w => w.length > 0).length} palavras • 
+                        {' '}{calculateReadingTime(formData.content)} min de leitura
+                      </p>
+                    </div>
+                  )}
                   <p className="text-xs text-light-muted mt-1">
                     Use HTML para formatar o conteúdo. Use os botões acima para inserir blocos especiais. H2 e H3 serão usados para gerar o índice automático.
                   </p>
@@ -1028,20 +1244,57 @@ export default function BlogArticleFormModal({
                   </div>
                 )}
 
-                {/* Upload de imagem */}
+                {/* Upload de imagem com drag & drop */}
                 <div>
                   <label className="block text-sm font-medium text-light mb-2">
                     {formData.featuredImage ? 'Substituir Imagem de Capa' : 'Selecionar Imagem de Capa'}
                   </label>
-                  <div className="relative">
+                  
+                  {/* Área de drag & drop */}
+                  <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                      isDragging
+                        ? 'border-primary bg-primary/10'
+                        : 'border-grey/30 hover:border-grey/50'
+                    }`}
+                  >
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/jpeg,image/png,image/webp"
                       onChange={handleImageSelect}
                       disabled={saving}
-                      className="input-field w-full"
+                      className="hidden"
                     />
+                    
+                    {!imagePreview && !formData.featuredImage && (
+                      <div className="space-y-4">
+                        <div className="flex justify-center">
+                          <svg className="w-12 h-12 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm text-light mb-1">
+                            Arraste e solte uma imagem aqui ou{' '}
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="text-primary hover:underline font-medium"
+                            >
+                              clique para selecionar
+                            </button>
+                          </p>
+                          <p className="text-xs text-light-muted">
+                            Formatos aceitos: JPG, PNG, WEBP • Tamanho máximo: 5MB
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
                     {selectedImageFile && (
                       <div className="mt-2 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                         <div className="flex items-center gap-2">
@@ -1054,24 +1307,37 @@ export default function BlogArticleFormModal({
                               {(selectedImageFile.size / 1024 / 1024).toFixed(2)} MB • Pronto para salvar
                             </p>
                           </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="text-red-400 hover:text-red-300"
+                            title="Remover imagem"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-light-muted mt-1">
-                    Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 5MB
-                  </p>
                 </div>
 
                 {/* Texto alternativo */}
                 <div>
                   <label className="block text-sm font-medium text-light mb-2">
                     Texto Alternativo da Imagem (Alt Text)
+                    {formData.title && !formData.featuredImageAlt && (
+                      <span className="text-xs text-primary ml-2">(gerado automaticamente do título)</span>
+                    )}
                   </label>
                   <input
                     type="text"
                     value={formData.featuredImageAlt}
-                    onChange={(e) => setFormData(prev => ({ ...prev, featuredImageAlt: e.target.value }))}
+                    onChange={(e) => {
+                      setImageAltManuallyEdited(true)
+                      setFormData(prev => ({ ...prev, featuredImageAlt: e.target.value }))
+                    }}
                     className="input-field w-full"
                     placeholder="Descrição da imagem para acessibilidade e SEO"
                   />
