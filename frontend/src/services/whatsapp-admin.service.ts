@@ -277,7 +277,7 @@ export const whatsappAdminService = {
     oauthUrl: string
     message: string
   }> {
-    const response = await api.get('/whatsapp/onboarding/start')
+    const response = await api.get('/admin/whatsapp/onboarding/start')
     return response.data
   }
 }

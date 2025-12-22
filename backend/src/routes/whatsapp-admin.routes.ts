@@ -13,7 +13,9 @@ import {
   getCadenceStats,
   listCadenceUsers,
   listUsers,
-  manageOptIn
+  manageOptIn,
+  startOnboardingAdmin,
+  handleOAuthCallbackAdmin
 } from '../controllers/whatsapp-admin.controller';
 
 const router = Router();
@@ -25,6 +27,11 @@ router.use(requireAdmin);
 router.get('/status', getStatus);
 router.get('/config', getConfig);
 router.post('/test-connection', testConnection);
+
+// Onboarding (admin)
+router.get('/onboarding/start', startOnboardingAdmin);
+router.get('/onboarding/callback', handleOAuthCallbackAdmin);
+router.post('/onboarding/callback', handleOAuthCallbackAdmin);
 
 // Templates
 router.get('/templates', listTemplatesAdmin);

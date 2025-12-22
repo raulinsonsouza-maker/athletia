@@ -5,6 +5,13 @@ import { getPhoneNumberInfo } from '../services/whatsapp.service';
 import { listTemplates, createTemplate, deleteTemplate, getTemplateStatus } from '../services/whatsapp-template.service';
 import { sendTextMessage, sendTemplateMessage } from '../services/whatsapp.service';
 import { processIncomingMessage } from '../services/whatsapp-chatbot.service';
+import {
+  generateOAuthUrl,
+  exchangeCodeForToken,
+  getBusinessAccountInfo,
+  saveWhatsAppConfig,
+  setupWebhook
+} from '../services/whatsapp-embedded-signup.service';
 
 /**
  * Obtém status completo da integração
@@ -781,6 +788,105 @@ export const manageOptIn = async (req: AuthRequest, res: Response) => {
     res.status(500).json({
       success: false,
       error: error.message || 'Erro ao gerenciar opt-in'
+    });
+  }
+};
+
+/**
+ * Inicia processo de onboarding (admin)
+ */
+export const startOnboardingAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const state = req.query.state as string | undefined;
+    const oauthUrl = generateOAuthUrl(state);
+
+    res.json({
+      success: true,
+      oauthUrl,
+      message: 'Redirecione o usuário para a URL de autorização'
+    });
+  } catch (error: any) {
+    console.error('Erro ao iniciar onboarding:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erro ao iniciar onboarding'
+    });
+  }
+};
+
+/**
+ * Callback OAuth (admin)
+ */
+export const handleOAuthCallbackAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { code, state } = req.query;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Código de autorização não fornecido'
+      });
+    }
+
+    // Trocar código por token
+    const tokenData = await exchangeCodeForToken(code as string);
+    if (!tokenData) {
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao obter token de acesso'
+      });
+    }
+
+    // Obter informações da conta
+    const accountInfo = await getBusinessAccountInfo(tokenData.accessToken);
+    if (!accountInfo) {
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao obter informações da conta'
+      });
+    }
+
+    // Salvar configuração
+    const saved = await saveWhatsAppConfig(
+      accountInfo.phoneNumberId,
+      accountInfo.phoneNumber,
+      tokenData.accessToken,
+      accountInfo.businessAccountId
+    );
+
+    if (!saved) {
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao salvar configuração'
+      });
+    }
+
+    // Configurar webhook
+    await setupWebhook(tokenData.accessToken, accountInfo.phoneNumberId);
+
+    // Log de auditoria
+    await prisma.adminAuditLog.create({
+      data: {
+        adminUserId: req.userId!,
+        action: 'whatsapp_onboarding_completed',
+        resourceType: 'whatsapp_config',
+        resourceId: accountInfo.phoneNumberId,
+        details: { phoneNumber: accountInfo.phoneNumber },
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'] || null
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'WhatsApp configurado com sucesso!',
+      phoneNumber: accountInfo.phoneNumber
+    });
+  } catch (error: any) {
+    console.error('Erro no callback OAuth:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Erro ao processar callback'
     });
   }
 };
