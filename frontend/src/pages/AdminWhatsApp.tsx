@@ -12,14 +12,14 @@ export default function AdminWhatsApp() {
   // Messages
   const [messages, setMessages] = useState<WhatsAppMessage[]>([])
   const [loadingMessages, setLoadingMessages] = useState(false)
-  const [messagesPage, setMessagesPage] = useState(1)
-  const [messagesTotal, setMessagesTotal] = useState(0)
+  const [messagesPage] = useState(1)
+  // const [messagesTotal, setMessagesTotal] = useState(0) // Para uso futuro com paginação
   
   // Conversations
   const [conversations, setConversations] = useState<WhatsAppConversation[]>([])
   const [loadingConversations, setLoadingConversations] = useState(false)
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
-  const [conversationDetails, setConversationDetails] = useState<any>(null)
+  // const [selectedConversation, setSelectedConversation] = useState<string | null>(null) // Para uso futuro
+  // const [conversationDetails, setConversationDetails] = useState<any>(null) // Para uso futuro
   
   // Cadence
   const [cadenceStats, setCadenceStats] = useState<any>(null)
@@ -66,7 +66,7 @@ export default function AdminWhatsApp() {
     try {
       const data = await whatsappAdminService.listMessages({ page: messagesPage, limit: 50 })
       setMessages(data.messages)
-      setMessagesTotal(data.pagination.total)
+      // setMessagesTotal(data.pagination.total) // Para uso futuro com paginação
     } catch (error: any) {
       showToast('Erro ao carregar mensagens', 'error')
     } finally {
@@ -384,7 +384,10 @@ export default function AdminWhatsApp() {
                   <div
                     key={conv.id}
                     className="border border-white/10 rounded-lg p-4 hover:bg-white/5 cursor-pointer"
-                    onClick={() => setSelectedConversation(conv.id)}
+                    onClick={() => {
+                      // TODO: Implementar visualização de detalhes da conversa
+                      console.log('Conversa selecionada:', conv.id)
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div>
