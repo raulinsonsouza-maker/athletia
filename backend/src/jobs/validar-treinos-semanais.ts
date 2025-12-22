@@ -192,7 +192,8 @@ async function regenerarTreinos(
       await gerarTreinoUnificado({
         userId,
         data,
-        gruposMusculares: grupos,
+        tipo: 'IA',
+        gruposSelecionados: grupos,
         perfil
       });
       

@@ -912,8 +912,8 @@ export async function validarEstruturaTreino(treino: any): Promise<{
   }
   
   // Extrair grupos musculares
-  const gruposMusculares = Array.from(new Set(
-    exerciciosForca.map((ex: any) => ex.exercicio?.grupoMuscularPrincipal).filter(Boolean)
+  const gruposMusculares: string[] = Array.from(new Set(
+    exerciciosForca.map((ex: any) => ex.exercicio?.grupoMuscularPrincipal).filter(Boolean) as string[]
   ));
   
   return {

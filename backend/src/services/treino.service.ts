@@ -1245,8 +1245,8 @@ export async function buscarTreinosSemanais(userId: string): Promise<any[]> {
         console.log(`🔧 Corrigindo treino ${new Date(treino.data).toLocaleDateString('pt-BR')}: faltando ${!temCardio ? 'cardio' : ''} ${!temAlongamento ? 'alongamento' : ''}`);
         // Usar função centralizada de correção (cardio no final, sem flexibilidade)
         const { corrigirEstruturaTreino } = await import('./treino-core.service');
-        await corrigirEstruturaTreino(treino.id);
-        if (resultado.cardioAdicionado || resultado.alongamentoAdicionado) {
+        const resultado = await corrigirEstruturaTreino(treino.id);
+        if (resultado.corrigido) {
           treinosCorrigidos++;
         }
       } else {

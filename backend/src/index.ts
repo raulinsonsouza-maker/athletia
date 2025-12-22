@@ -389,9 +389,9 @@ app.listen(PORT, () => {
   console.log('📧 Job de remarketing configurado para executar a cada 5 minutos');
 
   // Configurar job de validação semanal de treinos (executa todo domingo às 23:00)
-  const { executarValidacaoSemanal } = await import('./jobs/validar-treinos-semanais');
   cron.schedule('0 23 * * 0', async () => {
     try {
+      const { executarValidacaoSemanal } = await import('./jobs/validar-treinos-semanais');
       console.log('[CRON] Executando validação semanal de treinos...');
       await executarValidacaoSemanal();
     } catch (error: any) {
