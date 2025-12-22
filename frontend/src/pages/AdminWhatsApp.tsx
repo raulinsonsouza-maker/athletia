@@ -8,6 +8,7 @@ export default function AdminWhatsApp() {
   const [status, setStatus] = useState<WhatsAppStatus | null>(null)
   const [config, setConfig] = useState<WhatsAppConfig | null>(null)
   const [activeSection, setActiveSection] = useState<'dashboard' | 'messages' | 'conversations' | 'cadence' | 'users' | 'templates'>('dashboard')
+  const [configError, setConfigError] = useState<{ message: string; missing?: any } | null>(null)
   
   // Messages
   const [messages, setMessages] = useState<WhatsAppMessage[]>([])
@@ -36,6 +37,7 @@ export default function AdminWhatsApp() {
 
   const loadData = async () => {
     setLoading(true)
+    setConfigError(null) // Limpar erro ao recarregar
     try {
       const [statusData, configData] = await Promise.all([
         whatsappAdminService.getStatus().catch(() => ({ isActive: false })),
@@ -134,10 +136,14 @@ export default function AdminWhatsApp() {
       if (result.success && result.oauthUrl) {
         window.location.href = result.oauthUrl
       } else if (result.error || !result.success) {
-        // Se for erro de configuração, mostrar mensagem detalhada
-        if (result.message && result.message.includes('variáveis de ambiente')) {
+        // Se for erro de configuração, salvar para exibir no dashboard
+        if (result.message && (result.message.includes('variáveis de ambiente') || result.message.includes('Configuração incompleta'))) {
+          setConfigError({
+            message: result.message,
+            missing: result.missing
+          })
           showToast(
-            'Configuração incompleta: Configure WHATSAPP_APP_ID e WHATSAPP_REDIRECT_URI no arquivo .env do backend',
+            'Configuração incompleta: Verifique as variáveis de ambiente no servidor',
             'error'
           )
         } else {
@@ -145,7 +151,17 @@ export default function AdminWhatsApp() {
         }
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao iniciar onboarding'
+      const errorData = error.response?.data
+      const errorMessage = errorData?.message || errorData?.error || 'Erro ao iniciar onboarding'
+      
+      // Se for erro de configuração, salvar para exibir no dashboard
+      if (errorMessage.includes('variáveis de ambiente') || errorMessage.includes('Configuração incompleta')) {
+        setConfigError({
+          message: errorMessage,
+          missing: errorData?.missing
+        })
+      }
+      
       showToast(errorMessage, 'error')
     }
   }
@@ -222,6 +238,39 @@ export default function AdminWhatsApp() {
       <div className="space-y-6">
         {activeSection === 'dashboard' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Configuração Card - Mostrar quando houver erro de configuração */}
+            {configError && (
+              <div className="card col-span-full border-2 border-yellow-500/50 bg-yellow-500/10">
+                <div className="flex items-start gap-4">
+                  <div className="text-yellow-500 text-2xl">⚠️</div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold mb-2 text-yellow-400">Configuração Necessária</h3>
+                    <p className="text-white/80 mb-4">{configError.message}</p>
+                    <div className="bg-dark-lighter rounded-lg p-4 space-y-2">
+                      <p className="text-sm font-semibold text-white/90 mb-2">Configure no arquivo <code className="bg-dark px-2 py-1 rounded">.env</code> do backend:</p>
+                      <ul className="space-y-1 text-sm text-white/70">
+                        {configError.missing?.WHATSAPP_APP_ID && (
+                          <li className="flex items-center gap-2">
+                            <span className="text-red-400">✗</span>
+                            <code className="bg-dark px-2 py-1 rounded">WHATSAPP_APP_ID="seu-app-id"</code>
+                          </li>
+                        )}
+                        {configError.missing?.WHATSAPP_REDIRECT_URI && (
+                          <li className="flex items-center gap-2">
+                            <span className="text-red-400">✗</span>
+                            <code className="bg-dark px-2 py-1 rounded">WHATSAPP_REDIRECT_URI="https://athletia.site/api/admin/whatsapp/onboarding/callback"</code>
+                          </li>
+                        )}
+                      </ul>
+                      <p className="text-xs text-white/60 mt-3">
+                        Após configurar, reinicie o servidor backend com: <code className="bg-dark px-2 py-1 rounded">pm2 restart athletia-backend</code>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Status Card */}
             <div className="card">
               <h3 className="text-lg font-semibold mb-4">Status da Integração</h3>
