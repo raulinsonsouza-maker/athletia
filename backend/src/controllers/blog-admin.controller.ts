@@ -240,6 +240,31 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Garantir sincronização entre published e status
+    // Lógica: se qualquer um indicar "publicado", ambos devem estar como "publicado"
+    const isPublished = published === true || published === 'true';
+    const isStatusPublished = status === 'published';
+    
+    // Se status='published' OU published=true, então ambos devem ser true/published
+    const syncedPublished = isStatusPublished || isPublished;
+    const syncedStatus = syncedPublished ? 'published' : (status || 'draft');
+    
+    // Definir publishedAt se estiver publicando
+    let finalPublishedAt = null;
+    if (publishedAt && publishedAt.trim()) {
+      finalPublishedAt = new Date(publishedAt);
+    } else if (syncedPublished) {
+      finalPublishedAt = new Date();
+    }
+
+    console.log('[Blog] Criando artigo:', {
+      title: title.trim(),
+      slug,
+      published: syncedPublished,
+      status: syncedStatus,
+      publishedAt: finalPublishedAt
+    });
+
     const artigo = await prisma.blogArticle.create({
       data: {
         slug,
@@ -262,13 +287,21 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
         ctaDescription: ctaDescription?.trim() || null,
         ctaButtonText: ctaButtonText?.trim() || null,
         readingTime: readingTime ? parseInt(String(readingTime)) : 0,
-        published: published === true || published === 'true',
-        status: status || (published ? 'published' : 'draft'),
+        published: syncedPublished,
+        status: syncedStatus,
         isFeatured: isFeatured || false,
         isPillar: isPillar || false,
         relatedPosts: Array.isArray(relatedPosts) ? relatedPosts : [],
-        publishedAt: publishedAt ? new Date(publishedAt) : (published ? new Date() : null)
+        publishedAt: finalPublishedAt
       }
+    });
+
+    console.log('[Blog] Artigo criado com sucesso:', {
+      id: artigo.id,
+      slug: artigo.slug,
+      published: artigo.published,
+      status: artigo.status,
+      publishedAt: artigo.publishedAt
     });
 
     // Invalidar cache do blog
@@ -454,25 +487,67 @@ export const atualizarArtigo = async (req: AuthRequest, res: Response) => {
     if (ctaDescription !== undefined) updateData.ctaDescription = ctaDescription?.trim() || null;
     if (ctaButtonText !== undefined) updateData.ctaButtonText = ctaButtonText?.trim() || null;
     if (readingTime !== undefined) updateData.readingTime = parseInt(String(readingTime));
-    if (published !== undefined) updateData.published = published === true || published === 'true';
-    if (status !== undefined) updateData.status = status;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
     if (isPillar !== undefined) updateData.isPillar = isPillar;
     if (relatedPosts !== undefined) updateData.relatedPosts = Array.isArray(relatedPosts) ? relatedPosts : [];
-    if (publishedAt !== undefined) {
-      updateData.publishedAt = publishedAt ? new Date(publishedAt) : null;
-    } else if (published === true && !existingArticle.publishedAt) {
-      // Se está publicando pela primeira vez, definir data de publicação
-      updateData.publishedAt = new Date();
+
+    // Sincronizar published e status
+    if (published !== undefined || status !== undefined) {
+      const currentPublished = published !== undefined 
+        ? (published === true || published === 'true')
+        : existingArticle.published;
+      const currentStatus = status !== undefined 
+        ? status 
+        : existingArticle.status;
+      
+      // Lógica: se qualquer um indicar "publicado", ambos devem estar como "publicado"
+      const isStatusPublished = currentStatus === 'published';
+      const syncedPublished = isStatusPublished || currentPublished;
+      const syncedStatus = syncedPublished ? 'published' : (currentStatus || 'draft');
+      
+      updateData.published = syncedPublished;
+      updateData.status = syncedStatus;
+      
+      // Definir publishedAt se estiver publicando pela primeira vez
+      if (syncedPublished && !existingArticle.publishedAt) {
+        if (publishedAt !== undefined && publishedAt && publishedAt.trim()) {
+          updateData.publishedAt = new Date(publishedAt);
+        } else {
+          updateData.publishedAt = new Date();
+        }
+      } else if (publishedAt !== undefined) {
+        updateData.publishedAt = publishedAt && publishedAt.trim() ? new Date(publishedAt) : null;
+      }
+    } else if (publishedAt !== undefined) {
+      updateData.publishedAt = publishedAt && publishedAt.trim() ? new Date(publishedAt) : null;
     }
+
+    console.log('[Blog] Atualizando artigo:', {
+      id,
+      slug: existingArticle.slug,
+      updateData: {
+        published: updateData.published,
+        status: updateData.status,
+        publishedAt: updateData.publishedAt
+      }
+    });
 
     const artigo = await prisma.blogArticle.update({
       where: { id },
       data: updateData
     });
 
+    console.log('[Blog] Artigo atualizado com sucesso:', {
+      id: artigo.id,
+      slug: artigo.slug,
+      published: artigo.published,
+      status: artigo.status,
+      publishedAt: artigo.publishedAt
+    });
+
     // Invalidar cache do post específico e geral
     invalidatePostCache(artigo.slug);
+    clearBlogCache();
 
     res.json({
       message: 'Artigo atualizado com sucesso',

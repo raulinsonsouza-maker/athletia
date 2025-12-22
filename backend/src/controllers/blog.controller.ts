@@ -41,6 +41,12 @@ export const listarArtigosPublicos = async (req: Request, res: Response) => {
 
     const take = limit ? parseInt(limit as string) : undefined
 
+    console.log('[Blog] Listando artigos públicos:', {
+      where,
+      take,
+      query: req.query
+    })
+
     const artigos = await prisma.blogArticle.findMany({
       where,
       orderBy: [
@@ -66,6 +72,18 @@ export const listarArtigosPublicos = async (req: Request, res: Response) => {
           }
         }
       }
+    })
+
+    console.log('[Blog] Artigos encontrados:', {
+      total: artigos.length,
+      artigos: artigos.map(a => ({
+        id: a.id,
+        slug: a.slug,
+        title: a.title,
+        published: a.published,
+        status: a.status,
+        publishedAt: a.publishedAt
+      }))
     })
 
     res.json(artigos)
@@ -348,6 +366,8 @@ export const listarArtigosDestaque = async (req: Request, res: Response) => {
     const { limit } = req.query
     const take = limit ? parseInt(limit as string) : 3
 
+    console.log('[Blog] Listando artigos em destaque:', { limit: take })
+
     const artigos = await prisma.blogArticle.findMany({
       where: {
         published: true,
@@ -379,6 +399,17 @@ export const listarArtigosDestaque = async (req: Request, res: Response) => {
       }
     })
 
+    console.log('[Blog] Artigos em destaque encontrados:', {
+      total: artigos.length,
+      artigos: artigos.map(a => ({
+        id: a.id,
+        slug: a.slug,
+        title: a.title,
+        published: a.published,
+        status: a.status
+      }))
+    })
+
     res.json(artigos)
   } catch (error: any) {
     console.error('Erro ao listar artigos em destaque:', error)
@@ -394,6 +425,8 @@ export const listarArtigosPilar = async (req: Request, res: Response) => {
   try {
     const { limit } = req.query
     const take = limit ? parseInt(limit as string) : 6
+
+    console.log('[Blog] Listando artigos pilar:', { limit: take })
 
     const artigos = await prisma.blogArticle.findMany({
       where: {
@@ -424,6 +457,17 @@ export const listarArtigosPilar = async (req: Request, res: Response) => {
           }
         }
       }
+    })
+
+    console.log('[Blog] Artigos pilar encontrados:', {
+      total: artigos.length,
+      artigos: artigos.map(a => ({
+        id: a.id,
+        slug: a.slug,
+        title: a.title,
+        published: a.published,
+        status: a.status
+      }))
     })
 
     res.json(artigos)
@@ -524,16 +568,30 @@ export const obterConfiguracoesPublicas = async (req: Request, res: Response) =>
       }
     })
 
+    console.log('[Blog] Buscando configurações públicas')
+
     // Filtrar heroPost se não estiver publicado
     if (settings?.heroPost && (!settings.heroPost.published || settings.heroPost.status !== 'published')) {
+      console.log('[Blog] HeroPost filtrado (não publicado):', {
+        id: settings.heroPost.id,
+        published: settings.heroPost.published,
+        status: settings.heroPost.status
+      })
       settings.heroPost = null
     }
 
     // Se não existir, criar configurações padrão
     if (!settings) {
+      console.log('[Blog] Configurações não encontradas, criando padrão...')
       const firstPublished = await prisma.blogArticle.findFirst({
         where: { published: true, status: 'published' },
         orderBy: { publishedAt: 'desc' }
+      })
+      
+      console.log('[Blog] Primeiro artigo publicado encontrado:', {
+        encontrado: !!firstPublished,
+        id: firstPublished?.id,
+        slug: firstPublished?.slug
       })
 
       const categoriesForHome = await prisma.blogCategory.findMany({
@@ -590,9 +648,21 @@ export const obterConfiguracoesPublicas = async (req: Request, res: Response) =>
 
       // Filtrar heroPost se não estiver publicado após criar
       if (settings?.heroPost && (!settings.heroPost.published || settings.heroPost.status !== 'published')) {
+        console.log('[Blog] HeroPost filtrado após criar configurações')
         settings.heroPost = null
       }
     }
+
+    console.log('[Blog] Configurações retornadas:', {
+      heroPostId: settings?.heroPostId,
+      heroPost: settings?.heroPost ? {
+        id: settings.heroPost.id,
+        slug: settings.heroPost.slug,
+        published: settings.heroPost.published,
+        status: settings.heroPost.status
+      } : null,
+      featuredCount: settings?.featuredCount
+    })
 
     res.json(settings)
   } catch (error: any) {

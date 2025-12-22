@@ -279,6 +279,16 @@ export default function BlogArticleFormModal({
     e.preventDefault()
     setErrors({})
 
+    // Sincronizar published e status antes de enviar
+    const syncedStatus = formData.status === 'published' ? 'published' : 'draft'
+    const syncedPublished = syncedStatus === 'published'
+    
+    // Garantir que publishedAt está definido se estiver publicando
+    let finalPublishedAt = formData.publishedAt
+    if (syncedPublished && !finalPublishedAt) {
+      finalPublishedAt = new Date().toISOString().split('T')[0]
+    }
+
     // Validação
     const newErrors: Record<string, string> = {}
     if (!formData.title.trim()) {
@@ -326,8 +336,9 @@ export default function BlogArticleFormModal({
         formDataToSend.append('ctaDescription', formData.ctaDescription.trim() || '')
         formDataToSend.append('ctaButtonText', formData.ctaButtonText.trim() || '')
         formDataToSend.append('readingTime', String(formData.readingTime || 0))
-        formDataToSend.append('published', String(formData.published))
-        formDataToSend.append('status', formData.status)
+        formDataToSend.append('published', String(syncedPublished))
+        formDataToSend.append('status', syncedStatus)
+        formDataToSend.append('publishedAt', finalPublishedAt || '')
         formDataToSend.append('isFeatured', String(formData.isFeatured))
         formDataToSend.append('isPillar', String(formData.isPillar))
         formDataToSend.append('relatedPosts', JSON.stringify(formData.relatedPosts || []))
@@ -363,8 +374,9 @@ export default function BlogArticleFormModal({
           ctaDescription: formData.ctaDescription.trim() || null,
           ctaButtonText: formData.ctaButtonText.trim() || null,
           readingTime: formData.readingTime || 0,
-          published: formData.published,
-          status: formData.status,
+          published: syncedPublished,
+          status: syncedStatus,
+          publishedAt: finalPublishedAt || null,
           isFeatured: formData.isFeatured,
           isPillar: formData.isPillar,
           relatedPosts: formData.relatedPosts || [],

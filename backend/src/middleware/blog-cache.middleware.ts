@@ -50,25 +50,36 @@ export function blogCache(options: CacheOptions = {}) {
  * Invalidar cache relacionado a um post
  */
 export function invalidatePostCache(slug?: string) {
+  const keysToDelete: string[] = [];
+  
   if (slug) {
     // Invalidar cache específico do post
-    const keysToDelete: string[] = [];
     cache.forEach((value, key) => {
-      if (key.includes(`/blog/artigos/slug/${slug}`) || key.includes(`/blog/artigos/${slug}`)) {
+      if (key.includes(`/blog/artigos/slug/${slug}`) || 
+          key.includes(`/blog/artigos/${slug}`) ||
+          key.includes(slug)) {
         keysToDelete.push(key);
       }
     });
-    keysToDelete.forEach(key => cache.delete(key));
   }
 
-  // Invalidar cache geral do blog
-  const keysToDelete: string[] = [];
+  // Invalidar cache geral do blog (todas as rotas)
   cache.forEach((value, key) => {
-    if (key.includes('/blog/')) {
-      keysToDelete.push(key);
+    if (key.includes('/blog/') || key.includes('blog')) {
+      if (!keysToDelete.includes(key)) {
+        keysToDelete.push(key);
+      }
     }
   });
+  
+  const deletedCount = keysToDelete.length;
   keysToDelete.forEach(key => cache.delete(key));
+  
+  console.log('[Blog Cache] Cache invalidado:', {
+    slug: slug || 'todos',
+    chavesRemovidas: deletedCount,
+    chaves: keysToDelete
+  });
 }
 
 /**
@@ -77,9 +88,14 @@ export function invalidatePostCache(slug?: string) {
 export function clearBlogCache() {
   const keysToDelete: string[] = [];
   cache.forEach((value, key) => {
-    if (key.includes('/blog/')) {
+    if (key.includes('/blog/') || key.includes('blog')) {
       keysToDelete.push(key);
     }
   });
+  const deletedCount = keysToDelete.length;
   keysToDelete.forEach(key => cache.delete(key));
+  console.log('[Blog Cache] Cache limpo:', {
+    chavesRemovidas: deletedCount,
+    chaves: keysToDelete
+  });
 }
