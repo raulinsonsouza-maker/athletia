@@ -133,9 +133,20 @@ export default function AdminWhatsApp() {
       const result = await whatsappAdminService.startOnboarding()
       if (result.success && result.oauthUrl) {
         window.location.href = result.oauthUrl
+      } else if (result.error || !result.success) {
+        // Se for erro de configuração, mostrar mensagem detalhada
+        if (result.message && result.message.includes('variáveis de ambiente')) {
+          showToast(
+            'Configuração incompleta: Configure WHATSAPP_APP_ID e WHATSAPP_REDIRECT_URI no arquivo .env do backend',
+            'error'
+          )
+        } else {
+          showToast(result.error || result.message || 'Erro ao iniciar onboarding', 'error')
+        }
       }
     } catch (error: any) {
-      showToast('Erro ao iniciar onboarding', 'error')
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao iniciar onboarding'
+      showToast(errorMessage, 'error')
     }
   }
 

@@ -797,6 +797,22 @@ export const manageOptIn = async (req: AuthRequest, res: Response) => {
  */
 export const startOnboardingAdmin = async (req: AuthRequest, res: Response) => {
   try {
+    // Verificar se as variáveis de ambiente estão configuradas
+    const appId = process.env.WHATSAPP_APP_ID;
+    const redirectUri = process.env.WHATSAPP_REDIRECT_URI;
+
+    if (!appId || !redirectUri) {
+      return res.status(400).json({
+        success: false,
+        error: 'Configuração incompleta',
+        message: 'As variáveis de ambiente WHATSAPP_APP_ID e WHATSAPP_REDIRECT_URI precisam ser configuradas antes de iniciar o onboarding. Configure-as no arquivo .env e reinicie o servidor.',
+        missing: {
+          WHATSAPP_APP_ID: !appId,
+          WHATSAPP_REDIRECT_URI: !redirectUri
+        }
+      });
+    }
+
     const state = req.query.state as string | undefined;
     const oauthUrl = generateOAuthUrl(state);
 
@@ -809,7 +825,8 @@ export const startOnboardingAdmin = async (req: AuthRequest, res: Response) => {
     console.error('Erro ao iniciar onboarding:', error);
     res.status(500).json({
       success: false,
-      error: error.message || 'Erro ao iniciar onboarding'
+      error: error.message || 'Erro ao iniciar onboarding',
+      message: 'Erro inesperado ao gerar URL de autorização. Verifique os logs do servidor.'
     });
   }
 };

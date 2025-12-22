@@ -274,8 +274,13 @@ export const whatsappAdminService = {
   // Onboarding
   async startOnboarding(): Promise<{
     success: boolean
-    oauthUrl: string
-    message: string
+    oauthUrl?: string
+    message?: string
+    error?: string
+    missing?: {
+      WHATSAPP_APP_ID: boolean
+      WHATSAPP_REDIRECT_URI: boolean
+    }
   }> {
     const response = await api.get('/admin/whatsapp/onboarding/start')
     return response.data
