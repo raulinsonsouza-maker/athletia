@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import {
   listarUsuarios,
+  obterResumoUsuarios,
   criarUsuario,
   atualizarUsuario,
   desativarUsuario,
@@ -20,7 +21,10 @@ import {
   criarExercicio,
   atualizarExercicio,
   listarImagensBanco,
-  limparTodasUrlsMidias
+  limparTodasUrlsMidias,
+  estenderTrial,
+  converterManual,
+  encerrarTrial
 } from '../controllers/admin.controller';
 import {
   listarGruposAdmin,
@@ -281,6 +285,7 @@ const atualizarGrupoMuscularValidation = [
 ];
 
 // Rotas
+router.get('/usuarios/resumo', obterResumoUsuarios);
 router.get('/usuarios', listarUsuarios);
 router.get('/usuarios/:id', obterDetalhesUsuario); // Deve estar antes da rota PUT
 router.post('/usuarios', criarUsuarioValidation, validateRequest, criarUsuario);
@@ -288,6 +293,9 @@ router.put('/usuarios/:id', atualizarUsuarioValidation, validateRequest, atualiz
 router.delete('/usuarios/:id', desativarUsuario);
 router.post('/usuarios/:id/reativar', reativarUsuario);
 router.post('/usuarios/:id/redefinir-senha', redefinirSenhaValidation, validateRequest, redefinirSenhaUsuario);
+router.post('/usuarios/:id/estender-trial', estenderTrial);
+router.post('/usuarios/:id/converter-manual', converterManual);
+router.post('/usuarios/:id/encerrar-trial', encerrarTrial);
 router.post('/usuarios/:id/testar-email-remarketing', [
   body('tipo')
     .notEmpty()

@@ -12,6 +12,47 @@ export function calcularDataFimTrial(dataInicio: Date): Date {
 }
 
 /**
+ * Calcula o estágio atual do trial baseado nas datas de início e fim
+ * Retorna: 'D1' (0-24h), 'D2' (24-48h), 'D3' (48-72h), ou 'EXPIrado' (>72h ou já expirado)
+ */
+export function calcularEstagioTrial(dataInicio: Date | null, dataFim: Date | null, agora?: Date): 'D1' | 'D2' | 'D3' | 'EXPIrado' {
+  if (!dataInicio || !dataFim) {
+    return 'EXPIrado';
+  }
+
+  const agoraDate = agora || new Date();
+  const inicio = new Date(dataInicio);
+  const fim = new Date(dataFim);
+
+  // Se já passou da data de fim, está expirado
+  if (fim <= agoraDate) {
+    return 'EXPIrado';
+  }
+
+  // Calcular horas desde o início
+  const diffMs = agoraDate.getTime() - inicio.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+
+  // D1: 0-24h
+  if (diffHours < 24) {
+    return 'D1';
+  }
+
+  // D2: 24-48h
+  if (diffHours < 48) {
+    return 'D2';
+  }
+
+  // D3: 48-72h
+  if (diffHours < 72) {
+    return 'D3';
+  }
+
+  // Mais de 72h = expirado
+  return 'EXPIrado';
+}
+
+/**
  * Verifica se o trial está ativo para um usuário
  */
 export async function verificarTrialAtivo(userId: string): Promise<boolean> {

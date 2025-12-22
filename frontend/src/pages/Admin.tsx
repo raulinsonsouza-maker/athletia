@@ -8,7 +8,7 @@ import GruposMuscularesAdminList from '../components/GruposMuscularesAdminList'
 import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
 import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
 import TreinoImagensAdmin from '../components/TreinoImagensAdmin'
-import { testarEmailRemarketing } from '../services/admin.service'
+import { testarEmailRemarketing, estenderTrial, converterManual, encerrarTrial } from '../services/admin.service'
 import { BarChart } from '../components/ChartWrapper'
 
 
@@ -30,6 +30,11 @@ interface User {
     experiencia: string | null
     pesoAtual: number | null
   }
+  estagioTrial?: 'D1' | 'D2' | 'D3' | 'EXPIrado' | 'PLANO_ATIVO' | 'SEM_ACESSO'
+  vencimentoTexto?: string
+  diasRestantes?: number
+  perfilCompleto?: boolean
+  ultimoAcesso?: string | null
 }
 
 interface UserDetails {
@@ -169,7 +174,25 @@ export default function Admin() {
   const [usuarios, setUsuarios] = useState<User[]>([])
   const [totalUsuarios, setTotalUsuarios] = useState(0)
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
+  const [resumoUsuarios, setResumoUsuarios] = useState<{
+    total: number
+    trialsAtivosHoje: number
+    trialsD3: number
+    trialsExpirados24h: number
+    assinantesAtivos: number
+  } | null>(null)
+  const [, setLoadingResumo] = useState(false)
   const [search, setSearch] = useState('')
+  const [filtros, setFiltros] = useState({
+    tipoAcesso: [] as string[],
+    estagioTrial: [] as string[],
+    vencimento: '',
+    perfil: '',
+    ultimoAcesso: '',
+    dataCadastroInicio: '',
+    dataCadastroFim: ''
+  })
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [exercicios, setExercicios] = useState<any[]>([])
   const [gruposMusculares, setGruposMusculares] = useState<string[]>([])
   const [loadingExercicios, setLoadingExercicios] = useState(false)
@@ -234,12 +257,36 @@ export default function Admin() {
   const [showTestarEmailModal, setShowTestarEmailModal] = useState(false)
   const [tipoEmailTeste, setTipoEmailTeste] = useState<'10min' | '24h' | '48h'>('10min')
   const [enviandoEmailTeste, setEnviandoEmailTeste] = useState(false)
+  const [menuAcoesAberto, setMenuAcoesAberto] = useState<string | null>(null)
+  const [processandoAcao, setProcessandoAcao] = useState<string | null>(null)
 
   useEffect(() => {
     verificarAdmin()
   }, [])
 
+  // Fechar menu de ações ao clicar fora
   useEffect(() => {
+    if (!menuAcoesAberto) return
+    
+    const handleClickOutside = () => {
+      setMenuAcoesAberto(null)
+    }
+    
+    // Pequeno delay para não fechar imediatamente ao abrir
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 100)
+    
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [menuAcoesAberto])
+
+  useEffect(() => {
+    if (activeTab === 'usuarios') {
+      carregarResumoUsuarios()
+    }
     if (activeTab === 'usuarios') {
       carregarUsuarios()
     } else if (activeTab === 'estatisticas') {
@@ -299,6 +346,18 @@ export default function Admin() {
     }
   }
 
+  const carregarResumoUsuarios = async () => {
+    setLoadingResumo(true)
+    try {
+      const response = await api.get('/admin/usuarios/resumo')
+      setResumoUsuarios(response.data)
+    } catch (error: any) {
+      console.error('Erro ao carregar resumo de usuários:', error)
+    } finally {
+      setLoadingResumo(false)
+    }
+  }
+
   const carregarUsuarios = async () => {
     setLoadingUsuarios(true)
     setErrorUsuarios(null)
@@ -307,6 +366,17 @@ export default function Admin() {
       const params = new URLSearchParams()
       if (search) params.append('search', search)
       if (mostrarDesabilitados) params.append('incluirDesabilitados', 'true')
+      if (filtros.tipoAcesso.length > 0) {
+        filtros.tipoAcesso.forEach(tipo => params.append('tipoAcesso', tipo))
+      }
+      if (filtros.estagioTrial.length > 0) {
+        filtros.estagioTrial.forEach(estagio => params.append('estagioTrial', estagio))
+      }
+      if (filtros.vencimento) params.append('vencimento', filtros.vencimento)
+      if (filtros.perfil) params.append('perfil', filtros.perfil)
+      if (filtros.ultimoAcesso) params.append('ultimoAcesso', filtros.ultimoAcesso)
+      if (filtros.dataCadastroInicio) params.append('dataCadastroInicio', filtros.dataCadastroInicio)
+      if (filtros.dataCadastroFim) params.append('dataCadastroFim', filtros.dataCadastroFim)
       // Passar um limite alto para listar todos os usuários
       params.append('limit', '10000')
       const queryString = params.toString()
@@ -824,6 +894,368 @@ export default function Admin() {
         {
           activeTab === 'usuarios' && (
             <div className="space-y-6">
+              {/* Resumo Estratégico */}
+              {resumoUsuarios && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                  <div 
+                    className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 cursor-pointer"
+                    onClick={() => {
+                      setSearch('')
+                      carregarUsuarios()
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-light-muted">Total de Usuários</p>
+                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-3xl font-bold text-primary">{resumoUsuarios.total}</p>
+                    <p className="text-xs text-light-muted mt-1">Todos os usuários</p>
+                  </div>
+
+                  <div 
+                    className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 cursor-pointer"
+                    onClick={() => {
+                      setFiltros({
+                        ...filtros,
+                        tipoAcesso: ['TRIAL_ATIVO'],
+                        estagioTrial: [],
+                        vencimento: ''
+                      })
+                      setMostrarFiltros(true)
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-light-muted">Trials Ativos Hoje</p>
+                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-3xl font-bold text-primary">{resumoUsuarios.trialsAtivosHoje}</p>
+                    <p className="text-xs text-light-muted mt-1">Em trial hoje</p>
+                  </div>
+
+                  <div 
+                    className="card-hover p-4 bg-gradient-to-br from-warning/20 to-warning/5 border border-warning/30 cursor-pointer"
+                    onClick={() => {
+                      setFiltros({
+                        ...filtros,
+                        tipoAcesso: [],
+                        estagioTrial: ['D3'],
+                        vencimento: ''
+                      })
+                      setMostrarFiltros(true)
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-light-muted">Trials D3</p>
+                      <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
+                    <p className="text-3xl font-bold text-warning">{resumoUsuarios.trialsD3}</p>
+                    <p className="text-xs text-light-muted mt-1">Último dia - urgente</p>
+                  </div>
+
+                  <div 
+                    className="card-hover p-4 bg-gradient-to-br from-error/20 to-error/5 border border-error/30 cursor-pointer"
+                    onClick={() => {
+                      setFiltros({
+                        ...filtros,
+                        tipoAcesso: ['TRIAL_EXPIRADO'],
+                        estagioTrial: [],
+                        vencimento: 'EXPIRADO'
+                      })
+                      setMostrarFiltros(true)
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-light-muted">Trials Expirados</p>
+                      <svg className="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-3xl font-bold text-error">{resumoUsuarios.trialsExpirados24h}</p>
+                    <p className="text-xs text-light-muted mt-1">Últimas 24h</p>
+                  </div>
+
+                  <div 
+                    className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30 cursor-pointer"
+                    onClick={() => {
+                      setFiltros({
+                        ...filtros,
+                        tipoAcesso: ['PLANO_ATIVO'],
+                        estagioTrial: [],
+                        vencimento: ''
+                      })
+                      setMostrarFiltros(true)
+                    }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-light-muted">Assinantes Ativos</p>
+                      <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-3xl font-bold text-success">{resumoUsuarios.assinantesAtivos}</p>
+                    <p className="text-xs text-light-muted mt-1">Com plano ativo</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Filtros Inteligentes */}
+              <div className="card mb-6">
+                <button
+                  onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-dark-lighter rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span className="font-semibold text-light">Filtros Inteligentes</span>
+                    {(filtros.tipoAcesso.length > 0 || filtros.estagioTrial.length > 0 || filtros.vencimento || filtros.perfil || filtros.ultimoAcesso || filtros.dataCadastroInicio || filtros.dataCadastroFim) && (
+                      <span className="badge-primary text-xs">{[
+                        filtros.tipoAcesso.length,
+                        filtros.estagioTrial.length,
+                        filtros.vencimento ? 1 : 0,
+                        filtros.perfil ? 1 : 0,
+                        filtros.ultimoAcesso ? 1 : 0,
+                        (filtros.dataCadastroInicio || filtros.dataCadastroFim) ? 1 : 0
+                      ].reduce((a, b) => a + b, 0)} ativo(s)</span>
+                    )}
+                  </div>
+                  <svg 
+                    className={`w-5 h-5 text-light-muted transition-transform ${mostrarFiltros ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {mostrarFiltros && (
+                  <div className="p-4 pt-0 space-y-4 border-t border-grey/30 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Tipo de Acesso */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Tipo de Acesso</label>
+                        <div className="space-y-2">
+                          {['TRIAL_ATIVO', 'TRIAL_EXPIRADO', 'PLANO_ATIVO', 'SEM_ACESSO'].map(tipo => (
+                            <label key={tipo} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filtros.tipoAcesso.includes(tipo)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFiltros({ ...filtros, tipoAcesso: [...filtros.tipoAcesso, tipo] })
+                                  } else {
+                                    setFiltros({ ...filtros, tipoAcesso: filtros.tipoAcesso.filter(t => t !== tipo) })
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
+                              />
+                              <span className="text-sm text-light-muted">
+                                {tipo === 'TRIAL_ATIVO' ? 'Trial Ativo' : 
+                                 tipo === 'TRIAL_EXPIRADO' ? 'Trial Expirado' :
+                                 tipo === 'PLANO_ATIVO' ? 'Plano Ativo' : 'Sem Acesso'}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Estágio do Trial */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Estágio do Trial</label>
+                        <div className="space-y-2">
+                          {['D1', 'D2', 'D3'].map(estagio => (
+                            <label key={estagio} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={filtros.estagioTrial.includes(estagio)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setFiltros({ ...filtros, estagioTrial: [...filtros.estagioTrial, estagio] })
+                                  } else {
+                                    setFiltros({ ...filtros, estagioTrial: filtros.estagioTrial.filter(e => e !== estagio) })
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
+                              />
+                              <span className="text-sm text-light-muted">Trial {estagio}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Vencimento */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Vencimento</label>
+                        <div className="space-y-2">
+                          {[
+                            { value: '', label: 'Todos' },
+                            { value: 'HOJE', label: 'Vence hoje' },
+                            { value: 'AMANHA', label: 'Vence amanhã' },
+                            { value: 'EXPIRADO', label: 'Já expirado' }
+                          ].map(opcao => (
+                            <label key={opcao.value} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="vencimento"
+                                value={opcao.value}
+                                checked={filtros.vencimento === opcao.value}
+                                onChange={(e) => setFiltros({ ...filtros, vencimento: e.target.value })}
+                                className="w-4 h-4 border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
+                              />
+                              <span className="text-sm text-light-muted">{opcao.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Perfil */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Perfil</label>
+                        <div className="space-y-2">
+                          {[
+                            { value: '', label: 'Todos' },
+                            { value: 'COMPLETO', label: 'Completo' },
+                            { value: 'INCOMPLETO', label: 'Incompleto' }
+                          ].map(opcao => (
+                            <label key={opcao.value} className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="perfil"
+                                value={opcao.value}
+                                checked={filtros.perfil === opcao.value}
+                                onChange={(e) => setFiltros({ ...filtros, perfil: e.target.value })}
+                                className="w-4 h-4 border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
+                              />
+                              <span className="text-sm text-light-muted">{opcao.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Último Acesso */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Último Acesso</label>
+                        <select
+                          value={filtros.ultimoAcesso}
+                          onChange={(e) => setFiltros({ ...filtros, ultimoAcesso: e.target.value })}
+                          className="input-field w-full"
+                        >
+                          <option value="">Todos</option>
+                          <option value="NUNCA">Nunca acessou</option>
+                          <option value="MAIS_3_DIAS">Mais de 3 dias</option>
+                          <option value="MAIS_7_DIAS">Mais de 7 dias</option>
+                        </select>
+                      </div>
+
+                      {/* Data de Cadastro */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Data de Cadastro</label>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <input
+                              type="date"
+                              value={filtros.dataCadastroInicio}
+                              onChange={(e) => setFiltros({ ...filtros, dataCadastroInicio: e.target.value })}
+                              className="input-field flex-1"
+                              placeholder="De"
+                            />
+                            <input
+                              type="date"
+                              value={filtros.dataCadastroFim}
+                              onChange={(e) => setFiltros({ ...filtros, dataCadastroFim: e.target.value })}
+                              className="input-field flex-1"
+                              placeholder="Até"
+                            />
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            <button
+                              onClick={() => {
+                                const hoje = new Date().toISOString().split('T')[0]
+                                setFiltros({ ...filtros, dataCadastroInicio: hoje, dataCadastroFim: hoje })
+                              }}
+                              className="btn-secondary text-xs px-2 py-1"
+                            >
+                              Hoje
+                            </button>
+                            <button
+                              onClick={() => {
+                                const hoje = new Date()
+                                const seteDias = new Date(hoje)
+                                seteDias.setDate(hoje.getDate() - 7)
+                                setFiltros({ 
+                                  ...filtros, 
+                                  dataCadastroInicio: seteDias.toISOString().split('T')[0],
+                                  dataCadastroFim: hoje.toISOString().split('T')[0]
+                                })
+                              }}
+                              className="btn-secondary text-xs px-2 py-1"
+                            >
+                              7 dias
+                            </button>
+                            <button
+                              onClick={() => {
+                                const hoje = new Date()
+                                const trintaDias = new Date(hoje)
+                                trintaDias.setDate(hoje.getDate() - 30)
+                                setFiltros({ 
+                                  ...filtros, 
+                                  dataCadastroInicio: trintaDias.toISOString().split('T')[0],
+                                  dataCadastroFim: hoje.toISOString().split('T')[0]
+                                })
+                              }}
+                              className="btn-secondary text-xs px-2 py-1"
+                            >
+                              30 dias
+                            </button>
+                            <button
+                              onClick={() => setFiltros({ ...filtros, dataCadastroInicio: '', dataCadastroFim: '' })}
+                              className="btn-secondary text-xs px-2 py-1"
+                            >
+                              Limpar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-2 border-t border-grey/30">
+                      <button
+                        onClick={() => {
+                          setFiltros({
+                            tipoAcesso: [],
+                            estagioTrial: [],
+                            vencimento: '',
+                            perfil: '',
+                            ultimoAcesso: '',
+                            dataCadastroInicio: '',
+                            dataCadastroFim: ''
+                          })
+                        }}
+                        className="btn-secondary text-sm"
+                      >
+                        Limpar Filtros
+                      </button>
+                      <button
+                        onClick={() => {
+                          carregarUsuarios()
+                        }}
+                        className="btn-primary text-sm"
+                      >
+                        Aplicar Filtros
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Busca */}
               {/* Header com Busca, Filtros e Ações */}
               <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
@@ -916,266 +1348,444 @@ export default function Admin() {
                     </div>
                   )}
 
-                  {/* Visualização em Cards */}
+                  {/* Visualização em Cards - Atualizada */}
                   {viewMode === 'cards' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {usuarios.map((user) => (
-                        <div
-                          key={user.id}
-                          onClick={() => handleShowDetails(user.id)}
-                          className="card-hover cursor-pointer transition-all"
-                        >
-                          <div className="flex flex-col">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-light mb-1">
+                      {usuarios.map((user: any) => {
+                        const estagio = user.estagioTrial || (user.planoAtivo ? 'PLANO_ATIVO' : 'SEM_ACESSO')
+                        const vencimentoTexto = user.vencimentoTexto || '-'
+                        const perfilCompleto = user.perfilCompleto !== undefined ? user.perfilCompleto : !!user.perfil
+                        const ultimoAcesso = user.ultimoAcesso ? new Date(user.ultimoAcesso) : null
+                        
+                        let engajamentoTexto = 'Nunca acessou'
+                        if (ultimoAcesso) {
+                          const agora = new Date()
+                          const diffMs = agora.getTime() - ultimoAcesso.getTime()
+                          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+                          if (diffDays === 0) engajamentoTexto = 'Hoje'
+                          else if (diffDays === 1) engajamentoTexto = 'Ontem'
+                          else if (diffDays < 7) engajamentoTexto = `Há ${diffDays} dias`
+                          else engajamentoTexto = ultimoAcesso.toLocaleDateString('pt-BR')
+                        }
+
+                        const getBadgeColor = (estagio: string) => {
+                          if (estagio === 'D3') return 'badge-warning'
+                          if (estagio === 'D1' || estagio === 'D2') return 'badge-secondary'
+                          if (estagio === 'EXPIrado') return 'badge-error'
+                          if (estagio === 'PLANO_ATIVO') return 'badge-success'
+                          return 'badge-secondary'
+                        }
+
+                        const getEstagioLabel = (estagio: string) => {
+                          if (estagio === 'D1') return 'Trial D1'
+                          if (estagio === 'D2') return 'Trial D2'
+                          if (estagio === 'D3') return 'Trial D3'
+                          if (estagio === 'EXPIrado') return 'Trial Expirado'
+                          if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
+                          return 'Sem Acesso'
+                        }
+
+                        return (
+                          <div
+                            key={user.id}
+                            onClick={() => handleShowDetails(user.id)}
+                            className={`card-hover cursor-pointer transition-all ${estagio === 'D3' ? 'border-l-4 border-warning bg-warning/5' : ''}`}
+                          >
+                            <div className="flex flex-col">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1">
+                                  <h3 className="text-lg font-semibold text-light mb-1">
+                                    {user.nome || 'Sem nome'}
+                                  </h3>
+                                  <p className="text-light-muted text-sm truncate">{user.email}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2 mb-3">
+                                <span className={`${getBadgeColor(estagio)} text-xs`}>
+                                  {getEstagioLabel(estagio)}
+                                </span>
+                                {perfilCompleto ? (
+                                  <span className="badge-success text-xs">Perfil Completo</span>
+                                ) : (
+                                  <span className="badge-warning text-xs">Perfil Incompleto</span>
+                                )}
+                                {user.ativo === false && (
+                                  <span className="badge-error text-xs">Desabilitado</span>
+                                )}
+                              </div>
+
+                              <div className="space-y-1 mb-3 text-xs">
+                                <p className="text-light-muted">
+                                  <span className="font-medium">Vencimento:</span> {vencimentoTexto}
+                                </p>
+                                <p className={ultimoAcesso ? 'text-light-muted' : 'text-error font-medium'}>
+                                  <span className="font-medium">Último acesso:</span> {engajamentoTexto}
+                                </p>
+                              </div>
+
+                              <div className="mt-auto pt-3 border-t border-grey/30">
+                                <p className="text-light-muted text-xs">
+                                  Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                </p>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleShowDetails(user.id)
+                                  }}
+                                  className="btn-secondary text-xs w-full mt-2"
+                                >
+                                  Ver Detalhes
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* Visualização em Lista Compacta - Atualizada */}
+                  {viewMode === 'list' && (
+                    <div className="space-y-2">
+                      {usuarios.map((user: any) => {
+                        const estagio = user.estagioTrial || (user.planoAtivo ? 'PLANO_ATIVO' : 'SEM_ACESSO')
+                        const vencimentoTexto = user.vencimentoTexto || '-'
+                        const perfilCompleto = user.perfilCompleto !== undefined ? user.perfilCompleto : !!user.perfil
+                        const ultimoAcesso = user.ultimoAcesso ? new Date(user.ultimoAcesso) : null
+                        
+                        let engajamentoTexto = 'Nunca acessou'
+                        if (ultimoAcesso) {
+                          const agora = new Date()
+                          const diffMs = agora.getTime() - ultimoAcesso.getTime()
+                          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+                          if (diffDays === 0) engajamentoTexto = 'Hoje'
+                          else if (diffDays === 1) engajamentoTexto = 'Ontem'
+                          else if (diffDays < 7) engajamentoTexto = `Há ${diffDays} dias`
+                          else engajamentoTexto = ultimoAcesso.toLocaleDateString('pt-BR')
+                        }
+
+                        const getBadgeColor = (estagio: string) => {
+                          if (estagio === 'D3') return 'badge-warning'
+                          if (estagio === 'D1' || estagio === 'D2') return 'badge-secondary'
+                          if (estagio === 'EXPIrado') return 'badge-error'
+                          if (estagio === 'PLANO_ATIVO') return 'badge-success'
+                          return 'badge-secondary'
+                        }
+
+                        const getEstagioLabel = (estagio: string) => {
+                          if (estagio === 'D1') return 'Trial D1'
+                          if (estagio === 'D2') return 'Trial D2'
+                          if (estagio === 'D3') return 'Trial D3'
+                          if (estagio === 'EXPIrado') return 'Trial Expirado'
+                          if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
+                          return 'Sem Acesso'
+                        }
+
+                        return (
+                          <div
+                            key={user.id}
+                            className={`card-hover cursor-pointer p-4 flex items-center justify-between hover:bg-dark-lighter transition-colors ${estagio === 'D3' ? 'bg-warning/5 border-l-4 border-warning' : ''}`}
+                          >
+                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-base font-semibold text-light truncate">
                                   {user.nome || 'Sem nome'}
                                 </h3>
                                 <p className="text-light-muted text-sm truncate">{user.email}</p>
-                                {user.telefone && (
-                                  <p className="text-light-muted text-sm mt-1">{user.telefone}</p>
+                                <div className="flex items-center gap-3 mt-1">
+                                  <p className="text-light-muted text-xs">
+                                    Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                  </p>
+                                  <span className="text-light-muted">•</span>
+                                  <p className={`text-xs ${ultimoAcesso ? 'text-light-muted' : 'text-error font-medium'}`}>
+                                    {engajamentoTexto}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap gap-2 items-center">
+                                <span className={`${getBadgeColor(estagio)} text-xs`}>
+                                  {getEstagioLabel(estagio)}
+                                </span>
+                                <span className="text-xs text-light-muted">{vencimentoTexto}</span>
+                                {perfilCompleto ? (
+                                  <span className="badge-success text-xs">Perfil Completo</span>
+                                ) : (
+                                  <span className="badge-warning text-xs">Perfil Incompleto</span>
                                 )}
                               </div>
                             </div>
-
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {user.role === 'ADMIN' ? (
-                                <span className="badge-primary text-xs">Admin</span>
-                              ) : (
-                                <span className="badge-secondary text-xs">User</span>
-                              )}
-                              {user.ativo === false && (
-                                <span className="badge-error text-xs">Desabilitado</span>
-                              )}
-                              {user.planoAtivo ? (
-                                <span className="badge-success text-xs">Plano Ativo</span>
-                              ) : (
-                                <span className="badge-error text-xs">Sem Plano</span>
-                              )}
-                              {user.perfil ? (
-                                <span className="badge-success text-xs">Perfil Completo</span>
-                              ) : (
-                                <span className="badge-warning text-xs">Sem Perfil</span>
-                              )}
-                              {user.plano && (
-                                <span className="badge-primary text-xs">{user.plano}</span>
-                              )}
-                              {user.dataExpiracao && (() => {
-                                const dataExpiracao = new Date(user.dataExpiracao)
-                                const agora = new Date()
-                                const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
-                                if (diferencaDias < 0) {
-                                  return <span className="badge-error text-xs">Expirado</span>
-                                } else if (diferencaDias <= 3) {
-                                  return <span className="badge-warning text-xs">Expira em {diferencaDias}d</span>
-                                }
-                                return null
-                              })()}
-                            </div>
-
-                            {user.perfil && (
-                              <div className="mb-3 space-y-1">
-                                {user.perfil.objetivo && (
-                                  <p className="text-light-muted text-xs">
-                                    <span className="font-medium">Objetivo:</span> {user.perfil.objetivo}
-                                  </p>
-                                )}
-                                {user.perfil.experiencia && (
-                                  <p className="text-light-muted text-xs">
-                                    <span className="font-medium">Experiência:</span> {user.perfil.experiencia}
-                                  </p>
-                                )}
-                              </div>
-                            )}
-
-                            <div className="mt-auto pt-3 border-t border-grey/30">
-                              <p className="text-light-muted text-xs">
-                                Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                              </p>
-                              {user.dataExpiracao && (
-                                <p className="text-light-muted text-xs mt-1">
-                                  Expira em {new Date(user.dataExpiracao).toLocaleDateString('pt-BR')}
-                                </p>
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleShowDetails(user.id)
-                                }}
-                                className="btn-secondary text-xs w-full mt-2"
-                              >
-                                Ver Detalhes
-                              </button>
-                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleShowDetails(user.id)
+                              }}
+                              className="btn-secondary text-xs ml-4"
+                            >
+                              Ver Detalhes
+                            </button>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
 
-                  {/* Visualização em Lista Compacta */}
-                  {viewMode === 'list' && (
-                    <div className="space-y-2">
-                      {usuarios.map((user) => (
-                        <div
-                          key={user.id}
-                          onClick={() => handleShowDetails(user.id)}
-                          className="card-hover cursor-pointer p-4 flex items-center justify-between hover:bg-dark-lighter transition-colors"
-                        >
-                          <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-base font-semibold text-light truncate">
-                                {user.nome || 'Sem nome'}
-                              </h3>
-                              <p className="text-light-muted text-sm truncate">{user.email}</p>
-                              <p className="text-light-muted text-xs mt-1">
-                                Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {user.role === 'ADMIN' ? (
-                                <span className="badge-primary text-xs">Admin</span>
-                              ) : (
-                                <span className="badge-secondary text-xs">User</span>
-                              )}
-                              {user.ativo === false && (
-                                <span className="badge-error text-xs">Desabilitado</span>
-                              )}
-                              {user.planoAtivo ? (
-                                <span className="badge-success text-xs">Plano Ativo</span>
-                              ) : (
-                                <span className="badge-error text-xs">Sem Plano</span>
-                              )}
-                              {user.perfil ? (
-                                <span className="badge-success text-xs">Perfil</span>
-                              ) : (
-                                <span className="badge-warning text-xs">Sem Perfil</span>
-                              )}
-                              {user.plano && (
-                                <span className="badge-primary text-xs">{user.plano}</span>
-                              )}
-                              {user.dataExpiracao && (() => {
-                                const dataExpiracao = new Date(user.dataExpiracao)
-                                const agora = new Date()
-                                const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
-                                if (diferencaDias < 0) {
-                                  return <span className="badge-error text-xs">Expirado</span>
-                                } else if (diferencaDias <= 3) {
-                                  return <span className="badge-warning text-xs">Expira em {diferencaDias}d</span>
-                                }
-                                return null
-                              })()}
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleShowDetails(user.id)
-                            }}
-                            className="btn-secondary text-xs ml-4"
-                          >
-                            Ver Detalhes
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Visualização em Tabela */}
+                  {/* Visualização em Tabela - Reestruturada */}
                   {viewMode === 'table' && (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto -mx-4 px-4">
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-grey/30">
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Nome</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Email</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Telefone</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Plano</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Status</th>
-                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Expiração</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Usuário</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Acesso</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Vencimento</th>
+                            <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Engajamento</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Perfil</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Cadastro</th>
                             <th className="text-left py-3 px-4 text-sm font-semibold text-light-muted">Ações</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {usuarios.map((user) => (
-                            <tr
-                              key={user.id}
-                              onClick={() => handleShowDetails(user.id)}
-                              className="border-b border-grey/10 hover:bg-dark-lighter cursor-pointer transition-colors"
-                            >
-                              <td className="py-3 px-4 text-sm text-light font-medium">
-                                {user.nome || 'Sem nome'}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-light-muted">{user.email}</td>
-                              <td className="py-3 px-4 text-sm text-light-muted">
-                                {user.telefone || '-'}
-                              </td>
-                              <td className="py-3 px-4">
-                                {user.plano ? (
-                                  <span className="badge-primary text-xs">{user.plano}</span>
-                                ) : (
-                                  <span className="text-light-muted text-xs">-</span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                <div className="flex flex-col gap-1">
-                                  {user.ativo === false && (
-                                    <span className="badge-error text-xs">Desabilitado</span>
-                                  )}
-                                  {user.planoAtivo ? (
-                                    <span className="badge-success text-xs">Ativo</span>
-                                  ) : (
-                                    <span className="badge-error text-xs">Inativo</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                {user.dataExpiracao ? (
-                                  <div className="flex flex-col gap-1">
-                                    <span className="text-xs text-light-muted">
-                                      {new Date(user.dataExpiracao).toLocaleDateString('pt-BR')}
-                                    </span>
-                                    {(() => {
-                                      const dataExpiracao = new Date(user.dataExpiracao)
-                                      const agora = new Date()
-                                      const diferencaDias = Math.ceil((dataExpiracao.getTime() - agora.getTime()) / (1000 * 60 * 60 * 24))
-                                      if (diferencaDias < 0) {
-                                        return <span className="badge-error text-xs">Expirado</span>
-                                      } else if (diferencaDias <= 3) {
-                                        return <span className="badge-warning text-xs">Expira em {diferencaDias}d</span>
-                                      }
-                                      return null
-                                    })()}
+                          {usuarios.map((user: any) => {
+                            const estagio = user.estagioTrial || (user.planoAtivo ? 'PLANO_ATIVO' : 'SEM_ACESSO')
+                            const vencimentoTexto = user.vencimentoTexto || '-'
+                            const perfilCompleto = user.perfilCompleto !== undefined ? user.perfilCompleto : !!user.perfil
+                            const ultimoAcesso = user.ultimoAcesso ? new Date(user.ultimoAcesso) : null
+                            
+                            // Calcular dias desde último acesso
+                            let engajamentoTexto = 'Nunca acessou'
+                            if (ultimoAcesso) {
+                              const agora = new Date()
+                              const diffMs = agora.getTime() - ultimoAcesso.getTime()
+                              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+                              if (diffDays === 0) {
+                                engajamentoTexto = 'Hoje'
+                              } else if (diffDays === 1) {
+                                engajamentoTexto = 'Ontem'
+                              } else if (diffDays < 7) {
+                                engajamentoTexto = `Há ${diffDays} dias`
+                              } else {
+                                engajamentoTexto = ultimoAcesso.toLocaleDateString('pt-BR')
+                              }
+                            }
+
+                            // Cores do badge de acesso
+                            const getBadgeColor = (estagio: string) => {
+                              if (estagio === 'D3') return 'badge-warning'
+                              if (estagio === 'D1' || estagio === 'D2') return 'badge-secondary'
+                              if (estagio === 'EXPIrado') return 'badge-error'
+                              if (estagio === 'PLANO_ATIVO') return 'badge-success'
+                              return 'badge-secondary'
+                            }
+
+                            const getEstagioLabel = (estagio: string) => {
+                              if (estagio === 'D1') return 'Trial D1'
+                              if (estagio === 'D2') return 'Trial D2'
+                              if (estagio === 'D3') return 'Trial D3'
+                              if (estagio === 'EXPIrado') return 'Trial Expirado'
+                              if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
+                              return 'Sem Acesso'
+                            }
+
+                            return (
+                              <tr
+                                key={user.id}
+                                className={`border-b border-grey/10 hover:bg-dark-lighter transition-colors ${estagio === 'D3' ? 'bg-warning/5' : ''}`}
+                              >
+                                <td className="py-3 px-4">
+                                  <div>
+                                    <p className="text-sm font-medium text-light">{user.nome || 'Sem nome'}</p>
+                                    <p className="text-xs text-light-muted truncate max-w-xs">{user.email}</p>
                                   </div>
-                                ) : (
-                                  <span className="text-light-muted text-xs">-</span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
-                                {user.perfil ? (
-                                  <span className="badge-success text-xs">Completo</span>
-                                ) : (
-                                  <span className="badge-warning text-xs">Incompleto</span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4 text-sm text-light-muted">
-                                {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                              </td>
-                              <td className="py-3 px-4">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleShowDetails(user.id)
-                                  }}
-                                  className="btn-secondary text-xs"
-                                >
-                                  Ver Detalhes
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <span className={`${getBadgeColor(estagio)} text-xs`}>
+                                    {getEstagioLabel(estagio)}
+                                  </span>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <p className="text-sm text-light">{vencimentoTexto}</p>
+                                </td>
+                                <td className="py-3 px-4">
+                                  {ultimoAcesso ? (
+                                    <p className="text-sm text-light-muted">{engajamentoTexto}</p>
+                                  ) : (
+                                    <p className="text-sm text-error font-medium">{engajamentoTexto}</p>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4">
+                                  {perfilCompleto ? (
+                                    <span className="badge-success text-xs">Completo</span>
+                                  ) : (
+                                    <span className="badge-warning text-xs">Incompleto</span>
+                                  )}
+                                </td>
+                                <td className="py-3 px-4">
+                                  <p className="text-sm text-light-muted">
+                                    {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                  </p>
+                                </td>
+                                <td className="py-3 px-4">
+                                  <div className="relative">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        setMenuAcoesAberto(menuAcoesAberto === user.id ? null : user.id)
+                                      }}
+                                      className="btn-secondary text-xs flex items-center gap-1"
+                                      disabled={processandoAcao === user.id}
+                                    >
+                                      {processandoAcao === user.id ? (
+                                        <>
+                                          <div className="spinner h-3 w-3"></div>
+                                          Processando...
+                                        </>
+                                      ) : (
+                                        <>
+                                          Ações
+                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                          </svg>
+                                        </>
+                                      )}
+                                    </button>
+                                    
+                                    {menuAcoesAberto === user.id && (
+                                      <div className="absolute right-0 mt-1 w-48 bg-dark-lighter border border-grey/30 rounded-lg shadow-lg z-10">
+                                        <div className="py-1">
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setMenuAcoesAberto(null)
+                                              handleShowDetails(user.id)
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-light hover:bg-dark transition-colors flex items-center gap-2"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Ver Detalhes
+                                          </button>
+                                          
+                                          {estagio !== 'PLANO_ATIVO' && estagio !== 'EXPIrado' && estagio !== 'SEM_ACESSO' && (
+                                            <>
+                                              <button
+                                                onClick={async (e) => {
+                                                  e.stopPropagation()
+                                                  if (confirm('Deseja estender o trial por mais 1 dia?')) {
+                                                    setProcessandoAcao(user.id)
+                                                    try {
+                                                      await estenderTrial(user.id)
+                                                      showToast('Trial estendido com sucesso', 'success')
+                                                      await carregarUsuarios()
+                                                      await carregarResumoUsuarios()
+                                                    } catch (error: any) {
+                                                      showToast(error.response?.data?.error || 'Erro ao estender trial', 'error')
+                                                    } finally {
+                                                      setProcessandoAcao(null)
+                                                      setMenuAcoesAberto(null)
+                                                    }
+                                                  }
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-sm text-light hover:bg-dark transition-colors flex items-center gap-2"
+                                              >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Estender Trial (1 dia)
+                                              </button>
+                                              
+                                              <button
+                                                onClick={async (e) => {
+                                                  e.stopPropagation()
+                                                  const plano = prompt('Digite o plano (MENSAL, TRIMESTRAL ou SEMESTRAL):', 'MENSAL')
+                                                  if (plano && ['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'].includes(plano.toUpperCase())) {
+                                                    setProcessandoAcao(user.id)
+                                                    try {
+                                                      await converterManual(user.id, plano.toUpperCase() as 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL')
+                                                      showToast('Usuário convertido para plano ativo', 'success')
+                                                      await carregarUsuarios()
+                                                      await carregarResumoUsuarios()
+                                                    } catch (error: any) {
+                                                      showToast(error.response?.data?.error || 'Erro ao converter', 'error')
+                                                    } finally {
+                                                      setProcessandoAcao(null)
+                                                      setMenuAcoesAberto(null)
+                                                    }
+                                                  }
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-sm text-light hover:bg-dark transition-colors flex items-center gap-2"
+                                              >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Converter Manualmente
+                                              </button>
+                                              
+                                              <button
+                                                onClick={async (e) => {
+                                                  e.stopPropagation()
+                                                  if (confirm('Deseja encerrar o trial antecipadamente?')) {
+                                                    setProcessandoAcao(user.id)
+                                                    try {
+                                                      await encerrarTrial(user.id)
+                                                      showToast('Trial encerrado com sucesso', 'success')
+                                                      await carregarUsuarios()
+                                                      await carregarResumoUsuarios()
+                                                    } catch (error: any) {
+                                                      showToast(error.response?.data?.error || 'Erro ao encerrar trial', 'error')
+                                                    } finally {
+                                                      setProcessandoAcao(null)
+                                                      setMenuAcoesAberto(null)
+                                                    }
+                                                  }
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-sm text-error hover:bg-dark transition-colors flex items-center gap-2"
+                                              >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Encerrar Trial
+                                              </button>
+                                            </>
+                                          )}
+                                          
+                                          <div className="border-t border-grey/30 my-1"></div>
+                                          
+                                          <button
+                                            onClick={async (e) => {
+                                              e.stopPropagation()
+                                              if (confirm('Deseja desativar este usuário?')) {
+                                                setProcessandoAcao(user.id)
+                                                try {
+                                                  await api.delete(`/admin/usuarios/${user.id}`)
+                                                  showToast('Usuário desativado com sucesso', 'success')
+                                                  await carregarUsuarios()
+                                                  await carregarResumoUsuarios()
+                                                } catch (error: any) {
+                                                  showToast(error.response?.data?.error || 'Erro ao desativar usuário', 'error')
+                                                } finally {
+                                                  setProcessandoAcao(null)
+                                                  setMenuAcoesAberto(null)
+                                                }
+                                              }
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-error hover:bg-dark transition-colors flex items-center gap-2"
+                                          >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                            Desativar Usuário
+                                          </button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )
+                          })}
                         </tbody>
                       </table>
                     </div>

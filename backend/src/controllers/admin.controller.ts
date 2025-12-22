@@ -9,6 +9,7 @@ import { slugify } from '../utils/slugify';
 import { ACCEPTED_EXTENSIONS } from '../utils/file-validation';
 import { toUserAdminDTO, sanitizeString, isValidUUID, isValidEmail } from '../utils/dto';
 import { sendRemarketingEmail } from '../services/email.service';
+import { calcularEstagioTrial } from '../services/trial.service';
 
 // Funções auxiliares para normalizar dados de onboarding
 const parseNumber = (value: any): number | null => {
@@ -47,35 +48,35 @@ const normalizeOnboardingData = (data: any) => {
   };
 };
 
-// Listar todos os usuários
+// Listar todos os usuários com filtros avançados e cálculos de estágio
 export const listarUsuarios = async (req: AuthRequest, res: Response) => {
   try {
-    const { page = 1, limit = 10, search, incluirDesabilitados } = req.query;
+    const { 
+      page = 1, 
+      limit = 10, 
+      search, 
+      incluirDesabilitados,
+      tipoAcesso,
+      estagioTrial,
+      vencimento,
+      perfil,
+      ultimoAcesso,
+      dataCadastroInicio,
+      dataCadastroFim
+    } = req.query;
+    
     const pageNum = parseInt(page as string);
     const limitNum = parseInt(limit as string);
     const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
     
-    // Filtrar apenas usuários ativos por padrão, a menos que incluirDesabilitados seja true
+    // Filtrar apenas usuários ativos por padrão
     if (incluirDesabilitados !== 'true') {
       where.ativo = true;
     }
     
-    if (search) {
-      where.OR = [
-        { email: { contains: search as string, mode: 'insensitive' } },
-        { nome: { contains: search as string, mode: 'insensitive' } }
-      ];
-    }
-
-    // CORREÇÃO: Validar e limitar paginação
-    // Permitir limite maior para listagem completa no painel administrativo
-    const maxLimit = 10000;
-    const finalLimit = Math.min(limitNum, maxLimit);
-    const finalSkip = Math.max(0, skip);
-
-    // CORREÇÃO: Sanitizar search para prevenir injection
+    // Busca textual
     if (search) {
       const searchSanitized = sanitizeString(search as string, 100);
       if (searchSanitized) {
@@ -86,6 +87,27 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Filtro de data de cadastro
+    if (dataCadastroInicio || dataCadastroFim) {
+      where.createdAt = {};
+      if (dataCadastroInicio) {
+        const inicio = new Date(dataCadastroInicio as string);
+        inicio.setHours(0, 0, 0, 0);
+        where.createdAt.gte = inicio;
+      }
+      if (dataCadastroFim) {
+        const fim = new Date(dataCadastroFim as string);
+        fim.setHours(23, 59, 59, 999);
+        where.createdAt.lte = fim;
+      }
+    }
+
+    // Limitar paginação
+    const maxLimit = 10000;
+    const finalLimit = Math.min(limitNum, maxLimit);
+    const finalSkip = Math.max(0, skip);
+
+    // Buscar usuários com dados completos
     const [usuarios, total] = await Promise.all([
       prisma.user.findMany({
         where,
@@ -101,15 +123,30 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
           planoAtivo: true,
           dataPagamento: true,
           dataExpiracao: true,
+          dataInicioTrial: true,
+          dataFimTrial: true,
           ativo: true,
           createdAt: true,
           updatedAt: true,
           perfil: {
             select: {
+              id: true,
               objetivo: true,
               experiencia: true,
-              pesoAtual: true
+              pesoAtual: true,
+              idade: true,
+              sexo: true,
+              altura: true
             }
+          },
+          treinos: {
+            select: {
+              updatedAt: true
+            },
+            orderBy: {
+              updatedAt: 'desc'
+            },
+            take: 1
           }
         },
         orderBy: {
@@ -119,22 +156,455 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
       prisma.user.count({ where })
     ]);
 
-    // CORREÇÃO: Usar DTOs para não vazar dados sensíveis
-    const usuariosDTO = usuarios.map(toUserAdminDTO);
+    const agora = new Date();
+
+    // Calcular estágios e informações adicionais
+    const usuariosComEstagio = usuarios.map(user => {
+      let estagio: 'D1' | 'D2' | 'D3' | 'EXPIrado' | 'PLANO_ATIVO' | 'SEM_ACESSO' = 'SEM_ACESSO';
+      let vencimentoTexto = '';
+      let diasRestantes = 0;
+      const perfilCompleto = !!user.perfil && 
+        !!user.perfil.idade && 
+        !!user.perfil.sexo && 
+        !!user.perfil.altura && 
+        !!user.perfil.pesoAtual && 
+        !!user.perfil.objetivo && 
+        !!user.perfil.experiencia;
+
+      if (user.planoAtivo) {
+        estagio = 'PLANO_ATIVO';
+        if (user.dataExpiracao) {
+          const dataExp = new Date(user.dataExpiracao);
+          const diffMs = dataExp.getTime() - agora.getTime();
+          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+          if (diffDays < 0) {
+            vencimentoTexto = `Expirado há ${Math.abs(diffDays)} ${Math.abs(diffDays) === 1 ? 'dia' : 'dias'}`;
+          } else if (diffDays === 0) {
+            vencimentoTexto = 'Vence hoje';
+          } else if (diffDays === 1) {
+            vencimentoTexto = 'Vence em 1 dia';
+          } else {
+            vencimentoTexto = `Vence em ${diffDays} dias`;
+          }
+        }
+      } else if (user.dataInicioTrial && user.dataFimTrial) {
+        estagio = calcularEstagioTrial(user.dataInicioTrial, user.dataFimTrial, agora);
+        const dataFimTrial = new Date(user.dataFimTrial);
+        const diffMs = dataFimTrial.getTime() - agora.getTime();
+        diasRestantes = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+        
+        if (estagio === 'EXPIrado') {
+          const diasExpirado = Math.abs(diasRestantes);
+          vencimentoTexto = `Expirado há ${diasExpirado} ${diasExpirado === 1 ? 'dia' : 'dias'}`;
+        } else if (diasRestantes === 0) {
+          vencimentoTexto = 'Vence hoje';
+        } else if (diasRestantes === 1) {
+          vencimentoTexto = 'Vence em 1 dia';
+        } else {
+          vencimentoTexto = `Vence em ${diasRestantes} dias`;
+        }
+      }
+
+      // Último acesso (baseado no último treino atualizado)
+      const ultimoAcesso = user.treinos && user.treinos.length > 0 
+        ? new Date(user.treinos[0].updatedAt)
+        : null;
+
+      return {
+        ...toUserAdminDTO(user),
+        estagioTrial: estagio,
+        vencimentoTexto,
+        diasRestantes,
+        perfilCompleto,
+        ultimoAcesso: ultimoAcesso?.toISOString() || null
+      };
+    });
+
+    // Aplicar filtros adicionais no resultado processado
+    let usuariosFiltrados = usuariosComEstagio;
+
+    // Filtro por tipo de acesso
+    if (tipoAcesso) {
+      const tipos = Array.isArray(tipoAcesso) ? tipoAcesso : [tipoAcesso];
+      usuariosFiltrados = usuariosFiltrados.filter(u => {
+        // Retornar true se o usuário corresponder a QUALQUER tipo selecionado
+        return tipos.some(tipo => {
+          if (tipo === 'TRIAL_ATIVO') {
+            return ['D1', 'D2', 'D3'].includes(u.estagioTrial);
+          }
+          if (tipo === 'TRIAL_EXPIRADO') {
+            return u.estagioTrial === 'EXPIrado';
+          }
+          if (tipo === 'PLANO_ATIVO') {
+            return u.estagioTrial === 'PLANO_ATIVO';
+          }
+          if (tipo === 'SEM_ACESSO') {
+            return u.estagioTrial === 'SEM_ACESSO';
+          }
+          return false;
+        });
+      });
+    }
+
+    // Filtro por estágio do trial
+    if (estagioTrial) {
+      const estagios = Array.isArray(estagioTrial) ? estagioTrial : [estagioTrial];
+      usuariosFiltrados = usuariosFiltrados.filter(u => estagios.includes(u.estagioTrial));
+    }
+
+    // Filtro por vencimento
+    if (vencimento) {
+      usuariosFiltrados = usuariosFiltrados.filter(u => {
+        if (vencimento === 'HOJE') {
+          return u.vencimentoTexto === 'Vence hoje';
+        }
+        if (vencimento === 'AMANHA') {
+          return u.vencimentoTexto === 'Vence em 1 dia';
+        }
+        if (vencimento === 'EXPIRADO') {
+          return u.vencimentoTexto.startsWith('Expirado');
+        }
+        return true;
+      });
+    }
+
+    // Filtro por perfil
+    if (perfil) {
+      if (perfil === 'COMPLETO') {
+        usuariosFiltrados = usuariosFiltrados.filter(u => u.perfilCompleto);
+      } else if (perfil === 'INCOMPLETO') {
+        usuariosFiltrados = usuariosFiltrados.filter(u => !u.perfilCompleto);
+      }
+    }
+
+    // Filtro por último acesso
+    if (ultimoAcesso) {
+      const agora = new Date();
+      usuariosFiltrados = usuariosFiltrados.filter(u => {
+        if (!u.ultimoAcesso) {
+          return ultimoAcesso === 'NUNCA';
+        }
+        const ultimoAcessoDate = new Date(u.ultimoAcesso);
+        const diffMs = agora.getTime() - ultimoAcessoDate.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        
+        if (ultimoAcesso === 'NUNCA') {
+          return false;
+        }
+        if (ultimoAcesso === 'MAIS_3_DIAS') {
+          return diffDays > 3;
+        }
+        if (ultimoAcesso === 'MAIS_7_DIAS') {
+          return diffDays > 7;
+        }
+        return true;
+      });
+    }
+
+    // Ordenação por prioridade
+    const ordemPrioridade: Record<string, number> = {
+      'D3': 1,
+      'D2': 2,
+      'D1': 3,
+      'EXPIrado': 4,
+      'PLANO_ATIVO': 5,
+      'SEM_ACESSO': 6
+    };
+
+    usuariosFiltrados.sort((a, b) => {
+      const prioridadeA = ordemPrioridade[a.estagioTrial] || 99;
+      const prioridadeB = ordemPrioridade[b.estagioTrial] || 99;
+      
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB;
+      }
+      
+      // Dentro do mesmo grupo, ordenar por data de vencimento (mais próximo primeiro)
+      return a.diasRestantes - b.diasRestantes;
+    });
 
     res.json({
-      usuarios: usuariosDTO,
+      usuarios: usuariosFiltrados,
       paginacao: {
         pagina: pageNum,
         limite: finalLimit,
-        total,
-        totalPaginas: Math.ceil(total / finalLimit)
+        total: usuariosFiltrados.length,
+        totalPaginas: Math.ceil(usuariosFiltrados.length / finalLimit)
       }
     });
   } catch (error: any) {
     console.error('Erro ao listar usuários:', error);
     res.status(500).json({
       error: 'Erro ao listar usuários',
+      message: error.message
+    });
+  }
+};
+
+// Obter resumo estratégico de usuários
+export const obterResumoUsuarios = async (req: AuthRequest, res: Response) => {
+  try {
+    const agora = new Date();
+    const inicioHoje = new Date(agora);
+    inicioHoje.setHours(0, 0, 0, 0);
+    const fimHoje = new Date(agora);
+    fimHoje.setHours(23, 59, 59, 999);
+    
+    const inicio24hAtras = new Date(agora);
+    inicio24hAtras.setHours(agora.getHours() - 24);
+
+    // Buscar todos os usuários com dados de trial
+    const usuarios = await prisma.user.findMany({
+      where: {
+        role: 'USER',
+        ativo: true
+      },
+      select: {
+        id: true,
+        dataInicioTrial: true,
+        dataFimTrial: true,
+        planoAtivo: true,
+        createdAt: true
+      }
+    });
+
+    // Calcular métricas
+    let total = usuarios.length;
+    let trialsAtivosHoje = 0;
+    let trialsD3 = 0;
+    let trialsExpirados24h = 0;
+    let assinantesAtivos = 0;
+
+    usuarios.forEach(user => {
+      // Assinantes ativos
+      if (user.planoAtivo) {
+        assinantesAtivos++;
+        return;
+      }
+
+      // Se não tem trial, pular
+      if (!user.dataInicioTrial || !user.dataFimTrial) {
+        return;
+      }
+
+      const estagio = calcularEstagioTrial(user.dataInicioTrial, user.dataFimTrial, agora);
+      const dataFimTrial = new Date(user.dataFimTrial);
+
+      // Trials ativos hoje (qualquer estágio ativo hoje)
+      if (estagio !== 'EXPIrado' && dataFimTrial >= inicioHoje && dataFimTrial <= fimHoje) {
+        trialsAtivosHoje++;
+      }
+
+      // Trials D3 (último dia)
+      if (estagio === 'D3') {
+        trialsD3++;
+      }
+
+      // Trials expirados nas últimas 24h
+      if (estagio === 'EXPIrado' && dataFimTrial >= inicio24hAtras && dataFimTrial <= agora) {
+        trialsExpirados24h++;
+      }
+    });
+
+    res.json({
+      total,
+      trialsAtivosHoje,
+      trialsD3,
+      trialsExpirados24h,
+      assinantesAtivos
+    });
+  } catch (error: any) {
+    console.error('Erro ao obter resumo de usuários:', error);
+    res.status(500).json({
+      error: 'Erro ao obter resumo de usuários',
+      message: error.message
+    });
+  }
+};
+
+// Estender trial por 1 dia
+export const estenderTrial = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        dataFimTrial: true,
+        planoAtivo: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    if (user.planoAtivo) {
+      return res.status(400).json({
+        error: 'Usuário já possui plano ativo'
+      });
+    }
+
+    if (!user.dataFimTrial) {
+      return res.status(400).json({
+        error: 'Usuário não possui trial ativo'
+      });
+    }
+
+    // Adicionar 1 dia ao trial
+    const novaDataFim = new Date(user.dataFimTrial);
+    novaDataFim.setDate(novaDataFim.getDate() + 1);
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        dataFimTrial: novaDataFim
+      }
+    });
+
+    res.json({
+      message: 'Trial estendido com sucesso',
+      novaDataFim: novaDataFim.toISOString()
+    });
+  } catch (error: any) {
+    console.error('Erro ao estender trial:', error);
+    res.status(500).json({
+      error: 'Erro ao estender trial',
+      message: error.message
+    });
+  }
+};
+
+// Converter trial em plano ativo manualmente
+export const converterManual = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { plano = 'MENSAL' } = req.body;
+
+    const planosValidos = ['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'];
+    if (!planosValidos.includes(plano.toUpperCase())) {
+      return res.status(400).json({
+        error: 'Plano inválido'
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { perfil: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    if (user.planoAtivo) {
+      return res.status(400).json({
+        error: 'Usuário já possui plano ativo'
+      });
+    }
+
+    // Calcular data de expiração
+    const hoje = new Date();
+    const dataExpiracao = new Date(hoje);
+    switch (plano.toUpperCase()) {
+      case 'MENSAL':
+        dataExpiracao.setMonth(dataExpiracao.getMonth() + 1);
+        break;
+      case 'TRIMESTRAL':
+        dataExpiracao.setMonth(dataExpiracao.getMonth() + 3);
+        break;
+      case 'SEMESTRAL':
+        dataExpiracao.setMonth(dataExpiracao.getMonth() + 6);
+        break;
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        planoAtivo: true,
+        plano: plano.toUpperCase(),
+        dataPagamento: hoje,
+        dataExpiracao: dataExpiracao
+      }
+    });
+
+    // Gerar treinos se tiver perfil
+    if (user.perfil) {
+      try {
+        const { gerarTreinos30Dias } = await import('../services/treino.service');
+        await gerarTreinos30Dias(user.id);
+      } catch (error: any) {
+        console.error('Erro ao gerar treinos após conversão manual:', error);
+        // Não falhar a conversão se houver erro ao gerar treinos
+      }
+    }
+
+    res.json({
+      message: 'Usuário convertido para plano ativo com sucesso',
+      plano: plano.toUpperCase(),
+      dataExpiracao: dataExpiracao.toISOString()
+    });
+  } catch (error: any) {
+    console.error('Erro ao converter manualmente:', error);
+    res.status(500).json({
+      error: 'Erro ao converter manualmente',
+      message: error.message
+    });
+  }
+};
+
+// Encerrar trial antecipadamente
+export const encerrarTrial = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        dataFimTrial: true,
+        planoAtivo: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    if (user.planoAtivo) {
+      return res.status(400).json({
+        error: 'Usuário já possui plano ativo'
+      });
+    }
+
+    if (!user.dataFimTrial) {
+      return res.status(400).json({
+        error: 'Usuário não possui trial ativo'
+      });
+    }
+
+    // Definir data de fim do trial para agora
+    await prisma.user.update({
+      where: { id },
+      data: {
+        dataFimTrial: new Date()
+      }
+    });
+
+    res.json({
+      message: 'Trial encerrado com sucesso'
+    });
+  } catch (error: any) {
+    console.error('Erro ao encerrar trial:', error);
+    res.status(500).json({
+      error: 'Erro ao encerrar trial',
       message: error.message
     });
   }
