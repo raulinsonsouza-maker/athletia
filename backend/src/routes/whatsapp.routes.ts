@@ -1,18 +1,14 @@
 import { Router } from 'express';
 import {
-  startOnboarding,
-  handleOAuthCallback,
   sendTestMessage
 } from '../controllers/whatsapp.controller';
 
 const router = Router();
 
-// Onboarding
-router.get('/onboarding/start', startOnboarding);
-router.get('/onboarding/callback', handleOAuthCallback);
-router.post('/onboarding/callback', handleOAuthCallback);
+// Nota: Rotas de onboarding foram movidas para /admin/whatsapp
+// para garantir autenticação e segurança adequadas
 
-// Teste
+// Teste (pode ser removido se não for mais necessário)
 router.post('/test', sendTestMessage);
 
 export default router;
