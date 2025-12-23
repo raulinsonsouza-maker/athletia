@@ -143,7 +143,7 @@ export default function Blog() {
       
       <BlogHeader />
       
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-16">
         {loading ? (
           <div className="text-center py-20">
             <div className="spinner h-12 w-12 mx-auto mb-4"></div>
@@ -151,14 +151,36 @@ export default function Blog() {
           </div>
         ) : (
           <>
-            {/* Intro Text */}
-            {settings?.blogIntroText && (
-              <div className="mb-12 text-center">
-                <p className="text-lg md:text-xl text-light-muted max-w-3xl mx-auto">
+            {/* Hero Section Melhorada */}
+            <div className="mb-16 md:mb-24 text-center relative">
+              {/* Background decorative elements */}
+              <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+              </div>
+              
+              <div className="inline-block mb-8">
+                <div className="inline-block px-4 py-2 mb-6 bg-primary/10 border border-primary/20 rounded-full">
+                  <span className="text-sm font-semibold text-primary uppercase tracking-wider">Conhecimento em Movimento</span>
+                </div>
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-light mb-6 leading-tight">
+                  <span className="bg-gradient-to-r from-light via-light to-primary bg-clip-text text-transparent">
+                    Blog AthletIA
+                  </span>
+                </h1>
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  <div className="h-px w-12 bg-gradient-to-r from-transparent to-primary"></div>
+                  <div className="w-2 h-2 rounded-full bg-primary"></div>
+                  <div className="h-px w-12 bg-gradient-to-l from-transparent to-primary"></div>
+                </div>
+              </div>
+              
+              {settings?.blogIntroText && (
+                <p className="text-xl md:text-2xl text-light-muted max-w-3xl mx-auto leading-relaxed font-light">
                   {settings.blogIntroText}
                 </p>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Hero Editorial */}
             {heroPost && (
@@ -198,7 +220,7 @@ export default function Blog() {
                 title={settings.globalCta.title}
                 description={settings.globalCta.description}
                 buttonText={settings.globalCta.buttonText}
-                link={settings.globalCta.link}
+                link="/" // Sempre para o início do onboarding
               />
             )}
           </>

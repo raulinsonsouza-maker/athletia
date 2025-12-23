@@ -32,11 +32,18 @@ export default function BlogMostRead({ articles }: BlogMostReadProps) {
 
   return (
     <section className="mb-16 md:mb-24">
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-2">
+      <div className="mb-10 md:mb-12">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent"></div>
+          <div className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
+            <span className="text-xs font-semibold text-primary uppercase tracking-wider">Popular</span>
+          </div>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent via-primary/50 to-transparent"></div>
+        </div>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-3">
           Mais Lidos
         </h2>
-        <p className="text-light-muted">
+        <p className="text-lg text-light-muted">
           Os artigos mais populares da comunidade
         </p>
       </div>

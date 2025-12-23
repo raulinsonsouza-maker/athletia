@@ -159,14 +159,20 @@ export default function BlogPost() {
   ]
 
   // Determinar CTA a usar (prioridade: ctaConfig > campos diretos)
-  const ctaToUse = article.ctaConfig || (article.ctaTitle && article.ctaDescription && article.ctaButtonText
+  // Todos os CTAs devem levar para o início do onboarding (/)
+  const ctaToUse = article.ctaConfig 
     ? {
-        title: article.ctaTitle,
-        description: article.ctaDescription,
-        buttonText: article.ctaButtonText,
-        link: article.ctaType === 'cadastro' ? '/cadastro' : article.ctaType === 'criar_treino' ? '/treinos' : '/'
+        ...article.ctaConfig,
+        link: '/' // Sempre sobrescrever link para onboarding
       }
-    : null)
+    : (article.ctaTitle && article.ctaDescription && article.ctaButtonText
+      ? {
+          title: article.ctaTitle,
+          description: article.ctaDescription,
+          buttonText: article.ctaButtonText,
+          link: '/' // Sempre para o início do onboarding
+        }
+      : null)
 
   return (
     <>
@@ -196,46 +202,49 @@ export default function BlogPost() {
 
           {/* Hero Image */}
           {article.featuredImage && (
-            <div className="mb-10 rounded-2xl overflow-hidden shadow-2xl bg-dark relative aspect-video max-h-[520px]">
+            <div className="mb-12 rounded-3xl overflow-hidden shadow-2xl border border-grey/20 bg-dark relative aspect-video max-h-[480px]">
               <OptimizedImage
                 src={article.featuredImage}
                 alt={article.featuredImageAlt || article.title}
                 className="w-full h-full object-cover"
                 loading="eager"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark/60 via-transparent to-transparent"></div>
             </div>
           )}
 
           {/* Header */}
-          <header className="mb-10">
-            <div className="mb-4">
+          <header className="mb-12">
+            <div className="mb-6">
               {article.categoryRelation && (
-                <span className="inline-block px-4 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 rounded-full">
+                <span className="inline-block px-5 py-2.5 text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 border border-primary/30 rounded-full">
                   {article.categoryRelation.name}
                 </span>
               )}
             </div>
             
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-4 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-6 leading-tight">
               {article.title}
             </h1>
             
             {article.subtitle && (
-              <p className="text-xl md:text-2xl text-light-muted mb-6">
+              <p className="text-xl md:text-2xl text-light-muted mb-8 font-light leading-relaxed">
                 {article.subtitle}
               </p>
             )}
             
-            <BlogMeta
-              author={article.authorRelation?.name || article.author || 'Equipe AthletIA'}
-              authorRole={article.authorRelation?.role || undefined}
-              authorAvatar={article.authorRelation?.avatar ? (article.authorRelation.avatar.startsWith('http') ? article.authorRelation.avatar : `${window.location.origin}${article.authorRelation.avatar}`) : undefined}
-              publishedAt={article.publishedAt || article.createdAt}
-              updatedAt={article.updatedAt}
-              readingTime={article.readingTime}
-              category={article.categoryRelation?.name || article.category}
-              showDate={false}
-            />
+            <div className="pb-8 border-b border-grey/20">
+              <BlogMeta
+                author={article.authorRelation?.name || article.author || 'Equipe AthletIA'}
+                authorRole={article.authorRelation?.role || undefined}
+                authorAvatar={article.authorRelation?.avatar ? (article.authorRelation.avatar.startsWith('http') ? article.authorRelation.avatar : `${window.location.origin}${article.authorRelation.avatar}`) : undefined}
+                publishedAt={article.publishedAt || article.createdAt}
+                updatedAt={article.updatedAt}
+                readingTime={article.readingTime}
+                category={article.categoryRelation?.name || article.category}
+                showDate={false}
+              />
+            </div>
           </header>
 
           {/* Índice Automático */}

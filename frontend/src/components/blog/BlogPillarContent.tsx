@@ -31,11 +31,18 @@ export default function BlogPillarContent({ articles }: BlogPillarContentProps) 
 
   return (
     <section className="mb-16 md:mb-24">
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-2">
+      <div className="mb-10 md:mb-12">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
+          <div className="px-4 py-1.5 bg-purple-500/10 border border-purple-500/20 rounded-full">
+            <span className="text-xs font-semibold text-purple-400 uppercase tracking-wider">Evergreen</span>
+          </div>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent via-purple-500/50 to-transparent"></div>
+        </div>
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-3">
           Conteúdos Profundos
         </h2>
-        <p className="text-light-muted">
+        <p className="text-lg text-light-muted">
           Artigos evergreen que permanecem relevantes ao longo do tempo
         </p>
       </div>

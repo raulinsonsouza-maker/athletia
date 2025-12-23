@@ -7,7 +7,7 @@ interface BlogCTAProps {
   link?: string
 }
 
-export default function BlogCTA({ title, description, buttonText, link = '/' }: BlogCTAProps) {
+export default function BlogCTA({ title, description, buttonText, link }: BlogCTAProps) {
   const navigate = useNavigate()
 
   const handleClick = () => {
@@ -15,10 +15,14 @@ export default function BlogCTA({ title, description, buttonText, link = '/' }: 
     if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
       (window as any).gtag_report_conversion()
     }
-    if (link.startsWith('http')) {
+    
+    // Todos os CTAs devem levar para o início do onboarding
+    const onboardingLink = '/'
+    
+    if (link && link.startsWith('http')) {
       window.open(link, '_blank')
     } else {
-      navigate(link)
+      navigate(onboardingLink)
     }
   }
 
