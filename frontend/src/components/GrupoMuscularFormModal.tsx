@@ -202,16 +202,16 @@ export default function GrupoMuscularFormModal({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-light mb-2">Imagem (URL)</label>
+                            <label className="block text-sm font-medium text-light mb-2">Imagem (URL ou caminho)</label>
                             <input
-                                type="url"
+                                type="text"
                                 value={formData.imagemUrl}
                                 onChange={(e) => setFormData(prev => ({ ...prev, imagemUrl: e.target.value }))}
                                 className="input-field w-full"
-                                placeholder="https://"
+                                placeholder="https:// ou /api/uploads/..."
                             />
                             <p className="text-xs text-light-muted mt-1">
-                                Você pode informar uma URL direta ou enviar um arquivo abaixo.
+                                Você pode informar uma URL completa (https://) ou um caminho relativo (/api/uploads/...). Opcionalmente, envie um arquivo abaixo.
                             </p>
                         </div>
 
