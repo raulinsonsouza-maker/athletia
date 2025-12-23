@@ -309,35 +309,33 @@ export async function garantirPlanoSemanal(config: TreinoEngineConfig): Promise<
  */
 function extrairGruposPrincipais(exercicios: any[]): string[] {
   const gruposIgnorar = new Set(['Cardio', 'Alongamento', 'Flexibilidade']);
-  const gruposPrincipais = new Set<string>();
-  const gruposSinergistas = new Set<string>();
+  const grupos = new Map<string, number>(); // Map para contar frequência (grupos principais têm peso maior)
 
-  // Iterar apenas uma vez
+  // Iterar apenas uma vez e contar frequência
   exercicios.forEach(ex => {
     const exercicio = ex.exercicio || ex;
     const grupoPrincipal = exercicio.grupoMuscularPrincipal;
     const sinergistas = exercicio.sinergistas || [];
     
-    // Adicionar grupo principal (prioridade)
+    // Adicionar grupo principal (peso maior: +2)
     if (grupoPrincipal && !gruposIgnorar.has(grupoPrincipal)) {
-      gruposPrincipais.add(grupoPrincipal);
+      grupos.set(grupoPrincipal, (grupos.get(grupoPrincipal) || 0) + 2);
     }
     
-    // Adicionar sinergistas (sem duplicar principais)
+    // Adicionar sinergistas (peso menor: +1, mas só se não for principal)
     sinergistas.forEach((sinergista: string) => {
-      if (sinergista && !gruposIgnorar.has(sinergista) && !gruposPrincipais.has(sinergista)) {
-        gruposSinergistas.add(sinergista);
+      if (sinergista && !gruposIgnorar.has(sinergista) && !grupos.has(sinergista)) {
+        grupos.set(sinergista, (grupos.get(sinergista) || 0) + 1);
       }
     });
   });
 
-  // Priorizar principais, depois sinergistas (até 3)
-  const resultado = [
-    ...Array.from(gruposPrincipais),
-    ...Array.from(gruposSinergistas)
-  ].slice(0, 3);
-  
-  return resultado;
+  // Ordenar por frequência (mais frequente primeiro) e retornar top 2
+  // Isso garante que os grupos exibidos correspondem aos exercícios reais do treino
+  return Array.from(grupos.entries())
+    .sort((a, b) => b[1] - a[1]) // Ordenar por contagem decrescente
+    .slice(0, 2) // Limitar a 2 grupos (conforme exibido no frontend)
+    .map(([grupo]) => grupo); // Retornar apenas os nomes dos grupos
 }
 
 /**

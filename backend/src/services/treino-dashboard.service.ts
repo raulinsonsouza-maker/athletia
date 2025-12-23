@@ -48,12 +48,23 @@ function calcularVolumeTreino(treino: any): number {
 }
 
 function extrairGruposPrincipais(exercicios: any[]): string[] {
-  const grupos = new Set<string>();
+  const grupos = new Map<string, number>(); // Map para contar frequência de cada grupo
+  
+  // Contar frequência de cada grupo muscular nos exercícios
   exercicios.forEach(ex => {
     const grupo = ex.exercicio?.grupoMuscularPrincipal || ex.grupoMuscularPrincipal;
-    if (grupo) grupos.add(grupo);
+    // Filtrar grupos inválidos (Cardio, Alongamento, Flexibilidade não devem aparecer)
+    if (grupo && !['Cardio', 'Alongamento', 'Flexibilidade'].includes(grupo)) {
+      grupos.set(grupo, (grupos.get(grupo) || 0) + 1);
+    }
   });
-  return Array.from(grupos).slice(0, 3);
+  
+  // Ordenar por frequência (mais frequente primeiro) e retornar top 2
+  // Isso garante que os grupos exibidos correspondem aos exercícios reais do treino
+  return Array.from(grupos.entries())
+    .sort((a, b) => b[1] - a[1]) // Ordenar por contagem decrescente
+    .slice(0, 2) // Limitar a 2 grupos (conforme exibido no frontend)
+    .map(([grupo]) => grupo); // Retornar apenas os nomes dos grupos
 }
 
 async function obterMapaImagensPadrao(): Promise<Record<string, string>> {

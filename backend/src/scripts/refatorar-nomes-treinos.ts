@@ -18,34 +18,10 @@ import { LETRAS_TREINO, NOMES_SPLITS } from '../services/split-generator.service
 function gerarNomeTreinoIA(
   frequencia: number,
   indiceDia: number,
-  gruposMusculares: string[]
+  gruposMusculares: string[]  // Parâmetro mantido para compatibilidade, mas não usado no nome
 ): string {
   const letra = LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
-  
-  if (gruposMusculares && gruposMusculares.length > 0) {
-    const gruposForca = gruposMusculares.filter(g => 
-      !['Cardio', 'Alongamento', 'Flexibilidade'].includes(g)
-    );
-    
-    if (gruposForca.length > 0) {
-      const gruposPrincipais = gruposForca.slice(0, 3);
-      
-      if (gruposPrincipais.length === 1) {
-        return `Treino ${letra} - ${gruposPrincipais[0]}`;
-      } else if (gruposPrincipais.length === 2) {
-        return `Treino ${letra} - ${gruposPrincipais[0]} e ${gruposPrincipais[1]}`;
-      } else {
-        return `Treino ${letra} - ${gruposPrincipais[0]}, ${gruposPrincipais[1]} e mais`;
-      }
-    }
-  }
-  
-  // Fallback: usar nome padrão do split
-  const nomeBase = NOMES_SPLITS[frequencia]?.[indiceDia % frequencia];
-  if (nomeBase) {
-    return `Treino ${letra} - ${nomeBase}`;
-  }
-  
+  // Retornar apenas "Treino [LETRA]" - grupos musculares são exibidos separadamente em amarelo
   return `Treino ${letra}`;
 }
 
@@ -53,27 +29,8 @@ function gerarNomeTreinoIA(
  * Gera nome de treino rápido baseado em grupos musculares
  */
 function gerarNomeTreinoRapido(gruposMusculares: string[]): string {
-  if (!gruposMusculares || gruposMusculares.length === 0) {
-    return 'Treino Rápido';
-  }
-  
-  const gruposForca = gruposMusculares.filter(g => 
-    !['Cardio', 'Alongamento', 'Flexibilidade'].includes(g)
-  );
-  
-  if (gruposForca.length === 0) {
-    return 'Treino Rápido';
-  }
-  
-  const gruposPrincipais = gruposForca.slice(0, 3);
-  
-  if (gruposPrincipais.length === 1) {
-    return `Treino Rápido - ${gruposPrincipais[0]}`;
-  } else if (gruposPrincipais.length === 2) {
-    return `Treino Rápido - ${gruposPrincipais[0]} e ${gruposPrincipais[1]}`;
-  } else {
-    return `Treino Rápido - ${gruposPrincipais[0]}, ${gruposPrincipais[1]} e mais`;
-  }
+  // Simplificar para apenas "Treino Rápido" - grupos são exibidos separadamente em amarelo
+  return 'Treino Rápido';
 }
 
 async function refatorarNomesTreinos() {

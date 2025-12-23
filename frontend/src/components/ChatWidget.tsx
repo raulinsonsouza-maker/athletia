@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { chatService, ChatMessage, ChatSession, ChatbotOption } from '../services/chat.service';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function ChatWidget() {
   const { user, isAuthenticated } = useAuth();
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [session, setSession] = useState<ChatSession | null>(null);
@@ -13,6 +15,12 @@ export default function ChatWidget() {
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Verificar se deve mostrar o widget (apenas em /meu-plano e /perfil)
+  const shouldShowWidget = () => {
+    const path = location.pathname;
+    return path === '/meu-plano' || path === '/perfil' || path.startsWith('/perfil/');
+  };
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
@@ -160,7 +168,7 @@ export default function ChatWidget() {
     setIsMinimized(false);
   };
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || !shouldShowWidget()) return null;
 
   return (
     <>
@@ -168,7 +176,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <button
           onClick={handleToggle}
-          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-primary rounded-full shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center group"
+          className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 md:w-16 md:h-16 bg-primary rounded-full shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center group"
           aria-label="Abrir chat"
         >
           <svg
@@ -195,8 +203,8 @@ export default function ChatWidget() {
       {/* Widget de chat */}
       {isOpen && (
         <div
-          className={`fixed bottom-6 right-6 z-50 w-96 max-w-[calc(100vw-3rem)] bg-[#0F0E0A] border-2 border-primary/30 rounded-xl shadow-2xl flex flex-col transition-all ${
-            isMinimized ? 'h-16' : 'h-[600px] max-h-[calc(100vh-8rem)]'
+          className={`fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-[calc(100vw-2rem)] md:w-96 max-w-[calc(100vw-3rem)] bg-[#0F0E0A] border-2 border-primary/30 rounded-xl shadow-2xl flex flex-col transition-all ${
+            isMinimized ? 'h-16' : 'h-[600px] max-h-[calc(100vh-10rem)] md:max-h-[calc(100vh-8rem)]'
           }`}
         >
           {/* Header */}

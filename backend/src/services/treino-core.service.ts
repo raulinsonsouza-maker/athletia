@@ -170,39 +170,10 @@ export function extrairGruposMuscularesDeTreino(treino: any): string[] {
 function gerarNomeTreino(
   frequencia: number, 
   indiceDia: number, 
-  gruposMusculares?: string[]
+  gruposMusculares?: string[]  // Parâmetro mantido para compatibilidade, mas não usado no nome
 ): string {
   const letra = LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
-  
-  // Se temos grupos musculares reais, usar eles para gerar nome descritivo
-  if (gruposMusculares && gruposMusculares.length > 0) {
-    // Filtrar apenas grupos de força (excluir Cardio, Alongamento, etc)
-    const gruposForca = gruposMusculares.filter(g => 
-      !['Cardio', 'Alongamento', 'Flexibilidade'].includes(g)
-    );
-    
-    if (gruposForca.length > 0) {
-      // Limitar a 2-3 grupos principais para nome não ficar muito longo
-      const gruposPrincipais = gruposForca.slice(0, 3);
-      
-      // Formatar nome baseado nos grupos
-      if (gruposPrincipais.length === 1) {
-        return `Treino ${letra} - ${gruposPrincipais[0]}`;
-      } else if (gruposPrincipais.length === 2) {
-        return `Treino ${letra} - ${gruposPrincipais[0]} e ${gruposPrincipais[1]}`;
-      } else {
-        // 3 ou mais grupos: usar os 2 primeiros + "e mais"
-        return `Treino ${letra} - ${gruposPrincipais[0]}, ${gruposPrincipais[1]} e mais`;
-      }
-    }
-  }
-  
-  // Fallback: usar nome padrão do split se grupos não disponíveis
-  const nomeBase = NOMES_SPLITS[frequencia]?.[indiceDia % frequencia];
-  if (nomeBase) {
-    return `Treino ${letra} - ${nomeBase}`;
-  }
-  
+  // Retornar apenas "Treino [LETRA]" - grupos musculares são exibidos separadamente em amarelo
   return `Treino ${letra}`;
 }
 

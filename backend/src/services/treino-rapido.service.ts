@@ -73,7 +73,7 @@ export async function gerarTreinoRapido(
     localTreino: data.localTreino,
     perfil: perfilCompleto,
     aplicarDadosOnboarding: true,
-    nome: `Treino Rápido - ${gruposSelecionados.slice(0, 3).join(', ')}`
+    nome: 'Treino Rápido' // Grupos são exibidos separadamente em amarelo
   });
 
   if (!treinoGerado) {
@@ -142,21 +142,12 @@ export async function gerarTreinoRapido(
   }
 
   // Atualizar nome baseado nos grupos musculares reais dos exercícios
-  const gruposReais = extrairGruposMuscularesDeTreino(treinoFinal);
-  if (gruposReais.length > 0) {
-    // Formatar nome: "Treino Rápido - [Grupo1], [Grupo2] e mais" ou "Treino Rápido - [Grupo1] e [Grupo2]"
-    let nomeAtualizado: string;
-    if (gruposReais.length === 1) {
-      nomeAtualizado = `Treino Rápido - ${gruposReais[0]}`;
-    } else if (gruposReais.length === 2) {
-      nomeAtualizado = `Treino Rápido - ${gruposReais[0]} e ${gruposReais[1]}`;
-    } else {
-      nomeAtualizado = `Treino Rápido - ${gruposReais[0]}, ${gruposReais[1]} e mais`;
-    }
-    
-    // Atualizar nome no banco se diferente
-    if (nomeAtualizado !== treinoFinal.nome) {
-      await prisma.treino.update({
+  // Simplificar nome para apenas "Treino Rápido" - grupos são exibidos separadamente em amarelo
+  const nomeAtualizado = 'Treino Rápido';
+  
+  // Atualizar nome no banco se diferente
+  if (nomeAtualizado !== treinoFinal.nome) {
+    await prisma.treino.update({
         where: { id: treinoFinal.id },
         data: { nome: nomeAtualizado }
       });
