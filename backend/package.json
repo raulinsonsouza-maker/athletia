@@ -54,6 +54,7 @@
     "node-cron": "^4.2.1",
     "openai": "^6.9.0",
     "resend": "^6.5.2",
+    "socket.io": "^4.8.3",
     "string-similarity": "^4.0.4"
   },
   "devDependencies": {

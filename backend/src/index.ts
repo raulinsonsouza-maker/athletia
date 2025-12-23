@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
@@ -25,12 +26,16 @@ import blogRoutes from './routes/blog.routes';
 import sitemapRoutes from './routes/sitemap.routes';
 import testRoutes from './routes/test-routes';
 import whatsappRoutes from './routes/whatsapp.routes';
+import chatRoutes from './routes/chat.routes';
+import adminChatRoutes from './routes/admin-chat.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import cron from 'node-cron';
 import { executarJobRemarketing } from './jobs/remarketing-email';
+import { websocketManager } from './lib/websocket';
 
 const app = express();
+const server = createServer(app);
 const PORT = process.env.PORT || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -342,6 +347,8 @@ app.use('/api/blog', blogRoutes);
 app.use('/api', sitemapRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/admin/chat', adminChatRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -364,7 +371,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
+// Inicializar WebSocket
+websocketManager.initialize(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   if (process.env.NODE_ENV !== 'production') {
     console.log(`📡 Ambiente: ${process.env.NODE_ENV || 'development'}`);

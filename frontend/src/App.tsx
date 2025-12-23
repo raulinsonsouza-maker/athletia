@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoadingFallback from './components/LoadingFallback'
+import ChatWidget from './components/ChatWidget'
 
 // Páginas críticas - manter no bundle inicial (Login e Register)
 import Login from './pages/Login'
@@ -50,6 +51,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ChatWidget />
         <Routes>
           {/* Rotas públicas */}
           <Route 

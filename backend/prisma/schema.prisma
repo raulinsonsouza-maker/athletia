@@ -51,6 +51,8 @@ model User {
   whatsappCadence                WhatsAppCadence?
   whatsappMessages               WhatsAppMessageLog[]
   adminAuditLogs                 AdminAuditLog[]
+  chatSessions                   ChatSession[]
+  assignedChatSessions           ChatSession[] @relation("AssignedAdmin")
 
   @@map("users")
 }
@@ -683,4 +685,57 @@ model AdminAuditLog {
   @@index([resourceType])
   @@index([createdAt])
   @@map("admin_audit_logs")
+}
+
+// Chat System Models
+
+enum ChatSessionStatus {
+  bot
+  human
+  closed
+}
+
+enum ChatMessageDirection {
+  user
+  bot
+  admin
+}
+
+model ChatSession {
+  id              String            @id @default(uuid())
+  userId          String            @map("user_id")
+  status          ChatSessionStatus @default(bot)
+  assignedToAdminId String?         @map("assigned_to_admin_id")
+  unreadCount     Int               @default(0) @map("unread_count")
+  lastMessageAt   DateTime          @default(now()) @map("last_message_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedAdmin   User?             @relation("AssignedAdmin", fields: [assignedToAdminId], references: [id], onDelete: SetNull)
+  messages        ChatMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([assignedToAdminId])
+  @@index([lastMessageAt])
+  @@index([userId, status])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String              @id @default(uuid())
+  sessionId String              @map("session_id")
+  direction ChatMessageDirection
+  content   String              @db.Text
+  metadata  Json? // Para opções selecionadas, links, etc
+  read      Boolean             @default(false)
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
 }
