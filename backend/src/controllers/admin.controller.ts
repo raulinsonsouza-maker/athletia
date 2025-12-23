@@ -1872,8 +1872,12 @@ export const criarExercicio = async (req: AuthRequest, res: Response) => {
       descricao: descricao || null,
       execucaoTecnica: execucaoTecnica || null,
       errosComuns: Array.isArray(errosComuns) ? errosComuns : [],
-      cargaInicialSugerida: cargaInicialSugerida ? parseFloat(cargaInicialSugerida) : null,
-      rpeSugerido: rpeSugerido ? parseInt(rpeSugerido) : null,
+      cargaInicialSugerida: cargaInicialSugerida === null || cargaInicialSugerida === undefined || cargaInicialSugerida === ''
+        ? null
+        : (isNaN(parseFloat(cargaInicialSugerida)) ? null : parseFloat(cargaInicialSugerida)),
+      rpeSugerido: rpeSugerido === null || rpeSugerido === undefined || rpeSugerido === ''
+        ? null
+        : (isNaN(parseInt(rpeSugerido)) ? null : parseInt(rpeSugerido)),
       equipamentoNecessario: equipamentosArray,
       semEquipamento: semEquipamentoValue,
       alternativas: Array.isArray(alternativas) ? alternativas : [],
@@ -1986,8 +1990,24 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
     if (descricao !== undefined) data.descricao = descricao || null;
     if (execucaoTecnica !== undefined) data.execucaoTecnica = execucaoTecnica || null;
     if (errosComuns !== undefined) data.errosComuns = Array.isArray(errosComuns) ? errosComuns : [];
-    if (cargaInicialSugerida !== undefined) data.cargaInicialSugerida = cargaInicialSugerida ? parseFloat(cargaInicialSugerida) : null;
-    if (rpeSugerido !== undefined) data.rpeSugerido = rpeSugerido ? parseInt(rpeSugerido) : null;
+    if (cargaInicialSugerida !== undefined) {
+      // Aceitar null, 0 ou valores numéricos válidos
+      if (cargaInicialSugerida === null || cargaInicialSugerida === '') {
+        data.cargaInicialSugerida = null;
+      } else {
+        const parsed = parseFloat(cargaInicialSugerida);
+        data.cargaInicialSugerida = isNaN(parsed) ? null : parsed;
+      }
+    }
+    if (rpeSugerido !== undefined) {
+      // Aceitar null, 0 ou valores numéricos válidos (1-10)
+      if (rpeSugerido === null || rpeSugerido === '') {
+        data.rpeSugerido = null;
+      } else {
+        const parsed = parseInt(rpeSugerido);
+        data.rpeSugerido = isNaN(parsed) ? null : parsed;
+      }
+    }
     if (equipamentoNecessario !== undefined) data.equipamentoNecessario = equipamentosArray;
     if (semEquipamento !== undefined) data.semEquipamento = semEquipamentoValue;
     if (nivelDificuldade !== undefined) data.nivelDificuldade = nivelDificuldade;

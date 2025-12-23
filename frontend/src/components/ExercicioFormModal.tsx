@@ -70,26 +70,32 @@ export default function ExercicioFormModal({
   // Carregar dados do exercício quando modal abrir
   useEffect(() => {
     if (isOpen && exercicio) {
+      // Garantir que arrays sempre sejam arrays (mesmo se vierem null/undefined)
+      const sinergistasArray = Array.isArray(exercicio.sinergistas) ? exercicio.sinergistas : (exercicio.sinergistas ? [exercicio.sinergistas] : [])
+      const errosComunsArray = Array.isArray(exercicio.errosComuns) ? exercicio.errosComuns : (exercicio.errosComuns ? [exercicio.errosComuns] : [])
+      const equipamentoArray = Array.isArray(exercicio.equipamentoNecessario) ? exercicio.equipamentoNecessario : (exercicio.equipamentoNecessario ? [exercicio.equipamentoNecessario] : [])
+      const alternativasArray = Array.isArray(exercicio.alternativas) ? exercicio.alternativas : (exercicio.alternativas ? [exercicio.alternativas] : [])
+
       setFormData({
         nome: exercicio.nome || '',
         grupoMuscularPrincipal: exercicio.grupoMuscularPrincipal || '',
         nivelDificuldade: exercicio.nivelDificuldade || '',
         descricao: exercicio.descricao || '',
         execucaoTecnica: exercicio.execucaoTecnica || '',
-        errosComuns: Array.isArray(exercicio.errosComuns) ? exercicio.errosComuns : [],
-        equipamentoNecessario: Array.isArray(exercicio.equipamentoNecessario) ? exercicio.equipamentoNecessario : [],
+        errosComuns: errosComunsArray,
+        equipamentoNecessario: equipamentoArray,
         semEquipamento: exercicio.semEquipamento !== undefined ? exercicio.semEquipamento : false,
-        alternativas: Array.isArray(exercicio.alternativas) ? exercicio.alternativas : [],
-        sinergistas: Array.isArray(exercicio.sinergistas) ? exercicio.sinergistas : [],
-        cargaInicialSugerida: exercicio.cargaInicialSugerida || null,
-        rpeSugerido: exercicio.rpeSugerido || null,
+        alternativas: alternativasArray,
+        sinergistas: sinergistasArray,
+        cargaInicialSugerida: exercicio.cargaInicialSugerida !== null && exercicio.cargaInicialSugerida !== undefined ? exercicio.cargaInicialSugerida : null,
+        rpeSugerido: exercicio.rpeSugerido !== null && exercicio.rpeSugerido !== undefined ? exercicio.rpeSugerido : null,
         ativo: exercicio.ativo !== undefined ? exercicio.ativo : true
       })
       setArrayInputs({
-        sinergistas: Array.isArray(exercicio.sinergistas) ? exercicio.sinergistas.join('\n') : '',
-        errosComuns: Array.isArray(exercicio.errosComuns) ? exercicio.errosComuns.join('\n') : '',
-        equipamentoNecessario: Array.isArray(exercicio.equipamentoNecessario) ? exercicio.equipamentoNecessario.join('\n') : '',
-        alternativas: Array.isArray(exercicio.alternativas) ? exercicio.alternativas.join('\n') : ''
+        sinergistas: sinergistasArray.join('\n'),
+        errosComuns: errosComunsArray.join('\n'),
+        equipamentoNecessario: equipamentoArray.join('\n'),
+        alternativas: alternativasArray.join('\n')
       })
     } else if (isOpen && isCreating) {
       // Resetar para criação
@@ -122,7 +128,16 @@ export default function ExercicioFormModal({
   const handleArrayInputChange = (field: keyof typeof arrayInputs, value: string) => {
     setArrayInputs(prev => ({ ...prev, [field]: value }))
     const array = value.split('\n').map(item => item.trim()).filter(item => item.length > 0)
-    setFormData(prev => ({ ...prev, [field.replace('s', '') as keyof typeof formData]: array }))
+    
+    // Mapear corretamente os campos do arrayInputs para formData
+    const fieldMap: Record<keyof typeof arrayInputs, keyof typeof formData> = {
+      sinergistas: 'sinergistas',
+      errosComuns: 'errosComuns',
+      equipamentoNecessario: 'equipamentoNecessario',
+      alternativas: 'alternativas'
+    }
+    
+    setFormData(prev => ({ ...prev, [fieldMap[field]]: array }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -160,15 +175,14 @@ export default function ExercicioFormModal({
         semEquipamento: formData.semEquipamento,
         alternativas: formData.alternativas,
         sinergistas: formData.sinergistas,
-        ativo: formData.ativo
-      }
-
-      // Adicionar apenas se tiver valor
-      if (formData.cargaInicialSugerida !== null && formData.cargaInicialSugerida !== undefined) {
-        payload.cargaInicialSugerida = formData.cargaInicialSugerida
-      }
-      if (formData.rpeSugerido !== null && formData.rpeSugerido !== undefined) {
-        payload.rpeSugerido = formData.rpeSugerido
+        ativo: formData.ativo,
+        // Sempre enviar cargaInicialSugerida e rpeSugerido (mesmo que null) para permitir limpar valores
+        cargaInicialSugerida: formData.cargaInicialSugerida !== null && formData.cargaInicialSugerida !== undefined
+          ? formData.cargaInicialSugerida
+          : null,
+        rpeSugerido: formData.rpeSugerido !== null && formData.rpeSugerido !== undefined
+          ? formData.rpeSugerido
+          : null
       }
 
       let response
@@ -182,7 +196,9 @@ export default function ExercicioFormModal({
         isCreating ? 'Exercício criado com sucesso!' : 'Exercício atualizado com sucesso!',
         'success'
       )
-      onSave(response.data)
+      // O backend retorna { message: '...', exercicio: {...} }, então precisamos pegar apenas o exercício
+      const exercicioSalvo = response.data.exercicio || response.data
+      onSave(exercicioSalvo)
       onClose()
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao salvar exercício'
@@ -354,8 +370,14 @@ export default function ExercicioFormModal({
                     <label className="block text-sm font-medium text-light mb-2">Carga Inicial Sugerida (kg)</label>
                     <input
                       type="number"
-                      value={formData.cargaInicialSugerida || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cargaInicialSugerida: e.target.value ? parseFloat(e.target.value) : null }))}
+                      value={formData.cargaInicialSugerida !== null && formData.cargaInicialSugerida !== undefined ? formData.cargaInicialSugerida : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.trim()
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          cargaInicialSugerida: value === '' ? null : (isNaN(parseFloat(value)) ? prev.cargaInicialSugerida : parseFloat(value))
+                        }))
+                      }}
                       className="input-field w-full"
                       placeholder="Ex: 20"
                       min="0"
@@ -367,13 +389,19 @@ export default function ExercicioFormModal({
                     <label className="block text-sm font-medium text-light mb-2">RPE Sugerido</label>
                     <input
                       type="number"
-                      value={formData.rpeSugerido || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, rpeSugerido: e.target.value ? parseFloat(e.target.value) : null }))}
+                      value={formData.rpeSugerido !== null && formData.rpeSugerido !== undefined ? formData.rpeSugerido : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.trim()
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          rpeSugerido: value === '' ? null : (isNaN(parseInt(value)) ? prev.rpeSugerido : parseInt(value))
+                        }))
+                      }}
                       className="input-field w-full"
                       placeholder="Ex: 7"
                       min="1"
                       max="10"
-                      step="0.5"
+                      step="1"
                     />
                   </div>
                 </div>
