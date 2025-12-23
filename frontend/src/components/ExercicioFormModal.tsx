@@ -170,40 +170,95 @@ export default function ExercicioFormModal({
         nivelDificuldade: formData.nivelDificuldade,
         descricao: formData.descricao.trim() || null,
         execucaoTecnica: formData.execucaoTecnica.trim() || null,
-        errosComuns: formData.errosComuns,
-        equipamentoNecessario: formData.equipamentoNecessario,
-        semEquipamento: formData.semEquipamento,
-        alternativas: formData.alternativas,
-        sinergistas: formData.sinergistas,
-        ativo: formData.ativo,
-        // Sempre enviar cargaInicialSugerida e rpeSugerido (mesmo que null) para permitir limpar valores
-        cargaInicialSugerida: formData.cargaInicialSugerida !== null && formData.cargaInicialSugerida !== undefined
-          ? formData.cargaInicialSugerida
-          : null,
-        rpeSugerido: formData.rpeSugerido !== null && formData.rpeSugerido !== undefined
-          ? formData.rpeSugerido
-          : null
+        errosComuns: formData.errosComuns || [],
+        equipamentoNecessario: formData.equipamentoNecessario || [],
+        semEquipamento: formData.semEquipamento !== undefined ? formData.semEquipamento : false,
+        alternativas: formData.alternativas || [],
+        sinergistas: formData.sinergistas || [],
+        ativo: formData.ativo !== undefined ? formData.ativo : true
+      }
+
+      // Adicionar campos numéricos opcionais apenas se tiverem valor
+      // Ao criar: omitir se null/undefined (backend usa padrão null)
+      // Ao atualizar: enviar null explicitamente para permitir limpar o campo
+      if (isCreating) {
+        if (formData.cargaInicialSugerida !== null && formData.cargaInicialSugerida !== undefined) {
+          payload.cargaInicialSugerida = formData.cargaInicialSugerida
+        }
+        if (formData.rpeSugerido !== null && formData.rpeSugerido !== undefined) {
+          payload.rpeSugerido = formData.rpeSugerido
+        }
+      } else {
+        // Ao atualizar, sempre enviar (mesmo que null) para permitir limpar valores
+        payload.cargaInicialSugerida = formData.cargaInicialSugerida ?? null
+        payload.rpeSugerido = formData.rpeSugerido ?? null
       }
 
       let response
       if (isCreating) {
         response = await api.post('/admin/exercicios', payload)
       } else {
-        response = await api.put(`/admin/exercicios/${exercicio?.id}`, payload)
+        if (!exercicio?.id) {
+          showToast('Erro: ID do exercício não encontrado', 'error')
+          setSaving(false)
+          return
+        }
+        response = await api.put(`/admin/exercicios/${exercicio.id}`, payload)
       }
 
+      // O backend retorna { message: '...', exercicio: {...} }
+      const exercicioSalvo = response.data?.exercicio || response.data
+      
+      if (!exercicioSalvo || !exercicioSalvo.id) {
+        console.error('Resposta inválida do servidor:', response.data)
+        showToast('Erro: Dados inválidos retornados do servidor. Verifique o console para mais detalhes.', 'error')
+        setSaving(false)
+        return
+      }
+      
       showToast(
         isCreating ? 'Exercício criado com sucesso!' : 'Exercício atualizado com sucesso!',
         'success'
       )
-      // O backend retorna { message: '...', exercicio: {...} }, então precisamos pegar apenas o exercício
-      const exercicioSalvo = response.data.exercicio || response.data
       onSave(exercicioSalvo)
       onClose()
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Erro ao salvar exercício'
-      showToast(errorMessage, 'error')
       console.error('Erro ao salvar exercício:', error)
+      console.error('Detalhes do erro:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      })
+      
+      let errorMessage = 'Erro ao salvar exercício'
+      if (error.response?.data) {
+        // Se houver uma mensagem de erro específica
+        if (error.response.data.error) {
+          errorMessage = error.response.data.error
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message
+        } else if (error.response.data.details) {
+          // Se for um erro de validação com detalhes
+          if (Array.isArray(error.response.data.details)) {
+            const detailsMessages = error.response.data.details.map((d: any) => {
+              if (typeof d === 'string') return d
+              return d.msg || d.message || `${d.param || 'Campo'}: ${d.msg || d.message || 'inválido'}`
+            })
+            errorMessage = `Erro de validação: ${detailsMessages.join('; ')}`
+          } else {
+            errorMessage = `Erro de validação: ${error.response.data.details}`
+          }
+        } else if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data
+        } else {
+          // Tentar extrair qualquer informação útil
+          errorMessage = JSON.stringify(error.response.data)
+        }
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      showToast(errorMessage, 'error')
     } finally {
       setSaving(false)
     }

@@ -171,13 +171,25 @@ const criarExercicioValidation = [
     .isArray()
     .withMessage('Alternativas deve ser um array'),
   body('cargaInicialSugerida')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Carga inicial sugerida deve ser um número positivo'),
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true
+      const num = parseFloat(value)
+      return !isNaN(num) && num >= 0
+    })
+    .withMessage('Carga inicial sugerida deve ser um número positivo ou null'),
   body('rpeSugerido')
+    .optional({ nullable: true, checkFalsy: true })
+    .custom((value) => {
+      if (value === null || value === undefined || value === '') return true
+      const num = parseInt(value)
+      return !isNaN(num) && num >= 1 && num <= 10
+    })
+    .withMessage('RPE sugerido deve ser um número entre 1 e 10 ou null'),
+  body('semEquipamento')
     .optional()
-    .isInt({ min: 1, max: 10 })
-    .withMessage('RPE sugerido deve ser um número entre 1 e 10'),
+    .isBoolean()
+    .withMessage('Sem equipamento deve ser um booleano'),
   body('ativo')
     .optional()
     .isBoolean()
@@ -233,6 +245,10 @@ const atualizarExercicioValidation = [
       return !isNaN(num) && num >= 1 && num <= 10
     })
     .withMessage('RPE sugerido deve ser um número entre 1 e 10 ou null'),
+  body('semEquipamento')
+    .optional()
+    .isBoolean()
+    .withMessage('Sem equipamento deve ser um booleano'),
   body('ativo')
     .optional()
     .isBoolean()
