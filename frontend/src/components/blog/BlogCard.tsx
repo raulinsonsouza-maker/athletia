@@ -57,6 +57,7 @@ export default function BlogCard({ article, onClick }: BlogCardProps) {
           readingTime={article.readingTime}
           category={article.category}
           compact
+          showDate={false}
         />
       </div>
     </article>

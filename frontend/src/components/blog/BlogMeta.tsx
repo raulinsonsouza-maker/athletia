@@ -9,6 +9,7 @@ interface BlogMetaProps {
   readingTime: number
   category?: string
   compact?: boolean
+  showDate?: boolean
 }
 
 export default function BlogMeta({
@@ -19,13 +20,18 @@ export default function BlogMeta({
   updatedAt,
   readingTime,
   category,
-  compact = false
+  compact = false,
+  showDate = true
 }: BlogMetaProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-4 text-xs text-light-muted">
-        <span>{formatDate(publishedAt)}</span>
-        <span>•</span>
+        {showDate && (
+          <>
+            <span>{formatDate(publishedAt)}</span>
+            <span>•</span>
+          </>
+        )}
         <span>{readingTime} min de leitura</span>
       </div>
     )
@@ -52,18 +58,22 @@ export default function BlogMeta({
           )}
         </div>
       </div>
-      <span>•</span>
-      <div className="flex items-center gap-2">
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        <span>{formatDate(publishedAt)}</span>
-        {updatedAt && updatedAt !== publishedAt && (
-          <>
-            <span className="text-xs">(atualizado em {formatDate(updatedAt)})</span>
-          </>
-        )}
-      </div>
+      {showDate && (
+        <>
+          <span>•</span>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>{formatDate(publishedAt)}</span>
+            {updatedAt && updatedAt !== publishedAt && (
+              <>
+                <span className="text-xs">(atualizado em {formatDate(updatedAt)})</span>
+              </>
+            )}
+          </div>
+        </>
+      )}
       <span>•</span>
       <div className="flex items-center gap-2">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

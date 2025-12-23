@@ -36,7 +36,7 @@ export default function BlogHero({ article }: BlogHeroProps) {
         className="group cursor-pointer bg-dark-lighter rounded-2xl border border-grey/20 overflow-hidden hover:border-primary/50 transition-all"
       >
         {article.featuredImage && (
-          <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden bg-dark">
+          <div className="relative w-full aspect-video max-h-[520px] overflow-hidden bg-dark">
             <OptimizedImage
               src={article.featuredImage}
               alt={article.featuredImageAlt || article.title}
@@ -77,6 +77,7 @@ export default function BlogHero({ article }: BlogHeroProps) {
             publishedAt={article.publishedAt || ''}
             readingTime={article.readingTime}
             category={article.categoryRelation?.name}
+            showDate={false}
           />
           
           <button className="mt-8 btn-primary px-8 py-4 text-lg font-semibold">

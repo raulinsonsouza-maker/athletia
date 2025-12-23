@@ -196,11 +196,11 @@ export default function BlogPost() {
 
           {/* Hero Image */}
           {article.featuredImage && (
-            <div className="mb-10 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="mb-10 rounded-2xl overflow-hidden shadow-2xl bg-dark relative aspect-video max-h-[520px]">
               <OptimizedImage
                 src={article.featuredImage}
                 alt={article.featuredImageAlt || article.title}
-                className="w-full h-auto object-cover"
+                className="w-full h-full object-cover"
                 loading="eager"
               />
             </div>
@@ -234,6 +234,7 @@ export default function BlogPost() {
               updatedAt={article.updatedAt}
               readingTime={article.readingTime}
               category={article.categoryRelation?.name || article.category}
+              showDate={false}
             />
           </header>
 
