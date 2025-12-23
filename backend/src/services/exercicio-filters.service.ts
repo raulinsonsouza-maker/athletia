@@ -76,53 +76,18 @@ export function filtrarPorLocalTreino(exercicios: any[], localTreino?: string | 
     });
   }
 
-  // Sem equipamento: APENAS peso corporal ou sem equipamentos listados
-  // REJEITAR exercícios que requerem equipamentos específicos
+  // Sem equipamento: usar campo explícito semEquipamento
   if (localLower.includes('sem equipamento') || localLower.includes('casa') || localLower.includes('domicílio')) {
     return exercicios.filter(ex => {
+      // Usar campo explícito semEquipamento se disponível
+      if (ex.semEquipamento !== undefined) {
+        return ex.semEquipamento === true;
+      }
+      
+      // Fallback para exercícios antigos: verificar se equipamentoNecessario está vazio
+      // (mantido para compatibilidade durante migração)
       const equipamentos = ex.equipamentoNecessario || [];
-      
-      // Se não tem equipamentos listados, permitir (assumir peso corporal)
-      if (equipamentos.length === 0) {
-        return true;
-      }
-      
-      // Verificar se TODOS os equipamentos são apenas peso corporal
-      const todosPesoCorporal = equipamentos.every((eq: string) => {
-        const eqLower = eq.toLowerCase().trim();
-        return eqLower.includes('peso corporal') || 
-               eqLower.includes('corpo') ||
-               eqLower === '' ||
-               eqLower === 'nenhum';
-      });
-      
-      if (!todosPesoCorporal) {
-        // Rejeitar se tem qualquer equipamento específico
-        const temEquipamentoEspecifico = equipamentos.some((eq: string) => {
-          const eqLower = eq.toLowerCase().trim();
-          return eqLower.includes('halter') ||
-                 eqLower.includes('dumbbell') ||
-                 eqLower.includes('barra') ||
-                 eqLower.includes('máquina') ||
-                 eqLower.includes('aparelho') ||
-                 eqLower.includes('esteira') ||
-                 eqLower.includes('bicicleta') ||
-                 eqLower.includes('eliptico') ||
-                 eqLower.includes('elíptico') ||
-                 eqLower.includes('remada') ||
-                 eqLower.includes('cabo') ||
-                 eqLower.includes('polia') ||
-                 eqLower.includes('smith') ||
-                 eqLower.includes('hack') ||
-                 eqLower.includes('leg press');
-        });
-        
-        if (temEquipamentoEspecifico) {
-          return false; // Rejeitar exercícios que requerem equipamentos
-        }
-      }
-      
-      return todosPesoCorporal;
+      return equipamentos.length === 0;
     });
   }
 

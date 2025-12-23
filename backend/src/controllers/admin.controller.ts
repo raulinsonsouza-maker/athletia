@@ -1826,6 +1826,7 @@ export const criarExercicio = async (req: AuthRequest, res: Response) => {
       cargaInicialSugerida,
       rpeSugerido,
       equipamentoNecessario,
+      semEquipamento,
       nivelDificuldade,
       alternativas,
       ativo
@@ -1836,6 +1837,26 @@ export const criarExercicio = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({
         error: 'Campos obrigatórios: nome, grupoMuscularPrincipal, nivelDificuldade'
       });
+    }
+
+    // Validar semEquipamento: se true, equipamentoNecessario deve estar vazio ou conter apenas "Peso Corporal"
+    const equipamentosArray = Array.isArray(equipamentoNecessario) ? equipamentoNecessario : [];
+    const semEquipamentoValue = semEquipamento === true || semEquipamento === 'true';
+    
+    if (semEquipamentoValue) {
+      const equipamentosValidos = equipamentosArray.filter((eq: string) => {
+        const eqLower = eq.toLowerCase().trim();
+        return eqLower === '' || 
+               eqLower.includes('peso corporal') || 
+               eqLower.includes('corpo') ||
+               eqLower === 'nenhum';
+      });
+      
+      if (equipamentosArray.length > 0 && equipamentosValidos.length !== equipamentosArray.length) {
+        return res.status(400).json({
+          error: 'Se o exercício é sem equipamento, o campo equipamentoNecessario deve estar vazio ou conter apenas "Peso Corporal"'
+        });
+      }
     }
 
     // Preparar dados para criação
@@ -1849,7 +1870,8 @@ export const criarExercicio = async (req: AuthRequest, res: Response) => {
       errosComuns: Array.isArray(errosComuns) ? errosComuns : [],
       cargaInicialSugerida: cargaInicialSugerida ? parseFloat(cargaInicialSugerida) : null,
       rpeSugerido: rpeSugerido ? parseInt(rpeSugerido) : null,
-      equipamentoNecessario: Array.isArray(equipamentoNecessario) ? equipamentoNecessario : [],
+      equipamentoNecessario: equipamentosArray,
+      semEquipamento: semEquipamentoValue,
       alternativas: Array.isArray(alternativas) ? alternativas : [],
       ativo: ativo !== undefined ? (ativo === true || ativo === 'true') : true
     };
@@ -1869,6 +1891,7 @@ export const criarExercicio = async (req: AuthRequest, res: Response) => {
         cargaInicialSugerida: true,
         rpeSugerido: true,
         equipamentoNecessario: true,
+        semEquipamento: true,
         nivelDificuldade: true,
         alternativas: true,
         ativo: true,
@@ -1910,6 +1933,7 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
       cargaInicialSugerida,
       rpeSugerido,
       equipamentoNecessario,
+      semEquipamento,
       nivelDificuldade,
       alternativas,
       ativo
@@ -1926,6 +1950,30 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Validar semEquipamento: se true, equipamentoNecessario deve estar vazio ou conter apenas "Peso Corporal"
+    const equipamentosArray = equipamentoNecessario !== undefined 
+      ? (Array.isArray(equipamentoNecessario) ? equipamentoNecessario : [])
+      : exercicioExistente.equipamentoNecessario;
+    const semEquipamentoValue = semEquipamento !== undefined 
+      ? (semEquipamento === true || semEquipamento === 'true')
+      : exercicioExistente.semEquipamento;
+    
+    if (semEquipamentoValue) {
+      const equipamentosValidos = equipamentosArray.filter((eq: string) => {
+        const eqLower = eq.toLowerCase().trim();
+        return eqLower === '' || 
+               eqLower.includes('peso corporal') || 
+               eqLower.includes('corpo') ||
+               eqLower === 'nenhum';
+      });
+      
+      if (equipamentosArray.length > 0 && equipamentosValidos.length !== equipamentosArray.length) {
+        return res.status(400).json({
+          error: 'Se o exercício é sem equipamento, o campo equipamentoNecessario deve estar vazio ou conter apenas "Peso Corporal"'
+        });
+      }
+    }
+
     // Preparar dados para atualização
     const data: any = {};
     if (nome !== undefined) data.nome = nome;
@@ -1936,7 +1984,8 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
     if (errosComuns !== undefined) data.errosComuns = Array.isArray(errosComuns) ? errosComuns : [];
     if (cargaInicialSugerida !== undefined) data.cargaInicialSugerida = cargaInicialSugerida ? parseFloat(cargaInicialSugerida) : null;
     if (rpeSugerido !== undefined) data.rpeSugerido = rpeSugerido ? parseInt(rpeSugerido) : null;
-    if (equipamentoNecessario !== undefined) data.equipamentoNecessario = Array.isArray(equipamentoNecessario) ? equipamentoNecessario : [];
+    if (equipamentoNecessario !== undefined) data.equipamentoNecessario = equipamentosArray;
+    if (semEquipamento !== undefined) data.semEquipamento = semEquipamentoValue;
     if (nivelDificuldade !== undefined) data.nivelDificuldade = nivelDificuldade;
     if (alternativas !== undefined) data.alternativas = Array.isArray(alternativas) ? alternativas : [];
     if (ativo !== undefined) data.ativo = ativo === true || ativo === 'true';
@@ -1957,6 +2006,7 @@ export const atualizarExercicio = async (req: AuthRequest, res: Response) => {
         cargaInicialSugerida: true,
         rpeSugerido: true,
         equipamentoNecessario: true,
+        semEquipamento: true,
         nivelDificuldade: true,
         alternativas: true,
         ativo: true,

@@ -24,6 +24,7 @@ export interface ExercicioTreino {
     errosComuns?: string[]
     imagemUrl?: string | null
     equipamentoNecessario?: string[]
+    semEquipamento?: boolean
   }
 }
 

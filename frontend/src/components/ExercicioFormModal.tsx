@@ -12,6 +12,7 @@ interface Exercicio {
   execucaoTecnica: string | null
   errosComuns: string[]
   equipamentoNecessario: string[]
+  semEquipamento: boolean
   alternativas: string[]
   sinergistas: string[]
   cargaInicialSugerida: number | null
@@ -49,6 +50,7 @@ export default function ExercicioFormModal({
     execucaoTecnica: '',
     errosComuns: [] as string[],
     equipamentoNecessario: [] as string[],
+    semEquipamento: false,
     alternativas: [] as string[],
     sinergistas: [] as string[],
     cargaInicialSugerida: null as number | null,
@@ -76,6 +78,7 @@ export default function ExercicioFormModal({
         execucaoTecnica: exercicio.execucaoTecnica || '',
         errosComuns: Array.isArray(exercicio.errosComuns) ? exercicio.errosComuns : [],
         equipamentoNecessario: Array.isArray(exercicio.equipamentoNecessario) ? exercicio.equipamentoNecessario : [],
+        semEquipamento: exercicio.semEquipamento !== undefined ? exercicio.semEquipamento : false,
         alternativas: Array.isArray(exercicio.alternativas) ? exercicio.alternativas : [],
         sinergistas: Array.isArray(exercicio.sinergistas) ? exercicio.sinergistas : [],
         cargaInicialSugerida: exercicio.cargaInicialSugerida || null,
@@ -98,6 +101,7 @@ export default function ExercicioFormModal({
         execucaoTecnica: '',
         errosComuns: [],
         equipamentoNecessario: [],
+        semEquipamento: false,
         alternativas: [],
         sinergistas: [],
         cargaInicialSugerida: null,
@@ -381,8 +385,35 @@ export default function ExercicioFormModal({
                     rows={3}
                     className="input-field w-full"
                     placeholder="Um equipamento por linha..."
+                    disabled={formData.semEquipamento}
                   />
                   <p className="text-xs text-light-muted mt-1">Um item por linha</p>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.semEquipamento}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          semEquipamento: checked,
+                          // Limpar equipamentoNecessario se marcar como sem equipamento
+                          equipamentoNecessario: checked ? [] : prev.equipamentoNecessario
+                        }));
+                        if (checked) {
+                          setArrayInputs(prev => ({ ...prev, equipamentoNecessario: '' }));
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-sm text-light">Exercício sem equipamento (apenas peso corporal)</span>
+                  </label>
+                  <p className="text-xs text-light-muted mt-1">
+                    Marque esta opção se o exercício não requer nenhum equipamento além do peso corporal
+                  </p>
                 </div>
 
                 <div>

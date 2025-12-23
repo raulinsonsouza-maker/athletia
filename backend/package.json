@@ -26,7 +26,8 @@
     "normalize-and-regenerate": "tsx src/scripts/normalize-and-regenerate.ts",
     "analyze-exercises": "tsx src/scripts/analyze-exercises-by-group.ts",
     "refatorar-treinos-intercalacao": "tsx src/scripts/refatorar-treinos-intercalacao.ts",
-    "refatorar-nomes-treinos": "tsx src/scripts/refatorar-nomes-treinos.ts"
+    "refatorar-nomes-treinos": "tsx src/scripts/refatorar-nomes-treinos.ts",
+    "marcar-sem-equipamento": "tsx src/scripts/marcar-exercicios-sem-equipamento.ts"
   },
   "keywords": [
     "fitness",
