@@ -29,6 +29,14 @@ build/
 *.egg-info/
 *.egg
 
+# Arquivos compilados TypeScript (gerados pelo tsc)
+# Ignorar apenas arquivos compilados de scripts TypeScript
+backend/scripts/*.d.ts
+backend/scripts/*.d.ts.map
+backend/scripts/*.js.map
+# Manter scripts .js originais (não compilados)
+!backend/scripts/*.js
+
 # Logs
 logs/
 *.log
