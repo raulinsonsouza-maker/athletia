@@ -37,13 +37,14 @@ async function marcarExerciciosSemEquipamento() {
   
   try {
     // Buscar todos os exercícios ativos
+    // Nota: não selecionamos semEquipamento aqui porque pode não existir ainda no banco
+    // Vamos verificar se o campo existe antes de tentar atualizá-lo
     const exercicios = await prisma.exercicio.findMany({
       where: { ativo: true },
       select: {
         id: true,
         nome: true,
-        equipamentoNecessario: true,
-        semEquipamento: true
+        equipamentoNecessario: true
       }
     });
     
@@ -55,27 +56,55 @@ async function marcarExerciciosSemEquipamento() {
     let naoMarcados = 0;
     const erros: Array<{ id: string; nome: string; erro: string }> = [];
     
+    // Verificar se o campo semEquipamento existe no banco
+    let campoExiste = false;
+    try {
+      // Tentar fazer uma query que inclui semEquipamento para verificar se existe
+      await prisma.$queryRaw`SELECT sem_equipamento FROM exercicios LIMIT 1`;
+      campoExiste = true;
+      console.log('[MIGRAÇÃO] Campo semEquipamento encontrado no banco de dados');
+    } catch (error: any) {
+      console.log('[MIGRAÇÃO] Campo semEquipamento ainda não existe no banco. Apenas verificando quais exercícios devem ser marcados.');
+      console.log('[MIGRAÇÃO] Execute a migration primeiro: npx prisma migrate dev --name add_sem_equipamento');
+    }
+    
     for (const exercicio of exercicios) {
       try {
         processados++;
-        
-        // Se já está marcado como sem equipamento, pular
-        if (exercicio.semEquipamento === true) {
-          jaMarcados++;
-          continue;
-        }
         
         // Verificar se deve ser marcado como sem equipamento
         const equipamentos = exercicio.equipamentoNecessario || [];
         const deveMarcar = deveSerSemEquipamento(equipamentos);
         
         if (deveMarcar) {
-          await prisma.exercicio.update({
-            where: { id: exercicio.id },
-            data: { semEquipamento: true }
-          });
-          marcados++;
-          console.log(`[MIGRAÇÃO] ✓ Marcado: ${exercicio.nome} (equipamentos: ${equipamentos.length === 0 ? 'nenhum' : equipamentos.join(', ')})`);
+          if (campoExiste) {
+            // Verificar se já está marcado (só se o campo existe)
+            try {
+              const exercicioCompleto = await prisma.exercicio.findUnique({
+                where: { id: exercicio.id },
+                select: { semEquipamento: true }
+              });
+              
+              if (exercicioCompleto?.semEquipamento === true) {
+                jaMarcados++;
+                continue;
+              }
+            } catch (error) {
+              // Ignorar erro se campo não existe
+            }
+            
+            // Atualizar apenas se o campo existe
+            await prisma.exercicio.update({
+              where: { id: exercicio.id },
+              data: { semEquipamento: true }
+            });
+            marcados++;
+            console.log(`[MIGRAÇÃO] ✓ Marcado: ${exercicio.nome} (equipamentos: ${equipamentos.length === 0 ? 'nenhum' : equipamentos.join(', ')})`);
+          } else {
+            // Se campo não existe, apenas logar que seria marcado
+            marcados++;
+            console.log(`[MIGRAÇÃO] [SIMULAÇÃO] Seria marcado: ${exercicio.nome} (equipamentos: ${equipamentos.length === 0 ? 'nenhum' : equipamentos.join(', ')})`);
+          }
         } else {
           naoMarcados++;
         }
@@ -90,8 +119,13 @@ async function marcarExerciciosSemEquipamento() {
     
     console.log('\n[MIGRAÇÃO] Migração concluída:');
     console.log(`  - Total processado: ${processados}`);
-    console.log(`  - Marcados como sem equipamento: ${marcados}`);
-    console.log(`  - Já estavam marcados: ${jaMarcados}`);
+    if (campoExiste) {
+      console.log(`  - Marcados como sem equipamento: ${marcados}`);
+      console.log(`  - Já estavam marcados: ${jaMarcados}`);
+    } else {
+      console.log(`  - Exercícios que SERÃO marcados (após migration): ${marcados}`);
+      console.log(`  - ⚠️  Execute a migration primeiro para aplicar as mudanças!`);
+    }
     console.log(`  - Não marcados (têm equipamentos): ${naoMarcados}`);
     console.log(`  - Erros: ${erros.length}`);
     console.log(`  - Tempo total: ${tempoTotal}s`);

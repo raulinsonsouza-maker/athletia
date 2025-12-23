@@ -29,7 +29,6 @@ export function removeNonCriticalPreloads(): Plugin {
         // Remover preload links para chunks não críticos
         nonCriticalChunks.forEach(chunkName => {
           // Remover preload/modulepreload com o nome do chunk (qualquer formato)
-          // Pode ser modulepreload ou preload, e o nome pode estar em href ou no nome do arquivo
           const patterns = [
             // Formato: <link rel="modulepreload" href="/assets/admin-pages-xxx.js">
             new RegExp(`<link[^>]*rel=["']modulepreload["'][^>]*${chunkName}[^>]*>`, 'gi'),
@@ -43,6 +42,36 @@ export function removeNonCriticalPreloads(): Plugin {
             modifiedHtml = modifiedHtml.replace(regex, '')
           })
         })
+        
+        // Remover TODOS os modulepreload que não são do chunk principal (index/main)
+        // O Vite gera modulepreload para todos os chunks, mas só precisamos do principal
+        modifiedHtml = modifiedHtml.replace(
+          /<link[^>]*rel=["']modulepreload["'][^>]*>/gi,
+          (match) => {
+            // Manter apenas se for o chunk principal (index.js ou main chunk)
+            const href = match.match(/href=["']([^"']+)["']/)?.[1] || ''
+            const isMainChunk = href.includes('index-') || href.includes('main-') || href.match(/\/assets\/index-[^"']+\.js/)
+            return isMainChunk ? match : ''
+          }
+        )
+        
+        // Remover preloads de script que não são críticos
+        // Manter apenas preloads explícitos do index.html (fontes, imagens críticas)
+        modifiedHtml = modifiedHtml.replace(
+          /<link[^>]*rel=["']preload["'][^>]*>/gi,
+          (match) => {
+            // Manter preloads de fontes e imagens (definidos manualmente no index.html)
+            if (match.includes('as="font"') || match.includes('as="image"') || match.includes('type="font/woff2"')) {
+              return match
+            }
+            // Remover preloads de scripts/chunks (Vite gera automaticamente, mas não são críticos)
+            if (match.includes('as="script"')) {
+              return ''
+            }
+            // Manter outros preloads explícitos (CSS crítico, etc)
+            return match
+          }
+        )
         
         return modifiedHtml
       }

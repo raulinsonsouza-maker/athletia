@@ -425,18 +425,17 @@ export default function Admin() {
       setGruposMusculares(response.data.gruposMusculares || [])
 
       // Validar e garantir que todos os exercícios tenham ID válido
+      // Nota: IDs podem ser UUIDs ou slugs (legado), ambos são válidos
       const exerciciosValidados = todosExercicios.map((ex: any) => {
         if (!ex.id || typeof ex.id !== 'string') {
-          console.warn('[carregarExercicios] Exercício sem ID válido encontrado:', ex)
+          if (import.meta.env.DEV) {
+            console.warn('[carregarExercicios] Exercício sem ID válido encontrado:', ex)
+          }
           return null
         }
         
-        // Verificar se o ID parece ser um UUID válido
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(ex.id)
-        if (!isUuid) {
-          console.warn(`[carregarExercicios] Exercício "${ex.nome}" tem ID que não é UUID: "${ex.id}". O backend tentará buscar por nome.`)
-        }
-        
+        // IDs podem ser UUIDs ou slugs - ambos são aceitos
+        // Não logar warning em produção para evitar poluição do console
         return ex
       }).filter((ex: any) => ex !== null)
 
