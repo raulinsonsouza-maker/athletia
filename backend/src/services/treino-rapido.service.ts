@@ -148,11 +148,10 @@ export async function gerarTreinoRapido(
   // Atualizar nome no banco se diferente
   if (nomeAtualizado !== treinoFinal.nome) {
     await prisma.treino.update({
-        where: { id: treinoFinal.id },
-        data: { nome: nomeAtualizado }
-      });
-      treinoFinal.nome = nomeAtualizado;
-    }
+      where: { id: treinoFinal.id },
+      data: { nome: nomeAtualizado }
+    });
+    treinoFinal.nome = nomeAtualizado;
   }
 
   console.log(`[TREINO RÁPIDO] Treino criado com sucesso! ID: ${treinoGerado.id}`);
