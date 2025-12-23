@@ -47,6 +47,19 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   
+  // Ignorar requisições de terceiros (Google Ads, Analytics, etc)
+  // Apenas processar requisições do próprio domínio
+  if (url.origin !== self.location.origin) {
+    // Para requisições de terceiros, apenas fazer fetch sem cache
+    // Não interceptar para evitar erros
+    return;
+  }
+  
+  // Ignorar requisições que não são GET
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
   // Para ícones e manifest, sempre buscar da rede primeiro
   if (url.pathname.includes('icon') || 
       url.pathname.includes('favicon') || 
@@ -72,10 +85,20 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Para outros recursos, usa cache primeiro
+  // Para outros recursos do próprio domínio, usa cache primeiro
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      
+      // Se não está no cache, busca da rede
+      return fetch(event.request).catch((error) => {
+        // Se falhar, retorna erro silenciosamente
+        console.warn('[SW] Erro ao buscar recurso:', event.request.url, error);
+        // Retorna uma resposta vazia para evitar quebrar a aplicação
+        return new Response('', { status: 408, statusText: 'Request Timeout' });
+      });
     })
   );
 });

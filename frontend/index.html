@@ -12,24 +12,12 @@
     <link rel="preconnect" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     
-    <!-- Preload direto das fontes WOFF2 críticas (sem CSS intermediário para evitar bloqueio) -->
-    <!-- Inter 400 (regular) - fonte principal do body -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <!-- Inter 500 (medium) -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZ9hiJ-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <!-- Inter 600 (semibold) -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <!-- Inter 700 (bold) -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfMZ9hiA-Ek-_EeA.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <!-- Poppins 600 (semibold) - para títulos -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6Z1xlFd2JQEk8JLyVg00-O6F8.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <!-- Poppins 700 (bold) - para títulos principais -->
-    <link rel="preload" href="https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    
     <!-- Carregar CSS do Google Fonts de forma não bloqueante (após renderização inicial) -->
+    <!-- O Google Fonts CSS já inclui os preloads corretos das fontes WOFF2 -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" /></noscript>
     
@@ -199,9 +187,10 @@
     <!-- Preload CSS crítico para evitar bloqueio de renderização -->
     <!-- O Vite injeta o CSS automaticamente, mas preload ajuda o navegador -->
     
-    <!-- Preload imagem hero WebP responsiva (LCP optimization) - Prioridade alta -->
-    <!-- Usar versão 400x800 para melhor LCP (menor tamanho, carrega mais rápido) -->
-    <link rel="preload" as="image" href="/images/app-preview/treinos-screen-400x800.webp" fetchpriority="high" type="image/webp" imagesrcset="/images/app-preview/treinos-screen-400x800.webp 400w, /images/app-preview/treinos-screen-400x800.webp 665w, /images/app-preview/treinos-screen-800x1600.webp 800w" imagesizes="(max-width: 768px) 400px, 665px" />
+    <!-- Preload imagem hero WebP responsiva (LCP optimization) - Apenas na landing page -->
+    <!-- Usar prefetch em vez de preload para evitar warnings quando não usada imediatamente -->
+    <!-- A imagem será carregada quando realmente necessária pela página -->
+    <link rel="prefetch" as="image" href="/images/app-preview/treinos-screen-400x800.webp" type="image/webp" />
     
     <!-- CSS crítico inline para evitar bloqueio de renderização -->
     <style>
@@ -257,7 +246,8 @@
       }
     </style>
     
-    <!-- Prefetch imagens críticas do onboarding para reduzir carregamentos sem gerar warnings -->
+    <!-- Prefetch imagens do onboarding (carregadas em background, não bloqueiam renderização) -->
+    <!-- Prefetch é mais apropriado aqui pois não são recursos críticos para LCP -->
     <link rel="prefetch" as="image" href="/images/onboarding/18 aos 29.webp" />
     <link rel="prefetch" as="image" href="/images/onboarding/30 aos 39.webp" />
     <link rel="prefetch" as="image" href="/images/onboarding/40 aos 49.webp" />
