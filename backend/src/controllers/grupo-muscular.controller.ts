@@ -3,6 +3,7 @@ import path from 'path'
 import { AuthRequest } from '../middleware/auth.middleware'
 import {
   listarGruposVisuaisAdmin,
+  obterGrupoVisualPorId,
   criarGrupoVisual,
   atualizarGrupoVisual,
   removerGrupoVisual
@@ -16,6 +17,21 @@ export const listarGruposAdmin = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     console.error('Erro ao listar grupos musculares visuais:', error)
     res.status(500).json({ error: 'Erro ao listar grupos musculares', message: error.message })
+  }
+}
+
+export const obterGrupoAdmin = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+    const grupo = await obterGrupoVisualPorId(id)
+    res.json(grupo)
+  } catch (error: any) {
+    console.error('Erro ao obter grupo muscular visual:', error)
+    if (error.message === 'Grupo muscular não encontrado') {
+      res.status(404).json({ error: error.message })
+    } else {
+      res.status(500).json({ error: 'Erro ao obter grupo muscular', message: error.message })
+    }
   }
 }
 

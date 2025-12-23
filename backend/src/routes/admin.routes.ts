@@ -28,6 +28,7 @@ import {
 } from '../controllers/admin.controller';
 import {
   listarGruposAdmin,
+  obterGrupoAdmin,
   criarGrupoAdmin,
   atualizarGrupoAdmin,
   removerGrupoAdmin,
@@ -316,6 +317,7 @@ router.put('/exercicios/:id', atualizarExercicioValidation, validateRequest, atu
 
 // Grupos musculares (visuais)
 router.get('/grupos-musculares', listarGruposAdmin);
+router.get('/grupos-musculares/:id', obterGrupoAdmin);
 router.post('/grupos-musculares', criarGrupoMuscularValidation, validateRequest, criarGrupoAdmin);
 router.put(
   '/grupos-musculares/:id',

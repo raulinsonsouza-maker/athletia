@@ -7,6 +7,16 @@ export async function listarGruposVisuaisAdmin() {
   })
 }
 
+export async function obterGrupoVisualPorId(id: string) {
+  const grupo = await prisma.grupoMuscularVisual.findUnique({
+    where: { id }
+  })
+  if (!grupo) {
+    throw new Error('Grupo muscular não encontrado')
+  }
+  return grupo
+}
+
 export async function criarGrupoVisual(data: {
   nome: string
   descricao?: string | null
