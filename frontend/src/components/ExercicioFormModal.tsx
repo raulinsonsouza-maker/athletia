@@ -157,6 +157,7 @@ export default function ExercicioFormModal({
         execucaoTecnica: formData.execucaoTecnica.trim() || null,
         errosComuns: formData.errosComuns,
         equipamentoNecessario: formData.equipamentoNecessario,
+        semEquipamento: formData.semEquipamento,
         alternativas: formData.alternativas,
         sinergistas: formData.sinergistas,
         ativo: formData.ativo
