@@ -251,7 +251,7 @@ export default function BlogCategory() {
               title="Pronto para começar?"
               description="Crie seu treino personalizado com IA e acelere seus resultados na academia."
               buttonText="Criar meu treino agora"
-              link="/cadastro"
+              link="/?start=true"
             />
           </div>
         </main>

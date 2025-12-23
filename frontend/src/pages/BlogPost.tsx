@@ -159,18 +159,18 @@ export default function BlogPost() {
   ]
 
   // Determinar CTA a usar (prioridade: ctaConfig > campos diretos)
-  // Todos os CTAs devem levar para o início do onboarding (/)
+  // Todos os CTAs devem levar para o step 1 do onboarding (/?start=true)
   const ctaToUse = article.ctaConfig 
     ? {
         ...article.ctaConfig,
-        link: '/' // Sempre sobrescrever link para onboarding
+        link: '/?start=true' // Sempre sobrescrever link para step 1 do onboarding
       }
     : (article.ctaTitle && article.ctaDescription && article.ctaButtonText
       ? {
           title: article.ctaTitle,
           description: article.ctaDescription,
           buttonText: article.ctaButtonText,
-          link: '/' // Sempre para o início do onboarding
+          link: '/?start=true' // Sempre para o step 1 do onboarding
         }
       : null)
 

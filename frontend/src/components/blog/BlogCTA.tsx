@@ -16,8 +16,8 @@ export default function BlogCTA({ title, description, buttonText, link }: BlogCT
       (window as any).gtag_report_conversion()
     }
     
-    // Todos os CTAs devem levar para o início do onboarding
-    const onboardingLink = '/'
+    // Todos os CTAs devem levar para o step 1 do onboarding
+    const onboardingLink = '/?start=true'
     
     if (link && link.startsWith('http')) {
       window.open(link, '_blank')

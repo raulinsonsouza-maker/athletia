@@ -90,11 +90,14 @@
     background-color: #8A8985;
   }
 
-  .hide-scrollbar {
+  .hide-scrollbar,
+  .scrollbar-hide {
     scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
-  .hide-scrollbar::-webkit-scrollbar {
+  .hide-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
 

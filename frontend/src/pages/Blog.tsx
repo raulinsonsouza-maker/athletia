@@ -220,7 +220,7 @@ export default function Blog() {
                 title={settings.globalCta.title}
                 description={settings.globalCta.description}
                 buttonText={settings.globalCta.buttonText}
-                link="/" // Sempre para o início do onboarding
+                link="/?start=true" // Sempre para o step 1 do onboarding
               />
             )}
           </>

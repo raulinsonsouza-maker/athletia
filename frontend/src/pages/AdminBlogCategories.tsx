@@ -146,6 +146,13 @@ export default function AdminBlogCategories() {
       .replace(/^-|-$/g, '')
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('adminAccessToken')
+    localStorage.removeItem('adminRefreshToken')
+    localStorage.removeItem('adminUser')
+    navigate('/admin/login')
+  }
+
   if (verificando || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -173,76 +180,206 @@ export default function AdminBlogCategories() {
               <h1 className="text-xl font-display font-bold text-light">Painel Administrativo</h1>
             </div>
             <button
-              onClick={() => navigate('/admin/blog')}
+              onClick={handleLogout}
               className="btn-secondary flex items-center gap-2"
             >
-              Voltar para Blog
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Sair
             </button>
           </div>
         </div>
       </nav>
 
-      <main className="container-custom section">
-        <div className="card mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
+      <main className="container-custom py-6 md:py-8">
+        {/* Tabs Navigation - Improved with horizontal scroll on mobile */}
+        <div className="mb-6 bg-dark border border-grey/30 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto scrollbar-hide">
+            <nav className="flex min-w-max md:min-w-0">
+              <button
+                onClick={() => navigate('/admin')}
+                className="py-4 px-4 md:px-6 text-sm font-medium border-b-2 border-transparent text-light-muted hover:text-light hover:border-grey/50 transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span className="hidden sm:inline">Estatísticas</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin')}
+                className="py-4 px-4 md:px-6 text-sm font-medium border-b-2 border-transparent text-light-muted hover:text-light hover:border-grey/50 transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="hidden sm:inline">Usuários</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin')}
+                className="py-4 px-4 md:px-6 text-sm font-medium border-b-2 border-transparent text-light-muted hover:text-light hover:border-grey/50 transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span className="hidden sm:inline">Exercícios</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin')}
+                className="py-4 px-4 md:px-6 text-sm font-medium border-b-2 border-transparent text-light-muted hover:text-light hover:border-grey/50 transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                <span className="hidden lg:inline">Grupos Musculares</span>
+                <span className="lg:hidden">Grupos</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin')}
+                className="py-4 px-4 md:px-6 text-sm font-medium border-b-2 border-transparent text-light-muted hover:text-light hover:border-grey/50 transition-colors flex items-center gap-2 whitespace-nowrap"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="hidden lg:inline">Imagens de Treino</span>
+                <span className="lg:hidden">Imagens</span>
+              </button>
+              <button
+                onClick={() => navigate('/admin/blog')}
+                className={`py-4 px-4 md:px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+                  window.location.pathname.startsWith('/admin/blog')
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
+                }`}
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Blog
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Page Header */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+            <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
-                Gerenciar Categorias do Blog
+                Gerenciar Categorias
               </h1>
-              <p className="text-light-muted">
+              <p className="text-base text-light-muted">
                 Crie e gerencie categorias para organizar os artigos do blog
               </p>
             </div>
             <button
               onClick={handleCreate}
-              className="btn-primary px-6 py-3 text-base font-semibold"
+              className="btn-primary px-6 py-3 text-base font-semibold whitespace-nowrap flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
             >
-              + Nova Categoria
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Nova Categoria
             </button>
+          </div>
+
+          {/* Sub Navigation */}
+          <div className="bg-dark border border-grey/30 rounded-xl p-4">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => navigate('/admin/blog')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-dark-lighter border border-grey/30 text-light-muted hover:text-light hover:border-grey/50 hover:bg-dark"
+              >
+                Posts
+              </button>
+              <button
+                onClick={() => navigate('/admin/blog/categorias')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-primary/20 text-primary border border-primary/30 shadow-md shadow-primary/10"
+              >
+                Categorias
+              </button>
+              <button
+                onClick={() => navigate('/admin/blog/autores')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-dark-lighter border border-grey/30 text-light-muted hover:text-light hover:border-grey/50 hover:bg-dark"
+              >
+                Autores
+              </button>
+              <button
+                onClick={() => navigate('/admin/blog/ctas')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-dark-lighter border border-grey/30 text-light-muted hover:text-light hover:border-grey/50 hover:bg-dark"
+              >
+                CTAs
+              </button>
+              <button
+                onClick={() => navigate('/admin/blog/configuracoes')}
+                className="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-dark-lighter border border-grey/30 text-light-muted hover:text-light hover:border-grey/50 hover:bg-dark"
+              >
+                Configurações
+              </button>
+            </div>
           </div>
         </div>
 
         {categories.length === 0 ? (
           <div className="card">
-            <div className="text-center py-12">
-              <p className="text-light-muted mb-4">Nenhuma categoria encontrada</p>
+            <div className="text-center py-16">
+              <svg className="w-16 h-16 mx-auto mb-4 text-light-muted/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              <p className="text-lg font-medium text-light mb-2">Nenhuma categoria encontrada</p>
+              <p className="text-light-muted mb-6">Comece criando sua primeira categoria</p>
               <button
                 onClick={handleCreate}
-                className="btn-primary px-6 py-3"
+                className="btn-primary px-6 py-3 flex items-center gap-2 mx-auto"
               >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
                 Criar Primeira Categoria
               </button>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {categories.map((category) => (
-              <div key={category.id} className="card">
+              <div key={category.id} className="card card-hover group">
                 <div className="mb-4">
-                  <h3 className="text-xl font-display font-bold text-light mb-2">
+                  <h3 className="text-xl font-display font-bold text-light mb-3 group-hover:text-primary transition-colors">
                     {category.name}
                   </h3>
-                  <p className="text-sm text-light-muted mb-2">
-                    Slug: <code className="bg-dark px-2 py-1 rounded">{category.slug}</code>
-                  </p>
+                  <div className="mb-3">
+                    <p className="text-xs text-light-muted mb-1">Slug:</p>
+                    <code className="inline-block bg-dark-lighter px-2.5 py-1 rounded-md text-sm text-light-muted border border-grey/30">
+                      {category.slug}
+                    </code>
+                  </div>
                   {category._count && (
-                    <p className="text-xs text-light-muted">
-                      {category._count.articles} artigo(s)
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-light-muted">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      {category._count.articles} artigo{category._count.articles !== 1 ? 's' : ''}
+                    </div>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-4 border-t border-grey/20">
                   <button
                     onClick={() => handleEdit(category)}
-                    className="flex-1 btn-secondary text-sm"
+                    className="flex-1 btn-secondary text-sm py-2.5 font-medium flex items-center justify-center gap-2"
                   >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
                     Editar
                   </button>
                   <button
                     onClick={() => handleDelete(category.id)}
-                    className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-semibold"
+                    className="px-4 py-2.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2 border border-red-500/30"
                   >
-                    Deletar
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span className="hidden sm:inline">Deletar</span>
                   </button>
                 </div>
               </div>
