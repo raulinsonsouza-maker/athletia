@@ -62,7 +62,7 @@ export default function ProcessoTimeline() {
           <div className="absolute top-16 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/50 via-primary to-primary/50"></div>
 
           <div className="grid grid-cols-3 gap-8 relative">
-            {etapas.map((etapa, index) => (
+            {etapas.map((etapa) => (
               <div key={etapa.numero} className="relative">
                 {/* Círculo com número */}
                 <div className="absolute top-12 left-1/2 transform -translate-x-1/2 z-10">
