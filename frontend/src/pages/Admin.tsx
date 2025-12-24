@@ -899,13 +899,13 @@ export default function Admin() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm text-light-muted">Trials Ativos Hoje</p>
-                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <p className="text-3xl font-bold text-primary">{resumoUsuarios.trialsAtivosHoje}</p>
-                    <p className="text-xs text-light-muted mt-1">Em trial hoje</p>
+                    <p className="text-sm text-light-muted">Trials Ativos Hoje</p>
+                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-3xl font-bold text-primary">{resumoUsuarios.trialsAtivosHoje}</p>
+                  <p className="text-xs text-light-muted mt-1" title="Trials de 24 horas ativos no momento">Em trial hoje (24h)</p>
                   </div>
 
                   <div 
@@ -921,13 +921,13 @@ export default function Admin() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm text-light-muted">Trials D3</p>
-                      <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                    <p className="text-3xl font-bold text-warning">{resumoUsuarios.trialsD3}</p>
-                    <p className="text-xs text-light-muted mt-1">Último dia - urgente</p>
+                    <p className="text-sm text-light-muted">Trials D3</p>
+                    <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <p className="text-3xl font-bold text-warning">{resumoUsuarios.trialsD3}</p>
+                  <p className="text-xs text-light-muted mt-1" title="Trials entre 48-72 horas desde o início">Próximos de expirar - urgente</p>
                   </div>
 
                   <div 
@@ -949,7 +949,7 @@ export default function Admin() {
                       </svg>
                     </div>
                     <p className="text-3xl font-bold text-error">{resumoUsuarios.trialsExpirados24h}</p>
-                    <p className="text-xs text-light-muted mt-1">Últimas 24h</p>
+                    <p className="text-xs text-light-muted mt-1">Expirados nas últimas 24h</p>
                   </div>
 
                   <div 
@@ -1057,7 +1057,9 @@ export default function Admin() {
                                 }}
                                 className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
                               />
-                              <span className="text-sm text-light-muted">Trial {estagio}</span>
+                              <span className="text-sm text-light-muted">
+                                Trial {estagio} {estagio === 'D1' ? '(0-24h)' : estagio === 'D2' ? '(24-48h)' : '(48-72h)'}
+                              </span>
                             </label>
                           ))}
                         </div>
@@ -1608,7 +1610,7 @@ export default function Admin() {
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                Estender Trial (1 dia)
+                                                Estender Trial (24 horas)
                                               </button>
                                               
                                               <button

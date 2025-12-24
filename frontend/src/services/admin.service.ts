@@ -11,7 +11,7 @@ export async function testarEmailRemarketing(userId: string, tipo: '10min' | '24
 }
 
 /**
- * Estender trial por 1 dia
+ * Estender trial por 24 horas
  */
 export async function estenderTrial(userId: string) {
   const response = await api.post(`/admin/usuarios/${userId}/estender-trial`);

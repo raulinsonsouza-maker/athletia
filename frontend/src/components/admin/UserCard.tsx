@@ -141,13 +141,18 @@ export default function UserCard({ user, onClick, isSelected }: UserCardProps) {
           </div>
           {user.diasRestantes !== undefined && estagio !== 'PLANO_ATIVO' && (
             <div className="flex items-center justify-between">
-              <span className="text-light-muted">Dias restantes:</span>
+              <span className="text-light-muted">
+                {user.diasRestantes < 1 ? 'Horas restantes:' : 'Dias restantes:'}
+              </span>
               <span
                 className={`font-medium ${
                   user.diasRestantes <= 1 ? 'text-error' : 'text-light'
                 }`}
               >
-                {user.diasRestantes}
+                {user.diasRestantes < 1 
+                  ? `${Math.floor(user.diasRestantes * 24)}h`
+                  : `${Math.ceil(user.diasRestantes)}d`
+                }
               </span>
             </div>
           )}

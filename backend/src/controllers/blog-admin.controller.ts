@@ -257,12 +257,31 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
       finalPublishedAt = new Date();
     }
 
+    // Determinar categoria correta: se categoryId fornecido, buscar nome da categoria
+    let finalCategory = category?.trim() || 'Geral';
+    if (categoryId) {
+      try {
+        const categoriaObj = await prisma.blogCategory.findUnique({
+          where: { id: categoryId },
+          select: { name: true }
+        });
+        if (categoriaObj) {
+          finalCategory = categoriaObj.name;
+        }
+      } catch (error) {
+        console.error('[Blog] Erro ao buscar categoria:', error);
+        // Se não conseguir buscar, usar category fornecido ou 'Geral'
+      }
+    }
+
     console.log('[Blog] Criando artigo:', {
       title: title.trim(),
       slug,
       published: syncedPublished,
       status: syncedStatus,
-      publishedAt: finalPublishedAt
+      publishedAt: finalPublishedAt,
+      category: finalCategory,
+      categoryId: categoryId || null
     });
 
     const artigo = await prisma.blogArticle.create({
@@ -274,7 +293,7 @@ export const criarArtigo = async (req: AuthRequest, res: Response) => {
         metaDescription: metaDescription?.trim() || excerpt?.trim() || '',
         keywords: Array.isArray(keywords) ? keywords : [],
         author: author?.trim() || 'Equipe AthletIA',
-        category: category?.trim() || 'Geral',
+        category: finalCategory,
         categoryId: categoryId || null,
         authorId: authorId || null,
         ctaType: ctaType || null,
@@ -475,7 +494,37 @@ export const atualizarArtigo = async (req: AuthRequest, res: Response) => {
     if (keywords !== undefined) updateData.keywords = Array.isArray(keywords) ? keywords : [];
     if (author !== undefined) updateData.author = author.trim();
     if (category !== undefined) updateData.category = category.trim();
-    if (categoryId !== undefined) updateData.categoryId = categoryId || null;
+    // Determinar categoria correta: se categoryId fornecido, buscar nome da categoria
+    if (categoryId !== undefined) {
+      updateData.categoryId = categoryId || null;
+      
+      // Se categoryId foi fornecido, buscar o nome da categoria
+      if (categoryId) {
+        try {
+          const categoriaObj = await prisma.blogCategory.findUnique({
+            where: { id: categoryId },
+            select: { name: true }
+          });
+          if (categoriaObj) {
+            updateData.category = categoriaObj.name;
+          }
+        } catch (error) {
+          console.error('[Blog] Erro ao buscar categoria na atualização:', error);
+          // Se não conseguir buscar, usar category fornecido se existir
+          if (category !== undefined) {
+            updateData.category = category?.trim() || existingArticle.category;
+          }
+        }
+      } else {
+        // Se categoryId foi definido como null, manter category fornecido ou existente
+        if (category !== undefined) {
+          updateData.category = category?.trim() || existingArticle.category;
+        }
+      }
+    } else if (category !== undefined) {
+      // Se apenas category foi fornecido (sem categoryId), usar diretamente
+      updateData.category = category?.trim() || existingArticle.category;
+    }
     if (authorId !== undefined) updateData.authorId = authorId || null;
     if (ctaType !== undefined) updateData.ctaType = ctaType || null;
     if (ctaConfigId !== undefined) updateData.ctaConfigId = ctaConfigId || null;

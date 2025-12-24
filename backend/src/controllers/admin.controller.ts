@@ -191,17 +191,31 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
         estagio = calcularEstagioTrial(user.dataInicioTrial, user.dataFimTrial, agora);
         const dataFimTrial = new Date(user.dataFimTrial);
         const diffMs = dataFimTrial.getTime() - agora.getTime();
-        diasRestantes = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+        const diasRestantesDecimal = diffMs / (1000 * 60 * 60 * 24); // Valor decimal para cálculo preciso
+        diasRestantes = Math.max(0, diasRestantesDecimal);
         
         if (estagio === 'EXPIrado') {
-          const diasExpirado = Math.abs(diasRestantes);
-          vencimentoTexto = `Expirado há ${diasExpirado} ${diasExpirado === 1 ? 'dia' : 'dias'}`;
-        } else if (diasRestantes === 0) {
-          vencimentoTexto = 'Vence hoje';
+          const horasExpirado = Math.floor(Math.abs(diffMs) / (1000 * 60 * 60));
+          const diasExpirado = Math.floor(horasExpirado / 24);
+          if (diasExpirado === 0) {
+            vencimentoTexto = `Expirado há ${horasExpirado} ${horasExpirado === 1 ? 'hora' : 'horas'}`;
+          } else {
+            vencimentoTexto = `Expirado há ${diasExpirado} ${diasExpirado === 1 ? 'dia' : 'dias'}`;
+          }
+        } else if (diasRestantes < 1) {
+          // Para trials de 24 horas, mostrar horas quando < 1 dia
+          const horasRestantes = Math.floor(diasRestantes * 24);
+          if (horasRestantes <= 0) {
+            vencimentoTexto = 'Vence em menos de 1 hora';
+          } else if (horasRestantes === 1) {
+            vencimentoTexto = 'Vence em 1 hora';
+          } else {
+            vencimentoTexto = `Vence em ${horasRestantes} horas`;
+          }
         } else if (diasRestantes === 1) {
           vencimentoTexto = 'Vence em 1 dia';
         } else {
-          vencimentoTexto = `Vence em ${diasRestantes} dias`;
+          vencimentoTexto = `Vence em ${Math.ceil(diasRestantes)} dias`;
         }
       }
 
@@ -422,7 +436,7 @@ export const obterResumoUsuarios = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Estender trial por 1 dia
+// Estender trial por 24 horas
 export const estenderTrial = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -454,9 +468,9 @@ export const estenderTrial = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Adicionar 1 dia ao trial
+    // Adicionar 24 horas ao trial
     const novaDataFim = new Date(user.dataFimTrial);
-    novaDataFim.setDate(novaDataFim.getDate() + 1);
+    novaDataFim.setHours(novaDataFim.getHours() + 24);
 
     await prisma.user.update({
       where: { id },
@@ -466,7 +480,7 @@ export const estenderTrial = async (req: AuthRequest, res: Response) => {
     });
 
     res.json({
-      message: 'Trial estendido com sucesso',
+      message: 'Trial estendido com sucesso por 24 horas',
       novaDataFim: novaDataFim.toISOString()
     });
   } catch (error: any) {

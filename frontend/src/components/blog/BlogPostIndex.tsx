@@ -55,11 +55,11 @@ export default function BlogPostIndex({ content }: BlogPostIndexProps) {
   }
 
   return (
-    <div className="mb-8 p-6 bg-dark-lighter rounded-xl border border-grey/20">
-      <h3 className="text-lg font-display font-bold text-light mb-4">
+    <div className="mb-8 py-6 px-0 bg-dark-lighter rounded-xl border border-grey/20">
+      <h3 className="text-lg font-display font-bold text-light mb-4 px-6">
         Índice do Artigo
       </h3>
-      <nav className="space-y-2">
+      <nav className="space-y-2 px-6">
         {indexItems.map((item) => (
           <button
             key={item.id}
