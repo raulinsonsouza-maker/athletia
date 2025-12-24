@@ -32,7 +32,7 @@ export default function BlogHeader() {
             )}
           </div>
         </div>
-        <nav className="flex items-center gap-2 md:gap-4">
+        <nav className="flex items-center gap-2 md:gap-3">
           {!isBlogPage && (
             <button
               onClick={() => navigate('/blog')}
@@ -48,10 +48,16 @@ export default function BlogHeader() {
             Início
           </button>
           <button
-            onClick={() => navigate('/login')}
-            className="text-sm md:text-base font-semibold bg-primary/20 text-primary hover:bg-primary/30 border border-primary/30 px-5 py-2.5 rounded-lg transition-all hover:scale-105 active:scale-95"
+            onClick={() => {
+              // Disparar evento de conversão do Google Ads
+              if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
+                (window as any).gtag_report_conversion()
+              }
+              navigate('/?start=true')
+            }}
+            className="text-sm md:text-base font-bold bg-primary text-dark hover:bg-primary-dark border-2 border-primary px-4 md:px-6 py-2.5 md:py-3 rounded-lg transition-all hover:scale-105 active:scale-95 shadow-lg shadow-primary/30 whitespace-nowrap"
           >
-            Entrar
+            Criar meu treino
           </button>
         </nav>
       </div>

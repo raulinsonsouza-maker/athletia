@@ -176,20 +176,10 @@ export default function Blog() {
               </div>
               
               {settings?.blogIntroText && (
-                <p className="text-xl md:text-2xl text-light-muted max-w-3xl mx-auto leading-relaxed font-light mb-8 md:mb-10">
+                <p className="text-xl md:text-2xl text-light-muted max-w-3xl mx-auto leading-relaxed font-light">
                   {settings.blogIntroText}
                 </p>
               )}
-              
-              {/* CTA no Cabeçalho */}
-              <div className="mt-8 md:mt-10">
-                <BlogCTA
-                  title={settings?.globalCta?.title || "Pronto para começar?"}
-                  description={settings?.globalCta?.description || "Use tecnologia, personalização e estratégia para transformar esforço em resultado real."}
-                  buttonText={settings?.globalCta?.buttonText || "Criar meu treino agora"}
-                  link="/?start=true"
-                />
-              </div>
             </div>
 
             {/* Hero Editorial */}
