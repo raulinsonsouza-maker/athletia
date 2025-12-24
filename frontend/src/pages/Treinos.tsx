@@ -67,10 +67,10 @@ interface CardTreinoProps {
 const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
   const gruposPrincipais = item.gruposPrincipais?.slice(0, 2) || []
   
-  // Verificar se é treino passado (assumindo que não está concluído se não tiver badge)
-  // Como TreinoCardResumo não tem propriedade concluido, verificamos apenas pela data
+  // Verificar se é treino passado e não concluído
   const isPassado = item.data ? isDataPassada(item.data) : false
-  const isPendentePassado = isPassado
+  const isConcluido = item.concluido === true
+  const isPendentePassado = isPassado && !isConcluido
   
   // Classes para estilo PB quando for treino passado pendente
   const containerClassesPB = isPendentePassado 
@@ -154,6 +154,11 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
                 {isPendentePassado && (
                   <span className="text-xs bg-gray-500/20 text-gray-300 border border-gray-400/60 px-2 py-0.5 rounded">
                     Pendente
+                  </span>
+                )}
+                {isConcluido && (
+                  <span className="text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-400/60 px-2 py-0.5 rounded">
+                    Concluído
                   </span>
                 )}
               </>

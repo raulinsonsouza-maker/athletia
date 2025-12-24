@@ -121,6 +121,7 @@ export interface TreinoCardResumo {
   destaque?: string | null
   data?: string | Date
   totalExercicios?: number
+  concluido?: boolean
 }
 
 export interface TreinoHomeSection {

@@ -314,15 +314,22 @@ export function useTreinoAtual() {
   }, [exercicioAtivo, podeDesfazer, showToast])
 
   const finalizarTreino = useCallback(async () => {
-    if (!blocoAtivo) return
+    if (!blocoAtivo) {
+      console.error('[finalizarTreino] Bloco ativo não encontrado')
+      showToast('Erro: Treino não encontrado', 'error')
+      return false
+    }
 
     try {
+      console.log('[finalizarTreino] Iniciando finalização do treino:', blocoAtivo.id)
       await treinoGateway.finalizarTreino(blocoAtivo.id)
+      console.log('[finalizarTreino] Treino finalizado com sucesso')
       showToast('Treino concluído com sucesso!', 'success')
       return true
-    } catch (error) {
-      console.error(error)
-      showToast('Erro ao finalizar treino', 'error')
+    } catch (error: any) {
+      console.error('[finalizarTreino] Erro ao finalizar treino:', error)
+      const errorMessage = error?.response?.data?.message || error?.message || 'Erro ao finalizar treino'
+      showToast(errorMessage, 'error')
       return false
     }
   }, [blocoAtivo, showToast])

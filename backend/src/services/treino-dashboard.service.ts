@@ -198,6 +198,7 @@ export async function obterResumoTreinos(userId: string) {
       data: treino.data,
       totalExercicios: treino.exercicios.length,
       gruposPrincipais,
+      concluido: treino.concluido || false,
       imagem: (treino.letraTreino && imagensPadrao[treino.letraTreino])
         ? imagensPadrao[treino.letraTreino]
         : obterImagemTreino(gruposPrincipais, genero)

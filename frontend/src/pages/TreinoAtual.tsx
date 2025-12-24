@@ -71,14 +71,21 @@ export default function TreinoAtual() {
   }, [exercicioAtivo, isExercicioConcluido, marcarConcluido])
 
   const handleFinalizarTreino = useCallback(async () => {
+    if (concluindoTreino) return // Evitar múltiplos cliques
+    
     setConcluindoTreino(true)
-    const sucesso = await finalizarTreino()
-    if (sucesso) {
-      cronometro.pausar()
-      setTimeout(() => navigate('/meu-plano'), 1000)
+    try {
+      const sucesso = await finalizarTreino()
+      if (sucesso) {
+        cronometro.pausar()
+        setTimeout(() => navigate('/meu-plano'), 1000)
+      }
+    } catch (error) {
+      console.error('[handleFinalizarTreino] Erro:', error)
+    } finally {
+      setConcluindoTreino(false)
     }
-    setConcluindoTreino(false)
-  }, [finalizarTreino, navigate, cronometro])
+  }, [finalizarTreino, navigate, cronometro, concluindoTreino])
 
   const handleAbandonar = useCallback(() => {
     if (window.confirm('Deseja abandonar este treino?')) {
@@ -318,15 +325,7 @@ export default function TreinoAtual() {
       {/* FOOTER FIXO MODERNO */}
       <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/95 to-transparent pt-6 pb-6 px-4 md:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-3">
-          {/* DESFAZER */}
-          {podeDesfazer && (
-            <button
-              onClick={desfazer}
-              className="w-full py-2.5 rounded-xl bg-white/10 text-white/80 text-sm font-medium hover:bg-white/20 transition border border-white/10"
-            >
-              Desfazer ({Math.ceil(tempoDesfazer / 1000)}s)
-            </button>
-          )}
+          {/* DESFAZER - REMOVIDO conforme solicitação do usuário */}
 
           {/* BOTÃO PRINCIPAL */}
           <button

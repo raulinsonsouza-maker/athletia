@@ -97,10 +97,12 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
-      // Se for rota de admin, usar refresh token admin
-      const isAdminRoute = originalRequest.url?.includes('/admin') ||
-        (originalRequest.url?.includes('/exercicios/') && originalRequest.url?.includes('/media') && originalRequest.method?.toLowerCase() !== 'get') ||
-        false
+      // Verificar se é rota de admin baseado na URL da requisição original
+      // IMPORTANTE: Verificar a URL original, não a URL da requisição de refresh
+      const originalUrl = originalRequest.url || ''
+      const isAdminRoute = originalUrl.includes('/admin') ||
+        (originalUrl.includes('/exercicios/') && originalUrl.includes('/media') && originalRequest.method?.toLowerCase() !== 'get')
+      
       if (isAdminRoute) {
         try {
           const refreshToken = localStorage.getItem('adminRefreshToken')
@@ -120,7 +122,10 @@ api.interceptors.response.use(
             localStorage.removeItem('adminAccessToken')
             localStorage.removeItem('adminRefreshToken')
             localStorage.removeItem('adminUser')
-            window.location.href = '/admin/login'
+            // Só redirecionar se estiver em rota admin
+            if (window.location.pathname.startsWith('/admin')) {
+              window.location.href = '/admin/login'
+            }
             return Promise.reject(error)
           }
         } catch (refreshError: any) {
@@ -128,11 +133,14 @@ api.interceptors.response.use(
           localStorage.removeItem('adminAccessToken')
           localStorage.removeItem('adminRefreshToken')
           localStorage.removeItem('adminUser')
-          window.location.href = '/admin/login'
+          // Só redirecionar se estiver em rota admin
+          if (window.location.pathname.startsWith('/admin')) {
+            window.location.href = '/admin/login'
+          }
           return Promise.reject(refreshError)
         }
       } else {
-        // Para rotas normais
+        // Para rotas normais (usuários)
         try {
           const refreshToken = localStorage.getItem('refreshToken')
           if (refreshToken) {
@@ -151,7 +159,10 @@ api.interceptors.response.use(
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('user')
-            window.location.href = '/login'
+            // Garantir que vai para /login e não /admin/login
+            if (!window.location.pathname.startsWith('/admin')) {
+              window.location.href = '/login'
+            }
             return Promise.reject(error)
           }
         } catch (refreshError: any) {
@@ -159,7 +170,10 @@ api.interceptors.response.use(
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
           localStorage.removeItem('user')
-          window.location.href = '/login'
+          // Garantir que vai para /login e não /admin/login
+          if (!window.location.pathname.startsWith('/admin')) {
+            window.location.href = '/login'
+          }
           return Promise.reject(refreshError)
         }
       }
