@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -297,22 +297,7 @@ export default function Admin() {
     }
   }, [menuAcoesAberto])
 
-  useEffect(() => {
-    if (activeTab === 'usuarios') {
-      carregarResumoUsuarios()
-      carregarUsuarios()
-    } else if (activeTab === 'estatisticas') {
-      carregarEstatisticas()
-    } else if (activeTab === 'exercicios') {
-      carregarExercicios()
-    } else if (activeTab === 'grupos') {
-      carregarGruposMusculares()
-    }
-    // Imagens carrega seus próprios dados
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, search, mostrarDesabilitados])
-
-  const carregarGruposMusculares = async () => {
+  const carregarGruposMusculares = useCallback(async () => {
     setLoadingGrupos(true)
     try {
       const grupos = await grupoMuscularAdminService.listar()
@@ -323,7 +308,7 @@ export default function Admin() {
     } finally {
       setLoadingGrupos(false)
     }
-  }
+  }, [showToast])
 
   const verificarAdmin = async () => {
     try {
@@ -359,7 +344,7 @@ export default function Admin() {
     }
   }
 
-  const carregarResumoUsuarios = async () => {
+  const carregarResumoUsuarios = useCallback(async () => {
     setLoadingResumo(true)
     try {
       const response = await api.get('/admin/usuarios/resumo')
@@ -369,9 +354,9 @@ export default function Admin() {
     } finally {
       setLoadingResumo(false)
     }
-  }
+  }, [])
 
-  const carregarUsuarios = async () => {
+  const carregarUsuarios = useCallback(async () => {
     setLoadingUsuarios(true)
     setErrorUsuarios(null)
 
@@ -424,9 +409,9 @@ export default function Admin() {
     } finally {
       setLoadingUsuarios(false)
     }
-  }
+  }, [search, mostrarDesabilitados, filtros, showToast, navigate])
 
-  const carregarExercicios = async () => {
+  const carregarExercicios = useCallback(async () => {
     setLoadingExercicios(true)
     setErrorExercicios(null)
 
@@ -480,9 +465,9 @@ export default function Admin() {
     } finally {
       setLoadingExercicios(false)
     }
-  }
+  }, [showToast, navigate])
 
-  const carregarEstatisticas = async () => {
+  const carregarEstatisticas = useCallback(async () => {
     setLoadingEstatisticas(true)
     setErrorEstatisticas(null)
 
@@ -515,7 +500,7 @@ export default function Admin() {
     } finally {
       setLoadingEstatisticas(false)
     }
-  }
+  }, [showToast, navigate, loading])
 
   const carregarDetalhesUsuario = async (userId: string) => {
     setLoadingDetails(true)
@@ -541,6 +526,33 @@ export default function Admin() {
       setLoadingDetails(false)
     }
   }
+
+  // Memoizar filtros para evitar loops infinitos
+  const filtrosString = useMemo(() => JSON.stringify(filtros), [
+    filtros.tipoAcesso.join(','),
+    filtros.estagioTrial.join(','),
+    filtros.vencimento,
+    filtros.perfil,
+    filtros.ultimoAcesso,
+    filtros.dataCadastroInicio,
+    filtros.dataCadastroFim
+  ])
+
+  // useEffect para carregar dados quando activeTab, search, mostrarDesabilitados ou filtros mudarem
+  useEffect(() => {
+    if (activeTab === 'usuarios') {
+      carregarResumoUsuarios()
+      carregarUsuarios()
+    } else if (activeTab === 'estatisticas') {
+      carregarEstatisticas()
+    } else if (activeTab === 'exercicios') {
+      carregarExercicios()
+    } else if (activeTab === 'grupos') {
+      carregarGruposMusculares()
+    }
+    // Imagens carrega seus próprios dados
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, search, mostrarDesabilitados, filtrosString])
 
   const handleShowDetails = (userId: string) => {
     setSelectedUserId(userId)
