@@ -400,10 +400,13 @@ export default function Treinos() {
         {/* PRÓXIMOS TREINOS */}
         {outrosTreinos.length > 0 && (
           <section>
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm uppercase tracking-[0.15em] text-white/50">Próximos Treinos</h2>
               <span className="text-xs text-white/30">{outrosTreinos.length} programados</span>
             </div>
+            <p className="text-xs text-white/40 mb-3">
+              Esta é sua agenda de treinos semanal completa
+            </p>
             <div className="space-y-2">
               {outrosTreinos.map((treino) => (
                 <CardTreino 

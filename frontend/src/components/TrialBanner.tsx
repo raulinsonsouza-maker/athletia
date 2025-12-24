@@ -23,6 +23,11 @@ export default function TrialBanner() {
   const diasRestantes = diasRestantesTrial()
   const horasRestantes = horasRestantesTrial()
   
+  // Não mostrar se faltam 12 horas ou menos (AvisoTrialAcabando será exibido)
+  if (horasRestantes <= 12) {
+    return null
+  }
+  
   // Mostrar horas quando restam menos de 24 horas
   const mostrarHoras = diasRestantes < 1
   const tempoRestante = mostrarHoras 

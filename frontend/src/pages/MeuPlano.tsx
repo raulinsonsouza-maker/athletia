@@ -10,6 +10,7 @@ import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
 import TrialBanner from '../components/TrialBanner'
 import AvisoTrialAcabando from '../components/AvisoTrialAcabando'
 import { usePushNotification } from '../hooks/usePushNotification'
+import { useAuth } from '../contexts/AuthContext'
 
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
@@ -21,9 +22,13 @@ const InfoChip = ({ label, value }: { label: string; value: string }) => (
 export default function MeuPlano() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
+  const { user } = useAuth()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
   const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
+  
+  // Obter primeiro nome do usuário
+  const primeiroNome = user?.nome?.split(' ')[0] || 'usuário'
 
   useEffect(() => {
     const carregarHome = async () => {
@@ -174,7 +179,10 @@ export default function MeuPlano() {
           <div className="relative p-6 space-y-5">
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.3em] text-white/50 font-medium">Ações rápidas</p>
-              <h2 className="text-2xl font-bold text-white leading-tight">Continue sua jornada</h2>
+              <h2 className="text-2xl font-bold text-white leading-tight">
+                Olá, {primeiroNome}
+              </h2>
+              <h3 className="text-xl font-semibold text-white/90 leading-tight">Continue sua jornada</h3>
               <p className="text-sm text-white/60 leading-relaxed">
                 Acesse seus treinos e mantenha sua consistência
               </p>

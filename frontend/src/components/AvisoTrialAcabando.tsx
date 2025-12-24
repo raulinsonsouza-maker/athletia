@@ -18,8 +18,8 @@ export default function AvisoTrialAcabando() {
     return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60)))
   })()
 
-  // Só mostrar se faltam 24 horas ou menos
-  if (horasRestantes > 24) {
+  // Só mostrar se faltam 12 horas ou menos (quando realmente está acabando)
+  if (horasRestantes > 12) {
     return null
   }
 
