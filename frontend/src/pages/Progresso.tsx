@@ -222,6 +222,59 @@ export default function Progresso() {
     .toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
     .replace('.', '')}`
 
+  // Calcular métricas inteligentes
+  const tempoMedioTreino = useMemo(() => {
+    if (!historico.length) return 0
+    const tempos = historico
+      .filter(t => t.exercicios && t.exercicios.length > 0)
+      .map(t => {
+        // Estimar tempo baseado em exercícios (assumindo ~3min por exercício)
+        return (t.exercicios?.length || 0) * 3
+      })
+    if (tempos.length === 0) return 0
+    return Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length)
+  }, [historico])
+
+  const sequenciaAtual = useMemo(() => {
+    if (!historico.length) return 0
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    
+    let sequencia = 0
+    let dataEsperada = new Date(hoje)
+    
+    // Ordenar por data (mais recente primeiro)
+    const treinosOrdenados = [...historico]
+      .filter(t => t.data)
+      .sort((a, b) => new Date(b.data!).getTime() - new Date(a.data!).getTime())
+    
+    for (const treino of treinosOrdenados) {
+      const dataTreino = new Date(treino.data!)
+      dataTreino.setHours(0, 0, 0, 0)
+      
+      const diffDias = Math.floor((dataEsperada.getTime() - dataTreino.getTime()) / (1000 * 60 * 60 * 24))
+      
+      if (diffDias === 0 || diffDias === 1) {
+        sequencia++
+        dataEsperada = new Date(dataTreino)
+        dataEsperada.setDate(dataEsperada.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return sequencia
+  }, [historico])
+
+  const taxaConclusao = useMemo(() => {
+    if (!estatisticas || !estatisticas.frequenciaSemanal) return 0
+    // Estimar taxa baseada em frequência semanal vs treinos realizados
+    const semanas = periodo / 7
+    const treinosEsperados = estatisticas.frequenciaSemanal * semanas
+    if (treinosEsperados === 0) return 0
+    return Math.round((estatisticas.totalTreinos / treinosEsperados) * 100)
+  }, [estatisticas, periodo])
+
   const resumoCards = estatisticas
     ? [
         { label: 'Treinos', value: estatisticas.totalTreinos, detail: `${periodo} dias` },
@@ -232,7 +285,15 @@ export default function Progresso() {
             ? `${(estatisticas.totalExercicios / estatisticas.totalTreinos).toFixed(1)} por treino`
             : '—'
         },
-        { label: 'Volume', value: formatarVolume(estatisticas.volumeTotal), detail: 'Carga total' },
+        // Mostrar Volume apenas se houver dados de carga
+        ...(estatisticas.volumeTotal > 0
+          ? [{ label: 'Volume', value: formatarVolume(estatisticas.volumeTotal), detail: 'Carga total' }]
+          : sequenciaAtual > 0
+          ? [{ label: 'Sequência', value: `${sequenciaAtual}`, detail: 'dias seguidos' }]
+          : tempoMedioTreino > 0
+          ? [{ label: 'Tempo médio', value: `${tempoMedioTreino}`, detail: 'minutos' }]
+          : [{ label: 'Taxa conclusão', value: `${taxaConclusao}%`, detail: 'do esperado' }]
+        ),
         { label: 'Média/semana', value: estatisticas.frequenciaSemanal.toFixed(1), detail: 'treinos' }
       ]
     : []
@@ -381,7 +442,8 @@ export default function Progresso() {
             </div>
           )}
 
-          {volumePorSemana.length > 0 && (
+          {/* Mostrar gráfico de volume apenas se houver dados de carga */}
+          {volumePorSemana.length > 0 && volumePorSemana.some(([_, volume]) => volume > 0) && (
             <div className="bg-white/5 border border-white/10 rounded-3xl p-4">
               <p className="text-xs uppercase tracking-[0.3em] text-white/50">Carga</p>
               <h3 className="text-lg font-semibold mb-4">Volume semanal</h3>

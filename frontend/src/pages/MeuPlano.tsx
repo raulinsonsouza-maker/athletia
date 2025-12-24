@@ -48,37 +48,114 @@ export default function MeuPlano() {
   }, [showToast])
 
   const insights = homeData?.insights
-  const progressoSemana = insights?.progressoSemana
   const semanaStats = (homeData?.semana || []).reduce(
     (acc, dia) => {
       if (!dia) return acc
       if (dia.hasTreino) acc.planejados += 1
       if (dia.concluido) acc.realizados += 1
-      if (dia.status === 'passado' && !dia.concluido) acc.diasSemTreino += 1
       return acc
     },
-    { planejados: 0, realizados: 0, diasSemTreino: 0 }
+    { planejados: 0, realizados: 0 }
   )
 
+  // Calcular taxa de conclusão da semana
+  const taxaConclusaoSemana = semanaStats.planejados > 0
+    ? Math.round((semanaStats.realizados / semanaStats.planejados) * 100)
+    : 0
+
+  // Calcular sequência atual (dias consecutivos treinando)
+  const calcularSequencia = () => {
+    if (!homeData?.semana) return 0
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    
+    let sequencia = 0
+    const diasOrdenados = [...homeData.semana]
+      .filter(dia => dia && dia.data)
+      .sort((a, b) => new Date(b!.data).getTime() - new Date(a!.data).getTime())
+    
+    let dataEsperada = new Date(hoje)
+    
+    for (const dia of diasOrdenados) {
+      if (!dia || !dia.concluido) continue
+      
+      const dataTreino = new Date(dia.data)
+      dataTreino.setHours(0, 0, 0, 0)
+      
+      const diffDias = Math.floor((dataEsperada.getTime() - dataTreino.getTime()) / (1000 * 60 * 60 * 24))
+      
+      if (diffDias === 0 || diffDias === 1) {
+        sequencia++
+        dataEsperada = new Date(dataTreino)
+        dataEsperada.setDate(dataEsperada.getDate() - 1)
+      } else {
+        break
+      }
+    }
+    
+    return sequencia
+  }
+
+  const sequenciaAtual = calcularSequencia()
+
+  // Calcular tempo total treinado (estimado baseado em exercícios concluídos)
+  const tempoTotalTreinado = insights?.seriesTotais
+    ? Math.round((insights.seriesTotais * 3) / 60) // ~3min por série, converter para horas
+    : 0
+
+  // Determinar melhor dia da semana
+  const melhorDiaSemana = (() => {
+    if (!homeData?.semana) return null
+    const diasComTreino = homeData.semana
+      .filter(dia => dia && dia.concluido)
+      .map(dia => {
+        const data = new Date(dia!.data)
+        return data.toLocaleDateString('pt-BR', { weekday: 'long' })
+      })
+    
+    if (diasComTreino.length === 0) return null
+    
+    const contagem: Record<string, number> = {}
+    diasComTreino.forEach(dia => {
+      contagem[dia] = (contagem[dia] || 0) + 1
+    })
+    
+    const melhor = Object.entries(contagem).sort((a, b) => b[1] - a[1])[0]
+    return melhor ? melhor[0] : null
+  })()
+
+  // Construir resumo inteligente
   const resumoSemana = [
     {
-      label: 'Treinos concluídos',
-      value: progressoSemana
-        ? `${progressoSemana.realizados}`
-        : `${semanaStats.realizados}`
+      label: 'Taxa de conclusão',
+      value: `${taxaConclusaoSemana}%`,
+      detail: `${semanaStats.realizados} de ${semanaStats.planejados} treinos`
     },
-    {
-      label: 'Volume total',
-      value: insights ? `${(insights.volumeTotal ?? 0).toLocaleString('pt-BR')} kg` : '—'
-    },
+    ...(sequenciaAtual > 0
+      ? [{
+          label: 'Sequência',
+          value: `${sequenciaAtual}`,
+          detail: sequenciaAtual === 1 ? 'dia seguido' : 'dias seguidos'
+        }]
+      : []
+    ),
     {
       label: 'Séries totais',
-      value: `${insights?.seriesTotais ?? 0}`
+      value: `${insights?.seriesTotais ?? 0}`,
+      detail: tempoTotalTreinado > 0 ? `~${tempoTotalTreinado}h treinadas` : 'esta semana'
     },
-    {
-      label: 'Dias sem treino',
-      value: `${insights?.diasSemTreino ?? semanaStats.diasSemTreino}`
-    }
+    ...(melhorDiaSemana
+      ? [{
+          label: 'Melhor dia',
+          value: melhorDiaSemana.charAt(0).toUpperCase() + melhorDiaSemana.slice(1),
+          detail: 'mais consistente'
+        }]
+      : [{
+          label: 'Treinos concluídos',
+          value: `${semanaStats.realizados}`,
+          detail: 'esta semana'
+        }]
+    )
   ]
 
   return (
@@ -88,29 +165,42 @@ export default function MeuPlano() {
         <AvisoTrialAcabando />
         <TrialBanner />
         <AvisoExpiracaoPlano />
-        <section className="rounded-3xl overflow-hidden border border-white/10 bg-white/5">
-          <div className="p-6 space-y-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">Ações rápidas</p>
-              <h2 className="text-xl font-bold text-white">Continue sua jornada</h2>
-              <p className="text-sm text-white/60 mt-1">
-                Acesse seus treinos ou configure seu plano personalizado
+        <section className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl">
+          {/* Efeito de brilho sutil */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+          
+          <div className="relative p-6 space-y-5">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.3em] text-white/50 font-medium">Ações rápidas</p>
+              <h2 className="text-2xl font-bold text-white leading-tight">Continue sua jornada</h2>
+              <p className="text-sm text-white/60 leading-relaxed">
+                Acesse seus treinos e mantenha sua consistência
               </p>
             </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => navigate('/treino/atual')}
-                className="flex-1 py-3 rounded-full bg-primary text-dark font-semibold text-sm shadow-glow hover:bg-primary/90 transition"
-              >
-                Iniciar treino
-              </button>
-              <button
-                onClick={() => navigate('/treinos')}
-                className="flex-1 py-3 rounded-full border border-white/20 text-white font-semibold text-sm hover:bg-white/5 transition"
-              >
-                Configurar treino
-              </button>
-            </div>
+            
+            <button
+              onClick={() => navigate('/treino')}
+              className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary via-primary to-primary/90 text-dark font-bold text-base py-4 px-6 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {/* Efeito de brilho no hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+              
+              <div className="relative flex items-center justify-center gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+                <span>Iniciar treino</span>
+              </div>
+            </button>
           </div>
         </section>
 
@@ -174,6 +264,9 @@ export default function MeuPlano() {
               <div key={item.label} className="bg-white/5 border border-white/10 rounded-3xl p-4 space-y-1">
                 <p className="text-sm text-white/60">{item.label}</p>
                 <p className="text-2xl font-bold">{item.value}</p>
+                {item.detail && (
+                  <p className="text-xs text-white/40 mt-1">{item.detail}</p>
+                )}
               </div>
             ))}
           </div>
