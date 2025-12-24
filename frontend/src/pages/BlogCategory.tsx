@@ -219,6 +219,7 @@ export default function BlogCategory() {
                     key={article.id}
                     article={{
                       ...article,
+                      categoryRelation: article.categoryRelation,
                       category: article.categoryRelation?.name || 'Geral',
                       featuredImage: article.featuredImage || null,
                       featuredImageAlt: article.featuredImageAlt || article.title || '',

@@ -41,7 +41,8 @@ export const listarArtigos = async (req: AuthRequest, res: Response) => {
           select: {
             id: true,
             name: true,
-            slug: true
+            slug: true,
+            featuredImage: true
           }
         },
         authorRelation: {

@@ -171,7 +171,8 @@ export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => 
           categoryRelation: {
             select: {
               name: true,
-              slug: true
+              slug: true,
+              featuredImage: true
             }
           },
           authorRelation: {
@@ -213,7 +214,8 @@ export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => 
           categoryRelation: {
             select: {
               name: true,
-              slug: true
+              slug: true,
+              featuredImage: true
             }
           },
           authorRelation: {
@@ -329,6 +331,7 @@ export const listarCategoriasPublicas = async (req: Request, res: Response) => {
         slug: true,
         description: true,
         icon: true,
+        featuredImage: true,
         metaTitle: true,
         metaDescription: true,
         _count: {

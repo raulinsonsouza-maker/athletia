@@ -65,9 +65,17 @@ export default function BlogFooter({ categories = [] }: BlogFooterProps) {
           {/* Conteúdo */}
           <div>
             <h3 className="text-lg font-display font-bold text-light mb-4">Conteúdo</h3>
-            {categories.length > 0 ? (
-              <ul className="space-y-3">
-                {categories.slice(0, 6).map((category) => (
+            <ul className="space-y-3">
+              <li>
+                <button
+                  onClick={() => handleNavigate('/blog/categorias')}
+                  className="text-light-muted hover:text-primary transition-colors text-sm md:text-base font-medium"
+                >
+                  Todas as Categorias
+                </button>
+              </li>
+              {categories.length > 0 ? (
+                categories.slice(0, 5).map((category) => (
                   <li key={category.id}>
                     <button
                       onClick={() => handleNavigate(`/blog/categoria/${category.slug}`)}
@@ -76,28 +84,28 @@ export default function BlogFooter({ categories = [] }: BlogFooterProps) {
                       {category.name}
                     </button>
                   </li>
-                ))}
-              </ul>
-            ) : (
-              <ul className="space-y-3">
-                <li>
-                  <button
-                    onClick={() => handleNavigate('/blog')}
-                    className="text-light-muted hover:text-primary transition-colors text-sm md:text-base"
-                  >
-                    Todos os Artigos
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() => handleNavigate('/blog')}
-                    className="text-light-muted hover:text-primary transition-colors text-sm md:text-base"
-                  >
-                    Artigos em Destaque
-                  </button>
-                </li>
-              </ul>
-            )}
+                ))
+              ) : (
+                <>
+                  <li>
+                    <button
+                      onClick={() => handleNavigate('/blog')}
+                      className="text-light-muted hover:text-primary transition-colors text-sm md:text-base"
+                    >
+                      Todos os Artigos
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => handleNavigate('/blog')}
+                      className="text-light-muted hover:text-primary transition-colors text-sm md:text-base"
+                    >
+                      Artigos em Destaque
+                    </button>
+                  </li>
+                </>
+              )}
+            </ul>
           </div>
 
           {/* Empresa */}

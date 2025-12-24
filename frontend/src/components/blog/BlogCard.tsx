@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { BlogArticle } from '../../types/blog.types'
 import BlogMeta from './BlogMeta'
 import OptimizedImage from './OptimizedImage'
@@ -8,7 +9,11 @@ interface BlogCardProps {
     slug: string
     title: string
     excerpt: string
-    category: string
+    category?: string
+    categoryRelation?: {
+      name: string
+      slug: string
+    } | null
     readingTime: number
     featuredImage: string | null
     featuredImageAlt?: string | null
@@ -19,6 +24,17 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({ article, onClick }: BlogCardProps) {
+  const navigate = useNavigate()
+  const categoryName = article.categoryRelation?.name || article.category || 'Geral'
+  const categorySlug = article.categoryRelation?.slug
+
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (categorySlug) {
+      navigate(`/blog/categoria/${categorySlug}`)
+    }
+  }
+
   return (
     <article
       onClick={onClick}
@@ -38,9 +54,18 @@ export default function BlogCard({ article, onClick }: BlogCardProps) {
       
       <div className="p-6 space-y-4">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-primary uppercase tracking-wide">
-            {article.category}
-          </span>
+          {categorySlug ? (
+            <button
+              onClick={handleCategoryClick}
+              className="text-xs font-semibold text-primary uppercase tracking-wide hover:text-primary-dark transition-colors"
+            >
+              {categoryName}
+            </button>
+          ) : (
+            <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+              {categoryName}
+            </span>
+          )}
         </div>
         
         <h2 className="text-xl md:text-2xl font-display font-bold text-light group-hover:text-primary transition-colors line-clamp-2">
@@ -55,7 +80,7 @@ export default function BlogCard({ article, onClick }: BlogCardProps) {
           author={article.author || article.authorRelation?.name || 'Equipe AthletIA'}
           publishedAt={article.publishedAt || new Date().toISOString()}
           readingTime={article.readingTime}
-          category={article.category}
+          category={categoryName}
           compact
           showDate={false}
         />

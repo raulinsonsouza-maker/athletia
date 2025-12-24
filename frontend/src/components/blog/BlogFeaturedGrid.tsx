@@ -53,6 +53,7 @@ export default function BlogFeaturedGrid({ articles }: BlogFeaturedGridProps) {
             key={article.id}
             article={{
               ...article,
+              categoryRelation: article.categoryRelation,
               category: article.categoryRelation?.name || 'Geral',
               featuredImage: article.featuredImage || null,
               featuredImageAlt: article.featuredImageAlt || article.title || '',

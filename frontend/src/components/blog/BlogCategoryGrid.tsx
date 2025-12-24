@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import OptimizedImage from './OptimizedImage'
 
 interface BlogCategoryGridProps {
   categories: Array<{
@@ -6,6 +7,7 @@ interface BlogCategoryGridProps {
     name: string
     slug: string
     icon: string | null
+    featuredImage: string | null
     description: string | null
     _count?: {
       articles: number
@@ -41,21 +43,35 @@ export default function BlogCategoryGrid({ categories }: BlogCategoryGridProps) 
           <button
             key={category.id}
             onClick={() => navigate(`/blog/categoria/${category.slug}`)}
-            className="group p-6 bg-dark-lighter rounded-xl border border-grey/20 hover:border-primary/50 transition-all hover:scale-105 text-center"
+            className="group bg-dark-lighter rounded-xl border border-grey/20 hover:border-primary/50 transition-all hover:scale-105 overflow-hidden flex flex-col"
           >
-            {category.icon && (
-              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
-                {category.icon}
+            {category.featuredImage ? (
+              <div className="relative aspect-video overflow-hidden bg-dark">
+                <OptimizedImage
+                  src={category.featuredImage}
+                  alt={category.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
-            )}
-            <h3 className="text-lg font-display font-bold text-light mb-2 group-hover:text-primary transition-colors">
-              {category.name}
-            </h3>
-            {category._count && (
-              <p className="text-sm text-light-muted">
-                {category._count.articles} artigo(s)
-              </p>
-            )}
+            ) : category.icon ? (
+              <div className="p-6 pb-3">
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
+                  {category.icon}
+                </div>
+              </div>
+            ) : null}
+            <div className="p-6 pt-3 text-center flex-1 flex flex-col justify-center">
+              <h3 className="text-lg font-display font-bold text-light mb-2 group-hover:text-primary transition-colors">
+                {category.name}
+              </h3>
+              {category._count && (
+                <p className="text-sm text-light-muted">
+                  {category._count.articles} artigo(s)
+                </p>
+              )}
+            </div>
           </button>
         ))}
       </div>

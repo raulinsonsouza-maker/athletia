@@ -42,6 +42,7 @@ interface BlogCategory {
   name: string
   slug: string
   icon: string | null
+  featuredImage: string | null
   description: string | null
   _count?: {
     articles: number

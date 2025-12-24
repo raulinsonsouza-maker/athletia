@@ -56,6 +56,7 @@ export default function BlogPillarContent({ articles }: BlogPillarContentProps) 
             <BlogCard
             article={{
               ...article,
+              categoryRelation: article.categoryRelation,
               category: article.categoryRelation?.name || 'Geral',
               featuredImage: article.featuredImage || null,
               featuredImageAlt: article.featuredImageAlt || article.title || '',

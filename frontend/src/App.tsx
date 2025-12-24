@@ -47,6 +47,7 @@ const AdminBlogSettings = lazy(() => import('./pages/AdminBlogSettings'))
 const Blog = lazy(() => import('./pages/Blog'))
 const BlogPost = lazy(() => import('./pages/BlogPost'))
 const BlogCategory = lazy(() => import('./pages/BlogCategory'))
+const BlogCategories = lazy(() => import('./pages/BlogCategories'))
 
 function App() {
   return (
@@ -151,6 +152,14 @@ function App() {
             element={
               <Suspense fallback={<LoadingFallback />}>
                 <Blog />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/blog/categorias" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <BlogCategories />
               </Suspense>
             } 
           />

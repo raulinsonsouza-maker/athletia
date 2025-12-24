@@ -64,15 +64,40 @@ export const obterCategoria = async (req: AuthRequest, res: Response) => {
 // Criar nova categoria
 export const criarCategoria = async (req: AuthRequest, res: Response) => {
   try {
-    const {
-      name,
-      slug,
-      description,
-      introText,
-      icon,
-      metaTitle,
-      metaDescription
-    } = req.body;
+    // Processar dados do FormData ou JSON
+    const isMultipart = req.file !== undefined;
+    
+    let name, slug, description, introText, icon, featuredImage, metaTitle, metaDescription;
+    
+    if (isMultipart) {
+      // FormData
+      name = req.body.name || '';
+      slug = req.body.slug || '';
+      description = req.body.description || '';
+      introText = req.body.introText || '';
+      icon = req.body.icon || '';
+      metaTitle = req.body.metaTitle || '';
+      metaDescription = req.body.metaDescription || '';
+      
+      // Se houver arquivo de imagem, usar URL do arquivo salvo
+      if (req.file) {
+        featuredImage = `/api/uploads/blog/${req.file.filename}`;
+      } else {
+        featuredImage = null;
+      }
+    } else {
+      // JSON normal
+      ({
+        name,
+        slug,
+        description,
+        introText,
+        icon,
+        featuredImage,
+        metaTitle,
+        metaDescription
+      } = req.body);
+    }
 
     // Validações
     if (!name || !name.trim()) {
@@ -115,6 +140,7 @@ export const criarCategoria = async (req: AuthRequest, res: Response) => {
         description: description?.trim() || null,
         introText: introText?.trim() || null,
         icon: icon?.trim() || null,
+        featuredImage: featuredImage || null,
         metaTitle: metaTitle?.trim() || null,
         metaDescription: metaDescription?.trim() || null
       }
@@ -139,15 +165,59 @@ export const criarCategoria = async (req: AuthRequest, res: Response) => {
 export const atualizarCategoria = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const {
-      name,
-      slug,
-      description,
-      introText,
-      icon,
-      metaTitle,
-      metaDescription
-    } = req.body;
+    
+    // Processar dados do FormData ou JSON
+    const isMultipart = req.file !== undefined;
+    
+    let name, slug, description, introText, icon, featuredImage, metaTitle, metaDescription;
+    
+    if (isMultipart) {
+      // FormData
+      name = req.body.name;
+      slug = req.body.slug;
+      description = req.body.description;
+      introText = req.body.introText;
+      icon = req.body.icon;
+      metaTitle = req.body.metaTitle;
+      metaDescription = req.body.metaDescription;
+      
+      // Se houver arquivo de imagem, usar URL do arquivo salvo
+      if (req.file) {
+        featuredImage = `/api/uploads/blog/${req.file.filename}`;
+        
+        // Deletar imagem antiga se existir
+        const existingCategory = await prisma.blogCategory.findUnique({
+          where: { id }
+        });
+        
+        if (existingCategory?.featuredImage) {
+          const path = require('path');
+          const fs = require('fs');
+          const oldImagePath = path.join(process.cwd(), 'uploads', 'blog', path.basename(existingCategory.featuredImage));
+          if (fs.existsSync(oldImagePath)) {
+            try {
+              fs.unlinkSync(oldImagePath);
+            } catch (error) {
+              console.error('Erro ao deletar imagem antiga:', error);
+            }
+          }
+        }
+      } else {
+        featuredImage = undefined; // Não atualizar se não houver nova imagem
+      }
+    } else {
+      // JSON normal
+      ({
+        name,
+        slug,
+        description,
+        introText,
+        icon,
+        featuredImage,
+        metaTitle,
+        metaDescription
+      } = req.body);
+    }
 
     // Verificar se categoria existe
     const existingCategory = await prisma.blogCategory.findUnique({
@@ -181,6 +251,7 @@ export const atualizarCategoria = async (req: AuthRequest, res: Response) => {
     if (description !== undefined) updateData.description = description?.trim() || null;
     if (introText !== undefined) updateData.introText = introText?.trim() || null;
     if (icon !== undefined) updateData.icon = icon?.trim() || null;
+    if (featuredImage !== undefined) updateData.featuredImage = featuredImage || null;
     if (metaTitle !== undefined) updateData.metaTitle = metaTitle?.trim() || null;
     if (metaDescription !== undefined) updateData.metaDescription = metaDescription?.trim() || null;
 

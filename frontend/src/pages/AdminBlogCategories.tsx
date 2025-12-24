@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -12,6 +12,7 @@ interface BlogCategory {
   description: string | null
   introText: string | null
   icon: string | null
+  featuredImage: string | null
   metaTitle: string | null
   metaDescription: string | null
   _count?: {
@@ -34,9 +35,15 @@ export default function AdminBlogCategories() {
     description: '',
     introText: '',
     icon: '',
+    featuredImage: null as string | null,
     metaTitle: '',
     metaDescription: ''
   })
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('adminSidebarOpen')
     return saved ? saved === 'true' : window.innerWidth >= 1024
@@ -104,9 +111,12 @@ export default function AdminBlogCategories() {
       description: '',
       introText: '',
       icon: '',
+      featuredImage: null,
       metaTitle: '',
       metaDescription: ''
     })
+    setSelectedImageFile(null)
+    setImagePreview(null)
     setShowFormModal(true)
   }
 
@@ -119,9 +129,12 @@ export default function AdminBlogCategories() {
       description: category.description || '',
       introText: category.introText || '',
       icon: category.icon || '',
+      featuredImage: category.featuredImage || null,
       metaTitle: category.metaTitle || '',
       metaDescription: category.metaDescription || ''
     })
+    setSelectedImageFile(null)
+    setImagePreview(category.featuredImage || null)
     setShowFormModal(true)
   }
 
@@ -139,19 +152,103 @@ export default function AdminBlogCategories() {
     }
   }
 
+  const handleImageSelect = (file: File) => {
+    // Validar tipo de arquivo
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      showToast('Apenas imagens JPG, PNG ou WEBP são permitidas', 'error')
+      return
+    }
+
+    // Validar tamanho (5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      showToast('Imagem muito grande. Tamanho máximo: 5MB', 'error')
+      return
+    }
+
+    setSelectedImageFile(file)
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) {
+      handleImageSelect(file)
+    }
+  }
+
   const handleSave = async () => {
     try {
-      if (isCreating) {
-        await api.post('/admin/blog/categorias', formData)
-        showToast('Categoria criada com sucesso', 'success')
+      setUploadingImage(true)
+      
+      // Se houver imagem selecionada, usar FormData
+      if (selectedImageFile) {
+        const formDataToSend = new FormData()
+        formDataToSend.append('name', formData.name.trim())
+        formDataToSend.append('slug', formData.slug.trim())
+        formDataToSend.append('description', formData.description.trim() || '')
+        formDataToSend.append('introText', formData.introText.trim() || '')
+        formDataToSend.append('icon', formData.icon.trim() || '')
+        formDataToSend.append('metaTitle', formData.metaTitle.trim() || '')
+        formDataToSend.append('metaDescription', formData.metaDescription.trim() || '')
+        formDataToSend.append('imagem', selectedImageFile)
+
+        if (isCreating) {
+          await api.post('/admin/blog/categorias', formDataToSend)
+          showToast('Categoria criada com sucesso', 'success')
+        } else {
+          await api.put(`/admin/blog/categorias/${selectedCategory!.id}`, formDataToSend)
+          showToast('Categoria atualizada com sucesso', 'success')
+        }
       } else {
-        await api.put(`/admin/blog/categorias/${selectedCategory!.id}`, formData)
-        showToast('Categoria atualizada com sucesso', 'success')
+        // Sem imagem, enviar JSON normal
+        const payload: any = {
+          name: formData.name.trim(),
+          slug: formData.slug.trim(),
+          description: formData.description.trim() || null,
+          introText: formData.introText.trim() || null,
+          icon: formData.icon.trim() || null,
+          featuredImage: formData.featuredImage || null,
+          metaTitle: formData.metaTitle.trim() || null,
+          metaDescription: formData.metaDescription.trim() || null
+        }
+
+        if (isCreating) {
+          await api.post('/admin/blog/categorias', payload)
+          showToast('Categoria criada com sucesso', 'success')
+        } else {
+          await api.put(`/admin/blog/categorias/${selectedCategory!.id}`, payload)
+          showToast('Categoria atualizada com sucesso', 'success')
+        }
+      }
+
+      setSelectedImageFile(null)
+      setImagePreview(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
       }
       setShowFormModal(false)
       carregarCategorias()
     } catch (error: any) {
       showToast(error.response?.data?.error || 'Erro ao salvar categoria', 'error')
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -340,6 +437,15 @@ export default function AdminBlogCategories() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {categories.map((category) => (
               <div key={category.id} className="card card-hover group">
+                {category.featuredImage && (
+                  <div className="mb-4 -mx-6 -mt-6 rounded-t-lg overflow-hidden">
+                    <img
+                      src={category.featuredImage}
+                      alt={category.name}
+                      className="w-full h-32 object-cover"
+                    />
+                  </div>
+                )}
                 <div className="mb-4">
                   <h3 className="text-xl font-display font-bold text-light mb-3 group-hover:text-primary transition-colors">
                     {category.name}
@@ -455,6 +561,79 @@ export default function AdminBlogCategories() {
                   />
                 </div>
 
+                {/* Upload de Imagem */}
+                <div>
+                  <label className="block text-sm font-medium text-light mb-2">
+                    Imagem Destacada
+                  </label>
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-6 transition-colors ${
+                      isDragging
+                        ? 'border-primary bg-primary/10'
+                        : 'border-grey/30 hover:border-primary/50'
+                    }`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg mb-4"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedImageFile(null)
+                            setImagePreview(formData.featuredImage || null)
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = ''
+                            }
+                          }}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <svg className="w-12 h-12 mx-auto mb-4 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p className="text-sm text-light-muted mb-2">
+                          Arraste uma imagem aqui ou clique para selecionar
+                        </p>
+                        <p className="text-xs text-light-muted">
+                          JPG, PNG ou WEBP (máx. 5MB)
+                        </p>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          handleImageSelect(file)
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mt-4 w-full btn-secondary py-2 text-sm"
+                    >
+                      {imagePreview ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-light mb-2">
                     Ícone (URL ou código)
@@ -504,9 +683,10 @@ export default function AdminBlogCategories() {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="btn-primary px-6 py-2"
+                  disabled={uploadingImage}
+                  className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isCreating ? 'Criar' : 'Salvar'}
+                  {uploadingImage ? 'Salvando...' : isCreating ? 'Criar' : 'Salvar'}
                 </button>
               </div>
             </div>

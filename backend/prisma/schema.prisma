@@ -465,6 +465,7 @@ model BlogCategory {
   description     String?  @db.Text // SEO
   introText       String?  @map("intro_text") @db.Text // Editorial
   icon            String?
+  featuredImage   String?  @map("featured_image")
   metaTitle       String?  @map("meta_title")
   metaDescription String?  @map("meta_description") @db.Text
   createdAt       DateTime @default(now()) @map("created_at")

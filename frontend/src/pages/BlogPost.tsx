@@ -233,9 +233,12 @@ export default function BlogPost() {
           <header className="mb-8 md:mb-10">
             <div className="mb-4 md:mb-5">
               {article.categoryRelation && (
-                <span className="inline-block px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 border border-primary/30 rounded-full">
+                <button
+                  onClick={() => navigate(`/blog/categoria/${article.categoryRelation!.slug}`)}
+                  className="inline-block px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 border border-primary/30 rounded-full hover:bg-primary/30 hover:border-primary/50 transition-colors"
+                >
                   {article.categoryRelation.name}
-                </span>
+                </button>
               )}
             </div>
             

@@ -59,6 +59,7 @@ export default function BlogMostRead({ articles }: BlogMostReadProps) {
             <BlogCard
             article={{
               ...article,
+              categoryRelation: article.categoryRelation,
               category: article.categoryRelation?.name || 'Geral',
               featuredImage: article.featuredImage || null,
               featuredImageAlt: article.featuredImageAlt || article.title || '',

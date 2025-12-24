@@ -521,8 +521,60 @@ router.post(
 
 router.get('/blog/categorias', listarCategorias);
 router.get('/blog/categorias/:id', obterCategoria);
-router.post('/blog/categorias', criarCategoria);
-router.put('/blog/categorias/:id', atualizarCategoria);
+router.post(
+  '/blog/categorias',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    const contentType = req.headers['content-type'] || '';
+    
+    // Se não for multipart, passar direto (será processado como JSON)
+    if (!contentType.includes('multipart/form-data')) {
+      return next();
+    }
+    
+    // Se for multipart, processar com multer
+    uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  criarCategoria
+);
+router.put(
+  '/blog/categorias/:id',
+  (req: AuthRequest, res: Response, next: NextFunction) => {
+    const contentType = req.headers['content-type'] || '';
+    
+    // Se não for multipart, passar direto (será processado como JSON)
+    if (!contentType.includes('multipart/form-data')) {
+      return next();
+    }
+    
+    // Se for multipart, processar com multer
+    uploadBlogImagem.single('imagem')(req as any, res, (err: any) => {
+      if (err) {
+        if (err instanceof multer.MulterError) {
+          if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' });
+          }
+          return res.status(400).json({ error: err.message });
+        }
+        return res.status(400).json({ error: err.message || 'Erro ao processar arquivo' });
+      }
+      next();
+    });
+  },
+  validateImageMagicBytes,
+  atualizarCategoria
+);
 router.delete('/blog/categorias/:id', deletarCategoria);
 
 // ============================================================================

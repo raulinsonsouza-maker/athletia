@@ -46,9 +46,15 @@ export default function BlogHero({ article }: BlogHeroProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent" />
             <div className="absolute top-4 left-4">
               {article.categoryRelation && (
-                <span className="inline-block px-4 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-dark/90 backdrop-blur-sm border border-primary/30 rounded-full shadow-lg">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(`/blog/categoria/${article.categoryRelation!.slug}`)
+                  }}
+                  className="inline-block px-4 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-dark/90 backdrop-blur-sm border border-primary/30 rounded-full shadow-lg hover:bg-dark/95 hover:border-primary/50 transition-colors"
+                >
                   {article.categoryRelation.name}
-                </span>
+                </button>
               )}
             </div>
           </div>
@@ -58,9 +64,15 @@ export default function BlogHero({ article }: BlogHeroProps) {
           {!article.featuredImage && (
             <div className="mb-4">
               {article.categoryRelation && (
-                <span className="inline-block px-4 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 rounded-full">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigate(`/blog/categoria/${article.categoryRelation!.slug}`)
+                  }}
+                  className="inline-block px-4 py-2 text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 rounded-full hover:bg-primary/30 transition-colors"
+                >
                   {article.categoryRelation.name}
-                </span>
+                </button>
               )}
             </div>
           )}
