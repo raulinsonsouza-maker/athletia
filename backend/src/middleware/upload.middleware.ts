@@ -216,6 +216,85 @@ export const uploadBlogAuthorAvatar = multer({
   }
 });
 
+// ============================================================================
+// UPLOAD DE IMAGENS DO SISTEMA (PERFIL E LOGIN)
+// ============================================================================
+
+// Storage para perfil
+const storageSistemaPerfil = multer.diskStorage({
+  destination: (req, file, cb) => {
+    try {
+      const basePath = getUploadExerciciosPath();
+      const baseDir = path.dirname(basePath);
+      const uploadPath = path.join(baseDir, 'imagens-sistema');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    } catch (error: any) {
+      cb(new Error(`Erro ao criar diretório de upload: ${error.message}`), undefined as any);
+    }
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+    const finalExt = validExts.includes(ext) ? ext : '.jpg';
+    cb(null, `perfil-padrao${finalExt}`);
+  }
+});
+
+// Storage para login
+const storageSistemaLogin = multer.diskStorage({
+  destination: (req, file, cb) => {
+    try {
+      const basePath = getUploadExerciciosPath();
+      const baseDir = path.dirname(basePath);
+      const uploadPath = path.join(baseDir, 'imagens-sistema');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+      cb(null, uploadPath);
+    } catch (error: any) {
+      cb(new Error(`Erro ao criar diretório de upload: ${error.message}`), undefined as any);
+    }
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+    const finalExt = validExts.includes(ext) ? ext : '.jpg';
+    cb(null, `login-padrao${finalExt}`);
+  }
+});
+
+const fileFilterSistemaImagens = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mimeType = file.mimetype;
+  const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+  const validMimes = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (!validExts.includes(ext) && !validMimes.includes(mimeType)) {
+    return cb(new Error('Apenas imagens JPG, PNG ou WEBP são permitidas'));
+  }
+
+  cb(null, true);
+};
+
+export const uploadSistemaImagemPerfil = multer({
+  storage: storageSistemaPerfil,
+  fileFilter: fileFilterSistemaImagens,
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
+
+export const uploadSistemaImagemLogin = multer({
+  storage: storageSistemaLogin,
+  fileFilter: fileFilterSistemaImagens,
+  limits: {
+    fileSize: MAX_FILE_SIZE
+  }
+});
+
 /**
  * Middleware para validar magic bytes de arquivos de imagem após upload
  * SEGURANÇA: Validação de magic bytes para prevenir upload de arquivos maliciosos

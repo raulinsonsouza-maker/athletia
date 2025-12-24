@@ -240,7 +240,7 @@ export default function Treinos() {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
         <AppHeader title="Treinos" />
-        <div className="px-4 pt-4 space-y-4">
+        <div className="px-5 pt-6 space-y-6">
           <div className="h-40 bg-[#111] rounded-2xl animate-pulse" />
           <div className="h-28 bg-[#111] rounded-2xl animate-pulse" />
           <div className="h-28 bg-[#111] rounded-2xl animate-pulse" />
@@ -257,7 +257,7 @@ export default function Treinos() {
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
       <AppHeader title="Treinos" />
       
-      <div className="px-4 pt-2 space-y-6">
+      <div className="px-5 pt-6 space-y-6">
         <AvisoExpiracaoPlano />
         {/* CARD DESTAQUE - TREINO DE HOJE */}
         {treinoHoje && (

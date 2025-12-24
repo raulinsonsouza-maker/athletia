@@ -739,3 +739,13 @@ model ChatMessage {
   @@index([sessionId, createdAt])
   @@map("chat_messages")
 }
+
+model SystemSettings {
+  id                 String   @id @default(uuid())
+  imagemPerfilPadrao String?  @map("imagem_perfil_padrao")
+  imagemLoginPadrao  String?  @map("imagem_login_padrao")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}

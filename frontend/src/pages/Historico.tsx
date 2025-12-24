@@ -63,9 +63,9 @@ export default function Historico() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-28">
-      <AppHeader title="Histórico" backTo="/meu-plano" />
+      <AppHeader title="Histórico" />
 
-      <div className="px-5 space-y-6">
+      <div className="px-5 pt-6 space-y-6">
         <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3 backdrop-blur">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex-1 flex items-center gap-3 bg-dark/60 border border-white/10 rounded-2xl px-4 py-2">

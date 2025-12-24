@@ -240,7 +240,7 @@ export default function Progresso() {
   if (loading && primeiraCarga.current) {
     return (
       <div className="min-h-screen bg-dark text-white pb-24">
-        <AppHeader title="Progresso" backTo="/meu-plano" />
+        <AppHeader title="Progresso" />
         <div className="px-5 pt-6">
           <div className="flex justify-center py-20">
             <div className="h-10 w-10 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -254,7 +254,7 @@ export default function Progresso() {
   if (!estatisticas || estatisticas.totalTreinos === 0) {
     return (
       <div className="min-h-screen bg-dark text-white pb-24">
-        <AppHeader title="Progresso" backTo="/meu-plano" />
+        <AppHeader title="Progresso" />
         <div className="px-5 pt-6">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -281,8 +281,8 @@ export default function Progresso() {
 
   return (
     <div className="min-h-screen bg-dark text-white pb-24">
-      <AppHeader title="Progresso" backTo="/meu-plano" />
-      <div className="px-5 pt-2 space-y-6">
+      <AppHeader title="Progresso" />
+      <div className="px-5 pt-6 space-y-6">
         {refreshing && (
           <div className="flex items-center gap-2 text-xs text-white/60">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />

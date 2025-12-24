@@ -8,6 +8,7 @@ import GruposMuscularesAdminList from '../components/GruposMuscularesAdminList'
 import GrupoMuscularFormModal from '../components/GrupoMuscularFormModal'
 import { grupoMuscularAdminService, GrupoMuscularVisual } from '../services/grupo-muscular-admin.service'
 import TreinoImagensAdmin from '../components/TreinoImagensAdmin'
+import SistemaImagensAdmin from '../components/SistemaImagensAdmin'
 import AdminWhatsApp from './AdminWhatsApp'
 import AdminChat from './AdminChat'
 import { testarEmailRemarketing, estenderTrial, converterManual, encerrarTrial } from '../services/admin.service'
@@ -914,7 +915,12 @@ export default function Admin() {
           </div>
         </div>
 
-        {activeTab === 'imagens' && <TreinoImagensAdmin />}
+        {activeTab === 'imagens' && (
+          <div className="space-y-8">
+            <SistemaImagensAdmin />
+            <TreinoImagensAdmin />
+          </div>
+        )}
         {activeTab === 'whatsapp' && <AdminWhatsApp />}
         {activeTab === 'chat' && <AdminChat />}
 

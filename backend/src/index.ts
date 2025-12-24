@@ -28,6 +28,7 @@ import testRoutes from './routes/test-routes';
 import whatsappRoutes from './routes/whatsapp.routes';
 import chatRoutes from './routes/chat.routes';
 import adminChatRoutes from './routes/admin-chat.routes';
+import adminSettingsRoutes from './routes/admin-settings.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import cron from 'node-cron';
@@ -201,6 +202,20 @@ app.use('/api/uploads/blog', express.static(uploadBlogPath, {
   }
 }));
 
+// Servir imagens do sistema (perfil e login)
+const uploadSistemaImagensPath = path.join(path.dirname(uploadExerciciosPath), 'imagens-sistema');
+app.use('/api/uploads/imagens-sistema', express.static(uploadSistemaImagensPath, {
+  setHeaders: (res, filePath) => {
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || filePath.endsWith('.webp')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
+
 // Servir imagens do banco com múltiplos caminhos candidatos
 const imagensBancoCandidates = getImagensBancoPathCandidates();
 const resolveImagemBancoArquivo = (nomeArquivo: string): { filePath: string; basePath: string } | null => {
@@ -338,6 +353,7 @@ app.use('/api/treino', treinoRoutes);
 app.use('/api/peso', pesoRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/settings', adminSettingsRoutes);
 app.use('/api/exercicios', exercicioRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/dashboard', dashboardRoutes);

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import api from '../services/auth.service'
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal'
 
 export default function Login() {
@@ -10,8 +11,25 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
+  const [imagemLoginPadrao, setImagemLoginPadrao] = useState<string | null>(null)
   const { login } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    carregarImagemLoginPadrao()
+  }, [])
+
+  const carregarImagemLoginPadrao = async () => {
+    try {
+      const response = await api.get('/admin/settings/imagens')
+      if (response.data?.imagemLoginPadrao) {
+        setImagemLoginPadrao(response.data.imagemLoginPadrao)
+      }
+    } catch (error) {
+      // Ignorar erro se não for admin ou se não existir ainda
+      console.debug('Não foi possível carregar imagem padrão do login:', error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,13 +100,13 @@ export default function Login() {
         <section className="rounded-[36px] border border-white/10 bg-white/5 overflow-hidden relative shadow-2xl">
           <div className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80"
+              src={imagemLoginPadrao || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80"}
               alt="Atleta treinando"
               className="w-full h-full object-cover opacity-40"
               onError={(e) => {
                 const target = e.currentTarget
                 const fallback = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1200&q=80'
-                if (target.src !== fallback) {
+                if (target.src !== fallback && !imagemLoginPadrao) {
                   target.src = fallback
                 } else {
                   target.style.display = 'none'
