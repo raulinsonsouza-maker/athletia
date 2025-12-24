@@ -155,7 +155,13 @@ export default function UserCard({ user, onClick, isSelected }: UserCardProps) {
 
         <div className="mt-auto pt-3 border-t border-grey/30">
           <p className="text-light-muted text-xs">
-            Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+            Cadastrado em {new Date(user.createdAt).toLocaleString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
           </p>
         </div>
       </div>

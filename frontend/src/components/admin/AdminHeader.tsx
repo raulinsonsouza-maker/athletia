@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import api from '../../services/auth.service'
 
 interface AdminHeaderProps {
   onMenuToggle: () => void
@@ -8,7 +9,9 @@ interface AdminHeaderProps {
 
 export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [unreadChatCount, setUnreadChatCount] = useState(0)
 
   const handleLogout = () => {
     localStorage.removeItem('adminAccessToken')
@@ -19,6 +22,35 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
 
   const adminUser = localStorage.getItem('adminUser')
   const userInfo = adminUser ? JSON.parse(adminUser) : null
+
+  // Carregar contador de conversas não respondidas
+  const loadUnreadChatCount = async () => {
+    try {
+      const response = await api.get('/admin/chat/sessions?status=human')
+      const sessions = response.data.sessions || response.data || []
+      setUnreadChatCount(sessions.length)
+    } catch (error) {
+      // Silenciar erro se não houver sessões ou API não disponível
+      setUnreadChatCount(0)
+    }
+  }
+
+  // Carregar contador periodicamente e quando a página mudar
+  useEffect(() => {
+    loadUnreadChatCount()
+    const interval = setInterval(loadUnreadChatCount, 30000) // Atualizar a cada 30s
+    return () => clearInterval(interval)
+  }, [location.pathname])
+
+  const handleNotificationClick = () => {
+    // Navegar para admin com tab chat
+    if (location.pathname === '/admin') {
+      // Se já está na página admin, apenas mudar a tab via evento ou state
+      window.dispatchEvent(new CustomEvent('admin:changeTab', { detail: 'chat' }))
+    } else {
+      navigate('/admin?tab=chat')
+    }
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/95 backdrop-blur-md border-b border-white/10">
@@ -55,7 +87,7 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
           </button>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/30">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/30 flex-shrink-0">
               <svg
                 className="w-5 h-5 md:w-6 md:h-6 text-primary"
                 fill="none"
@@ -76,8 +108,8 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
                 />
               </svg>
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg md:text-xl font-display font-bold text-light">
+            <div className="hidden sm:block flex items-center">
+              <h1 className="text-lg md:text-xl font-display font-bold text-light whitespace-nowrap leading-tight">
                 Painel Administrativo
               </h1>
             </div>
@@ -86,10 +118,12 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
 
         {/* Right: User Menu */}
         <div className="flex items-center gap-3">
-          {/* Notifications (placeholder) */}
+          {/* Notifications */}
           <button
+            onClick={handleNotificationClick}
             className="hidden md:flex p-2 rounded-lg hover:bg-white/10 transition-colors text-white/60 hover:text-white relative"
-            aria-label="Notificações"
+            aria-label={`Notificações${unreadChatCount > 0 ? `: ${unreadChatCount} conversas não respondidas` : ''}`}
+            title={unreadChatCount > 0 ? `${unreadChatCount} conversa${unreadChatCount > 1 ? 's' : ''} não respondida${unreadChatCount > 1 ? 's' : ''}` : 'Nenhuma notificação'}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -99,7 +133,11 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
               />
             </svg>
-            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
+            {unreadChatCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-primary text-dark text-xs font-bold rounded-full flex items-center justify-center px-1.5">
+                {unreadChatCount > 99 ? '99+' : unreadChatCount}
+              </span>
+            )}
           </button>
 
           {/* User Menu */}

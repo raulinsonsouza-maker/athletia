@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
+import AdminHeader from '../components/admin/AdminHeader'
+import AdminSidebar from '../components/admin/AdminSidebar'
 
 interface BlogCategory {
   id: string
@@ -35,6 +37,25 @@ export default function AdminBlogCategories() {
     metaTitle: '',
     metaDescription: ''
   })
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('adminSidebarOpen')
+    return saved ? saved === 'true' : window.innerWidth >= 1024
+  })
+
+  const toggleSidebar = () => {
+    const newState = !sidebarOpen
+    setSidebarOpen(newState)
+    localStorage.setItem('adminSidebarOpen', String(newState))
+  }
+
+  const handleTabChange = (tab: string) => {
+    if (tab === 'blog') {
+      navigate('/admin/blog')
+    } else {
+      navigate('/admin')
+      window.dispatchEvent(new CustomEvent('admin:changeTab', { detail: tab }))
+    }
+  }
 
   useEffect(() => {
     document.title = 'Categorias do Blog - Painel Administrativo | AthletIA'
@@ -146,16 +167,9 @@ export default function AdminBlogCategories() {
       .replace(/^-|-$/g, '')
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAccessToken')
-    localStorage.removeItem('adminRefreshToken')
-    localStorage.removeItem('adminUser')
-    navigate('/admin/login')
-  }
-
   if (verificando || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-dark text-white">
         <div className="text-center">
           <div className="spinner h-12 w-12 mx-auto"></div>
           <p className="mt-4 text-light-muted">Carregando...</p>
@@ -165,34 +179,17 @@ export default function AdminBlogCategories() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-dark">
       <ToastContainer />
-      <nav className="navbar">
-        <div className="container-custom">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h1 className="text-xl font-display font-bold text-light">Painel Administrativo</h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="btn-secondary flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sair
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="container-custom py-6 md:py-8">
+      <AdminHeader onMenuToggle={toggleSidebar} sidebarOpen={sidebarOpen} />
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activeTab="blog"
+        onTabChange={handleTabChange}
+      />
+      <main className="ml-0 lg:ml-64 pt-16 min-h-screen">
+        <div className="container-custom py-6 md:py-8">
         {/* Tabs Navigation - Improved with horizontal scroll on mobile */}
         <div className="mb-6 bg-dark border border-grey/30 rounded-xl overflow-hidden">
           <div className="overflow-x-auto scrollbar-hide">
@@ -515,6 +512,7 @@ export default function AdminBlogCategories() {
             </div>
           </div>
         )}
+        </div>
       </main>
     </div>
   )

@@ -278,6 +278,32 @@ export default function Admin() {
     verificarAdmin()
   }, [])
 
+  // Listener para mudança de tab via evento customizado (ex: notificações)
+  useEffect(() => {
+    const handleTabChange = (event: CustomEvent) => {
+      const tab = event.detail as typeof activeTab
+      if (tab && ['usuarios', 'exercicios', 'estatisticas', 'grupos', 'imagens', 'whatsapp', 'chat'].includes(tab)) {
+        setActiveTab(tab)
+      }
+    }
+
+    window.addEventListener('admin:changeTab', handleTabChange as EventListener)
+    return () => {
+      window.removeEventListener('admin:changeTab', handleTabChange as EventListener)
+    }
+  }, [])
+
+  // Verificar query params na URL para mudança de tab
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tabParam = params.get('tab')
+    if (tabParam && ['usuarios', 'exercicios', 'estatisticas', 'grupos', 'imagens', 'whatsapp', 'chat'].includes(tabParam)) {
+      setActiveTab(tabParam as typeof activeTab)
+      // Limpar query param após usar
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
   // Fechar menu de ações ao clicar fora
   useEffect(() => {
     if (!menuAcoesAberto) return
@@ -400,7 +426,14 @@ export default function Admin() {
       const queryString = params.toString()
       const url = `/admin/usuarios${queryString ? `?${queryString}` : ''}`
       const response = await api.get(url)
-      setUsuarios(response.data.usuarios || [])
+      const usuariosList = response.data.usuarios || []
+      // Ordenar por data de cadastro (mais recentes primeiro)
+      usuariosList.sort((a: User, b: User) => {
+        const dateA = new Date(a.createdAt).getTime()
+        const dateB = new Date(b.createdAt).getTime()
+        return dateB - dateA
+      })
+      setUsuarios(usuariosList)
       setTotalUsuarios(response.data.paginacao?.total || 0)
 
       if (response.data.usuarios && response.data.usuarios.length === 0 && search) {
@@ -1344,7 +1377,13 @@ export default function Admin() {
                                 <p className="text-light-muted text-sm truncate">{user.email}</p>
                                 <div className="flex items-center gap-3 mt-1">
                                   <p className="text-light-muted text-xs">
-                                    Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                    Cadastrado em {new Date(user.createdAt).toLocaleString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
                                   </p>
                                   <span className="text-light-muted">•</span>
                                   <p className={`text-xs ${ultimoAcesso ? 'text-light-muted' : 'text-error font-medium'}`}>
@@ -1471,7 +1510,13 @@ export default function Admin() {
                                 </td>
                                 <td className="py-3 px-4">
                                   <p className="text-sm text-light-muted">
-                                    {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                                    {new Date(user.createdAt).toLocaleString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
                                   </p>
                                 </td>
                                 <td className="py-3 px-4">
@@ -2364,7 +2409,7 @@ export default function Admin() {
                           <div className="space-y-1 md:col-span-2">
                             <label className="text-xs font-medium text-light-muted uppercase tracking-wide">Senha (Hash)</label>
                             <div className="flex items-center gap-3">
-                              <p className="text-base text-light font-mono text-sm">
+                              <p className="text-sm text-light font-mono">
                                 {userDetails.usuario.senhaHash || 'Não disponível'}
                               </p>
                               <div className="flex items-center gap-2">
@@ -2490,10 +2535,12 @@ export default function Admin() {
                           <div className="space-y-1">
                             <label className="text-xs font-medium text-light-muted uppercase tracking-wide">Data de Cadastro</label>
                             <p className="text-base text-light font-medium">
-                              {new Date(userDetails.usuario.createdAt).toLocaleDateString('pt-BR', {
+                              {new Date(userDetails.usuario.createdAt).toLocaleString('pt-BR', {
                                 day: '2-digit',
-                                month: 'long',
-                                year: 'numeric'
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
                               })}
                             </p>
                           </div>

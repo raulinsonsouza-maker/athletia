@@ -240,38 +240,45 @@ export default function AdminSidebar({
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0 w-64 overflow-y-auto`}
       >
-        <nav className="p-4 space-y-2">
-          {menuItems.map((item) => (
+        <nav className="p-4 space-y-4">
+          {menuItems.map((item, index) => (
             <div key={item.id}>
-              {/* Categoria */}
-              <div className="px-3 py-2 mb-1">
-                <div className="flex items-center gap-2 text-xs font-semibold text-light-muted uppercase tracking-wider">
+              {/* Categoria - não clicável, apenas informativo */}
+              <div className="px-3 py-2 mb-2 pointer-events-none">
+                <div className="flex items-center gap-2 text-xs font-semibold text-light-muted/70 uppercase tracking-wider">
                   {item.icon}
                   <span>{item.label}</span>
                 </div>
               </div>
 
-              {/* Itens filhos */}
-              {item.children?.map((child) => {
-                const active = isActive(child.id)
-                return (
-                  <button
-                    key={child.id}
-                    onClick={() => {
-                      child.onClick?.()
-                      onClose() // Fechar no mobile após clicar
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                      active
-                        ? 'bg-primary/20 text-primary border-l-2 border-primary'
-                        : 'text-light-muted hover:bg-white/5 hover:text-light'
-                    }`}
-                  >
-                    {child.icon}
-                    <span className="text-sm font-medium">{child.label}</span>
-                  </button>
-                )
-              })}
+              {/* Itens filhos - clicáveis com melhor indentação */}
+              <div className="space-y-1 ml-4">
+                {item.children?.map((child) => {
+                  const active = isActive(child.id)
+                  return (
+                    <button
+                      key={child.id}
+                      onClick={() => {
+                        child.onClick?.()
+                        onClose() // Fechar no mobile após clicar
+                      }}
+                      className={`w-full flex items-center gap-3 pl-6 pr-3 py-2.5 rounded-lg transition-all cursor-pointer ${
+                        active
+                          ? 'bg-primary/20 text-primary border-l-2 border-primary font-medium'
+                          : 'text-light-muted hover:bg-primary/10 hover:text-light'
+                      }`}
+                    >
+                      {child.icon}
+                      <span className="text-sm">{child.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Separador visual após cada categoria (exceto a última) */}
+              {index < menuItems.length - 1 && (
+                <div className="mt-4 mb-2 border-b border-grey/20"></div>
+              )}
             </div>
           ))}
         </nav>
