@@ -6,13 +6,11 @@ import { OnboardingData } from '../types/onboarding.types'
 import CadastroHero from '../components/cadastro/CadastroHero'
 import ResumoOnboarding from '../components/cadastro/ResumoOnboarding'
 import ProcessoTimeline from '../components/cadastro/ProcessoTimeline'
-import TrialInfoSection from '../components/cadastro/TrialInfoSection'
-import ComparacaoTrialAssinatura from '../components/cadastro/ComparacaoTrialAssinatura'
+import BeneficiosSection from '../components/cadastro/BeneficiosSection'
+import PlanosSection from '../components/cadastro/PlanosSection'
 import CadastroForm from '../components/cadastro/CadastroForm'
-import PreviaResultados from '../components/cadastro/PreviaResultados'
 import PropostaValor from '../components/cadastro/PropostaValor'
-import DepoimentoUnico from '../components/cadastro/DepoimentoUnico'
-import GarantiaSection from '../components/cadastro/GarantiaSection'
+import PreviaResultados from '../components/cadastro/PreviaResultados'
 import FAQCadastro from '../components/cadastro/FAQCadastro'
 import CTAFinal from '../components/cadastro/CTAFinal'
 
@@ -150,22 +148,22 @@ export default function Cadastro() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
-      {/* SEÇÃO 1 - HERO */}
+      {/* SEÇÃO 1 - HERO: "Seu plano está quase finalizado" */}
       <CadastroHero onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 2 - RESUMO ONBOARDING + O QUE VAI TER */}
+      {/* SEÇÃO 2 - COMO VOCÊ ESTÁ AGORA: Dados do onboarding */}
       <ResumoOnboarding onboardingData={onboardingData} />
 
-      {/* SEÇÃO 3 - TIMELINE DO PROCESSO */}
-      <ProcessoTimeline />
+      {/* SEÇÃO 3 - COMO FUNCIONA O PROCESSO: Timeline simples */}
+      <ProcessoTimeline onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 4 - INFORMAÇÕES SOBRE TRIAL E PLANOS */}
-      <TrialInfoSection onScrollToForm={scrollToForm} />
+      {/* SEÇÃO 4 - BENEFÍCIOS: Lista simples e resumida */}
+      <BeneficiosSection onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 5 - COMPARAÇÃO TRIAL VS ASSINATURA */}
-      <ComparacaoTrialAssinatura />
+      {/* SEÇÃO 5 - VALORES DOS PLANOS: Após 24h */}
+      <PlanosSection onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 6 - FORMULÁRIO */}
+      {/* SEÇÃO 6 - FORMULÁRIO DE CADASTRO: Com texto claro */}
       <CadastroForm 
         onSubmit={handleSubmit}
         loading={loading}
@@ -173,22 +171,16 @@ export default function Cadastro() {
         onScrollIntoView={showForm}
       />
 
-      {/* SEÇÃO 7 - PRÉVIA DO RESULTADO */}
-      <PreviaResultados onboardingData={onboardingData} />
-
-      {/* SEÇÃO 8 - PROPOSTA DE VALOR */}
+      {/* SEÇÃO 7 - O QUE A PLATAFORMA FAZ: Proposta de valor */}
       <PropostaValor onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 9 - DEPOIMENTO ÚNICO */}
-      <DepoimentoUnico />
+      {/* SEÇÃO 8 - RESULTADOS: Prévia dos resultados */}
+      <PreviaResultados onboardingData={onboardingData} />
 
-      {/* SEÇÃO 10 - GARANTIA */}
-      <GarantiaSection />
-
-      {/* SEÇÃO 11 - FAQ */}
+      {/* SEÇÃO 9 - FAQ: Perguntas frequentes */}
       <FAQCadastro />
 
-      {/* SEÇÃO 12 - CTA FINAL */}
+      {/* SEÇÃO 10 - CTA FINAL: Última chamada */}
       <CTAFinal onScrollToForm={scrollToForm} />
     </div>
   )

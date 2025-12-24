@@ -1,52 +1,32 @@
-export default function ProcessoTimeline() {
+interface ProcessoTimelineProps {
+  onScrollToForm: () => void
+}
+
+export default function ProcessoTimeline({ onScrollToForm }: ProcessoTimelineProps) {
   const etapas = [
     {
       numero: 1,
-      icone: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      ),
-      titulo: 'Cadastro Agora',
-      pontos: [
-        'Crie sua conta em 30 segundos',
-        'Acesso imediato ao seu treino personalizado',
-        'Sem cartão de crédito necessário'
-      ]
+      titulo: 'O que acontece agora',
+      descricao: 'Você cria sua conta em menos de 30 segundos. Sem cartão de crédito necessário.',
+      resultado: 'Acesso imediato ao seu treino personalizado'
     },
     {
       numero: 2,
-      icone: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      titulo: 'Trial 24 Horas',
-      pontos: [
-        '24 horas de acesso completo e gratuito',
-        'Teste todos os recursos sem compromisso',
-        'Treinos, progresso, ajustes automáticos'
-      ]
+      titulo: 'Durante 24 horas',
+      descricao: 'Teste todos os recursos da plataforma sem nenhum custo.',
+      resultado: 'Treinos, progresso e ajustes automáticos disponíveis'
     },
     {
       numero: 3,
-      icone: (
-        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      titulo: 'Escolha Seu Plano',
-      pontos: [
-        'Após 24h, escolha o plano ideal',
-        'Continue sua evolução sem interrupções',
-        'Garantia de 7 dias ou seu dinheiro de volta'
-      ]
+      titulo: 'Após 24 horas',
+      descricao: 'Escolha um dos planos para continuar sua evolução sem interrupções.',
+      resultado: 'Acesso contínuo com treinos gerados para 30 dias'
     }
   ]
 
   return (
     <section className="py-16 md:py-20 px-4 md:px-6 bg-dark-lighter/30">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-4">
             Como funciona o processo
@@ -73,21 +53,13 @@ export default function ProcessoTimeline() {
 
                 {/* Card da etapa */}
                 <div className="mt-20 rounded-2xl bg-dark border-2 border-grey/30 p-6 hover:border-primary/50 transition-all duration-300">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4 text-primary">
-                      {etapa.icone}
-                    </div>
-                    <h3 className="text-xl font-bold text-light mb-4">{etapa.titulo}</h3>
-                    <ul className="space-y-2 text-left w-full">
-                      {etapa.pontos.map((ponto, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-sm text-light-muted">{ponto}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <h3 className="text-xl font-bold text-light mb-3">{etapa.titulo}</h3>
+                  <p className="text-sm text-light-muted mb-4 leading-relaxed">{etapa.descricao}</p>
+                  <div className="flex items-start gap-2 pt-4 border-t border-grey/20">
+                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm font-medium text-primary">{etapa.resultado}</p>
                   </div>
                 </div>
               </div>
@@ -114,29 +86,30 @@ export default function ProcessoTimeline() {
 
                 {/* Card da etapa */}
                 <div className="flex-1 rounded-2xl bg-dark border-2 border-grey/30 p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                      {etapa.icone}
-                    </div>
-                    <h3 className="text-xl font-bold text-light">{etapa.titulo}</h3>
+                  <h3 className="text-xl font-bold text-light mb-3">{etapa.titulo}</h3>
+                  <p className="text-sm text-light-muted mb-4 leading-relaxed">{etapa.descricao}</p>
+                  <div className="flex items-start gap-2 pt-4 border-t border-grey/20">
+                    <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-sm font-medium text-primary">{etapa.resultado}</p>
                   </div>
-                  <ul className="space-y-2">
-                    {etapa.pontos.map((ponto, idx) => (
-                      <li key={idx} className="flex items-start gap-2">
-                        <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span className="text-sm text-light-muted">{ponto}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
+        {/* CTA */}
+        <div className="text-center mt-12">
+          <button
+            onClick={onScrollToForm}
+            className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          >
+            Finalizar meu cadastro
+          </button>
+        </div>
       </div>
     </section>
   )
 }
-

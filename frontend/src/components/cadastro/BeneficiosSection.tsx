@@ -1,24 +1,24 @@
-interface PropostaValorProps {
+interface BeneficiosSectionProps {
   onScrollToForm: () => void
 }
 
-export default function PropostaValor({ onScrollToForm }: PropostaValorProps) {
-  const funcionalidades = [
+export default function BeneficiosSection({ onScrollToForm }: BeneficiosSectionProps) {
+  const beneficios = [
     {
-      titulo: 'Gera treinos personalizados',
-      descricao: 'Baseados no seu perfil, objetivo e experiência'
+      titulo: 'Treino personalizado',
+      descricao: 'Baseado no seu perfil, objetivo e experiência'
     },
     {
-      titulo: 'Ajusta automaticamente',
-      descricao: 'A IA adapta seu treino conforme você evolui'
+      titulo: 'Ajustes automáticos',
+      descricao: 'A IA adapta seu treino conforme seu progresso'
     },
     {
       titulo: 'Progressão inteligente',
       descricao: 'Evolua sem platôs com ajustes baseados em ciência'
     },
     {
-      titulo: 'Acompanha seu progresso',
-      descricao: 'Histórico completo de treinos e evolução'
+      titulo: 'Histórico completo',
+      descricao: 'Acompanhe sua evolução e resultados'
     }
   ]
 
@@ -27,15 +27,15 @@ export default function PropostaValor({ onScrollToForm }: PropostaValorProps) {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-4">
-            O que a plataforma faz
+            Benefícios simples e diretos
           </h2>
           <p className="text-lg text-light-muted">
-            Funcionalidades que fazem a diferença na sua evolução
+            O que você ganha ao usar a plataforma
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-10">
-          {funcionalidades.map((func, index) => (
+          {beneficios.map((beneficio, index) => (
             <div
               key={index}
               className="rounded-2xl bg-dark-lighter border-2 border-grey/30 p-6 hover:border-primary/50 transition-all duration-300"
@@ -47,8 +47,8 @@ export default function PropostaValor({ onScrollToForm }: PropostaValorProps) {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-light mb-2">{func.titulo}</h3>
-                  <p className="text-sm text-light-muted leading-relaxed">{func.descricao}</p>
+                  <h3 className="text-lg font-bold text-light mb-2">{beneficio.titulo}</h3>
+                  <p className="text-sm text-light-muted leading-relaxed">{beneficio.descricao}</p>
                 </div>
               </div>
             </div>
@@ -68,3 +68,4 @@ export default function PropostaValor({ onScrollToForm }: PropostaValorProps) {
     </section>
   )
 }
+

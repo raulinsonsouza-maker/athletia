@@ -11,27 +11,27 @@ export default function FAQCadastro() {
   const faqs: FAQItem[] = [
     {
       pergunta: 'Preciso de cartão de crédito para o trial?',
-      resposta: 'Não! O trial de 24 horas é 100% gratuito e não requer cartão de crédito. Você pode testar todos os recursos sem nenhum compromisso financeiro.'
+      resposta: 'Não. O trial de 24 horas é gratuito e não requer cartão de crédito. Você testa tudo sem compromisso.'
     },
     {
       pergunta: 'O que acontece se eu não assinar após 24h?',
-      resposta: 'Seu acesso será bloqueado após as 24 horas, mas todos os seus dados serão preservados. Você pode assinar um plano a qualquer momento para retomar de onde parou.'
+      resposta: 'Seu acesso será bloqueado, mas seus dados ficam preservados. Você pode assinar depois e retomar de onde parou.'
     },
     {
       pergunta: 'Posso cancelar a qualquer momento?',
-      resposta: 'Sim! Você pode cancelar sua assinatura a qualquer momento, sem burocracias. Além disso, oferecemos garantia de 7 dias ou seu dinheiro de volta.'
+      resposta: 'Sim. Você pode cancelar quando quiser, sem burocracias. Oferecemos garantia de 7 dias ou seu dinheiro de volta.'
     },
     {
       pergunta: 'Meus dados são preservados?',
-      resposta: 'Sim, todos os seus dados são preservados mesmo após o trial expirar. Seu perfil, histórico de treinos e progresso ficam salvos e você pode retomar quando quiser.'
+      resposta: 'Sim. Todos os seus dados ficam salvos mesmo após o trial expirar. Seu perfil, histórico e progresso podem ser retomados a qualquer momento.'
     },
     {
       pergunta: 'O que acontece quando eu assinar?',
-      resposta: 'Ao assinar um plano, você terá acesso contínuo a todos os recursos. Além disso, o sistema gerará automaticamente treinos personalizados para os próximos 30 dias baseados no seu perfil.'
+      resposta: 'Você terá acesso contínuo a todos os recursos. O sistema gera automaticamente treinos personalizados para os próximos 30 dias baseados no seu perfil.'
     },
     {
       pergunta: 'Posso mudar de plano depois?',
-      resposta: 'Sim! Você pode alterar seu plano a qualquer momento. Se você escolher um plano com maior duração (trimestral ou semestral), você economiza ainda mais.'
+      resposta: 'Sim. Você pode alterar seu plano a qualquer momento. Planos com maior duração oferecem mais economia.'
     }
   ]
 
@@ -47,7 +47,7 @@ export default function FAQCadastro() {
             Perguntas Frequentes
           </h2>
           <p className="text-lg text-light-muted">
-            Tire suas dúvidas sobre o processo
+            Dúvidas sobre o processo
           </p>
         </div>
 
@@ -93,4 +93,3 @@ export default function FAQCadastro() {
     </section>
   )
 }
-
