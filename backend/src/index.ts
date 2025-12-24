@@ -163,7 +163,47 @@ console.log(`[CONFIG] Mapeamento: /api/uploads/exercicios -> ${uploadExerciciosP
 // Estrutura: /api/exercicios/:exercicioId/media.*
 app.use('/api/exercicios', exercicioMediaRoutes);
 
-// Servir imagens de grupos musculares (PNG/JPG/WEBP)
+// Rota dinâmica para servir imagens de grupos musculares (suporta subdiretórios por ID)
+app.get('/api/uploads/grupos-musculares/:id/:filename', (req, res) => {
+  const { id, filename } = req.params;
+  
+  // Validar ID e filename (prevenir path traversal)
+  if (!id || !filename || id.includes('..') || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+    return res.status(400).json({ error: 'Parâmetros inválidos' });
+  }
+  
+  const filePath = path.join(uploadGruposPath, id, filename);
+  const resolvedPath = path.resolve(filePath);
+  const resolvedBase = path.resolve(uploadGruposPath);
+  
+  // Verificar que o caminho está dentro do diretório base (segurança)
+  if (!resolvedPath.startsWith(resolvedBase)) {
+    return res.status(400).json({ error: 'Caminho inválido' });
+  }
+  
+  // Verificar se arquivo existe
+  if (!fs.existsSync(resolvedPath)) {
+    return res.status(404).json({ error: 'Imagem não encontrada' });
+  }
+  
+  // Determinar Content-Type
+  const ext = path.extname(filename).toLowerCase();
+  let contentType = 'image/jpeg';
+  if (ext === '.png') contentType = 'image/png';
+  else if (ext === '.webp') contentType = 'image/webp';
+  
+  // Headers CORS e cache
+  res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  
+  // Enviar arquivo
+  res.sendFile(resolvedPath);
+});
+
+// Fallback: servir arquivos diretamente do diretório base (para compatibilidade)
 app.use('/api/uploads/grupos-musculares', express.static(uploadGruposPath, {
   setHeaders: (res, filePath) => {
     res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL);

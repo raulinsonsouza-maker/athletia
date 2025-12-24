@@ -208,7 +208,7 @@ export default function Admin() {
   const [errorExercicios, setErrorExercicios] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'cards' | 'list' | 'table'>(() => {
     const saved = localStorage.getItem('adminViewMode')
-    return (saved as 'cards' | 'list' | 'table') || 'cards'
+    return (saved as 'cards' | 'list' | 'table') || 'list'
   })
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -1367,7 +1367,14 @@ export default function Admin() {
                         return (
                           <div
                             key={user.id}
-                            className={`card-hover cursor-pointer p-4 flex items-center justify-between hover:bg-dark-lighter transition-colors ${estagio === 'D3' ? 'bg-warning/5 border-l-4 border-warning' : ''}`}
+                            onClick={() => handleSelectUser(user.id)}
+                            className={`card-hover cursor-pointer p-4 flex items-center justify-between hover:bg-dark-lighter transition-colors ${
+                              selectedUserId === user.id
+                                ? 'bg-primary/20 border-l-4 border-primary'
+                                : estagio === 'D3'
+                                ? 'bg-warning/5 border-l-4 border-warning'
+                                : ''
+                            }`}
                           >
                             <div className="flex items-center gap-4 flex-1 min-w-0">
                               <div className="flex-1 min-w-0">
@@ -1478,7 +1485,14 @@ export default function Admin() {
                             return (
                               <tr
                                 key={user.id}
-                                className={`border-b border-grey/10 hover:bg-dark-lighter transition-colors ${estagio === 'D3' ? 'bg-warning/5' : ''}`}
+                                onClick={() => handleSelectUser(user.id)}
+                                className={`border-b border-grey/10 hover:bg-dark-lighter transition-colors cursor-pointer ${
+                                  selectedUserId === user.id
+                                    ? 'bg-primary/20'
+                                    : estagio === 'D3'
+                                    ? 'bg-warning/5'
+                                    : ''
+                                }`}
                               >
                                 <td className="py-3 px-4">
                                   <div>

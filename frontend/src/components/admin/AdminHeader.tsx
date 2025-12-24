@@ -27,10 +27,23 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
   const loadUnreadChatCount = async () => {
     try {
       const response = await api.get('/admin/chat/sessions?status=human')
-      const sessions = response.data.sessions || response.data || []
+      // Verificar diferentes formatos de resposta
+      let sessions = []
+      if (response.data) {
+        if (Array.isArray(response.data)) {
+          sessions = response.data
+        } else if (response.data.sessions && Array.isArray(response.data.sessions)) {
+          sessions = response.data.sessions
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          sessions = response.data.data
+        }
+      }
       setUnreadChatCount(sessions.length)
-    } catch (error) {
-      // Silenciar erro se não houver sessões ou API não disponível
+    } catch (error: any) {
+      // Log erro apenas em desenvolvimento para debug
+      if (import.meta.env.DEV) {
+        console.warn('[AdminHeader] Erro ao carregar contador de chat:', error?.response?.data || error?.message)
+      }
       setUnreadChatCount(0)
     }
   }
@@ -60,7 +73,7 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
           <button
             onClick={onMenuToggle}
             className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 hover:text-white"
-            aria-label="Toggle menu"
+            aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"}
           >
             <svg
               className="w-6 h-6"
@@ -86,32 +99,40 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
             </svg>
           </button>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/30 flex-shrink-0">
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="relative">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary via-primary/90 to-primary/70 flex items-center justify-center border border-primary/40 shadow-lg shadow-primary/20 flex-shrink-0">
+                <svg
+                  className="w-6 h-6 md:w-7 md:h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full border-2 border-dark-lighter"></div>
             </div>
-            <div className="hidden sm:block flex items-center">
-              <h1 className="text-lg md:text-xl font-display font-bold text-light whitespace-nowrap leading-tight">
-                Painel Administrativo
-              </h1>
+            <div className="hidden sm:block">
+              <div className="flex flex-col">
+                <h1 className="text-xl md:text-2xl font-display font-bold text-light whitespace-nowrap leading-none tracking-tight">
+                  Painel Administrativo
+                </h1>
+                <p className="text-xs md:text-sm text-light-muted/70 mt-0.5 font-medium">
+                  Gerenciamento completo do sistema
+                </p>
+              </div>
             </div>
           </div>
         </div>

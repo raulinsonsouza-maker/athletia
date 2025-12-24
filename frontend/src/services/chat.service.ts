@@ -42,42 +42,97 @@ class ChatService {
   }
 
   connect(token: string): Promise<Socket> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (this.socket?.connected) {
         resolve(this.socket);
         return;
       }
 
-      // Remover /api do final se existir, ou usar a URL base
-      const socketUrl = API_URL.endsWith('/api') 
+      // Construir URL do WebSocket corretamente
+      let socketUrl = API_URL.endsWith('/api') 
         ? API_URL.replace('/api', '') 
-        : API_URL.replace(/\/api\/?$/, '') || 'http://localhost:3001';
+        : API_URL.replace(/\/api\/?$/, '');
+      
+      // Se não houver URL, usar localhost em desenvolvimento
+      if (!socketUrl || socketUrl === '') {
+        socketUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+          ? 'http://localhost:3001'
+          : (typeof window !== 'undefined' 
+              ? `${window.location.protocol === 'https:' ? 'https' : 'http'}://${window.location.hostname}${window.location.port ? `:${window.location.port}` : ''}`
+              : 'http://localhost:3001');
+      }
+      
+      // Garantir que não termine com /
+      socketUrl = socketUrl.replace(/\/$/, '');
+      
+      console.log('[Chat] Conectando WebSocket em:', socketUrl);
       
       this.socket = io(socketUrl, {
         auth: { token },
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: this.maxReconnectAttempts,
-        reconnectionDelay: 1000
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        timeout: 20000,
+        forceNew: false
       });
+
+      let resolved = false;
 
       this.socket.on('connect', () => {
         console.log('[Chat] Conectado ao WebSocket');
         this.reconnectAttempts = 0;
-        resolve(this.socket!);
-      });
-
-      this.socket.on('connect_error', (error) => {
-        console.error('[Chat] Erro de conexão:', error);
-        this.reconnectAttempts++;
-        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-          reject(error);
+        if (!resolved) {
+          resolved = true;
+          resolve(this.socket!);
         }
       });
 
-      this.socket.on('disconnect', () => {
-        console.log('[Chat] Desconectado do WebSocket');
+      this.socket.on('connect_error', (error) => {
+        console.error('[Chat] Erro de conexão:', error.message || error);
+        this.reconnectAttempts++;
+        
+        // Se polling funcionar, ainda considerar sucesso
+        if (this.socket?.io?.engine?.transport?.name === 'polling' && this.socket.connected) {
+          console.log('[Chat] Conectado via polling (fallback)');
+          if (!resolved) {
+            resolved = true;
+            resolve(this.socket!);
+          }
+          return;
+        }
+        
+        if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+          console.error('[Chat] Máximo de tentativas de reconexão atingido');
+          if (!resolved) {
+            resolved = true;
+            // Ainda resolver para não bloquear a UI, mas logar o erro
+            resolve(this.socket!);
+          }
+        }
       });
+
+      this.socket.on('disconnect', (reason) => {
+        console.log('[Chat] Desconectado do WebSocket:', reason);
+        if (reason === 'io server disconnect') {
+          // Servidor desconectou, tentar reconectar manualmente
+          this.socket?.connect();
+        }
+      });
+
+      // Timeout de segurança
+      setTimeout(() => {
+        if (!resolved && this.socket && !this.socket.connected) {
+          console.warn('[Chat] Timeout na conexão WebSocket, usando polling');
+          if (!resolved) {
+            resolved = true;
+            // Tentar forçar polling
+            this.socket.io.opts.transports = ['polling'];
+            resolve(this.socket);
+          }
+        }
+      }, 10000);
     });
   }
 

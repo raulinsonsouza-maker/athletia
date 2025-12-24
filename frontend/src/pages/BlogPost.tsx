@@ -188,52 +188,64 @@ export default function BlogPost() {
           updatedAt: article.updatedAt,
           author: article.authorRelation?.name || article.author,
           categoryRelation: article.categoryRelation,
-          authorRelation: article.authorRelation
-        }}
+          authorRelation: article.authorRelation,
+          content: article.content,
+          excerpt: article.excerpt
+        } as any}
         breadcrumbItems={breadcrumbItems}
       />
       
       <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
         <BlogHeader />
         
-        <article className="max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-20">
+        <article className="max-w-5xl mx-auto px-4 md:px-6 py-8 md:py-12 lg:py-16">
           {/* Breadcrumb */}
-          <BlogBreadcrumb items={breadcrumbItems} />
+          <div className="mb-6 md:mb-8">
+            <BlogBreadcrumb items={breadcrumbItems} />
+          </div>
 
           {/* Hero Image */}
           {article.featuredImage && (
-            <div className="mb-12 rounded-3xl overflow-hidden shadow-2xl border border-grey/20 bg-dark relative aspect-video max-h-[480px]">
+            <div className="mb-8 md:mb-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-grey/20 bg-dark relative aspect-video max-h-[400px] md:max-h-[480px]">
               <OptimizedImage
                 src={article.featuredImage}
                 alt={article.featuredImageAlt || article.title}
                 className="w-full h-full object-cover"
                 loading="eager"
+                decoding="sync"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark/60 via-transparent to-transparent"></div>
             </div>
           )}
 
           {/* Header */}
-          <header className="mb-12">
-            <div className="mb-6">
+          <header className="mb-8 md:mb-10">
+            <div className="mb-4 md:mb-5">
               {article.categoryRelation && (
-                <span className="inline-block px-5 py-2.5 text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 border border-primary/30 rounded-full">
+                <span className="inline-block px-4 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-semibold text-primary uppercase tracking-wide bg-primary/20 border border-primary/30 rounded-full">
                   {article.categoryRelation.name}
                 </span>
               )}
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-display font-bold text-light mb-4 md:mb-6 leading-tight">
               {article.title}
             </h1>
             
+            {/* Excerpt/Introdução - Primeiros 150 caracteres devem responder intenção de busca */}
+            {article.excerpt && (
+              <p className="text-lg md:text-xl lg:text-2xl text-light-muted mb-6 md:mb-8 font-light leading-relaxed blog-intro">
+                {article.excerpt}
+              </p>
+            )}
+            
             {article.subtitle && (
-              <p className="text-xl md:text-2xl text-light-muted mb-8 font-light leading-relaxed">
+              <p className="text-lg md:text-xl lg:text-2xl text-light-muted mb-6 md:mb-8 font-light leading-relaxed">
                 {article.subtitle}
               </p>
             )}
             
-            <div className="pb-8 border-b border-grey/20">
+            <div className="pb-6 md:pb-8 border-b border-grey/20">
               <BlogMeta
                 author={article.authorRelation?.name || article.author || 'Equipe AthletIA'}
                 authorRole={article.authorRelation?.role || undefined}
@@ -249,29 +261,33 @@ export default function BlogPost() {
 
           {/* Índice Automático */}
           {article.content && (
-            <BlogPostIndex content={article.content} />
+            <nav aria-label="Índice do artigo" className="mb-6 md:mb-8">
+              <BlogPostIndex content={article.content} />
+            </nav>
           )}
 
-          {/* Content */}
-          <div className="mb-12">
+          {/* Content - Seção principal do artigo */}
+          <section aria-label="Conteúdo do artigo" className="mb-10 md:mb-12">
             <BlogContent content={article.content} />
-          </div>
+          </section>
 
           {/* CTA Final */}
           {ctaToUse && (
-            <div className="mt-16 pt-12 border-t border-grey/20">
+            <section aria-label="Call to action">
               <BlogCTA
                 title={ctaToUse.title}
                 description={ctaToUse.description}
                 buttonText={ctaToUse.buttonText}
                 link={ctaToUse.link}
               />
-            </div>
+            </section>
           )}
 
           {/* Related Articles */}
           {article.relatedPosts && article.relatedPosts.length > 0 && (
-            <BlogRelatedPosts articles={article.relatedPosts} />
+            <aside aria-label="Artigos relacionados" className="mt-12 md:mt-16">
+              <BlogRelatedPosts articles={article.relatedPosts} />
+            </aside>
           )}
         </article>
       </div>

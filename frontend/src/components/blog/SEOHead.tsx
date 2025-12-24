@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { BlogArticle } from '../../types/blog.types'
+import { detectFAQBlocks } from '../../utils/blog-seo.utils'
 
 interface SEOHeadProps {
   article: BlogArticle | {
@@ -92,15 +93,16 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
     const canonicalUrl = article.slug ? `${window.location.origin}/blog/${article.slug}` : window.location.href
     canonical.setAttribute('href', canonicalUrl)
 
-    // Schema.org structured data - Article
-    const articleSchema: any = {
+    // Schema.org structured data - BlogPosting (mais específico para blogs)
+    const blogPostingSchema: any = {
       '@context': 'https://schema.org',
-      '@type': 'Article',
+      '@type': 'BlogPosting',
       headline: article.title,
       description: article.metaDescription,
       image: article.featuredImage ? (article.featuredImage.startsWith('http') ? article.featuredImage : `${window.location.origin}${article.featuredImage}`) : '',
       datePublished: article.publishedAt,
       dateModified: article.updatedAt || article.publishedAt,
+      inLanguage: 'pt-BR',
       author: (article as any).authorRelation ? {
         '@type': 'Person',
         name: (article as any).authorRelation.name,
@@ -124,31 +126,64 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
       }
     }
 
+    // Adicionar keywords como array se disponível
+    if (article.keywords && article.keywords.length > 0) {
+      blogPostingSchema.keywords = article.keywords
+    }
+
+    // Adicionar wordCount se disponível (pode ser calculado no backend)
+    if ((article as any).wordCount) {
+      blogPostingSchema.wordCount = (article as any).wordCount
+    }
+
     if ((article as any).categoryRelation) {
-      articleSchema.articleSection = (article as any).categoryRelation.name
+      blogPostingSchema.articleSection = (article as any).categoryRelation.name
     }
 
-    // Remover propriedades undefined
-    Object.keys(articleSchema).forEach(key => {
-      if (articleSchema[key] === undefined) {
-        delete articleSchema[key]
+    // Também manter schema Article para compatibilidade
+    const articleSchema: any = {
+      ...blogPostingSchema,
+      '@type': 'Article'
+    }
+
+    // Função para remover propriedades undefined
+    const cleanSchema = (schema: any): any => {
+      const cleaned = { ...schema }
+      Object.keys(cleaned).forEach(key => {
+        if (cleaned[key] === undefined) {
+          delete cleaned[key]
+        }
+      })
+      if (cleaned.author) {
+        if (cleaned.author.image === undefined) delete cleaned.author.image
+        if (cleaned.author.jobTitle === undefined) delete cleaned.author.jobTitle
+        if (cleaned.author.name === undefined) delete cleaned.author
       }
-    })
-    if (articleSchema.author && articleSchema.author.image === undefined) {
-      delete articleSchema.author.image
-    }
-    if (articleSchema.author && articleSchema.author.jobTitle === undefined) {
-      delete articleSchema.author.jobTitle
+      return cleaned
     }
 
-    let schemaScript = document.querySelector('script[type="application/ld+json"][data-article-schema]')
-    if (!schemaScript) {
-      schemaScript = document.createElement('script')
-      schemaScript.setAttribute('type', 'application/ld+json')
-      schemaScript.setAttribute('data-article-schema', 'true')
-      document.head.appendChild(schemaScript)
+    const cleanedBlogPostingSchema = cleanSchema(blogPostingSchema)
+    const cleanedArticleSchema = cleanSchema(articleSchema)
+
+    // Schema BlogPosting (mais específico)
+    let blogPostingScript = document.querySelector('script[type="application/ld+json"][data-blog-posting-schema]')
+    if (!blogPostingScript) {
+      blogPostingScript = document.createElement('script')
+      blogPostingScript.setAttribute('type', 'application/ld+json')
+      blogPostingScript.setAttribute('data-blog-posting-schema', 'true')
+      document.head.appendChild(blogPostingScript)
     }
-    schemaScript.textContent = JSON.stringify(articleSchema)
+    blogPostingScript.textContent = JSON.stringify(cleanedBlogPostingSchema)
+
+    // Schema Article (compatibilidade)
+    let articleSchemaScript = document.querySelector('script[type="application/ld+json"][data-article-schema]')
+    if (!articleSchemaScript) {
+      articleSchemaScript = document.createElement('script')
+      articleSchemaScript.setAttribute('type', 'application/ld+json')
+      articleSchemaScript.setAttribute('data-article-schema', 'true')
+      document.head.appendChild(articleSchemaScript)
+    }
+    articleSchemaScript.textContent = JSON.stringify(cleanedArticleSchema)
 
     // Schema.org BreadcrumbList
     if (breadcrumbItems && breadcrumbItems.length > 0) {
@@ -201,6 +236,41 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
         document.head.appendChild(keywordsTag)
       }
       keywordsTag.setAttribute('content', article.keywords.join(', '))
+    }
+
+    // Schema.org FAQPage - detectar se há FAQs no conteúdo
+    const content = (article as any).content
+    if (content) {
+      const faqItems = detectFAQBlocks(content)
+      if (faqItems.length > 0) {
+        const faqSchema = {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: faqItems.map(faq => ({
+            '@type': 'Question',
+            name: faq.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: faq.answer
+            }
+          }))
+        }
+
+        let faqScript = document.querySelector('script[type="application/ld+json"][data-faq-schema]')
+        if (!faqScript) {
+          faqScript = document.createElement('script')
+          faqScript.setAttribute('type', 'application/ld+json')
+          faqScript.setAttribute('data-faq-schema', 'true')
+          document.head.appendChild(faqScript)
+        }
+        faqScript.textContent = JSON.stringify(faqSchema)
+      } else {
+        // Remover schema FAQ se não houver FAQs
+        const faqScript = document.querySelector('script[type="application/ld+json"][data-faq-schema]')
+        if (faqScript) {
+          faqScript.remove()
+        }
+      }
     }
   }, [article])
 
