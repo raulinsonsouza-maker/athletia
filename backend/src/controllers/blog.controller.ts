@@ -151,6 +151,7 @@ export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => 
     // Buscar posts relacionados
     let relatedPosts: any[] = []
     if (artigo.relatedPosts && artigo.relatedPosts.length > 0) {
+      // Buscar posts relacionados configurados manualmente
       relatedPosts = await prisma.blogArticle.findMany({
         where: {
           id: { in: artigo.relatedPosts },
@@ -182,6 +183,94 @@ export const obterArtigoPublicoPorSlug = async (req: Request, res: Response) => 
         },
         take: 3
       })
+    }
+    
+    // Se não houver posts relacionados configurados, buscar automaticamente
+    if (relatedPosts.length === 0) {
+      const whereClause: any = {
+        id: { not: artigo.id },
+        published: true,
+        status: 'published'
+      }
+      
+      // Tentar buscar da mesma categoria primeiro
+      if (artigo.categoryId) {
+        whereClause.categoryId = artigo.categoryId
+      }
+      
+      relatedPosts = await prisma.blogArticle.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          subtitle: true,
+          featuredImage: true,
+          featuredImageAlt: true,
+          excerpt: true,
+          readingTime: true,
+          publishedAt: true,
+          categoryRelation: {
+            select: {
+              name: true,
+              slug: true
+            }
+          },
+          authorRelation: {
+            select: {
+              name: true,
+              avatar: true
+            }
+          }
+        },
+        orderBy: {
+          publishedAt: 'desc'
+        },
+        take: 3
+      })
+      
+      // Se ainda não houver posts da mesma categoria, buscar posts mais recentes
+      if (relatedPosts.length < 3 && artigo.categoryId) {
+        const additionalPosts = await prisma.blogArticle.findMany({
+          where: {
+            id: { 
+              notIn: [artigo.id, ...relatedPosts.map(p => p.id)]
+            },
+            published: true,
+            status: 'published',
+            categoryId: { not: artigo.categoryId }
+          },
+          select: {
+            id: true,
+            slug: true,
+            title: true,
+            subtitle: true,
+            featuredImage: true,
+            featuredImageAlt: true,
+            excerpt: true,
+            readingTime: true,
+            publishedAt: true,
+            categoryRelation: {
+              select: {
+                name: true,
+                slug: true
+              }
+            },
+            authorRelation: {
+              select: {
+                name: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            publishedAt: 'desc'
+          },
+          take: 3 - relatedPosts.length
+        })
+        
+        relatedPosts = [...relatedPosts, ...additionalPosts]
+      }
     }
 
     res.json({

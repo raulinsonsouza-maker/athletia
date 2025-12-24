@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import SobreNosModal from './SobreNosModal'
+import PoliticasModal from './PoliticasModal'
 
 interface BlogCategory {
   id: string
@@ -12,7 +15,8 @@ interface BlogFooterProps {
 
 export default function BlogFooter({ categories = [] }: BlogFooterProps) {
   const navigate = useNavigate()
-  const currentYear = new Date().getFullYear()
+  const [sobreNosOpen, setSobreNosOpen] = useState(false)
+  const [politicasOpen, setPoliticasOpen] = useState(false)
 
   const handleNavigate = (path: string) => {
     if (path.startsWith('http')) {
@@ -31,14 +35,6 @@ export default function BlogFooter({ categories = [] }: BlogFooterProps) {
           <div>
             <h3 className="text-lg font-display font-bold text-light mb-4">Explore</h3>
             <ul className="space-y-3">
-              <li>
-                <button
-                  onClick={() => handleNavigate('/')}
-                  className="text-light-muted hover:text-primary transition-colors text-sm md:text-base"
-                >
-                  Início
-                </button>
-              </li>
               <li>
                 <button
                   onClick={() => handleNavigate('/blog')}
@@ -110,7 +106,7 @@ export default function BlogFooter({ categories = [] }: BlogFooterProps) {
             <ul className="space-y-3">
               <li>
                 <button
-                  onClick={() => handleNavigate('/')}
+                  onClick={() => setSobreNosOpen(true)}
                   className="text-light-muted hover:text-primary transition-colors text-sm md:text-base"
                 >
                   Sobre Nós
@@ -196,12 +192,12 @@ export default function BlogFooter({ categories = [] }: BlogFooterProps) {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-center md:text-left">
               <p className="text-sm text-light-muted">
-                © {currentYear} por AthletIA
+                © AthletIA
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm">
               <button
-                onClick={() => handleNavigate('/politica-de-privacidade')}
+                onClick={() => setPoliticasOpen(true)}
                 className="text-light-muted hover:text-primary transition-colors"
               >
                 Políticas
@@ -212,6 +208,10 @@ export default function BlogFooter({ categories = [] }: BlogFooterProps) {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <SobreNosModal isOpen={sobreNosOpen} onClose={() => setSobreNosOpen(false)} />
+      <PoliticasModal isOpen={politicasOpen} onClose={() => setPoliticasOpen(false)} />
     </footer>
   )
 }

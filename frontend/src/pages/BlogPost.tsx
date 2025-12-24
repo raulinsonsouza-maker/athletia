@@ -217,7 +217,7 @@ export default function BlogPost() {
 
           {/* Hero Image */}
           {article.featuredImage && (
-            <div className="mb-8 md:mb-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-grey/20 bg-dark relative aspect-video max-h-[400px] md:max-h-[480px] w-full">
+            <div className="mb-8 md:mb-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-grey/20 bg-dark relative aspect-video max-h-[320px] md:max-h-[360px] w-full">
               <OptimizedImage
                 src={article.featuredImage}
                 alt={article.featuredImageAlt || article.title}
