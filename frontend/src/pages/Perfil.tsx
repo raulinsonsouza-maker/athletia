@@ -1,10 +1,33 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { validatePerfil, validatePeso } from '../utils/validation'
+import { validatePerfil } from '../utils/validation'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js'
+import { Line } from 'react-chartjs-2'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+)
 
 interface Perfil {
   id: string
@@ -27,6 +50,13 @@ interface Perfil {
   }
 }
 
+interface HistoricoPeso {
+  id: string
+  peso: number
+  data: string
+  createdAt: string
+}
+
 export default function Perfil() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
@@ -36,10 +66,12 @@ export default function Perfil() {
   const [editandoTreino, setEditandoTreino] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [formData, setFormData] = useState<any>({})
-  const [pesoInput, setPesoInput] = useState('')
+  const [pesoSlider, setPesoSlider] = useState<number>(75) // Valor padrão inicial
   const [registrandoPeso, setRegistrandoPeso] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [pesoError, setPesoError] = useState('')
+  const [historicoPeso, setHistoricoPeso] = useState<HistoricoPeso[]>([])
+  const [loadingHistorico, setLoadingHistorico] = useState(false)
 
   const inputBaseClass =
     'w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none transition'
@@ -49,12 +81,30 @@ export default function Perfil() {
     carregarPerfil()
   }, [])
 
+  useEffect(() => {
+    if (perfil?.pesoAtual) {
+      setPesoSlider(perfil.pesoAtual)
+    } else if (perfil && !perfil.pesoAtual) {
+      // Se não há peso definido, manter valor padrão de 75 kg
+      setPesoSlider(75)
+    }
+  }, [perfil?.pesoAtual])
+
+  useEffect(() => {
+    if (perfil) {
+      carregarHistoricoPeso()
+    }
+  }, [perfil])
+
   const carregarPerfil = async () => {
     try {
       setLoading(true)
       const response = await api.get('/perfil')
       setPerfil(response.data)
       setFormData(response.data)
+      if (response.data.pesoAtual) {
+        setPesoSlider(response.data.pesoAtual)
+      }
     } catch (error: any) {
       if (error.response?.status === 404) {
         // Se não tem perfil, redirecionar para Landing (onboarding)
@@ -62,6 +112,18 @@ export default function Perfil() {
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const carregarHistoricoPeso = async () => {
+    try {
+      setLoadingHistorico(true)
+      const response = await api.get('/peso/historico?limite=30')
+      setHistoricoPeso(response.data || [])
+    } catch (error: any) {
+      console.error('Erro ao carregar histórico de peso:', error)
+    } finally {
+      setLoadingHistorico(false)
     }
   }
 
@@ -109,31 +171,31 @@ export default function Perfil() {
   }
 
   const handleRegistrarPeso = async () => {
-    const validation = validatePeso(pesoInput)
-    if (!validation.isValid) {
-      setPesoError(validation.errors.peso || '')
-      showToast(validation.errors.peso || 'Peso inválido', 'error')
+    if (pesoSlider < 30 || pesoSlider > 300) {
+      setPesoError('Peso deve estar entre 30 e 300 kg')
+      showToast('Peso inválido. Deve estar entre 30 e 300 kg', 'error')
       return
     }
 
     setPesoError('')
-    const pesoNovo = parseFloat(pesoInput)
     try {
       setRegistrandoPeso(true)
-      await api.post('/peso', { peso: pesoNovo })
+      await api.post('/peso', { peso: pesoSlider })
       
       // Atualizar estado local imediatamente para feedback visual instantâneo
       if (perfil) {
-        setPerfil({ ...perfil, pesoAtual: pesoNovo })
+        setPerfil({ ...perfil, pesoAtual: pesoSlider })
       }
       
-      setPesoInput('')
       showToast('Peso registrado com sucesso!', 'success')
       
-      // Recarregar perfil completo em background para sincronizar com servidor
+      // Recarregar perfil e histórico em background para sincronizar com servidor
       setTimeout(() => {
         carregarPerfil().catch(err => {
           console.error('Erro ao recarregar perfil:', err)
+        })
+        carregarHistoricoPeso().catch(err => {
+          console.error('Erro ao recarregar histórico:', err)
         })
       }, 500)
     } catch (error: any) {
@@ -146,6 +208,73 @@ export default function Perfil() {
       setRegistrandoPeso(false)
     }
   }
+
+  // Cálculos de métricas
+  const calculosMetricas = useMemo(() => {
+    if (!perfil) return null
+
+    const peso = perfil.pesoAtual
+    const altura = perfil.altura
+    const idade = perfil.idade
+    const sexo = perfil.sexo
+    const frequenciaSemanal = perfil.frequenciaSemanal
+
+    // IMC
+    let imc: number | null = null
+    let classificacaoIMC: string | null = null
+    let corIMC = 'text-white/60'
+
+    if (peso && altura) {
+      const alturaMetros = altura / 100
+      imc = peso / (alturaMetros * alturaMetros)
+      
+      if (imc < 18.5) {
+        classificacaoIMC = 'Abaixo do peso'
+        corIMC = 'text-blue-400'
+      } else if (imc < 25) {
+        classificacaoIMC = 'Peso normal'
+        corIMC = 'text-green-400'
+      } else if (imc < 30) {
+        classificacaoIMC = 'Sobrepeso'
+        corIMC = 'text-yellow-400'
+      } else {
+        classificacaoIMC = 'Obesidade'
+        corIMC = 'text-red-400'
+      }
+    }
+
+    // TMB (Taxa Metabólica Basal) - Fórmula de Mifflin-St Jeor
+    let tmb: number | null = null
+    if (peso && altura && idade && sexo) {
+      if (sexo === 'Masculino') {
+        tmb = 10 * peso + 6.25 * altura - 5 * idade + 5
+      } else if (sexo === 'Feminino') {
+        tmb = 10 * peso + 6.25 * altura - 5 * idade - 161
+      }
+      
+      // Ajustar com multiplicador de atividade
+      if (tmb && frequenciaSemanal) {
+        const multiplicador = frequenciaSemanal <= 2 ? 1.2 : frequenciaSemanal <= 4 ? 1.375 : 1.55
+        tmb = Math.round(tmb * multiplicador)
+      } else if (tmb) {
+        tmb = Math.round(tmb * 1.2)
+      }
+    }
+
+    // Água recomendada (35ml por kg de peso corporal)
+    let aguaRecomendada: number | null = null
+    if (peso) {
+      aguaRecomendada = peso * 0.035 // em litros
+    }
+
+    return {
+      imc: imc ? imc.toFixed(1) : null,
+      classificacaoIMC,
+      corIMC,
+      tmb,
+      aguaRecomendada: aguaRecomendada ? aguaRecomendada.toFixed(1) : null
+    }
+  }, [perfil?.pesoAtual, perfil?.altura, perfil?.idade, perfil?.sexo, perfil?.frequenciaSemanal])
 
   const InfoField = ({ label, value }: { label: string; value: string }) => (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-4 space-y-1">
@@ -184,10 +313,10 @@ export default function Perfil() {
       <AppHeader title="Meu Perfil" subtitle="Atualize seus dados e preferências" backTo="/meu-plano" />
       <ToastContainer />
       <div className="px-5 space-y-6 pb-28">
-        <section className="relative rounded-[32px] border border-white/10 overflow-hidden">
+        <section className="relative rounded-[32px] border border-white/10 overflow-hidden min-h-[200px]">
           <img src={heroImage} alt="Banner do perfil" className="absolute inset-0 w-full h-full object-cover opacity-50" />
           <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
-          <div className="relative px-6 py-8 space-y-4">
+          <div className="relative z-10 px-6 py-8 space-y-4">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <span className="px-4 py-1 rounded-full border border-white/20 text-xs uppercase tracking-[0.4em] text-white/70">
                 Perfil
@@ -231,7 +360,7 @@ export default function Perfil() {
             <p className="text-xs uppercase tracking-[0.4em] text-white/50">Peso e progresso</p>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-4xl font-bold">{perfil.pesoAtual ? `${perfil.pesoAtual} kg` : '-- kg'}</p>
+                <p className="text-4xl font-bold">{perfil.pesoAtual ? `${perfil.pesoAtual.toFixed(1)} kg` : '-- kg'}</p>
                 <p className="text-white/60 text-sm">Último registro atualizado</p>
               </div>
               <div className="text-sm text-white/60 text-right space-y-1">
@@ -241,28 +370,60 @@ export default function Perfil() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-            <div className="flex-1">
-              <label className="text-sm text-white/60 mb-2 block">Atualizar peso (kg)</label>
-              <input
-                type="number"
-                min="30"
-                max="300"
-                step="0.1"
-                value={pesoInput}
-                onChange={(e) => {
-                  setPesoInput(e.target.value)
-                  if (pesoError) setPesoError('')
-                }}
-                placeholder={perfil.pesoAtual?.toString() || 'Ex: 75.5'}
-                className={`${inputBaseClass} ${pesoError ? inputErrorClass : ''}`}
-              />
-              {pesoError && <p className="text-error text-sm mt-1">{pesoError}</p>}
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-white/60">Atualizar peso (kg)</label>
+                <span className="text-2xl font-bold text-primary">{pesoSlider.toFixed(1)} kg</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="range"
+                  min="30"
+                  max="300"
+                  step="0.1"
+                  value={pesoSlider}
+                  onChange={(e) => {
+                    setPesoSlider(parseFloat(e.target.value))
+                    if (pesoError) setPesoError('')
+                  }}
+                  className="w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, #F9A620 0%, #F9A620 ${((pesoSlider - 30) / (300 - 30)) * 100}%, rgba(255,255,255,0.1) ${((pesoSlider - 30) / (300 - 30)) * 100}%, rgba(255,255,255,0.1) 100%)`
+                  }}
+                />
+                <style>{`
+                  .slider::-webkit-slider-thumb {
+                    appearance: none;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: #F9A620;
+                    cursor: pointer;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                  }
+                  .slider::-moz-range-thumb {
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: #F9A620;
+                    cursor: pointer;
+                    border: none;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                  }
+                `}</style>
+                <div className="flex justify-between text-xs text-white/40 mt-1">
+                  <span>30 kg</span>
+                  <span>300 kg</span>
+                </div>
+              </div>
+              {pesoError && <p className="text-error text-sm">{pesoError}</p>}
             </div>
+            
             <button
               onClick={handleRegistrarPeso}
-              disabled={registrandoPeso || !pesoInput}
-              className="min-w-[160px] rounded-2xl bg-primary text-dark font-semibold py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              disabled={registrandoPeso}
+              className="w-full rounded-2xl bg-primary text-dark font-semibold py-3 px-6 disabled:opacity-50 disabled:cursor-not-allowed transition hover:bg-primary/90"
             >
               {registrandoPeso ? (
                 <span className="flex items-center justify-center gap-2">
@@ -274,10 +435,181 @@ export default function Perfil() {
               )}
             </button>
           </div>
-          {perfil.pesoAtual && (
-            <p className="text-xs uppercase tracking-[0.4em] text-white/40">Último: {perfil.pesoAtual} kg</p>
+
+          {/* Gráfico de histórico */}
+          {historicoPeso.length > 0 && (
+            <div className="mt-6 space-y-3">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Histórico de peso</p>
+              <div className="bg-dark/30 rounded-2xl p-4">
+                <Line
+                  data={{
+                    labels: historicoPeso
+                      .slice()
+                      .reverse()
+                      .map((item) => {
+                        const date = new Date(item.data || item.createdAt)
+                        return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                      }),
+                    datasets: [
+                      {
+                        label: 'Peso (kg)',
+                        data: historicoPeso.slice().reverse().map((item) => item.peso),
+                        borderColor: '#F9A620',
+                        backgroundColor: 'rgba(249, 166, 32, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#F9A620',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 2,
+                    plugins: {
+                      legend: {
+                        display: false,
+                      },
+                      tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#F9A620',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                          label: function(context) {
+                            const peso = context.parsed.y ?? 0
+                            return `Peso: ${peso.toFixed(1)} kg`
+                          }
+                        }
+                      },
+                    },
+                    scales: {
+                      x: {
+                        grid: {
+                          color: 'rgba(255, 255, 255, 0.05)',
+                        },
+                        ticks: {
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          maxRotation: 45,
+                          minRotation: 45,
+                        },
+                      },
+                      y: {
+                        grid: {
+                          color: 'rgba(255, 255, 255, 0.05)',
+                        },
+                        ticks: {
+                          color: 'rgba(255, 255, 255, 0.6)',
+                          callback: function(value) {
+                            return value + ' kg'
+                          },
+                        },
+                      },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          {loadingHistorico && (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-white/20 border-t-primary rounded-full animate-spin" />
+            </div>
           )}
         </section>
+
+        {/* Seção de Métricas */}
+        {calculosMetricas && (
+          <section id="metricas" className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-5 backdrop-blur">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.4em] text-white/50">Métricas de saúde</p>
+              <h2 className="text-2xl font-semibold">Indicadores importantes</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Card IMC */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/40">IMC</p>
+                {calculosMetricas.imc ? (
+                  <>
+                    <p className={`text-3xl font-bold ${calculosMetricas.corIMC}`}>
+                      {calculosMetricas.imc}
+                    </p>
+                    <p className={`text-sm font-medium ${calculosMetricas.corIMC}`}>
+                      {calculosMetricas.classificacaoIMC}
+                    </p>
+                    <p className="text-xs text-white/40 mt-2">
+                      Peso ideal: 18.5 - 24.9
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-white/40 text-sm">Complete altura e peso para calcular</p>
+                )}
+              </div>
+
+              {/* Card TMB */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/40">Calorias diárias</p>
+                {calculosMetricas.tmb ? (
+                  <>
+                    <p className="text-3xl font-bold text-primary">
+                      {calculosMetricas.tmb.toLocaleString('pt-BR')}
+                    </p>
+                    <p className="text-sm text-white/60">
+                      Taxa metabólica basal
+                    </p>
+                    <p className="text-xs text-white/40 mt-2">
+                      Ajustado pela atividade
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-white/40 text-sm">Complete dados pessoais para calcular</p>
+                )}
+              </div>
+
+              {/* Card Água */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 space-y-2">
+                <p className="text-xs uppercase tracking-[0.3em] text-white/40">Água recomendada</p>
+                {calculosMetricas.aguaRecomendada ? (
+                  <>
+                    <p className="text-3xl font-bold text-blue-400">
+                      {calculosMetricas.aguaRecomendada} L
+                    </p>
+                    <p className="text-sm text-white/60">
+                      Por dia
+                    </p>
+                    <p className="text-xs text-white/40 mt-2">
+                      35ml por kg de peso
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-white/40 text-sm">Complete o peso para calcular</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Percentual de gordura se disponível */}
+            {perfil.percentualGordura && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 space-y-2">
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/40">Percentual de gordura</p>
+                  <p className="text-3xl font-bold text-purple-400">
+                    {perfil.percentualGordura.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-white/40 mt-2">
+                    Última medição registrada
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         <section id="dados-pessoais" className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-5 backdrop-blur">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
