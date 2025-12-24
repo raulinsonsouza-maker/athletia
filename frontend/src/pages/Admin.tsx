@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -344,6 +344,23 @@ export default function Admin() {
     }
   }
 
+  // Ref para acessar filtros atualizados sem causar loops
+  const filtrosRef = useRef(filtros)
+  filtrosRef.current = filtros
+
+  // Memoizar strings dos arrays de forma estável
+  const tipoAcessoStr = useMemo(() => {
+    return [...filtros.tipoAcesso].sort().join(',')
+  }, [filtros.tipoAcesso.length, filtros.tipoAcesso.join(',')])
+  
+  const estagioTrialStr = useMemo(() => {
+    return [...filtros.estagioTrial].sort().join(',')
+  }, [filtros.estagioTrial.length, filtros.estagioTrial.join(',')])
+
+  const filtrosKey = useMemo(() => {
+    return `${tipoAcessoStr}|${estagioTrialStr}|${filtros.vencimento}|${filtros.perfil}|${filtros.ultimoAcesso}|${filtros.dataCadastroInicio}|${filtros.dataCadastroFim}`
+  }, [tipoAcessoStr, estagioTrialStr, filtros.vencimento, filtros.perfil, filtros.ultimoAcesso, filtros.dataCadastroInicio, filtros.dataCadastroFim])
+
   const carregarResumoUsuarios = useCallback(async () => {
     setLoadingResumo(true)
     try {
@@ -360,21 +377,24 @@ export default function Admin() {
     setLoadingUsuarios(true)
     setErrorUsuarios(null)
 
+    // Usar filtrosRef para acessar o valor mais recente sem causar loops
+    const currentFiltros = filtrosRef.current
+
     try {
       const params = new URLSearchParams()
       if (search) params.append('search', search)
       if (mostrarDesabilitados) params.append('incluirDesabilitados', 'true')
-      if (filtros.tipoAcesso.length > 0) {
-        filtros.tipoAcesso.forEach(tipo => params.append('tipoAcesso', tipo))
+      if (currentFiltros.tipoAcesso.length > 0) {
+        currentFiltros.tipoAcesso.forEach((tipo: string) => params.append('tipoAcesso', tipo))
       }
-      if (filtros.estagioTrial.length > 0) {
-        filtros.estagioTrial.forEach(estagio => params.append('estagioTrial', estagio))
+      if (currentFiltros.estagioTrial.length > 0) {
+        currentFiltros.estagioTrial.forEach((estagio: string) => params.append('estagioTrial', estagio))
       }
-      if (filtros.vencimento) params.append('vencimento', filtros.vencimento)
-      if (filtros.perfil) params.append('perfil', filtros.perfil)
-      if (filtros.ultimoAcesso) params.append('ultimoAcesso', filtros.ultimoAcesso)
-      if (filtros.dataCadastroInicio) params.append('dataCadastroInicio', filtros.dataCadastroInicio)
-      if (filtros.dataCadastroFim) params.append('dataCadastroFim', filtros.dataCadastroFim)
+      if (currentFiltros.vencimento) params.append('vencimento', currentFiltros.vencimento)
+      if (currentFiltros.perfil) params.append('perfil', currentFiltros.perfil)
+      if (currentFiltros.ultimoAcesso) params.append('ultimoAcesso', currentFiltros.ultimoAcesso)
+      if (currentFiltros.dataCadastroInicio) params.append('dataCadastroInicio', currentFiltros.dataCadastroInicio)
+      if (currentFiltros.dataCadastroFim) params.append('dataCadastroFim', currentFiltros.dataCadastroFim)
       // Passar um limite alto para listar todos os usuários
       params.append('limit', '10000')
       const queryString = params.toString()
@@ -409,7 +429,7 @@ export default function Admin() {
     } finally {
       setLoadingUsuarios(false)
     }
-  }, [search, mostrarDesabilitados, filtros, showToast, navigate])
+  }, [search, mostrarDesabilitados, showToast, navigate]) // Remover filtrosMemo das dependências
 
   const carregarExercicios = useCallback(async () => {
     setLoadingExercicios(true)
@@ -527,32 +547,47 @@ export default function Admin() {
     }
   }
 
-  // Memoizar filtros para evitar loops infinitos
-  const filtrosString = useMemo(() => JSON.stringify(filtros), [
-    filtros.tipoAcesso.join(','),
-    filtros.estagioTrial.join(','),
-    filtros.vencimento,
-    filtros.perfil,
-    filtros.ultimoAcesso,
-    filtros.dataCadastroInicio,
-    filtros.dataCadastroFim
-  ])
+  // Ref para evitar múltiplas execuções simultâneas
+  const loadingRef = useRef<Record<string, boolean>>({})
+  const lastParamsRef = useRef<string>('')
 
   // useEffect para carregar dados quando activeTab, search, mostrarDesabilitados ou filtros mudarem
   useEffect(() => {
-    if (activeTab === 'usuarios') {
-      carregarResumoUsuarios()
-      carregarUsuarios()
-    } else if (activeTab === 'estatisticas') {
-      carregarEstatisticas()
-    } else if (activeTab === 'exercicios') {
-      carregarExercicios()
-    } else if (activeTab === 'grupos') {
-      carregarGruposMusculares()
+    // Criar chave única para esta combinação de parâmetros usando filtrosKey
+    const paramsKey = `${activeTab}-${search}-${mostrarDesabilitados}-${filtrosKey}`
+    
+    // Evitar execuções duplicadas com os mesmos parâmetros
+    if (lastParamsRef.current === paramsKey) {
+      return
     }
-    // Imagens carrega seus próprios dados
+
+    // Evitar execuções simultâneas
+    if (loadingRef.current[paramsKey]) {
+      return
+    }
+
+    lastParamsRef.current = paramsKey
+    loadingRef.current[paramsKey] = true
+
+    const loadData = async () => {
+      try {
+        if (activeTab === 'usuarios') {
+          await Promise.all([carregarResumoUsuarios(), carregarUsuarios()])
+        } else if (activeTab === 'estatisticas') {
+          await carregarEstatisticas()
+        } else if (activeTab === 'exercicios') {
+          await carregarExercicios()
+        } else if (activeTab === 'grupos') {
+          await carregarGruposMusculares()
+        }
+      } finally {
+        delete loadingRef.current[paramsKey]
+      }
+    }
+
+    loadData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, search, mostrarDesabilitados, filtrosString])
+  }, [activeTab, search, mostrarDesabilitados, filtrosKey])
 
   const handleShowDetails = (userId: string) => {
     setSelectedUserId(userId)
