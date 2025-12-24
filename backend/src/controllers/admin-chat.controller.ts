@@ -189,10 +189,19 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    // Notificar usuário via WebSocket
+    // Buscar sessão atualizada para enviar
+    const updatedSession = await prisma.chatSession.findUnique({ where: { id } });
+
+    // Notificar usuário via WebSocket (tanto por userId quanto por sessão)
     websocketManager.sendToUser(session.userId, 'chat:message', {
-      message: adminMessage,
-      session: await prisma.chatSession.findUnique({ where: { id } })
+      message: { ...adminMessage, sessionId: id },
+      session: updatedSession
+    });
+    
+    // Também enviar para a sessão (caso o usuário esteja conectado à sessão)
+    websocketManager.sendToSession(id, 'chat:message', {
+      message: { ...adminMessage, sessionId: id },
+      session: updatedSession
     });
 
     // Notificar outros admins
@@ -200,6 +209,12 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       sessionId: id,
       adminId,
       message: adminMessage
+    });
+    
+    // Também notificar admins conectados à sessão
+    websocketManager.sendToSession(id, 'chat:message', {
+      message: { ...adminMessage, sessionId: id },
+      session: updatedSession
     });
 
     res.json({ message: adminMessage });

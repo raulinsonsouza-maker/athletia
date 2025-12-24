@@ -38,13 +38,70 @@ export default function AdminChat() {
       chatService.connect(token).catch(console.error);
     }
 
-    // Listeners
-    chatService.onMessage((data) => {
-      if (selectedSession && data.message.sessionId === selectedSession.id) {
-        setMessages((prev) => [...prev, data.message]);
+    // Listener para mensagens na sessão atual
+    const handleNewMessage = (data: any) => {
+      const message = data.message || data;
+      const sessionId = message.sessionId || data.session?.id || (selectedSession?.id);
+      
+      console.log('[AdminChat] Nova mensagem recebida (chat:message):', { message, sessionId, selectedSessionId: selectedSession?.id });
+      
+      if (selectedSession && sessionId === selectedSession.id) {
+        // Verificar se mensagem já existe (evitar duplicatas)
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === message.id);
+          if (exists) {
+            console.log('[AdminChat] Mensagem duplicada ignorada:', message.id);
+            return prev;
+          }
+          console.log('[AdminChat] Adicionando nova mensagem:', message.id);
+          return [...prev, message];
+        });
       }
       loadSessions(); // Atualizar lista
-    });
+    };
+
+    // Listener para novas mensagens de usuários
+    const handleNewUserMessage = (data: any) => {
+      const sessionId = data.sessionId;
+      const message = data.message;
+      
+      console.log('[AdminChat] Nova mensagem de usuário (chat:new_message):', { sessionId, message, selectedSessionId: selectedSession?.id });
+      
+      if (selectedSession && sessionId === selectedSession.id) {
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === message.id);
+          if (exists) {
+            console.log('[AdminChat] Mensagem de usuário duplicada ignorada:', message.id);
+            return prev;
+          }
+          console.log('[AdminChat] Adicionando mensagem de usuário:', message.id);
+          return [...prev, message];
+        });
+      }
+      loadSessions();
+    };
+
+    chatService.onMessage(handleNewMessage);
+    
+    // Escutar evento específico para novas mensagens de usuários
+    // Aguardar conexão do socket
+    const setupNewMessageListener = () => {
+      const socket = chatService.getSocket();
+      if (socket) {
+        if (socket.connected) {
+          socket.on('chat:new_message', handleNewUserMessage);
+        } else {
+          socket.once('connect', () => {
+            socket.on('chat:new_message', handleNewUserMessage);
+          });
+        }
+      } else {
+        // Tentar novamente após um delay
+        setTimeout(setupNewMessageListener, 500);
+      }
+    };
+    
+    setupNewMessageListener();
 
     chatService.onSessionAssigned(() => {
       loadSessions();
@@ -52,6 +109,10 @@ export default function AdminChat() {
 
     return () => {
       chatService.off('chat:message');
+      const socket = chatService.getSocket();
+      if (socket) {
+        socket.off('chat:new_message');
+      }
       chatService.off('chat:session_assigned');
     };
   }, [selectedSession]);
@@ -118,12 +179,26 @@ export default function AdminChat() {
 
     try {
       setLoading(true);
-      await api.post(`/admin/chat/sessions/${selectedSession.id}/messages`, { content });
+      const response = await api.post(`/admin/chat/sessions/${selectedSession.id}/messages`, { content });
+      
+      // Adicionar mensagem localmente imediatamente
+      if (response.data.message) {
+        const newMessage = response.data.message;
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === newMessage.id);
+          if (exists) return prev;
+          return [...prev, newMessage];
+        });
+      }
+      
+      // Recarregar mensagens para garantir sincronização
       await loadMessages(selectedSession.id);
       await loadSessions();
     } catch (error: any) {
       console.error('Erro ao enviar mensagem:', error);
-      showToast('Erro ao enviar mensagem', 'error');
+      showToast(error.response?.data?.error || 'Erro ao enviar mensagem', 'error');
+      // Restaurar input em caso de erro
+      setInputValue(content);
     } finally {
       setLoading(false);
     }

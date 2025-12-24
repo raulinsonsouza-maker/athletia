@@ -144,7 +144,7 @@ export const createSession = async (req: AuthRequest, res: Response) => {
 
     // Notificar via WebSocket
     websocketManager.sendToSession(session.id, 'chat:message', {
-      message: botMessage,
+      message: { ...botMessage, sessionId: session.id },
       session: session
     });
 
@@ -200,10 +200,13 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       data: { lastMessageAt: new Date() }
     });
 
+    // Buscar sessão atualizada
+    const updatedSession = await prisma.chatSession.findUnique({ where: { id } });
+    
     // Notificar via WebSocket
     websocketManager.sendToSession(id, 'chat:message', {
-      message: userMessage,
-      session: await prisma.chatSession.findUnique({ where: { id } })
+      message: { ...userMessage, sessionId: id },
+      session: updatedSession
     });
 
     // Se status é bot, processar com chatbot
@@ -243,10 +246,13 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
         data: { lastMessageAt: new Date() }
       });
 
+      // Buscar sessão atualizada
+      const updatedSessionForBot = await prisma.chatSession.findUnique({ where: { id } });
+      
       // Notificar via WebSocket
       websocketManager.sendToSession(id, 'chat:message', {
-        message: botMessage,
-        session: await prisma.chatSession.findUnique({ where: { id } })
+        message: { ...botMessage, sessionId: id },
+        session: updatedSessionForBot
       });
 
       return res.json({
@@ -255,12 +261,22 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Se status é human, apenas notificar admins
+    // Se status é human, notificar admins e também enviar para a sessão
     if (session.status === 'human') {
+      // Notificar admins sobre nova mensagem
       websocketManager.sendToAdmins('chat:new_message', {
         sessionId: id,
         userId,
         message: userMessage
+      });
+      
+      // Buscar sessão atualizada
+      const updatedSessionForHuman = await prisma.chatSession.findUnique({ where: { id } });
+      
+      // Também notificar via sessão para que admins conectados à sessão recebam
+      websocketManager.sendToSession(id, 'chat:message', {
+        message: { ...userMessage, sessionId: id },
+        session: updatedSessionForHuman
       });
     }
 

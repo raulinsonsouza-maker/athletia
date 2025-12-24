@@ -32,15 +32,25 @@ export default function ChatWidget() {
     }
 
     // Listeners
-    chatService.onMessage((data) => {
-      setMessages((prev) => [...prev, data.message]);
+    const handleMessage = (data: any) => {
+      const message = data.message || data;
+      
+      // Verificar se mensagem já existe (evitar duplicatas)
+      setMessages((prev) => {
+        const exists = prev.some(m => m.id === message.id);
+        if (exists) return prev;
+        return [...prev, message];
+      });
+      
       if (data.session) {
         setSession(data.session);
       }
       if (!isOpen) {
         setUnreadCount((prev) => prev + 1);
       }
-    });
+    };
+
+    chatService.onMessage(handleMessage);
 
     chatService.onSessionClosed(() => {
       setIsOpen(false);
@@ -100,22 +110,38 @@ export default function ChatWidget() {
       setLoading(true);
       const response = await chatService.sendMessage(session.id, content);
       
-      // Adicionar mensagem do usuário
+      // Adicionar mensagem do usuário (evitar duplicatas)
       if (response.userMessage) {
-        setMessages((prev) => [...prev, response.userMessage]);
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === response.userMessage.id);
+          if (exists) return prev;
+          return [...prev, response.userMessage];
+        });
       }
       
-      // Adicionar resposta do bot se houver
+      // Adicionar resposta do bot se houver (evitar duplicatas)
       if (response.botMessage) {
-        setMessages((prev) => [...prev, response.botMessage]);
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === response.botMessage.id);
+          if (exists) return prev;
+          return [...prev, response.botMessage];
+        });
       }
 
       // Atualizar sessão
       if (response.session) {
         setSession(response.session);
       }
+      
+      // Recarregar mensagens para garantir sincronização
+      if (session) {
+        const updatedMessages = await chatService.getMessages(session.id);
+        setMessages(updatedMessages);
+      }
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
+      // Restaurar input em caso de erro
+      setInputValue(content);
     } finally {
       setLoading(false);
       inputRef.current?.focus();
@@ -131,19 +157,33 @@ export default function ChatWidget() {
       setLoading(true);
       const response = await chatService.sendMessage(session.id, content);
       
-      // Adicionar mensagem do usuário
+      // Adicionar mensagem do usuário (evitar duplicatas)
       if (response.userMessage) {
-        setMessages((prev) => [...prev, response.userMessage]);
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === response.userMessage.id);
+          if (exists) return prev;
+          return [...prev, response.userMessage];
+        });
       }
       
-      // Adicionar resposta do bot se houver
+      // Adicionar resposta do bot se houver (evitar duplicatas)
       if (response.botMessage) {
-        setMessages((prev) => [...prev, response.botMessage]);
+        setMessages((prev) => {
+          const exists = prev.some(m => m.id === response.botMessage.id);
+          if (exists) return prev;
+          return [...prev, response.botMessage];
+        });
       }
 
       // Atualizar sessão
       if (response.session) {
         setSession(response.session);
+      }
+      
+      // Recarregar mensagens para garantir sincronização
+      if (session) {
+        const updatedMessages = await chatService.getMessages(session.id);
+        setMessages(updatedMessages);
       }
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);

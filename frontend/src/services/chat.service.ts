@@ -37,6 +37,10 @@ class ChatService {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
 
+  getSocket(): Socket | null {
+    return this.socket;
+  }
+
   connect(token: string): Promise<Socket> {
     return new Promise((resolve, reject) => {
       if (this.socket?.connected) {
