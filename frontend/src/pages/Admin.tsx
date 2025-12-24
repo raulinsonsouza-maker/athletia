@@ -280,10 +280,14 @@ export default function Admin() {
 
   // Listener para mudança de tab via evento customizado (ex: notificações)
   useEffect(() => {
-    const handleTabChange = (event: CustomEvent) => {
-      const tab = event.detail as typeof activeTab
+    const handleTabChange = (event: Event) => {
+      const customEvent = event as CustomEvent
+      // Aceitar tanto { tab: 'chat' } quanto 'chat' diretamente
+      const tab = customEvent.detail?.tab || customEvent.detail
       if (tab && ['usuarios', 'exercicios', 'estatisticas', 'grupos', 'imagens', 'whatsapp', 'chat'].includes(tab)) {
         setActiveTab(tab)
+        // Scroll para o topo quando mudar de aba
+        window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     }
 
@@ -838,7 +842,10 @@ export default function Admin() {
       <AdminHeader onMenuToggle={toggleSidebar} sidebarOpen={sidebarOpen} />
       <AdminSidebar
         isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={() => {
+          setSidebarOpen(false)
+          localStorage.setItem('adminSidebarOpen', 'false')
+        }}
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab as typeof activeTab)}
       />

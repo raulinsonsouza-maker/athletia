@@ -238,8 +238,36 @@ export default function AdminSidebar({
       <aside
         className={`fixed top-16 left-0 h-[calc(100vh-4rem)] bg-dark-lighter border-r border-grey/30 z-40 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 w-64 overflow-y-auto`}
+        } w-64 overflow-y-auto`}
       >
+        {/* Botão de fechar - visível em desktop e mobile quando aberto */}
+        {isOpen && (
+          <div className="flex items-center justify-between p-3 border-b border-grey/20">
+            <span className="text-xs font-semibold text-light-muted uppercase tracking-wider lg:block hidden">
+              Menu
+            </span>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-white/10 transition-colors text-light-muted hover:text-light"
+              aria-label="Fechar menu"
+              title="Fechar menu"
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
         <nav className="p-4 space-y-4">
           {menuItems.map((item, index) => (
             <div key={item.id}>
