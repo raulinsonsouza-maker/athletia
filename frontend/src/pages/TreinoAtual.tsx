@@ -26,13 +26,10 @@ export default function TreinoAtual() {
     progresso,
     exercicioAtivoIndex,
     loading,
-    podeDesfazer,
-    tempoDesfazer,
     irParaProximoExercicio,
     exercicioAnterior,
     selecionarExercicio,
     marcarConcluido,
-    desfazer,
     finalizarTreino,
     isExercicioConcluido
   } = useTreinoAtual()
