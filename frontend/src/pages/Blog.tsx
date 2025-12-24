@@ -7,6 +7,7 @@ import BlogMostRead from '../components/blog/BlogMostRead'
 import BlogPillarContent from '../components/blog/BlogPillarContent'
 import BlogCTA from '../components/blog/BlogCTA'
 import BlogSEO from '../components/blog/SEOHead'
+import BlogFooter from '../components/blog/BlogFooter'
 import api from '../services/auth.service'
 
 interface BlogArticle {
@@ -226,6 +227,9 @@ export default function Blog() {
           </>
         )}
       </main>
+      
+      {/* Footer */}
+      <BlogFooter categories={categories} />
     </div>
   )
 }

@@ -4,6 +4,7 @@ import BlogHeader from '../components/blog/BlogHeader'
 import BlogBreadcrumb from '../components/blog/BlogBreadcrumb'
 import BlogCard from '../components/blog/BlogCard'
 import BlogCTA from '../components/blog/BlogCTA'
+import BlogFooter from '../components/blog/BlogFooter'
 import SEOHead from '../components/blog/SEOHead'
 import api from '../services/auth.service'
 
@@ -68,6 +69,7 @@ export default function BlogCategory() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([])
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -78,11 +80,20 @@ export default function BlogCategory() {
       }
 
       try {
-        const response = await api.get(`/blog/categorias/${slug}?page=${currentPage}&limit=12`)
-        if (response.data) {
-          setCategoryData(response.data)
+        const [categoryResponse, categoriesResponse] = await Promise.all([
+          api.get(`/blog/categorias/${slug}?page=${currentPage}&limit=12`),
+          api.get('/blog/categorias').catch(() => ({ data: [] }))
+        ])
+        
+        if (categoryResponse.data) {
+          setCategoryData(categoryResponse.data)
         } else {
           setError('Categoria não encontrada')
+        }
+        
+        // Carregar categorias para o footer
+        if (categoriesResponse.data) {
+          setCategories(categoriesResponse.data)
         }
       } catch (err: any) {
         if (err.response?.status === 404) {
@@ -255,6 +266,9 @@ export default function BlogCategory() {
             />
           </div>
         </main>
+        
+        {/* Footer */}
+        <BlogFooter categories={categories} />
       </div>
     </>
   )

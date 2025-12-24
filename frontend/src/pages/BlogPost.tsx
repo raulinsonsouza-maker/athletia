@@ -7,6 +7,7 @@ import BlogPostIndex from '../components/blog/BlogPostIndex'
 import BlogContent from '../components/blog/BlogContent'
 import BlogCTA from '../components/blog/BlogCTA'
 import BlogRelatedPosts from '../components/blog/BlogRelatedPosts'
+import BlogFooter from '../components/blog/BlogFooter'
 import SEOHead from '../components/blog/SEOHead'
 import OptimizedImage from '../components/blog/OptimizedImage'
 import api from '../services/auth.service'
@@ -83,6 +84,7 @@ export default function BlogPost() {
   const [article, setArticle] = useState<BlogArticle | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [categories, setCategories] = useState<Array<{ id: string; name: string; slug: string }>>([])
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -93,9 +95,13 @@ export default function BlogPost() {
       }
 
       try {
-        const response = await api.get(`/blog/artigos/slug/${slug}`)
-        if (response.data) {
-          setArticle(response.data)
+        const [articleResponse, categoriesResponse] = await Promise.all([
+          api.get(`/blog/artigos/slug/${slug}`),
+          api.get('/blog/categorias').catch(() => ({ data: [] }))
+        ])
+        
+        if (articleResponse.data) {
+          setArticle(articleResponse.data)
           
           // Incrementar visualizações
           try {
@@ -105,6 +111,11 @@ export default function BlogPost() {
           }
         } else {
           setError('Artigo não encontrado')
+        }
+        
+        // Carregar categorias para o footer
+        if (categoriesResponse.data) {
+          setCategories(categoriesResponse.data)
         }
       } catch (err: any) {
         if (err.response?.status === 404) {
@@ -291,6 +302,9 @@ export default function BlogPost() {
           )}
         </article>
       </div>
+      
+      {/* Footer */}
+      <BlogFooter categories={categories} />
     </>
   )
 }
