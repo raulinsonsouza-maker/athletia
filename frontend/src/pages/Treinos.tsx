@@ -7,6 +7,7 @@ import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
+import { isDataPassada } from '../utils/treino.utils'
 
 // ============================================================================
 // ÍCONES SVG
@@ -65,11 +66,27 @@ interface CardTreinoProps {
 
 const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
   const gruposPrincipais = item.gruposPrincipais?.slice(0, 2) || []
+  
+  // Verificar se é treino passado (assumindo que não está concluído se não tiver badge)
+  // Como TreinoCardResumo não tem propriedade concluido, verificamos apenas pela data
+  const isPassado = item.data ? isDataPassada(item.data) : false
+  const isPendentePassado = isPassado
+  
+  // Classes para estilo PB quando for treino passado pendente
+  const containerClassesPB = isPendentePassado 
+    ? 'opacity-70 border-dashed border-white/20' 
+    : ''
+  const imageClassesPB = isPendentePassado 
+    ? 'grayscale opacity-65' 
+    : ''
+  const textClassesPB = isPendentePassado 
+    ? 'opacity-70' 
+    : ''
 
   return (
     <button
       onClick={() => onNavigate && onNavigate(item.id)}
-      className="bg-[#111] rounded-2xl overflow-hidden text-left w-full hover:bg-[#161616] transition-all border border-white/5"
+      className={`bg-[#111] rounded-2xl overflow-hidden text-left w-full hover:bg-[#161616] transition-all border border-white/5 ${containerClassesPB}`}
     >
       <div className="flex">
         <div className="w-28 h-28 bg-black/50 flex-shrink-0 relative overflow-hidden">
@@ -80,7 +97,7 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
                 key={`${item.id}-${imagemFinal}`}
                 src={imagemFinal}
                 alt={item.titulo}
-                className="w-full h-full object-cover"
+                className={`w-full h-full object-cover ${imageClassesPB}`}
                 onError={(e) => {
                   const target = e.currentTarget
                   const currentSrc = target.src
@@ -124,16 +141,21 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
                 <span>{item.nivel}</span>
               )}
             </div>
-            <h3 className="text-white font-semibold text-base line-clamp-1">{item.titulo}</h3>
+            <h3 className={`text-white font-semibold text-base line-clamp-1 ${textClassesPB}`}>{item.titulo}</h3>
           </div>
-          <div className="flex items-center gap-2 text-xs text-white/50 flex-wrap">
+          <div className={`flex items-center gap-2 text-xs text-white/50 flex-wrap ${textClassesPB}`}>
             <span>{formatarDuracao(item.duracao)}</span>
             <IconeSeparador />
             <span>{item.totalExercicios} exercícios</span>
             {item.data && (
               <>
                 <IconeSeparador />
-                <span className="text-primary">{formatarData(item.data)}</span>
+                <span className={`text-primary ${textClassesPB}`}>{formatarData(item.data)}</span>
+                {isPendentePassado && (
+                  <span className="text-xs bg-gray-500/20 text-gray-300 border border-gray-400/60 px-2 py-0.5 rounded">
+                    Pendente
+                  </span>
+                )}
               </>
             )}
           </div>

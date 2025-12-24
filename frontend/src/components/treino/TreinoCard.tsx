@@ -7,7 +7,8 @@ import {
   calcularVolumeTreino,
   calcularPorcentagemConclusao,
   obterNomeTreino,
-  isTreinoHoje
+  isTreinoHoje,
+  isTreinoPassadoPendente
 } from '../../utils/treino.utils'
 
 interface TreinoCardProps {
@@ -36,6 +37,7 @@ const TreinoCard = memo(function TreinoCard({
   const ehHoje = isTreinoHoje(treino)
   const totalExercicios = treino.exercicios?.length || 0
   const exerciciosConcluidos = treino.exercicios?.filter(ex => ex.concluido).length || 0
+  const isPendentePassado = isTreinoPassadoPendente(treino)
 
   // Cores e estilos baseados no status
   const getStatusStyles = (status: StatusTreino) => {
@@ -54,9 +56,9 @@ const TreinoCard = memo(function TreinoCard({
         }
       case 'perdido':
         return {
-          badge: 'badge-error',
-          border: 'border-error/50',
-          bg: 'bg-error/10'
+          badge: 'bg-gray-500/20 text-gray-300 border-gray-400/60',
+          border: 'border-dashed border-white/20',
+          bg: 'bg-dark-lighter/50'
         }
       case 'futuro':
         return {
@@ -77,10 +79,18 @@ const TreinoCard = memo(function TreinoCard({
   const statusText = {
     concluido: 'Concluído',
     'em-andamento': 'Em andamento',
-    perdido: 'Perdido',
+    perdido: 'Pendente', // Mudar "Perdido" para "Pendente" para treinos passados não concluídos
     pendente: 'Pendente',
     futuro: 'Futuro'
   }[status]
+  
+  // Classes para aplicar estilo PB (grayscale) quando for treino passado pendente
+  const containerClassesPB = isPendentePassado 
+    ? 'grayscale opacity-70 border-dashed' 
+    : ''
+  const textClassesPB = isPendentePassado 
+    ? 'opacity-70' 
+    : ''
 
   const handleClick = () => {
     if (onClick) {
@@ -92,18 +102,18 @@ const TreinoCard = memo(function TreinoCard({
   if (variante === 'compacto') {
     return (
       <div
-        className={`card-hover ${statusStyles.border} border-2 ${destacar ? 'ring-2 ring-primary' : ''} ${className}`}
+        className={`card-hover ${statusStyles.border} border-2 ${destacar ? 'ring-2 ring-primary' : ''} ${containerClassesPB} ${className}`}
         onClick={handleClick}
       >
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-bold text-light">{nomeTreino}</h3>
+              <h3 className={`text-sm font-bold text-light ${textClassesPB}`}>{nomeTreino}</h3>
               {ehHoje && (
                 <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">Hoje</span>
               )}
             </div>
-            <p className="text-xs text-light-muted">{formatarDataTreinoCompacta(treino.data)}</p>
+            <p className={`text-xs text-light-muted ${textClassesPB}`}>{formatarDataTreinoCompacta(treino.data)}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className={`${statusStyles.badge} text-xs`}>{statusText}</span>
@@ -122,13 +132,13 @@ const TreinoCard = memo(function TreinoCard({
   if (variante === 'resumo') {
     return (
       <div
-        className={`card ${statusStyles.border} border-2 ${destacar ? 'ring-2 ring-primary' : ''} ${className}`}
+        className={`card ${statusStyles.border} border-2 ${destacar ? 'ring-2 ring-primary' : ''} ${containerClassesPB} ${className}`}
         onClick={handleClick}
       >
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h3 className="text-lg font-display font-bold text-light">{nomeTreino}</h3>
-            <p className="text-sm text-light-muted">{formatarDataTreino(treino.data)}</p>
+            <h3 className={`text-lg font-display font-bold text-light ${textClassesPB}`}>{nomeTreino}</h3>
+            <p className={`text-sm text-light-muted ${textClassesPB}`}>{formatarDataTreino(treino.data)}</p>
           </div>
           <div className="text-right">
             <span className={`${statusStyles.badge} flex items-center gap-1`}>
@@ -169,15 +179,15 @@ const TreinoCard = memo(function TreinoCard({
   // Variante completa (padrão)
   return (
     <div
-      className={`card-hover ${statusStyles.border} border-2 ${destacar ? 'ring-2 ring-primary' : ''} ${className}`}
+      className={`card-hover ${statusStyles.border} border-2 ${destacar ? 'ring-2 ring-primary' : ''} ${containerClassesPB} ${className}`}
       onClick={handleClick}
     >
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-lg font-display font-bold text-light">{nomeTreino}</h3>
-          <p className="text-sm text-light-muted">{formatarDataTreino(treino.data)}</p>
+          <h3 className={`text-lg font-display font-bold text-light ${textClassesPB}`}>{nomeTreino}</h3>
+          <p className={`text-sm text-light-muted ${textClassesPB}`}>{formatarDataTreino(treino.data)}</p>
           {treino.tipo && (
-            <p className="text-xs text-light-muted mt-1">Tipo: {treino.tipo}</p>
+            <p className={`text-xs text-light-muted mt-1 ${textClassesPB}`}>Tipo: {treino.tipo}</p>
           )}
         </div>
         <div className="text-right">

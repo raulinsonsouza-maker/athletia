@@ -3,6 +3,7 @@ import { garantirPlanoSemanal, aplicarCardioAoTreino } from './treino-engine.ser
 import { garantirPerfilParaInteligencia, obterPerfilBasico } from './perfil.service';
 import { obterImagemTreino, obterImagemGrupo } from '../utils/imagens-treino';
 import { migrateMediaUrl } from '../utils/migrate-media-urls';
+import { obterInicioSemana } from './treino-utils.service';
 
 // ============================================================================
 // FUNÇÕES AUXILIARES
@@ -136,12 +137,20 @@ export async function obterResumoTreinos(userId: string) {
   }));
 
   const hoje = normalizarData(new Date());
+  
+  // Calcular período da semana atual (segunda a domingo)
+  const inicioSemana = obterInicioSemana(hoje);
+  const fimSemana = normalizarData(new Date(inicioSemana));
+  fimSemana.setDate(fimSemana.getDate() + 6);
+  fimSemana.setHours(23, 59, 59, 999);
 
+  // Buscar todos os treinos da semana atual (incluindo passados)
   const proximosTreinosBrutos = await prisma.treino.findMany({
     where: {
       userId,
       data: {
-        gte: hoje
+        gte: inicioSemana,
+        lte: fimSemana
       }
     },
     include: {
@@ -156,8 +165,7 @@ export async function obterResumoTreinos(userId: string) {
     },
     orderBy: {
       data: 'asc'
-    },
-    take: 6
+    }
   });
 
   // Evitar treinos duplicados (ex.: mesmos nome/data/letra gerados em execuções antigas)
@@ -175,8 +183,7 @@ export async function obterResumoTreinos(userId: string) {
   }
 
   const proximosTreinos = Array.from(mapaProximosTreinos.values())
-    .sort((a, b) => a.data.getTime() - b.data.getTime())
-    .slice(0, 6);
+    .sort((a, b) => a.data.getTime() - b.data.getTime());
 
   // Gerar planosAtivos com imagens inteligentes
   const planosAtivos = proximosTreinos.map((treino) => {
@@ -197,20 +204,18 @@ export async function obterResumoTreinos(userId: string) {
     };
   });
 
-  // Calcular período da semana
-  const inicioSemana = normalizarData(new Date(hoje));
-  const diaSemana = inicioSemana.getDay();
-  const diff = diaSemana === 0 ? -6 : 1 - diaSemana;
-  inicioSemana.setDate(inicioSemana.getDate() + diff);
-  const fimSemana = normalizarData(new Date(inicioSemana));
-  fimSemana.setDate(fimSemana.getDate() + 6);
+  // Calcular período da semana usando função utilitária para consistência
+  const inicioSemanaCalculado = obterInicioSemana(hoje);
+  const fimSemanaCalculado = normalizarData(new Date(inicioSemanaCalculado));
+  fimSemanaCalculado.setDate(fimSemanaCalculado.getDate() + 6);
+  fimSemanaCalculado.setHours(23, 59, 59, 999);
 
   const treinosSemana = await prisma.treino.findMany({
     where: {
       userId,
       data: {
-        gte: inicioSemana,
-        lte: fimSemana
+        gte: inicioSemanaCalculado,
+        lte: fimSemanaCalculado
       }
     },
     include: {
@@ -233,8 +238,8 @@ export async function obterResumoTreinos(userId: string) {
   const diasSemanaLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
   const semana = Array.from({ length: 7 }).map((_, index) => {
-    const dataDia = normalizarData(new Date(inicioSemana));
-    dataDia.setDate(inicioSemana.getDate() + index);
+    const dataDia = normalizarData(new Date(inicioSemanaCalculado));
+    dataDia.setDate(inicioSemanaCalculado.getDate() + index);
     const key = dataDia.toISOString();
     const treinosDia = mapaTreinosSemana[key] || [];
     const concluido = treinosDia.some(treino => treino.concluido);
@@ -351,12 +356,20 @@ export async function buscarPlanoAtual(userId: string) {
   const local = perfil?.localTreino || 'Academia Comercial';
 
   const hoje = normalizarData(new Date());
+  
+  // Calcular período da semana atual (segunda a domingo)
+  const inicioSemana = obterInicioSemana(hoje);
+  const fimSemana = normalizarData(new Date(inicioSemana));
+  fimSemana.setDate(fimSemana.getDate() + 6);
+  fimSemana.setHours(23, 59, 59, 999);
 
+  // Buscar todos os treinos da semana atual (incluindo passados)
   const treinos = await prisma.treino.findMany({
     where: {
       userId,
       data: {
-        gte: hoje
+        gte: inicioSemana,
+        lte: fimSemana
       }
     },
     include: {
@@ -367,8 +380,7 @@ export async function buscarPlanoAtual(userId: string) {
         orderBy: { ordem: 'asc' }
       }
     },
-    orderBy: { data: 'asc' },
-    take: 7
+    orderBy: { data: 'asc' }
   });
 
   if (treinos.length === 0) {

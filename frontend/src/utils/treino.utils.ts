@@ -240,16 +240,23 @@ export function calcularRPEMedio(treino: TreinoCompleto): number | null {
 }
 
 /**
- * Verifica se um treino está no passado
+ * Verifica se uma data está no passado
  */
-export function isTreinoPassado(treino: Treino): boolean {
+export function isDataPassada(data: string | Date): boolean {
   const hoje = new Date()
   hoje.setHours(0, 0, 0, 0)
   
-  const dataTreino = new Date(treino.data)
-  dataTreino.setHours(0, 0, 0, 0)
+  const dataObj = new Date(data)
+  dataObj.setHours(0, 0, 0, 0)
   
-  return dataTreino < hoje
+  return dataObj < hoje
+}
+
+/**
+ * Verifica se um treino está no passado
+ */
+export function isTreinoPassado(treino: Treino): boolean {
+  return isDataPassada(treino.data)
 }
 
 /**
@@ -314,5 +321,17 @@ export function contarExerciciosPorGrupo(treino: Treino): Record<string, number>
   })
   
   return contagem
+}
+
+/**
+ * Verifica se um treino está no passado e não foi concluído (pendente)
+ * Usado para aplicar estilo visual diferenciado (PB/grayscale)
+ */
+export function isTreinoPassadoPendente(treino: Treino): boolean {
+  if (treino.concluido) {
+    return false
+  }
+  
+  return isTreinoPassado(treino)
 }
 
