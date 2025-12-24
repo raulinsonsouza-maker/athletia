@@ -4,12 +4,16 @@ import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
 import { OnboardingData } from '../types/onboarding.types'
 import CadastroHero from '../components/cadastro/CadastroHero'
+import ResumoOnboarding from '../components/cadastro/ResumoOnboarding'
+import ProcessoTimeline from '../components/cadastro/ProcessoTimeline'
 import TrialInfoSection from '../components/cadastro/TrialInfoSection'
+import ComparacaoTrialAssinatura from '../components/cadastro/ComparacaoTrialAssinatura'
 import CadastroForm from '../components/cadastro/CadastroForm'
 import PreviaResultados from '../components/cadastro/PreviaResultados'
 import PropostaValor from '../components/cadastro/PropostaValor'
 import DepoimentoUnico from '../components/cadastro/DepoimentoUnico'
 import GarantiaSection from '../components/cadastro/GarantiaSection'
+import FAQCadastro from '../components/cadastro/FAQCadastro'
 import CTAFinal from '../components/cadastro/CTAFinal'
 
 export default function Cadastro() {
@@ -149,10 +153,19 @@ export default function Cadastro() {
       {/* SEÇÃO 1 - HERO */}
       <CadastroHero onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 1.5 - INFORMAÇÕES SOBRE TRIAL E PLANOS */}
+      {/* SEÇÃO 2 - RESUMO ONBOARDING + O QUE VAI TER */}
+      <ResumoOnboarding onboardingData={onboardingData} />
+
+      {/* SEÇÃO 3 - TIMELINE DO PROCESSO */}
+      <ProcessoTimeline />
+
+      {/* SEÇÃO 4 - INFORMAÇÕES SOBRE TRIAL E PLANOS */}
       <TrialInfoSection onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 2 - FORMULÁRIO */}
+      {/* SEÇÃO 5 - COMPARAÇÃO TRIAL VS ASSINATURA */}
+      <ComparacaoTrialAssinatura />
+
+      {/* SEÇÃO 6 - FORMULÁRIO */}
       <CadastroForm 
         onSubmit={handleSubmit}
         loading={loading}
@@ -160,19 +173,22 @@ export default function Cadastro() {
         onScrollIntoView={showForm}
       />
 
-      {/* SEÇÃO 3 - PRÉVIA DO RESULTADO */}
+      {/* SEÇÃO 7 - PRÉVIA DO RESULTADO */}
       <PreviaResultados onboardingData={onboardingData} />
 
-      {/* SEÇÃO 4 - PROPOSTA DE VALOR */}
+      {/* SEÇÃO 8 - PROPOSTA DE VALOR */}
       <PropostaValor onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 5 - DEPOIMENTO ÚNICO */}
+      {/* SEÇÃO 9 - DEPOIMENTO ÚNICO */}
       <DepoimentoUnico />
 
-      {/* SEÇÃO 6 - GARANTIA */}
+      {/* SEÇÃO 10 - GARANTIA */}
       <GarantiaSection />
 
-      {/* SEÇÃO 7 - CTA FINAL */}
+      {/* SEÇÃO 11 - FAQ */}
+      <FAQCadastro />
+
+      {/* SEÇÃO 12 - CTA FINAL */}
       <CTAFinal onScrollToForm={scrollToForm} />
     </div>
   )

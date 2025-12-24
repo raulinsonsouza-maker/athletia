@@ -27,6 +27,86 @@ export default function TrialInfoSection({ onScrollToForm }: TrialInfoSectionPro
             </p>
           </div>
 
+          {/* O que você terá acesso durante o trial */}
+          <div className="mb-10">
+            <h3 className="text-xl md:text-2xl font-bold text-light mb-6 text-center">
+              O que você terá acesso durante o trial
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-dark/50 border border-grey/20">
+                <svg className="w-6 h-6 text-success mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p className="font-semibold text-light">Treino personalizado completo</p>
+                  <p className="text-sm text-light-muted">Baseado no seu perfil único</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-dark/50 border border-grey/20">
+                <svg className="w-6 h-6 text-success mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p className="font-semibold text-light">Ajustes automáticos baseados em RPE</p>
+                  <p className="text-sm text-light-muted">IA adapta conforme seu progresso</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-dark/50 border border-grey/20">
+                <svg className="w-6 h-6 text-success mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p className="font-semibold text-light">Histórico e progresso</p>
+                  <p className="text-sm text-light-muted">Acompanhe sua evolução completa</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-dark/50 border border-grey/20">
+                <svg className="w-6 h-6 text-success mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <div>
+                  <p className="font-semibold text-light">Todos os recursos da plataforma</p>
+                  <p className="text-sm text-light-muted">Acesso completo sem limitações</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* O que acontece após 24h */}
+          <div className="mb-10">
+            <h3 className="text-xl md:text-2xl font-bold text-light mb-6 text-center">
+              O que acontece após 24 horas?
+            </h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="p-6 rounded-2xl bg-dark-lighter border-2 border-grey/30">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-error/20 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-bold text-light">Se não assinar</h4>
+                </div>
+                <p className="text-light-muted leading-relaxed">
+                  Seu acesso será bloqueado, mas <strong className="text-light">todos os seus dados serão preservados</strong>. Você pode assinar um plano a qualquer momento para retomar de onde parou.
+                </p>
+              </div>
+              <div className="p-6 rounded-2xl bg-dark-lighter border-2 border-primary/50">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-success/20 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-bold text-light">Se assinar</h4>
+                </div>
+                <p className="text-light-muted leading-relaxed">
+                  Você terá <strong className="text-primary">acesso contínuo</strong> a todos os recursos + <strong className="text-primary">treinos para 30 dias gerados automaticamente</strong> baseados no seu perfil.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Grid de Planos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-10">
             {/* Plano Mensal */}
