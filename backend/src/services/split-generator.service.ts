@@ -296,26 +296,73 @@ export async function obterGruposCanonicosDoDiaWrapper(
 
 /**
  * Distribui dias da semana uniformemente baseado na frequência
+ * Garante exatamente N dias conforme a frequência informada
+ * Dias válidos: 1 (segunda) a 6 (sábado), excluindo 0 (domingo)
  */
 export function distribuirDiasSemana(frequencia: number): number[] {
-  if (frequencia <= 0 || frequencia > 7) {
+  // Validação de entrada
+  if (frequencia <= 0 || frequencia > 6) {
+    console.warn(`[SPLIT-GENERATOR] Frequência inválida: ${frequencia}. Usando padrão 3 dias (segunda, quarta, sexta)`);
     return [1, 3, 5]; // Padrão: Segunda, Quarta, Sexta
   }
 
+  // Casos específicos para garantir distribuição ótima
   if (frequencia === 1) {
     return [1]; // Segunda
   }
 
-  const dias: number[] = [];
-  const diasDisponiveis = 6; // Segunda (1) a Sábado (6)
-  const intervalo = (diasDisponiveis - 1) / (frequencia - 1);
-  
-  for (let i = 0; i < frequencia; i++) {
-    const posicao = 1 + (i * intervalo);
-    const dia = Math.floor(posicao);
-    dias.push(Math.min(Math.max(dia, 1), 6));
+  if (frequencia === 2) {
+    return [1, 4]; // Segunda e Quinta (distribuição uniforme)
   }
 
-  return Array.from(new Set(dias)).sort((a, b) => a - b);
+  if (frequencia === 3) {
+    return [1, 3, 5]; // Segunda, Quarta, Sexta
+  }
+
+  if (frequencia === 4) {
+    return [1, 2, 4, 5]; // Segunda, Terça, Quinta, Sexta
+  }
+
+  if (frequencia === 5) {
+    return [1, 2, 3, 4, 5]; // Segunda a Sexta
+  }
+
+  if (frequencia === 6) {
+    return [1, 2, 3, 4, 5, 6]; // Segunda a Sábado
+  }
+
+  // Fallback: distribuição matemática uniforme (não deve chegar aqui devido às validações acima)
+  const dias: number[] = [];
+  const diasDisponiveis = 6; // Segunda (1) a Sábado (6)
+  
+  // Distribuir uniformemente
+  for (let i = 0; i < frequencia; i++) {
+    const posicao = 1 + (i * (diasDisponiveis / frequencia));
+    const dia = Math.round(posicao);
+    if (!dias.includes(dia)) {
+      dias.push(dia);
+    }
+  }
+
+  // Garantir que temos exatamente a frequência desejada
+  while (dias.length < frequencia) {
+    for (let dia = 1; dia <= 6; dia++) {
+      if (!dias.includes(dia) && dias.length < frequencia) {
+        dias.push(dia);
+      }
+    }
+  }
+
+  // Ordenar e garantir que não há duplicatas
+  const diasUnicos = Array.from(new Set(dias)).sort((a, b) => a - b);
+  
+  // Validação final: garantir que temos exatamente a frequência
+  if (diasUnicos.length !== frequencia) {
+    console.error(`[SPLIT-GENERATOR] Erro: Distribuição gerou ${diasUnicos.length} dias ao invés de ${frequencia}. Dias: ${diasUnicos.join(',')}`);
+    // Retornar dias válidos encontrados ou padrão
+    return diasUnicos.length > 0 ? diasUnicos : [1, 3, 5];
+  }
+
+  return diasUnicos;
 }
 

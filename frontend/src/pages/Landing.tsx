@@ -121,6 +121,18 @@ export default function Landing() {
     navigate('/cadastro')
   }, [onboardingData, navigate])
 
+  // Sinalizar quando deve mostrar o popup de instalação PWA
+  // Mostrar quando estiver no último passo (step 15) e nome estiver preenchido
+  useEffect(() => {
+    if (step === 15 && onboardingData.nome && onboardingData.nome.trim().length >= 2) {
+      // Sinalizar que o onboarding está completo e deve mostrar o popup
+      sessionStorage.setItem('pwa-show-onboarding-complete', 'true')
+    } else {
+      // Limpar o flag se não estiver no passo final
+      sessionStorage.removeItem('pwa-show-onboarding-complete')
+    }
+  }, [step, onboardingData.nome])
+
   // Scroll automático para o topo quando o step muda (importante para mobile)
   useEffect(() => {
     if (step > 0) {

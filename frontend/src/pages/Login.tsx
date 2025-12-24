@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import api from '../services/auth.service'
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal'
 
 export default function Login() {
@@ -12,25 +11,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(true) // Por padrão, manter logado
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
-  const [imagemLoginPadrao, setImagemLoginPadrao] = useState<string | null>(null)
   const { login } = useAuth()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    carregarImagemLoginPadrao()
-  }, [])
-
-  const carregarImagemLoginPadrao = async () => {
-    try {
-      const response = await api.get('/admin/settings/imagens')
-      if (response.data?.imagemLoginPadrao) {
-        setImagemLoginPadrao(response.data.imagemLoginPadrao)
-      }
-    } catch (error) {
-      // Ignorar erro se não for admin ou se não existir ainda
-      console.debug('Não foi possível carregar imagem padrão do login:', error)
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -91,143 +73,24 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark via-dark-light to-dark text-white">
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Lado Esquerdo - Imagem e Benefícios (Desktop) / Header (Mobile) */}
-          <div className="space-y-8 order-2 lg:order-1">
-            {/* Header Mobile */}
-            <div className="lg:hidden space-y-4 text-center">
-              <p className="text-xs uppercase tracking-[0.6em] text-white/50 font-medium">AthletIA</p>
-              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">Sua jornada inteligente começa aqui</h1>
-              <p className="text-white/70 text-sm max-w-md mx-auto">
-                Entre e continue o plano criado pela nossa inteligência exclusiva para o seu objetivo.
-              </p>
-            </div>
-
-            {/* Imagem do Admin - Responsiva e Moderna */}
-            <div className="relative rounded-3xl overflow-hidden border border-white/10 bg-white/5 shadow-2xl group">
-              {/* Overlay gradiente para melhor contraste */}
-              <div className="absolute inset-0 bg-gradient-to-t from-dark/90 via-dark/40 to-transparent z-10" />
-              
-              {/* Imagem */}
-              <div className="relative aspect-[4/3] lg:aspect-[3/4] overflow-hidden">
-                <img
-                  src={imagemLoginPadrao || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=1200&q=80"}
-                  alt="Atleta treinando"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={(e) => {
-                    const target = e.currentTarget
-                    const fallback = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=1200&q=80'
-                    if (target.src !== fallback && !imagemLoginPadrao) {
-                      target.src = fallback
-                    } else {
-                      target.style.display = 'none'
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Benefícios sobrepostos na imagem (Desktop) */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 z-20 hidden lg:block">
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold text-white mb-4">O que você vai encontrar:</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">Plano personalizado</p>
-                        <p className="text-xs text-white/70">Treinos adaptados ao seu objetivo e nível</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">Acompanhamento em tempo real</p>
-                        <p className="text-xs text-white/70">Acompanhe sua evolução e progresso</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">Instruções detalhadas</p>
-                        <p className="text-xs text-white/70">GIFs e orientações para cada exercício</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Benefícios Mobile */}
-            <div className="lg:hidden space-y-4">
-              <h3 className="text-lg font-semibold text-white">O que você vai encontrar:</h3>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Plano personalizado</p>
-                    <p className="text-xs text-white/60">Treinos adaptados ao seu objetivo e nível</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Acompanhamento em tempo real</p>
-                    <p className="text-xs text-white/60">Acompanhe sua evolução e progresso</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-white">Instruções detalhadas</p>
-                    <p className="text-xs text-white/60">GIFs e orientações para cada exercício</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark flex items-center justify-center px-4 sm:px-6 py-12">
+      <div className="w-full max-w-md">
+        {/* Logo e Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <img
+              src="/favicon.svg"
+              alt="AthletIA"
+              className="w-12 h-12"
+            />
+            <h1 className="text-3xl font-display font-bold text-light">AthletIA</h1>
           </div>
+          <p className="text-white/60 text-sm">Entre na sua conta</p>
+        </div>
 
-          {/* Lado Direito - Formulário de Login */}
-          <div className="w-full max-w-md mx-auto lg:max-w-lg order-1 lg:order-2">
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-              {/* Header Desktop */}
-              <div className="hidden lg:block space-y-2 mb-2">
-                <p className="text-xs uppercase tracking-[0.6em] text-white/50 font-medium">AthletIA</p>
-                <h1 className="text-3xl font-bold leading-tight">Sua jornada inteligente começa aqui</h1>
-              </div>
-
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.4em] text-white/50">Acesso</p>
-                <h2 className="text-2xl font-bold">Entre com seus dados</h2>
-                <p className="text-sm text-white/60 mt-1">Seguro e criptografado</p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Formulário de Login */}
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          <form onSubmit={handleSubmit} className="space-y-5">
                 {error && (
                   <div className="rounded-2xl border border-error/40 bg-error/10 px-4 py-3 text-sm text-error flex items-start gap-2">
                     <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,24 +195,22 @@ export default function Login() {
                     'Entrar'
                   )}
                 </button>
-              </form>
+          </form>
 
-              <div className="text-center space-y-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPasswordModal(true)}
-                  className="text-sm text-primary hover:text-primary/80 hover:underline transition"
-                >
-                  Esqueci minha senha
-                </button>
-                <p className="text-white/60 text-sm">
-                  Não tem uma conta?{' '}
-                  <Link to="/?start=true" className="text-primary font-semibold hover:text-primary/80 hover:underline transition">
-                    Cadastre-se
-                  </Link>
-                </p>
-              </div>
-            </div>
+          <div className="text-center space-y-3 pt-4 mt-6 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => setShowForgotPasswordModal(true)}
+              className="text-sm text-primary hover:text-primary/80 hover:underline transition"
+            >
+              Esqueci minha senha
+            </button>
+            <p className="text-white/60 text-sm">
+              Não tem uma conta?{' '}
+              <Link to="/?start=true" className="text-primary font-semibold hover:text-primary/80 hover:underline transition">
+                Cadastre-se
+              </Link>
+            </p>
           </div>
         </div>
       </div>

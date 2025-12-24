@@ -753,28 +753,66 @@ export async function gerarTreinoUnificado(
 
 /**
  * Regenera treinos para 30 dias usando nova lógica
+ * Inclui validações completas e logs detalhados
  */
 export async function regenerarTreinos30Dias(
   userId: string,
   perfil: PerfilCompleto
 ): Promise<void> {
+  const inicioProcesso = new Date();
+  console.log(`[REGENERAÇÃO-TREINOS] Iniciando regeneração de treinos para usuário ${userId}`);
+  console.log(`[REGENERAÇÃO-TREINOS] Parâmetros: frequência=${perfil.frequenciaSemanal || 3}, objetivo=${perfil.objetivo || 'N/A'}, experiência=${perfil.experiencia || 'N/A'}`);
+  
+  // Validar perfil antes de começar
+  const { validarPerfilCompleto, validarFrequenciaSemanal } = await import('./treino-validation.service');
+  const validacaoPerfil = validarPerfilCompleto(perfil);
+  
+  if (!validacaoPerfil.valido) {
+    console.error(`[REGENERAÇÃO-TREINOS] ERRO: Perfil inválido - ${validacaoPerfil.erros.join('; ')}`);
+    throw new Error(`Perfil incompleto: ${validacaoPerfil.erros.join('; ')}`);
+  }
+  
+  if (validacaoPerfil.avisos.length > 0) {
+    console.warn(`[REGENERAÇÃO-TREINOS] AVISOS: ${validacaoPerfil.avisos.join('; ')}`);
+  }
+  
+  // Validar frequência semanal
+  const frequencia = perfil.frequenciaSemanal || 3;
+  const validacaoFrequencia = validarFrequenciaSemanal(frequencia);
+  
+  if (!validacaoFrequencia.valido) {
+    console.error(`[REGENERAÇÃO-TREINOS] ERRO: Frequência inválida - ${validacaoFrequencia.erros.join('; ')}`);
+    throw new Error(`Frequência semanal inválida: ${validacaoFrequencia.erros.join('; ')}`);
+  }
+  
+  console.log(`[REGENERAÇÃO-TREINOS] Frequência validada: ${frequencia} dias/semana`);
+  console.log(`[REGENERAÇÃO-TREINOS] Dias distribuídos: ${validacaoFrequencia.diasDistribuidos.join(', ')}`);
+  
   // Apagar treinos IA futuros (não concluídos)
-  await prisma.treino.deleteMany({
+  const hojeLimpo = new Date();
+  hojeLimpo.setHours(0, 0, 0, 0);
+  
+  const treinosDeletados = await prisma.treino.deleteMany({
     where: {
       userId,
       criadoPor: 'IA',
       concluido: false,
-      data: { gte: new Date() }
+      data: { gte: hojeLimpo }
     }
   });
   
+  console.log(`[REGENERAÇÃO-TREINOS] ${treinosDeletados.count} treino(s) futuro(s) deletado(s)`);
+  
   // Calcular dias de treino
-  const frequencia = perfil.frequenciaSemanal || 3;
-  const diasTreino = distribuirDiasSemana(frequencia);
+  const diasTreino = validacaoFrequencia.diasDistribuidos;
   
   // Gerar treinos para próximos 30 dias
   const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
   const treinosGerados: TreinoGerado[] = [];
+  const treinosComErro: Array<{ data: Date; erro: string }> = [];
+  
+  console.log(`[REGENERAÇÃO-TREINOS] Iniciando geração de treinos para 30 dias...`);
   
   for (let dia = 0; dia < 30; dia++) {
     const dataTreino = new Date(hoje);
@@ -786,22 +824,113 @@ export async function regenerarTreinos30Dias(
     
     // Se é dia de treino
     if (indiceDia !== -1) {
-      const treino = await gerarTreinoUnificado({
-        userId,
-        data: dataTreino,
-        tipo: 'IA',
-        indiceDia,
-        perfil,
-        aplicarDadosOnboarding: true
-      });
-      
-      if (treino) {
-        treinosGerados.push(treino);
+      try {
+        const treino = await gerarTreinoUnificado({
+          userId,
+          data: dataTreino,
+          tipo: 'IA',
+          indiceDia,
+          perfil,
+          aplicarDadosOnboarding: true
+        });
+        
+        if (treino) {
+          treinosGerados.push(treino);
+          
+          // Log detalhado de cada treino gerado (apenas a cada 5 treinos para não poluir)
+          if (treinosGerados.length % 5 === 0 || treinosGerados.length === 1) {
+            console.log(
+              `[REGENERAÇÃO-TREINOS] Treino ${treinosGerados.length}: ${dataTreino.toLocaleDateString('pt-BR')} ` +
+              `(${treino.gruposPrincipais.join(', ')}) - ${treino.totalExercicios} exercícios, ${treino.tempoEstimado}min`
+            );
+          }
+        } else {
+          treinosComErro.push({
+            data: dataTreino,
+            erro: 'Treino não foi gerado (retornou null)'
+          });
+          console.warn(`[REGENERAÇÃO-TREINOS] AVISO: Falha ao gerar treino para ${dataTreino.toLocaleDateString('pt-BR')}`);
+        }
+      } catch (error: any) {
+        treinosComErro.push({
+          data: dataTreino,
+          erro: error.message || 'Erro desconhecido'
+        });
+        console.error(`[REGENERAÇÃO-TREINOS] ERRO ao gerar treino para ${dataTreino.toLocaleDateString('pt-BR')}:`, error.message);
       }
     }
   }
   
-  console.log(`[REGENERAÇÃO] ${treinosGerados.length} treinos gerados para usuário ${userId}`);
+  // Validar quantidade de treinos gerados
+  const { validarTreinosGerados, validarDadosOnboarding, validarTreinoIndividual } = await import('./treino-validation.service');
+  
+  console.log(`[REGENERAÇÃO-TREINOS] Validação: Verificando quantidade de treinos gerados...`);
+  const validacaoQuantidade = await validarTreinosGerados(userId, frequencia, hoje);
+  
+  if (!validacaoQuantidade.valido) {
+    console.error(`[REGENERAÇÃO-TREINOS] ERRO na validação de quantidade: ${validacaoQuantidade.erros.join('; ')}`);
+  }
+  
+  if (validacaoQuantidade.avisos.length > 0) {
+    console.warn(`[REGENERAÇÃO-TREINOS] AVISOS na validação de quantidade: ${validacaoQuantidade.avisos.join('; ')}`);
+  }
+  
+  // Validar dados do onboarding
+  console.log(`[REGENERAÇÃO-TREINOS] Validação: Verificando dados do onboarding...`);
+  const validacaoOnboarding = await validarDadosOnboarding(userId, perfil);
+  
+  if (!validacaoOnboarding.valido) {
+    console.error(`[REGENERAÇÃO-TREINOS] ERRO na validação de onboarding: ${validacaoOnboarding.erros.join('; ')}`);
+  }
+  
+  if (validacaoOnboarding.avisos.length > 0) {
+    console.warn(`[REGENERAÇÃO-TREINOS] AVISOS na validação de onboarding: ${validacaoOnboarding.avisos.join('; ')}`);
+  }
+  
+  // Validar treinos individuais (amostra dos primeiros 3)
+  if (treinosGerados.length > 0) {
+    console.log(`[REGENERAÇÃO-TREINOS] Validação: Verificando treinos individuais (amostra)...`);
+    const treinosParaValidar = treinosGerados.slice(0, Math.min(3, treinosGerados.length));
+    
+    for (const treino of treinosParaValidar) {
+      const validacaoIndividual = await validarTreinoIndividual(treino.id, perfil);
+      if (!validacaoIndividual.valido) {
+        console.warn(
+          `[REGENERAÇÃO-TREINOS] AVISO no treino ${treino.data.toLocaleDateString('pt-BR')}: ${validacaoIndividual.erros.join('; ')}`
+        );
+      }
+    }
+  }
+  
+  // Estatísticas finais
+  const tempoDecorrido = ((new Date().getTime() - inicioProcesso.getTime()) / 1000).toFixed(2);
+  const semanasCompletas = Math.floor(validacaoQuantidade.totalTreinos / frequencia);
+  const treinosEsperados = Math.floor(30 / 7) * frequencia;
+  
+  console.log(`[REGENERAÇÃO-TREINOS] ==========================================`);
+  console.log(`[REGENERAÇÃO-TREINOS] RESUMO FINAL:`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Treinos gerados: ${treinosGerados.length} (esperado: ~${treinosEsperados})`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Treinos com erro: ${treinosComErro.length}`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Frequência: ${frequencia} dias/semana`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Dias distribuídos: ${diasTreino.join(', ')}`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Semanas completas: ${semanasCompletas}`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Tempo decorrido: ${tempoDecorrido}s`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Validação quantidade: ${validacaoQuantidade.valido ? '✅' : '❌'}`);
+  console.log(`[REGENERAÇÃO-TREINOS] - Validação onboarding: ${validacaoOnboarding.valido ? '✅' : '❌'}`);
+  console.log(`[REGENERAÇÃO-TREINOS] ==========================================`);
+  
+  // Logar erros de treinos individuais se houver
+  if (treinosComErro.length > 0) {
+    console.error(`[REGENERAÇÃO-TREINOS] ERRO: ${treinosComErro.length} treino(s) não foram gerados:`);
+    treinosComErro.forEach(({ data, erro }) => {
+      console.error(`  - ${data.toLocaleDateString('pt-BR')}: ${erro}`);
+    });
+  }
+  
+  // Lançar erro se validações críticas falharam
+  if (!validacaoQuantidade.valido && validacaoQuantidade.erros.length > 0) {
+    throw new Error(`Validação de quantidade falhou: ${validacaoQuantidade.erros.join('; ')}`);
+  }
 }
 
 // ============================================================================

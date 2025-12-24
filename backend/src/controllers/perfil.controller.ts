@@ -268,17 +268,20 @@ export const updatePerfil = async (req: AuthRequest, res: Response) => {
 };
 
 // Atualização periódica (a cada 30 dias) - coleta peso, percentual de gordura e lesões
+// Detecta mudanças críticas e regenera treinos quando necessário
 export const atualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
-    const { pesoAtual, percentualGordura, lesoes } = req.body;
+    const { pesoAtual, percentualGordura, lesoes, frequenciaSemanal, objetivo, experiencia } = req.body;
 
-    // Buscar perfil atual
-    const perfil = await prisma.perfil.findUnique({
+    console.log(`[ATUALIZAÇÃO-PERIÓDICA] Iniciando atualização periódica para usuário ${userId}`);
+
+    // Buscar perfil atual (backup antes da atualização para comparação)
+    const perfilAnterior = await prisma.perfil.findUnique({
       where: { userId }
     });
 
-    if (!perfil) {
+    if (!perfilAnterior) {
       return res.status(404).json({
         error: 'Perfil não encontrado'
       });
@@ -286,15 +289,55 @@ export const atualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
 
     // Verificar se já passaram 30 dias desde a última atualização
     const hoje = new Date();
-    const ultimaAtualizacao = perfil.ultimaAtualizacaoPeriodica || perfil.createdAt;
+    const ultimaAtualizacao = perfilAnterior.ultimaAtualizacaoPeriodica || perfilAnterior.createdAt;
     const diasDesdeUltimaAtualizacao = Math.floor((hoje.getTime() - ultimaAtualizacao.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (diasDesdeUltimaAtualizacao < 30) {
+    // Detectar mudanças críticas que requerem regeneração de treinos
+    const mudancasCriticas: string[] = [];
+    
+    if (frequenciaSemanal !== undefined && frequenciaSemanal !== null && frequenciaSemanal !== perfilAnterior.frequenciaSemanal) {
+      mudancasCriticas.push(`frequência semanal: ${perfilAnterior.frequenciaSemanal} → ${frequenciaSemanal}`);
+    }
+
+    if (objetivo !== undefined && objetivo !== null && objetivo !== perfilAnterior.objetivo) {
+      mudancasCriticas.push(`objetivo: ${perfilAnterior.objetivo} → ${objetivo}`);
+    }
+
+    if (experiencia !== undefined && experiencia !== null && experiencia !== perfilAnterior.experiencia) {
+      mudancasCriticas.push(`experiência: ${perfilAnterior.experiencia} → ${experiencia}`);
+    }
+
+    // Verificar mudanças em lesões (comparar arrays)
+    if (lesoes !== undefined && Array.isArray(lesoes)) {
+      const lesoesAnteriores = perfilAnterior.lesoes || [];
+      const lesoesAnterioresSorted = [...lesoesAnteriores].sort().join(',');
+      const lesoesNovasSorted = [...lesoes].sort().join(',');
+      
+      if (lesoesAnterioresSorted !== lesoesNovasSorted) {
+        mudancasCriticas.push(`lesões: [${lesoesAnteriores.join(', ')}] → [${lesoes.join(', ')}]`);
+      }
+    }
+
+    // Se há mudanças críticas, permitir atualização mesmo antes de 30 dias
+    const permiteAtualizacaoAntecipada = mudancasCriticas.length > 0;
+    
+    if (!permiteAtualizacaoAntecipada && diasDesdeUltimaAtualizacao < 30) {
       return res.status(400).json({
         error: 'Ainda não é hora de atualizar',
         message: `Faltam ${30 - diasDesdeUltimaAtualizacao} dias para a próxima atualização periódica`,
         diasRestantes: 30 - diasDesdeUltimaAtualizacao
       });
+    }
+
+    // Log de auditoria das mudanças
+    if (mudancasCriticas.length > 0) {
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] Mudanças críticas detectadas (${mudancasCriticas.length}):`);
+      mudancasCriticas.forEach(mudanca => {
+        console.log(`  - ${mudanca}`);
+      });
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] Regeneração de treinos será realizada mesmo com ${diasDesdeUltimaAtualizacao} dias desde última atualização`);
+    } else {
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] Sem mudanças críticas detectadas. Dias desde última atualização: ${diasDesdeUltimaAtualizacao}`);
     }
 
     // Preparar dados de atualização
@@ -313,15 +356,30 @@ export const atualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
             peso: pesoNum
           }
         });
+        console.log(`[ATUALIZAÇÃO-PERIÓDICA] Peso atualizado: ${perfilAnterior.pesoAtual || 'N/A'} → ${pesoNum} kg`);
       }
     }
 
     if (percentualGordura !== undefined && percentualGordura !== null && percentualGordura !== '') {
       dadosAtualizacao.percentualGordura = typeof percentualGordura === 'string' ? parseFloat(percentualGordura) : percentualGordura;
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] Percentual de gordura atualizado: ${perfilAnterior.percentualGordura || 'N/A'} → ${dadosAtualizacao.percentualGordura}%`);
     }
 
     if (lesoes !== undefined && Array.isArray(lesoes)) {
       dadosAtualizacao.lesoes = lesoes;
+    }
+
+    // Adicionar mudanças críticas se fornecidas
+    if (frequenciaSemanal !== undefined && frequenciaSemanal !== null) {
+      dadosAtualizacao.frequenciaSemanal = frequenciaSemanal;
+    }
+
+    if (objetivo !== undefined && objetivo !== null) {
+      dadosAtualizacao.objetivo = objetivo;
+    }
+
+    if (experiencia !== undefined && experiencia !== null) {
+      dadosAtualizacao.experiencia = experiencia;
     }
 
     // Atualizar perfil
@@ -330,16 +388,18 @@ export const atualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
       data: dadosAtualizacao
     });
 
+    console.log(`[ATUALIZAÇÃO-PERIÓDICA] Perfil atualizado com sucesso`);
+
     // Gerar novos treinos para os próximos 30 dias baseado nos dados atualizados
     try {
       const { gerarTreinos30Dias } = await import('../services/treino.service');
-      console.log(`🔄 Gerando novos treinos para os próximos 30 dias após atualização periódica...`);
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] Gerando novos treinos para os próximos 30 dias...`);
       
       // Deletar treinos futuros não concluídos para regenerar
       const hojeLimpo = new Date();
       hojeLimpo.setHours(0, 0, 0, 0);
       
-      await prisma.treino.deleteMany({
+      const treinosDeletados = await prisma.treino.deleteMany({
         where: {
           userId,
           data: {
@@ -349,26 +409,31 @@ export const atualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
         }
       });
 
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] ${treinosDeletados.count} treino(s) futuro(s) deletado(s) para regeneração`);
+
       const treinosGerados = await gerarTreinos30Dias(userId);
-      console.log(`✅ ${treinosGerados.length} novos treinos gerados com sucesso!`);
+      console.log(`[ATUALIZAÇÃO-PERIÓDICA] ✅ ${treinosGerados.length} novos treinos gerados com sucesso!`);
 
       res.json({
         message: 'Atualização periódica realizada com sucesso. Novos treinos foram gerados para os próximos 30 dias.',
         perfil: perfilAtualizado,
         treinosGerados: treinosGerados.length,
+        mudancasCriticas: mudancasCriticas.length > 0 ? mudancasCriticas : undefined,
+        permiteAtualizacaoAntecipada,
         proximaAtualizacao: new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000) // 30 dias a partir de hoje
       });
     } catch (error: any) {
-      console.error('⚠️ Erro ao gerar treinos após atualização periódica:', error);
+      console.error('[ATUALIZAÇÃO-PERIÓDICA] ⚠️ Erro ao gerar treinos após atualização periódica:', error);
       // Retornar sucesso na atualização mesmo se houver erro ao gerar treinos
       res.json({
         message: 'Perfil atualizado com sucesso, mas houve erro ao gerar novos treinos. Tente gerar manualmente.',
         perfil: perfilAtualizado,
-        erroTreinos: error.message
+        erroTreinos: error.message,
+        mudancasCriticas: mudancasCriticas.length > 0 ? mudancasCriticas : undefined
       });
     }
   } catch (error: any) {
-    console.error('Erro na atualização periódica:', error);
+    console.error('[ATUALIZAÇÃO-PERIÓDICA] Erro na atualização periódica:', error);
     res.status(500).json({
       error: 'Erro na atualização periódica',
       message: error.message
