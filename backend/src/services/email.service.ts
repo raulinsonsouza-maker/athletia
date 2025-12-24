@@ -350,7 +350,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bem-vindo! Você tem 3 dias de teste gratuito</title>
+  <title>Bem-vindo! Você tem 24 horas de acesso gratuito</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
@@ -375,7 +375,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
               </p>
               
               <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
-                Parabéns! Seu cadastro foi realizado com sucesso e você agora tem <strong style="color: #F9A620;">3 dias de acesso completo e gratuito</strong> para testar todos os recursos da plataforma AthletIA.
+                Parabéns! Seu cadastro foi realizado com sucesso e você agora tem <strong style="color: #F9A620;">24 horas de acesso completo e gratuito</strong> para testar todos os recursos da plataforma AthletIA.
               </p>
               
               <!-- Trial Info Destacado -->
@@ -384,7 +384,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                   🎁 Teste Gratuito Ativo
                 </h2>
                 <p style="margin: 0 0 20px 0; color: #070600; font-size: 18px; font-weight: 600;">
-                  Você tem acesso completo por <strong>3 dias</strong>
+                  Você tem acesso completo por <strong>24 horas</strong>
                 </p>
                 <div style="background-color: rgba(7, 6, 0, 0.2); border-radius: 8px; padding: 15px; margin-top: 15px;">
                   <p style="margin: 0 0 8px 0; color: #070600; font-size: 14px; font-weight: 600;">
@@ -408,7 +408,8 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                     <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">1</div>
                     <div style="flex: 1;">
                       <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Acesse a página de login</p>
-                      <a href="${loginUrl}" style="display: inline-block; color: #F9A620; text-decoration: underline; font-size: 14px; margin-top: 5px;">${loginUrl}</a>
+                      <p style="margin: 0 0 12px 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Clique no botão abaixo ou acesse diretamente:</p>
+                      <a href="${loginUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">${loginUrl}</a>
                     </div>
                   </div>
                 </div>
@@ -418,22 +419,33 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                   <div style="display: flex; align-items: flex-start; gap: 15px;">
                     <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">2</div>
                     <div style="flex: 1;">
-                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Use seu e-mail e senha</p>
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Digite seu e-mail</p>
+                      <p style="margin: 0 0 8px 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">No campo "E-mail", digite:</p>
                       <div style="background-color: #070600; border: 1px solid #F9A620; border-radius: 4px; padding: 10px; margin: 8px 0;">
-                        <p style="margin: 0; color: #F9A620; font-size: 14px; font-weight: bold; word-break: break-all;">E-mail: ${email}</p>
-                        <p style="margin: 8px 0 0 0; color: #E0E0E8; font-size: 12px;">Use a senha que você criou no cadastro</p>
+                        <p style="margin: 0; color: #F9A620; font-size: 16px; font-weight: bold; word-break: break-all; text-align: center;">${email}</p>
                       </div>
                     </div>
                   </div>
                 </div>
                 
                 <!-- Passo 3 -->
-                <div style="margin: 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                <div style="margin: 0 0 20px 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
                   <div style="display: flex; align-items: flex-start; gap: 15px;">
                     <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">3</div>
                     <div style="flex: 1;">
+                      <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Digite sua senha</p>
+                      <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Use a senha que você criou durante o cadastro. Se esqueceu sua senha, você pode recuperá-la na página de login.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Passo 4 -->
+                <div style="margin: 0; padding: 15px; background-color: #0F0E0A; border-radius: 6px;">
+                  <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div style="background-color: #F9A620; color: #070600; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; flex-shrink: 0;">4</div>
+                    <div style="flex: 1;">
                       <p style="margin: 0 0 8px 0; color: #F7F7FF; font-size: 16px; font-weight: 600;">Comece a treinar!</p>
-                      <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Você já tem acesso completo! Explore treinos personalizados, acompanhe seu progresso e muito mais.</p>
+                      <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">Após fazer login, você terá acesso completo aos seus treinos personalizados, histórico de treinos, progresso e muito mais!</p>
                     </div>
                   </div>
                 </div>
@@ -468,6 +480,42 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                 </div>
               </div>
               
+              <!-- Planos Disponíveis -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 25px; margin: 30px 0; border-radius: 4px;">
+                <h2 style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 20px; font-weight: bold;">
+                  💳 Planos Disponíveis Após o Trial
+                </h2>
+                <p style="margin: 0 0 20px 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">
+                  Após suas 24 horas de acesso gratuito, escolha um dos planos abaixo para continuar usando o AthletIA sem interrupções:
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px;">
+                  <!-- Plano Mensal -->
+                  <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
+                    <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Mensal</h3>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 19,90</p>
+                    <p style="margin: 0; color: #E0E0E8; font-size: 12px;">por mês</p>
+                  </div>
+                  <!-- Plano Trimestral -->
+                  <div style="background-color: #0F0E0A; border: 2px solid #F9A620; border-radius: 8px; padding: 20px; position: relative;">
+                    <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background-color: #F9A620; color: #070600; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold;">MAIS POPULAR</div>
+                    <h3 style="margin: 10px 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Trimestral</h3>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 49,90</p>
+                    <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 3 meses</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 9,80</p>
+                  </div>
+                  <!-- Plano Semestral -->
+                  <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
+                    <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Semestral</h3>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 89,90</p>
+                    <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 6 meses</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 29,50</p>
+                  </div>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                  <a href="${FRONTEND_URL}/checkout" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Ver Planos Completos</a>
+                </div>
+              </div>
+              
               <!-- Aviso Importante -->
               <div style="background-color: #1A1814; border: 2px solid #F9A620; border-radius: 8px; padding: 20px; margin: 30px 0;">
                 <div style="display: flex; align-items: flex-start; gap: 12px;">
@@ -477,7 +525,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                       ⏰ Importante
                     </p>
                     <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">
-                      Seu período de teste expira em <strong style="color: #F9A620;">${dataFormatada}</strong>. Aproveite para conhecer todos os recursos e, se gostar, escolha um plano para continuar usando o AthletIA sem interrupções!
+                      Seu período de teste de 24 horas expira em <strong style="color: #F9A620;">${dataFormatada}</strong>. Aproveite para conhecer todos os recursos e, se gostar, escolha um plano para continuar usando o AthletIA sem interrupções!
                     </p>
                   </div>
                 </div>
@@ -530,7 +578,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
 }
 
 /**
- * Envia e-mail de boas-vindas para trial de 3 dias
+ * Envia e-mail de boas-vindas para trial de 24 horas
  */
 export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
@@ -552,7 +600,7 @@ export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promis
     console.log('📧 Preparando envio de e-mail de boas-vindas trial:', {
       to: data.email,
       from: FROM_EMAIL,
-      subject: 'Bem-vindo! Você tem 3 dias de teste gratuito no AthletIA'
+      subject: 'Bem-vindo! Você tem 24 horas de acesso gratuito no AthletIA'
     });
 
     const html = generateTrialWelcomeEmailHTML(data);
@@ -561,7 +609,7 @@ export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promis
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: data.email,
-      subject: 'Bem-vindo! Você tem 3 dias de teste gratuito no AthletIA',
+      subject: 'Bem-vindo! Você tem 24 horas de acesso gratuito no AthletIA',
       html: html,
       headers: {
         'X-Entity-Ref-ID': `trial-welcome-${Date.now()}`
@@ -1259,6 +1307,285 @@ export async function sendRemarketingEmail(
       message: error.message,
       stack: error.stack,
       tipo
+    });
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao enviar e-mail'
+    };
+  }
+}
+
+interface TrialExpirationWarningEmailData {
+  nome: string;
+  email: string;
+  horasRestantes: number;
+  dataFimTrial: Date;
+}
+
+/**
+ * Formata horas restantes para exibição
+ */
+function formatarHorasRestantes(horas: number): string {
+  if (horas < 1) {
+    const minutos = Math.floor(horas * 60);
+    return minutos === 1 ? '1 minuto' : `${minutos} minutos`;
+  }
+  if (horas === 1) {
+    return '1 hora';
+  }
+  return `${Math.floor(horas)} horas`;
+}
+
+/**
+ * Gera template HTML do e-mail de aviso de expiração do trial
+ */
+function generateTrialExpirationWarningEmailHTML(data: TrialExpirationWarningEmailData): string {
+  const { nome, email, horasRestantes, dataFimTrial } = data;
+  const horasFormatadas = formatarHorasRestantes(horasRestantes);
+  const dataFormatada = formatarDataTrial(dataFimTrial);
+  const checkoutUrl = `${FRONTEND_URL}/checkout`;
+
+  // SVG para ícone de alerta
+  const alertIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+    <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="#070600"/>
+  </svg>`;
+
+  // SVG para ícone de check
+  const checkIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 6px;">
+    <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z" fill="#F9A620"/>
+  </svg>`;
+
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seu período de avaliação está se encerrando</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" style="max-width: 600px; margin: 0 auto; background-color: #141210; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4); border: 1px solid #4A4946;">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="margin: 0; color: #070600; font-size: 28px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center;">
+                ${alertIcon}
+                Seu período de avaliação está se encerrando
+              </h1>
+            </td>
+          </tr>
+          
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Olá <strong style="color: #F9A620;">${nome}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Faltam apenas <strong style="color: #F9A620; font-size: 20px;">${horasFormatadas}</strong> para seu período de avaliação gratuito expirar!
+              </p>
+              
+              <!-- Urgência Destacada -->
+              <div style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); border-radius: 12px; padding: 30px; margin: 30px 0; text-align: center; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.3);">
+                <h2 style="margin: 0 0 15px 0; color: #070600; font-size: 24px; font-weight: bold;">
+                  ⏰ Não perca seu progresso!
+                </h2>
+                <p style="margin: 0 0 20px 0; color: #070600; font-size: 18px; font-weight: 600;">
+                  Seu trial expira em: <strong>${dataFormatada}</strong>
+                </p>
+                <p style="margin: 0; color: #070600; font-size: 16px; line-height: 1.6;">
+                  Para continuar usando o AthletIA sem interrupções, escolha um dos planos abaixo e ative sua assinatura agora!
+                </p>
+              </div>
+              
+              <!-- Planos Disponíveis -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 25px; margin: 30px 0; border-radius: 4px;">
+                <h2 style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 20px; font-weight: bold;">
+                  💳 Escolha seu plano e continue treinando:
+                </h2>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px;">
+                  <!-- Plano Mensal -->
+                  <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
+                    <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Mensal</h3>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 19,90</p>
+                    <p style="margin: 0; color: #E0E0E8; font-size: 12px;">por mês</p>
+                  </div>
+                  <!-- Plano Trimestral -->
+                  <div style="background-color: #0F0E0A; border: 2px solid #F9A620; border-radius: 8px; padding: 20px; position: relative;">
+                    <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background-color: #F9A620; color: #070600; padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: bold;">MAIS POPULAR</div>
+                    <h3 style="margin: 10px 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Trimestral</h3>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 49,90</p>
+                    <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 3 meses</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 9,80</p>
+                  </div>
+                  <!-- Plano Semestral -->
+                  <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
+                    <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Semestral</h3>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 89,90</p>
+                    <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 6 meses</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 29,50</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Benefícios -->
+              <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 25px; margin: 30px 0; border-radius: 4px;">
+                <h2 style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 20px; font-weight: bold;">
+                  ✨ O que você mantém com um plano:
+                </h2>
+                <div style="color: #E0E0E8; font-size: 14px; line-height: 2.2;">
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Treinos personalizados por IA</strong> - Criados especialmente para você</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Acompanhamento de progresso</strong> - Veja sua evolução em tempo real</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Exercícios adaptados</strong> - Seus treinos evoluem com você</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Histórico completo</strong> - Acompanhe todos os seus treinos</span>
+                  </div>
+                  <div style="display: flex; align-items: center; margin: 10px 0;">
+                    ${checkIcon}
+                    <span><strong>Acesso total</strong> - Todos os recursos da plataforma</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- CTA Button Principal -->
+              <table role="presentation" style="width: 100%; margin: 30px 0;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="${checkoutUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4); transition: all 0.3s ease;">
+                      🚀 Escolher Meu Plano Agora
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 20px 0 0 0; color: #E0E0E8; font-size: 14px; text-align: center; line-height: 1.6;">
+                💡 <strong>Não perca seu progresso!</strong> Ative um plano para continuar usando o AthletIA sem interrupções.
+              </p>
+              
+              <p style="margin: 30px 0 0 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                Se você tiver alguma dúvida ou precisar de ajuda, nossa equipe de suporte está pronta para ajudar.
+              </p>
+              
+              <p style="margin: 20px 0 0 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
+                💪Bons treinos!<br>
+                <strong style="color: #F9A620;">Equipe AthletIA</strong>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #0F0E0A; padding: 30px; text-align: center; border-top: 1px solid #4A4946;">
+              <p style="margin: 0 0 10px 0; color: #63625F; font-size: 12px;">
+                Este é um e-mail automático, por favor não responda.
+              </p>
+              <p style="margin: 0; color: #63625F; font-size: 12px;">
+                © ${new Date().getFullYear()} AthletIA. Todos os direitos reservados.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Envia e-mail de aviso de expiração do trial
+ */
+export async function sendTrialExpirationWarningEmail(data: TrialExpirationWarningEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    // Verificar se Resend está configurado
+    if (!process.env.RESEND_API_KEY) {
+      console.error('❌ RESEND_API_KEY não configurado. E-mail de aviso de expiração não será enviado.');
+      return {
+        success: false,
+        error: 'RESEND_API_KEY não configurado'
+      };
+    }
+
+    console.log('📧 Preparando envio de e-mail de aviso de expiração do trial:', {
+      to: data.email,
+      from: FROM_EMAIL,
+      subject: 'Seu período de avaliação está se encerrando - AthletIA'
+    });
+
+    const html = generateTrialExpirationWarningEmailHTML(data);
+
+    console.log('📧 Chamando Resend API...');
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.email,
+      subject: 'Seu período de avaliação está se encerrando - AthletIA',
+      html: html,
+      headers: {
+        'X-Entity-Ref-ID': `trial-expiration-warning-${Date.now()}`
+      }
+    });
+
+    console.log('📧 Resposta do Resend:', JSON.stringify({
+      hasError: !!result.error,
+      hasData: !!result.data,
+      error: result.error ? {
+        name: result.error.name,
+        message: result.error.message
+      } : null,
+      messageId: result.data?.id
+    }, null, 2));
+
+    if (result.error) {
+      console.error('❌ Erro do Resend ao enviar e-mail:', {
+        name: result.error.name,
+        message: result.error.message,
+        fullError: JSON.stringify(result.error, null, 2)
+      });
+      return {
+        success: false,
+        error: result.error.message || 'Erro desconhecido ao enviar e-mail'
+      };
+    }
+
+    if (!result.data || !result.data.id) {
+      console.error('❌ Resposta do Resend não contém messageId:', result);
+      return {
+        success: false,
+        error: 'Resposta do Resend inválida (sem messageId)'
+      };
+    }
+
+    console.log('✅ E-mail de aviso de expiração do trial enviado com sucesso:', {
+      email: data.email,
+      messageId: result.data.id,
+      from: FROM_EMAIL
+    });
+
+    return {
+      success: true,
+      messageId: result.data.id
+    };
+
+  } catch (error: any) {
+    console.error('❌ Exceção ao enviar e-mail de aviso de expiração do trial:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
     });
     return {
       success: false,

@@ -513,6 +513,21 @@ server.listen(PORT, () => {
 
   console.log('📱 Job de alertas de expiração configurado para executar diariamente às 9h');
 
+  // Configurar job de aviso de expiração do trial (executa a cada hora)
+  cron.schedule('0 * * * *', async () => {
+    try {
+      const { executarJobTrialExpiration } = await import('./jobs/trial-expiration-email');
+      console.log('[CRON] Executando job de aviso de expiração do trial...');
+      await executarJobTrialExpiration();
+    } catch (error: any) {
+      console.error('[CRON] Erro ao executar job de aviso de expiração do trial:', error);
+    }
+  }, {
+    timezone: 'America/Sao_Paulo'
+  });
+
+  console.log('📧 Job de aviso de expiração do trial configurado para executar a cada hora');
+
   // Configurar job de notificações push diárias (executa diariamente às 8h)
   if (pushInitialized) {
     cron.schedule('0 8 * * *', async () => {

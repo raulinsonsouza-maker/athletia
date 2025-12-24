@@ -22,7 +22,7 @@ model User {
   dataPagamento         DateTime? @map("data_pagamento")
   dataExpiracao         DateTime? @map("data_expiracao") // Data de expiração do plano
   dataInicioTrial       DateTime? @map("data_inicio_trial") // Data de início do trial
-  dataFimTrial          DateTime? @map("data_fim_trial") // Data de fim do trial (3 dias após início)
+  dataFimTrial          DateTime? @map("data_fim_trial") // Data de fim do trial (24 horas após início)
   trialUtilizado        Boolean   @default(false) @map("trial_utilizado") // Flag para garantir apenas um trial por email
   whatsappOptIn         Boolean   @default(false) @map("whatsapp_opt_in") // Consentimento WhatsApp
   whatsappOptInDate     DateTime? @map("whatsapp_opt_in_date") // Data do consentimento

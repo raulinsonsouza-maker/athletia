@@ -26,6 +26,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isTrialAtivo: () => boolean
   diasRestantesTrial: () => number
+  horasRestantesTrial: () => number
   isTrialExpirado: () => boolean
 }
 
@@ -198,15 +199,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     const agora = new Date()
     const dataFimTrial = new Date(user.dataFimTrial)
-    
+
     if (dataFimTrial <= agora) {
       return 0
     }
 
     const diffMs = dataFimTrial.getTime() - agora.getTime()
-    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+    const diffDays = diffMs / (1000 * 60 * 60 * 24)
     
+    // Retornar dias com decimais para permitir cálculo de horas quando < 1 dia
     return Math.max(0, diffDays)
+  }
+
+  const horasRestantesTrial = (): number => {
+    if (!user || !user.dataFimTrial) {
+      return 0
+    }
+    const agora = new Date()
+    const dataFimTrial = new Date(user.dataFimTrial)
+
+    if (dataFimTrial <= agora) {
+      return 0
+    }
+
+    const diffMs = dataFimTrial.getTime() - agora.getTime()
+    const diffHours = diffMs / (1000 * 60 * 60)
+    
+    return Math.max(0, diffHours)
   }
 
   const isTrialExpirado = (): boolean => {
@@ -232,6 +251,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         isTrialAtivo,
         diasRestantesTrial,
+        horasRestantesTrial,
         isTrialExpirado
       }}
     >

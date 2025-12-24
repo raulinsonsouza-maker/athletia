@@ -1,19 +1,18 @@
 import { prisma } from '../lib/prisma';
 
 /**
- * Calcula a data de fim do trial (3 dias após o início)
+ * Calcula a data de fim do trial (24 horas após o início)
  */
 export function calcularDataFimTrial(dataInicio: Date): Date {
   const dataFim = new Date(dataInicio);
-  dataFim.setDate(dataFim.getDate() + 3);
-  // Define para meia-noite do 4º dia
-  dataFim.setHours(23, 59, 59, 999);
+  dataFim.setHours(dataFim.getHours() + 24);
   return dataFim;
 }
 
 /**
  * Calcula o estágio atual do trial baseado nas datas de início e fim
  * Retorna: 'D1' (0-24h), 'D2' (24-48h), 'D3' (48-72h), ou 'EXPIrado' (>72h ou já expirado)
+ * Nota: Para trials de 24 horas, a maioria dos usuários estará em D1 durante todo o período
  */
 export function calcularEstagioTrial(dataInicio: Date | null, dataFim: Date | null, agora?: Date): 'D1' | 'D2' | 'D3' | 'EXPIrado' {
   if (!dataInicio || !dataFim) {

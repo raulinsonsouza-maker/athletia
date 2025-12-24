@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function TrialBanner() {
-  const { user, isTrialAtivo, diasRestantesTrial } = useAuth()
+  const { user, isTrialAtivo, diasRestantesTrial, horasRestantesTrial } = useAuth()
   const navigate = useNavigate()
   const [dismissed, setDismissed] = useState(false)
 
@@ -21,6 +21,17 @@ export default function TrialBanner() {
   }
 
   const diasRestantes = diasRestantesTrial()
+  const horasRestantes = horasRestantesTrial()
+  
+  // Mostrar horas quando restam menos de 24 horas
+  const mostrarHoras = diasRestantes < 1
+  const tempoRestante = mostrarHoras 
+    ? Math.floor(horasRestantes)
+    : Math.ceil(diasRestantes)
+  
+  const textoRestante = mostrarHoras
+    ? `${tempoRestante} ${tempoRestante === 1 ? 'hora' : 'horas'}`
+    : `${tempoRestante} ${tempoRestante === 1 ? 'dia' : 'dias'}`
 
   const handleDismiss = () => {
     if (user?.id) {
@@ -52,7 +63,7 @@ export default function TrialBanner() {
             Teste gratuito ativo
           </h3>
           <p className="text-white/80 text-sm">
-            Você tem <strong className="text-primary">{diasRestantes} {diasRestantes === 1 ? 'dia' : 'dias'}</strong> restantes para testar todos os recursos
+            Você tem <strong className="text-primary">{textoRestante}</strong> restantes para testar todos os recursos
           </p>
         </div>
         <button

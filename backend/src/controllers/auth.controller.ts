@@ -242,7 +242,7 @@ export const register = async (req: Request, res: Response) => {
     await saveRefreshToken(user.id, refreshToken);
 
     res.status(201).json({
-      message: 'Usuário criado com sucesso. Você tem 3 dias de teste gratuito!',
+      message: 'Usuário criado com sucesso. Você tem 24 horas de acesso gratuito!',
       user,
       accessToken,
       refreshToken
@@ -654,10 +654,10 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       });
     }
 
-    // Gerar treinos para trial (permite acesso imediato ao sistema por 3 dias)
+    // Gerar treinos para trial (permite acesso imediato ao sistema por 24 horas)
     try {
       const { gerarTreinos30Dias } = await import('../services/treino.service');
-      console.log(`🔄 Gerando treinos para trial de 3 dias para o usuário ${user.id}...`);
+      console.log(`🔄 Gerando treinos para trial de 24 horas para o usuário ${user.id}...`);
       
       await gerarTreinos30Dias(user.id);
       console.log('✅ Treinos gerados com sucesso para trial');
@@ -692,7 +692,7 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
     }
 
     res.status(201).json({
-      message: 'Cadastro realizado com sucesso. Você tem 3 dias de teste gratuito!',
+      message: 'Cadastro realizado com sucesso. Você tem 24 horas de acesso gratuito!',
       user: {
         id: user.id,
         email: user.email,

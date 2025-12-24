@@ -4,6 +4,7 @@ import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
 import { OnboardingData } from '../types/onboarding.types'
 import CadastroHero from '../components/cadastro/CadastroHero'
+import TrialInfoSection from '../components/cadastro/TrialInfoSection'
 import CadastroForm from '../components/cadastro/CadastroForm'
 import PreviaResultados from '../components/cadastro/PreviaResultados'
 import PropostaValor from '../components/cadastro/PropostaValor'
@@ -101,7 +102,7 @@ export default function Cadastro() {
         console.warn('Erro ao limpar localStorage:', error)
       }
 
-      // Redirecionar para dashboard (meu-plano) - usuário tem trial de 3 dias ativo
+      // Redirecionar para dashboard (meu-plano) - usuário tem trial de 24 horas ativo
       navigate('/meu-plano')
     } catch (err: any) {
       console.error('Erro no cadastro:', err)
@@ -147,6 +148,9 @@ export default function Cadastro() {
     <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
       {/* SEÇÃO 1 - HERO */}
       <CadastroHero onScrollToForm={scrollToForm} />
+
+      {/* SEÇÃO 1.5 - INFORMAÇÕES SOBRE TRIAL E PLANOS */}
+      <TrialInfoSection onScrollToForm={scrollToForm} />
 
       {/* SEÇÃO 2 - FORMULÁRIO */}
       <CadastroForm 
