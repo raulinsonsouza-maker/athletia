@@ -589,6 +589,38 @@ export default function Admin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, search, mostrarDesabilitados, filtrosKey])
 
+  // Salvar estado da sidebar no localStorage quando mudar (com debounce)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('adminSidebarOpen', String(sidebarOpen))
+    }, 100)
+    return () => clearTimeout(timeoutId)
+  }, [sidebarOpen])
+
+  // Ajustar sidebar em resize (apenas uma vez no mount)
+  useEffect(() => {
+    let resizeTimeout: number | undefined
+    
+    const handleResize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout)
+      resizeTimeout = window.setTimeout(() => {
+        const isDesktop = window.innerWidth >= 1024
+        if (isDesktop) {
+          const saved = localStorage.getItem('adminSidebarOpen')
+          if (!saved || saved === 'false') {
+            setSidebarOpen(true)
+          }
+        }
+      }, 150)
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, []) // Executar apenas uma vez no mount
+
   const handleShowDetails = (userId: string) => {
     setSelectedUserId(userId)
     setShowDetailsModal(true)
@@ -766,38 +798,6 @@ export default function Admin() {
     setSelectedUserId(userId)
     carregarDetalhesUsuario(userId)
   }
-
-  // Salvar estado da sidebar no localStorage quando mudar (com debounce)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      localStorage.setItem('adminSidebarOpen', String(sidebarOpen))
-    }, 100)
-    return () => clearTimeout(timeoutId)
-  }, [sidebarOpen])
-
-  // Ajustar sidebar em resize (apenas uma vez no mount)
-  useEffect(() => {
-    let resizeTimeout: number | undefined
-    
-    const handleResize = () => {
-      if (resizeTimeout) clearTimeout(resizeTimeout)
-      resizeTimeout = window.setTimeout(() => {
-        const isDesktop = window.innerWidth >= 1024
-        if (isDesktop) {
-          const saved = localStorage.getItem('adminSidebarOpen')
-          if (!saved || saved === 'false') {
-            setSidebarOpen(true)
-          }
-        }
-      }, 150)
-    }
-    
-    window.addEventListener('resize', handleResize)
-    return () => {
-      if (resizeTimeout) clearTimeout(resizeTimeout)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, []) // Executar apenas uma vez no mount
 
   return (
     <div className="min-h-screen bg-dark">
