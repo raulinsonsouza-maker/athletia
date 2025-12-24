@@ -310,7 +310,7 @@ export default function Perfil() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-32">
-      <AppHeader title="Meu Perfil" subtitle="Atualize seus dados e preferências" backTo="/meu-plano" />
+      <AppHeader title="Meu Perfil" backTo="/meu-plano" />
       <ToastContainer />
       <div className="px-5 space-y-6 pb-28">
         <section className="relative rounded-[32px] border border-white/10 overflow-hidden min-h-[200px]">

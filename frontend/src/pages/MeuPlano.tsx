@@ -83,7 +83,7 @@ export default function MeuPlano() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
-      <AppHeader title="Meu Plano" subtitle="Resumo semanal e próximos passos" />
+      <AppHeader title="Meu Plano" />
       <div className="px-5 space-y-6">
         <AvisoTrialAcabando />
         <TrialBanner />

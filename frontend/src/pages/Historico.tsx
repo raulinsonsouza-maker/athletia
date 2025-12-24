@@ -63,7 +63,7 @@ export default function Historico() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-28">
-      <AppHeader title="Histórico" subtitle="Registro dos seus treinos" backTo="/meu-plano" />
+      <AppHeader title="Histórico" backTo="/meu-plano" />
 
       <div className="px-5 space-y-6">
         <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3 backdrop-blur">

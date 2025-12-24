@@ -239,7 +239,7 @@ export default function Treinos() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
-        <AppHeader title="Treinos" subtitle="Carregando..." />
+        <AppHeader title="Treinos" />
         <div className="px-4 pt-4 space-y-4">
           <div className="h-40 bg-[#111] rounded-2xl animate-pulse" />
           <div className="h-28 bg-[#111] rounded-2xl animate-pulse" />
@@ -255,7 +255,7 @@ export default function Treinos() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
-      <AppHeader title="Treinos" subtitle="Seu plano de treinos" />
+      <AppHeader title="Treinos" />
       
       <div className="px-4 pt-2 space-y-6">
         <AvisoExpiracaoPlano />
