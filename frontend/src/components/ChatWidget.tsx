@@ -16,10 +16,10 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Verificar se deve mostrar o widget (apenas em /meu-plano e /perfil)
+  // Verificar se deve mostrar o widget (em /meu-plano, /perfil e /checkout)
   const shouldShowWidget = () => {
     const path = location.pathname;
-    return path === '/meu-plano' || path === '/perfil' || path.startsWith('/perfil/');
+    return path === '/meu-plano' || path === '/perfil' || path.startsWith('/perfil/') || path === '/checkout';
   };
 
   useEffect(() => {

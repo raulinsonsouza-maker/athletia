@@ -12,10 +12,17 @@ import AvisoTrialAcabando from '../components/AvisoTrialAcabando'
 import { usePushNotification } from '../hooks/usePushNotification'
 import { useAuth } from '../contexts/AuthContext'
 
-const InfoChip = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
-    <span className="text-xs uppercase tracking-[0.3em] text-white/50">{label}</span>
-    <span className="text-base font-semibold text-white">{value}</span>
+const InfoChip = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
+  <div className="flex items-center gap-3 bg-gradient-to-br from-white/8 to-white/3 border border-white/10 rounded-2xl px-4 py-4 flex-1 min-w-[30%]">
+    {icon && (
+      <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+        {icon}
+      </div>
+    )}
+    <div className="flex-1 min-w-0">
+      <span className="text-xs uppercase tracking-[0.2em] text-white/50 block mb-1">{label}</span>
+      <span className="text-lg font-bold text-white">{value}</span>
+    </div>
   </div>
 )
 
@@ -180,11 +187,10 @@ export default function MeuPlano() {
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.3em] text-white/50 font-medium">Ações rápidas</p>
               <h2 className="text-2xl font-bold text-white leading-tight">
-                Olá, {primeiroNome}
+                Olá, {primeiroNome}!
               </h2>
-              <h3 className="text-xl font-semibold text-white/90 leading-tight">Continue sua jornada</h3>
-              <p className="text-sm text-white/60 leading-relaxed">
-                Acesse seus treinos e mantenha sua consistência
+              <p className="text-base text-white/80 leading-relaxed">
+                Continue sua jornada acessando seus treinos e mantendo sua consistência
               </p>
             </div>
             
@@ -258,27 +264,126 @@ export default function MeuPlano() {
           </div>
         </section>
 
-        <section className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.3em] text-white/50">Configurações do treino</p>
-          <div className="flex gap-3 flex-wrap">
-            <InfoChip label="Duração média" value={`${planoAtual?.plano.tempoMedio || 0} min`} />
-            <InfoChip label="Treinos semana" value={`${planoAtual?.plano.totalTreinos || 0} dias`} />
-            <InfoChip label="Local" value={planoAtual?.plano.local || 'Customizado'} />
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <p className="text-sm uppercase tracking-[0.2em] text-white/60 font-semibold">Configurações do treino</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <InfoChip 
+              label="Duração média" 
+              value={`${planoAtual?.plano.tempoMedio || 0} min`}
+              icon={
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              }
+            />
+            <InfoChip 
+              label="Treinos semana" 
+              value={`${planoAtual?.plano.totalTreinos || 0} dias`}
+              icon={
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              }
+            />
+            <InfoChip 
+              label="Local" 
+              value={planoAtual?.plano.local || 'Customizado'}
+              icon={
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              }
+            />
           </div>
         </section>
 
-        <section className="space-y-3">
-          <p className="text-xs uppercase tracking-[0.3em] text-white/50">Resumo da semana</p>
-          <div className="grid grid-cols-2 gap-3">
-            {resumoSemana.map((item) => (
-              <div key={item.label} className="bg-white/5 border border-white/10 rounded-3xl p-4 space-y-1">
-                <p className="text-sm text-white/60">{item.label}</p>
-                <p className="text-2xl font-bold">{item.value}</p>
-                {item.detail && (
-                  <p className="text-xs text-white/40 mt-1">{item.detail}</p>
-                )}
-              </div>
-            ))}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p className="text-sm uppercase tracking-[0.2em] text-white/60 font-semibold">Resumo da semana</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {resumoSemana.map((item) => {
+              // Ícones específicos para cada métrica
+              const getIcon = () => {
+                if (item.label === 'Taxa de conclusão') {
+                  return (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )
+                }
+                if (item.label === 'Sequência') {
+                  return (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  )
+                }
+                if (item.label === 'Séries totais') {
+                  return (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )
+                }
+                if (item.label === 'Treinos concluídos') {
+                  return (
+                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )
+                }
+                return (
+                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                )
+              }
+
+              // Cor baseada no tipo de métrica
+              const getBgColor = () => {
+                if (item.label === 'Taxa de conclusão') {
+                  const taxa = parseInt(item.value) || 0
+                  if (taxa >= 80) return 'from-success/20 to-success/10'
+                  if (taxa >= 50) return 'from-warning/20 to-warning/10'
+                  return 'from-error/20 to-error/10'
+                }
+                if (item.label === 'Sequência') return 'from-primary/20 to-primary/10'
+                return 'from-primary/20 to-primary/10'
+              }
+
+              return (
+                <div 
+                  key={item.label} 
+                  className={`bg-gradient-to-br ${getBgColor()} border border-white/10 rounded-2xl p-5 space-y-2 hover:border-primary/30 transition-all duration-300`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                      {getIcon()}
+                    </div>
+                    {item.label === 'Taxa de conclusão' && (
+                      <div className="text-xs font-bold text-primary bg-primary/20 px-2 py-1 rounded-full">
+                        {item.value}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">{item.label}</p>
+                  <p className="text-3xl md:text-4xl font-extrabold text-white leading-none">{item.value}</p>
+                  {item.detail && (
+                    <p className="text-xs text-white/50 mt-2">{item.detail}</p>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </section>
 
