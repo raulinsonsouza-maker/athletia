@@ -81,7 +81,7 @@ export default function Login() {
             <img
               src="/favicon.svg"
               alt="AthletIA"
-              className="w-12 h-12"
+              className="w-12 h-12 rounded-xl"
             />
             <h1 className="text-3xl font-display font-bold text-light">AthletIA</h1>
           </div>
