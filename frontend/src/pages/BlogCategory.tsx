@@ -6,6 +6,7 @@ import BlogCard from '../components/blog/BlogCard'
 import BlogCTA from '../components/blog/BlogCTA'
 import BlogFooter from '../components/blog/BlogFooter'
 import SEOHead from '../components/blog/SEOHead'
+import OptimizedImage from '../components/blog/OptimizedImage'
 import api from '../services/auth.service'
 
 interface BlogCategory {
@@ -15,6 +16,7 @@ interface BlogCategory {
   description: string | null
   introText: string | null
   icon: string | null
+  featuredImage: string | null
   metaTitle: string | null
   metaDescription: string | null
   _count?: {
@@ -51,6 +53,7 @@ interface CategoryPageData {
   description: string | null
   introText: string | null
   icon: string | null
+  featuredImage: string | null
   metaTitle: string | null
   metaDescription: string | null
   artigos: BlogArticle[]
@@ -151,7 +154,7 @@ export default function BlogCategory() {
         metaTitle: categoryData.metaTitle || `${categoryData.name} | Blog AthletIA`,
         metaDescription: categoryData.metaDescription || categoryData.description || `Explore artigos sobre ${categoryData.name.toLowerCase()}`,
         keywords: [categoryData.name.toLowerCase()],
-        featuredImage: null,
+        featuredImage: categoryData.featuredImage || null,
         publishedAt: new Date().toISOString(),
         author: 'Equipe AthletIA',
         categoryRelation: {
@@ -167,9 +170,23 @@ export default function BlogCategory() {
           {/* Breadcrumb */}
           <BlogBreadcrumb items={breadcrumbItems} />
 
+          {/* Imagem de Destaque */}
+          {categoryData.featuredImage && (
+            <div className="mb-8 md:mb-10 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl border border-grey/20 bg-dark relative aspect-video max-h-[400px] md:max-h-[480px] w-full">
+              <OptimizedImage
+                src={categoryData.featuredImage}
+                alt={categoryData.name}
+                className="w-full h-full object-cover"
+                loading="eager"
+                decoding="sync"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark/60 via-transparent to-transparent"></div>
+            </div>
+          )}
+
           {/* Header da Categoria */}
           <header className="mb-12">
-            {categoryData.icon && (
+            {categoryData.icon && !categoryData.featuredImage && (
               <div className="text-6xl mb-4">{categoryData.icon}</div>
             )}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
