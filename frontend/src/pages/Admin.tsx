@@ -300,8 +300,6 @@ export default function Admin() {
   useEffect(() => {
     if (activeTab === 'usuarios') {
       carregarResumoUsuarios()
-    }
-    if (activeTab === 'usuarios') {
       carregarUsuarios()
     } else if (activeTab === 'estatisticas') {
       carregarEstatisticas()
@@ -311,6 +309,7 @@ export default function Admin() {
       carregarGruposMusculares()
     }
     // Imagens carrega seus próprios dados
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, search, mostrarDesabilitados])
 
   const carregarGruposMusculares = async () => {
@@ -335,8 +334,8 @@ export default function Admin() {
         return
       }
 
-      // Verificar se token é válido tentando buscar estatísticas
-      await carregarEstatisticas()
+      // Verificar se token é válido - apenas validar, não carregar dados ainda
+      // Os dados serão carregados quando a tab correspondente for selecionada
       setLoading(false)
     } catch (error: any) {
       if (import.meta.env.DEV) {
@@ -721,21 +720,37 @@ export default function Admin() {
     carregarDetalhesUsuario(userId)
   }
 
-  // Salvar estado da sidebar no localStorage quando mudar
+  // Salvar estado da sidebar no localStorage quando mudar (com debounce)
   useEffect(() => {
-    localStorage.setItem('adminSidebarOpen', String(sidebarOpen))
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem('adminSidebarOpen', String(sidebarOpen))
+    }, 100)
+    return () => clearTimeout(timeoutId)
   }, [sidebarOpen])
 
-  // Ajustar sidebar em resize
+  // Ajustar sidebar em resize (apenas uma vez no mount)
   useEffect(() => {
+    let resizeTimeout: number | undefined
+    
     const handleResize = () => {
-      if (window.innerWidth >= 1024 && !sidebarOpen) {
-        setSidebarOpen(true)
-      }
+      if (resizeTimeout) clearTimeout(resizeTimeout)
+      resizeTimeout = window.setTimeout(() => {
+        const isDesktop = window.innerWidth >= 1024
+        if (isDesktop) {
+          const saved = localStorage.getItem('adminSidebarOpen')
+          if (!saved || saved === 'false') {
+            setSidebarOpen(true)
+          }
+        }
+      }, 150)
     }
+    
     window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [sidebarOpen])
+    return () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, []) // Executar apenas uma vez no mount
 
   return (
     <div className="min-h-screen bg-dark">
