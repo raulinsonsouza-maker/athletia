@@ -42,12 +42,6 @@ export default function BlogHeader() {
             </button>
           )}
           <button
-            onClick={() => navigate('/')}
-            className="text-sm md:text-base font-medium text-light-muted hover:text-primary transition-colors px-4 py-2 rounded-lg hover:bg-primary/10 hidden sm:block"
-          >
-            Início
-          </button>
-          <button
             onClick={() => {
               // Disparar evento de conversão do Google Ads
               if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
