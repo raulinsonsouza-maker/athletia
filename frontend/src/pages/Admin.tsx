@@ -13,6 +13,12 @@ import AdminWhatsApp from './AdminWhatsApp'
 import AdminChat from './AdminChat'
 import { testarEmailRemarketing, estenderTrial, converterManual, encerrarTrial } from '../services/admin.service'
 import { BarChart } from '../components/ChartWrapper'
+import AdminHeader from '../components/admin/AdminHeader'
+import AdminSidebar from '../components/admin/AdminSidebar'
+import UserCard from '../components/admin/UserCard'
+import UserTimeline from '../components/admin/UserTimeline'
+import UserNotes from '../components/admin/UserNotes'
+import UserQuickActions from '../components/admin/UserQuickActions'
 
 
 interface User {
@@ -235,7 +241,6 @@ export default function Admin() {
   })
   const [showOnboardingSection, setShowOnboardingSection] = useState(false)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [, setSelectedUserId] = useState<string | null>(null)
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null)
   const [loadingDetails, setLoadingDetails] = useState(false)
   const [detailsTab, setDetailsTab] = useState<'basicas' | 'onboarding' | 'treinos' | 'historico'>('basicas')
@@ -262,6 +267,12 @@ export default function Admin() {
   const [enviandoEmailTeste, setEnviandoEmailTeste] = useState(false)
   const [menuAcoesAberto, setMenuAcoesAberto] = useState<string | null>(null)
   const [processandoAcao, setProcessandoAcao] = useState<string | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('adminSidebarOpen')
+    return saved ? saved === 'true' : window.innerWidth >= 1024
+  })
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [userNotes, setUserNotes] = useState<Array<{ id: string; content: string; createdAt: string; updatedAt?: string; tags?: string[] }>>([])
 
   useEffect(() => {
     verificarAdmin()
@@ -699,223 +710,47 @@ export default function Admin() {
     )
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAccessToken')
-    localStorage.removeItem('adminRefreshToken')
-    localStorage.removeItem('adminUser')
-    navigate('/admin/login')
+  const toggleSidebar = () => {
+    const newState = !sidebarOpen
+    setSidebarOpen(newState)
+    localStorage.setItem('adminSidebarOpen', String(newState))
   }
 
+  const handleSelectUser = (userId: string) => {
+    setSelectedUserId(userId)
+    carregarDetalhesUsuario(userId)
+  }
+
+  // Salvar estado da sidebar no localStorage quando mudar
+  useEffect(() => {
+    localStorage.setItem('adminSidebarOpen', String(sidebarOpen))
+  }, [sidebarOpen])
+
+  // Ajustar sidebar em resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024 && !sidebarOpen) {
+        setSidebarOpen(true)
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [sidebarOpen])
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-dark">
       <ToastContainer />
-      <nav className="navbar">
-        <div className="container-custom">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h1 className="text-xl font-display font-bold text-light">Painel Administrativo</h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="btn-secondary flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Sair
-            </button>
-          </div>
-        </div>
-      </nav>
+      <AdminHeader onMenuToggle={toggleSidebar} sidebarOpen={sidebarOpen} />
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as typeof activeTab)}
+      />
 
-      <main className="container-custom section">
-        {/* Tabs */}
-        {/* Tabs */}
-        <div className="card mb-6">
-          <div className="border-b border-grey/30">
-            <nav className="flex -mb-px">
-              <button
-                onClick={() => setActiveTab('estatisticas')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'estatisticas'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Estatísticas
-              </button>
-              <button
-                onClick={() => setActiveTab('usuarios')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'usuarios'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                Usuários
-              </button>
-              <button
-                onClick={() => setActiveTab('exercicios')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'exercicios'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Exercícios
-              </button>
-              <button
-                onClick={() => setActiveTab('grupos')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'grupos'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-                Grupos Musculares
-              </button>
-              <button
-                onClick={() => setActiveTab('imagens')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'imagens'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Imagens de Treino
-              </button>
-              <button
-                onClick={() => setActiveTab('whatsapp')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'whatsapp'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                WhatsApp
-              </button>
-              <button
-                onClick={() => setActiveTab('chat')}
-                className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'chat'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Chat
-              </button>
-              <div className="relative group">
-                <button
-                  className={`py-4 px-6 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
-                    window.location.pathname.startsWith('/admin/blog')
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-light-muted hover:text-light hover:border-grey/50'
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Blog
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                <div className="absolute left-0 mt-2 w-56 bg-dark-lighter border border-grey/30 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="py-2">
-                    <button
-                      onClick={() => navigate('/admin/blog')}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                        window.location.pathname === '/admin/blog'
-                          ? 'bg-primary/20 text-primary'
-                          : 'text-light-muted hover:bg-dark hover:text-light'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Posts
-                    </button>
-                    <button
-                      onClick={() => navigate('/admin/blog/categorias')}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                        window.location.pathname === '/admin/blog/categorias'
-                          ? 'bg-primary/20 text-primary'
-                          : 'text-light-muted hover:bg-dark hover:text-light'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                      </svg>
-                      Categorias
-                    </button>
-                    <button
-                      onClick={() => navigate('/admin/blog/autores')}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                        window.location.pathname === '/admin/blog/autores'
-                          ? 'bg-primary/20 text-primary'
-                          : 'text-light-muted hover:bg-dark hover:text-light'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      Autores
-                    </button>
-                    <button
-                      onClick={() => navigate('/admin/blog/ctas')}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                        window.location.pathname === '/admin/blog/ctas'
-                          ? 'bg-primary/20 text-primary'
-                          : 'text-light-muted hover:bg-dark hover:text-light'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      CTAs
-                    </button>
-                    <button
-                      onClick={() => navigate('/admin/blog/configuracoes')}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                        window.location.pathname === '/admin/blog/configuracoes'
-                          ? 'bg-primary/20 text-primary'
-                          : 'text-light-muted hover:bg-dark hover:text-light'
-                      }`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Configurações
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </nav>
-          </div>
-        </div>
-
-        {activeTab === 'imagens' && (
+      <main className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
+        <div className="container-custom section">
+          {activeTab === 'imagens' && (
           <div className="space-y-8">
             <SistemaImagensAdmin />
             <TreinoImagensAdmin />
@@ -926,7 +761,9 @@ export default function Admin() {
 
         {
           activeTab === 'usuarios' && (
-            <div className="space-y-6">
+            <div className={`grid gap-6 ${selectedUserId && userDetails ? 'lg:grid-cols-2' : 'lg:grid-cols-1'}`}>
+              {/* Coluna Esquerda: Lista de Usuários */}
+              <div className="space-y-6">
               {/* Resumo Estratégico */}
               {resumoUsuarios && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -1384,97 +1221,14 @@ export default function Admin() {
                   {/* Visualização em Cards - Atualizada */}
                   {viewMode === 'cards' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {usuarios.map((user: any) => {
-                        const estagio = user.estagioTrial || (user.planoAtivo ? 'PLANO_ATIVO' : 'SEM_ACESSO')
-                        const vencimentoTexto = user.vencimentoTexto || '-'
-                        const perfilCompleto = user.perfilCompleto !== undefined ? user.perfilCompleto : !!user.perfil
-                        const ultimoAcesso = user.ultimoAcesso ? new Date(user.ultimoAcesso) : null
-                        
-                        let engajamentoTexto = 'Nunca acessou'
-                        if (ultimoAcesso) {
-                          const agora = new Date()
-                          const diffMs = agora.getTime() - ultimoAcesso.getTime()
-                          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-                          if (diffDays === 0) engajamentoTexto = 'Hoje'
-                          else if (diffDays === 1) engajamentoTexto = 'Ontem'
-                          else if (diffDays < 7) engajamentoTexto = `Há ${diffDays} dias`
-                          else engajamentoTexto = ultimoAcesso.toLocaleDateString('pt-BR')
-                        }
-
-                        const getBadgeColor = (estagio: string) => {
-                          if (estagio === 'D3') return 'badge-warning'
-                          if (estagio === 'D1' || estagio === 'D2') return 'badge-secondary'
-                          if (estagio === 'EXPIrado') return 'badge-error'
-                          if (estagio === 'PLANO_ATIVO') return 'badge-success'
-                          return 'badge-secondary'
-                        }
-
-                        const getEstagioLabel = (estagio: string) => {
-                          if (estagio === 'D1') return 'Trial D1'
-                          if (estagio === 'D2') return 'Trial D2'
-                          if (estagio === 'D3') return 'Trial D3'
-                          if (estagio === 'EXPIrado') return 'Trial Expirado'
-                          if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
-                          return 'Sem Acesso'
-                        }
-
-                        return (
-                          <div
-                            key={user.id}
-                            onClick={() => handleShowDetails(user.id)}
-                            className={`card-hover cursor-pointer transition-all ${estagio === 'D3' ? 'border-l-4 border-warning bg-warning/5' : ''}`}
-                          >
-                            <div className="flex flex-col">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="flex-1">
-                                  <h3 className="text-lg font-semibold text-light mb-1">
-                                    {user.nome || 'Sem nome'}
-                                  </h3>
-                                  <p className="text-light-muted text-sm truncate">{user.email}</p>
-                                </div>
-                              </div>
-
-                              <div className="flex flex-wrap gap-2 mb-3">
-                                <span className={`${getBadgeColor(estagio)} text-xs`}>
-                                  {getEstagioLabel(estagio)}
-                                </span>
-                                {perfilCompleto ? (
-                                  <span className="badge-success text-xs">Perfil Completo</span>
-                                ) : (
-                                  <span className="badge-warning text-xs">Perfil Incompleto</span>
-                                )}
-                                {user.ativo === false && (
-                                  <span className="badge-error text-xs">Desabilitado</span>
-                                )}
-                              </div>
-
-                              <div className="space-y-1 mb-3 text-xs">
-                                <p className="text-light-muted">
-                                  <span className="font-medium">Vencimento:</span> {vencimentoTexto}
-                                </p>
-                                <p className={ultimoAcesso ? 'text-light-muted' : 'text-error font-medium'}>
-                                  <span className="font-medium">Último acesso:</span> {engajamentoTexto}
-                                </p>
-                              </div>
-
-                              <div className="mt-auto pt-3 border-t border-grey/30">
-                                <p className="text-light-muted text-xs">
-                                  Cadastrado em {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                                </p>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleShowDetails(user.id)
-                                  }}
-                                  className="btn-secondary text-xs w-full mt-2"
-                                >
-                                  Ver Detalhes
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
+                      {usuarios.map((user: any) => (
+                        <UserCard
+                          key={user.id}
+                          user={user}
+                          onClick={() => handleSelectUser(user.id)}
+                          isSelected={selectedUserId === user.id}
+                        />
+                      ))}
                     </div>
                   )}
 
@@ -1843,6 +1597,147 @@ export default function Admin() {
                     </div>
                   )}
                 </>
+              )}
+              </div>
+
+              {/* Coluna Direita: Painel de Detalhes do Usuário (CRM) */}
+              {selectedUserId && userDetails && (
+                <div className="space-y-6 sticky top-20 max-h-[calc(100vh-5rem)] overflow-y-auto">
+                  <div className="card">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h3 className="text-xl font-semibold text-light">
+                          {userDetails.usuario.nome || 'Usuário'}
+                        </h3>
+                        <p className="text-sm text-light-muted mt-1">{userDetails.usuario.email}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedUserId(null)
+                          setUserDetails(null)
+                        }}
+                        className="p-2 rounded-lg hover:bg-white/10 transition-colors text-light-muted hover:text-light"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Informações Principais */}
+                    <div className="space-y-4 mb-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-light-muted mb-1">Status</p>
+                          <span className={`text-sm font-medium ${
+                            userDetails.usuario.planoAtivo ? 'text-success' : 'text-error'
+                          }`}>
+                            {userDetails.usuario.planoAtivo ? 'Plano Ativo' : 'Sem Plano'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-xs text-light-muted mb-1">Plano</p>
+                          <p className="text-sm text-light">{userDetails.usuario.plano || 'Nenhum'}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Ações Rápidas */}
+                    <div className="mb-6">
+                      <UserQuickActions
+                        userId={selectedUserId}
+                        userStatus={{
+                          planoAtivo: userDetails.usuario.planoAtivo,
+                          estagioTrial: userDetails.usuario.planoAtivo ? undefined : 'D3',
+                          ativo: userDetails.usuario.ativo,
+                        }}
+                        onExtendTrial={async () => {
+                          try {
+                            await estenderTrial(selectedUserId)
+                            showToast('Trial estendido com sucesso!', 'success')
+                            await carregarUsuarios()
+                            await carregarDetalhesUsuario(selectedUserId)
+                          } catch (error: any) {
+                            showToast(error.response?.data?.error || 'Erro ao estender trial', 'error')
+                          }
+                        }}
+                        onResetPassword={() => setShowRedefinirSenhaModal(true)}
+                        onSendEmail={() => setShowTestarEmailModal(true)}
+                        onTestEmail={() => setShowTestarEmailModal(true)}
+                        onSimulatePayment={() => setShowSimularPagamentoModal(true)}
+                        onActivate={async () => {
+                          try {
+                            await api.post(`/admin/usuarios/${selectedUserId}/reativar`)
+                            showToast('Usuário reativado com sucesso!', 'success')
+                            await carregarUsuarios()
+                            await carregarDetalhesUsuario(selectedUserId)
+                          } catch (error: any) {
+                            showToast(error.response?.data?.error || 'Erro ao reativar usuário', 'error')
+                          }
+                        }}
+                        onDeactivate={async () => {
+                          if (window.confirm('Tem certeza que deseja desabilitar este usuário?')) {
+                            try {
+                              await api.delete(`/admin/usuarios/${selectedUserId}`)
+                              showToast('Usuário desabilitado com sucesso!', 'success')
+                              await carregarUsuarios()
+                              setSelectedUserId(null)
+                              setUserDetails(null)
+                            } catch (error: any) {
+                              showToast(error.response?.data?.error || 'Erro ao desabilitar usuário', 'error')
+                            }
+                          }
+                        }}
+                        processing={processandoAcao}
+                      />
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="mb-6">
+                      <UserTimeline
+                        userId={selectedUserId}
+                        userCreatedAt={userDetails.usuario.createdAt}
+                        userDetails={{
+                          planoAtivo: userDetails.usuario.planoAtivo,
+                          dataPagamento: userDetails.usuario.dataPagamento,
+                          ultimoAcesso: userDetails.usuario.updatedAt,
+                        }}
+                      />
+                    </div>
+
+                    {/* Notas */}
+                    <div>
+                      <UserNotes
+                        userId={selectedUserId}
+                        notes={userNotes}
+                        onAddNote={async (content, tags) => {
+                          const newNote = {
+                            id: Date.now().toString(),
+                            content,
+                            createdAt: new Date().toISOString(),
+                            tags,
+                          }
+                          setUserNotes([...userNotes, newNote])
+                          showToast('Nota adicionada com sucesso!', 'success')
+                        }}
+                        onEditNote={async (noteId, content, tags) => {
+                          setUserNotes(
+                            userNotes.map((note) =>
+                              note.id === noteId
+                                ? { ...note, content, tags, updatedAt: new Date().toISOString() }
+                                : note
+                            )
+                          )
+                          showToast('Nota atualizada com sucesso!', 'success')
+                        }}
+                        onDeleteNote={async (noteId) => {
+                          setUserNotes(userNotes.filter((note) => note.id !== noteId))
+                          showToast('Nota excluída com sucesso!', 'success')
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           )
@@ -2269,6 +2164,7 @@ export default function Admin() {
             </div>
           )
         }
+        </div>
       </main>
 
       {/* Modal de Detalhes do Usuário */}
