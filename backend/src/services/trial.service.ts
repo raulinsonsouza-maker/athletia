@@ -81,6 +81,7 @@ export async function verificarTrialAtivo(userId: string): Promise<boolean> {
 
 /**
  * Retorna o número de dias restantes do trial
+ * Para trials de 24 horas, retorna valor decimal (< 1) para permitir cálculo de horas no frontend
  */
 export async function obterDiasRestantesTrial(userId: string): Promise<number> {
   const user = await prisma.user.findUnique({
@@ -102,9 +103,37 @@ export async function obterDiasRestantesTrial(userId: string): Promise<number> {
   }
 
   const diffMs = dataFimTrial.getTime() - agora.getTime();
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const diffDays = diffMs / (1000 * 60 * 60 * 24); // Retornar decimais para permitir cálculo de horas
   
   return Math.max(0, diffDays);
+}
+
+/**
+ * Retorna o número de horas restantes do trial
+ */
+export async function obterHorasRestantesTrial(userId: string): Promise<number> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      dataFimTrial: true
+    }
+  });
+
+  if (!user || !user.dataFimTrial) {
+    return 0;
+  }
+
+  const agora = new Date();
+  const dataFimTrial = new Date(user.dataFimTrial);
+  
+  if (dataFimTrial <= agora) {
+    return 0;
+  }
+
+  const diffMs = dataFimTrial.getTime() - agora.getTime();
+  const diffHours = diffMs / (1000 * 60 * 60);
+  
+  return Math.max(0, diffHours);
 }
 
 /**

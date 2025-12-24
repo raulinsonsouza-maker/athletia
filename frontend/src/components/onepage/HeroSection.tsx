@@ -34,7 +34,7 @@ export default function HeroSection({ onCtaClick }: HeroSectionProps) {
 
         {/* Texto de apoio */}
         <p className="mt-8 text-white/60 text-sm">
-          Teste gratuito de 3 dias • Sem cartão de crédito
+          Teste gratuito de 24 horas • Sem cartão de crédito
         </p>
       </div>
     </section>

@@ -39,8 +39,7 @@ export async function verificarETrialsExpirando(): Promise<void> {
         id: true,
         nome: true,
         email: true,
-        dataFimTrial: true,
-        trialExpirationEmailSent: true
+        dataFimTrial: true
       }
     });
 
@@ -50,10 +49,6 @@ export async function verificarETrialsExpirando(): Promise<void> {
     let erros = 0;
 
     for (const usuario of usuarios) {
-      // Verificar se já recebeu o e-mail (se o campo existir)
-      // Por enquanto, vamos enviar sempre que estiver na janela
-      // TODO: Adicionar campo trialExpirationEmailSent no schema para evitar envios duplicados
-      
       if (!usuario.dataFimTrial) {
         continue;
       }
@@ -65,6 +60,27 @@ export async function verificarETrialsExpirando(): Promise<void> {
       // Verificar se está na janela correta (4-6 horas)
       if (horasRestantes < 4 || horasRestantes > 6) {
         continue;
+      }
+
+      // Verificar se já recebeu e-mail de aviso de expiração
+      // Usa tabela RemarketingEmail para evitar envios duplicados
+      try {
+        const emailJaEnviado = await prisma.remarketingEmail.findUnique({
+          where: {
+            userId_tipo: {
+              userId: usuario.id,
+              tipo: 'trial_expiration_warning'
+            }
+          }
+        });
+
+        if (emailJaEnviado && emailJaEnviado.enviado) {
+          console.log(`⏭️ E-mail de aviso já enviado anteriormente para ${usuario.email.substring(0, 3)}***. Pulando.`);
+          continue;
+        }
+      } catch (error: any) {
+        // Se tabela não existir ou houver erro, continuar mesmo assim
+        console.warn('⚠️ Erro ao verificar histórico de e-mails (continuando):', error.message);
       }
 
       try {
@@ -80,15 +96,32 @@ export async function verificarETrialsExpirando(): Promise<void> {
         if (resultado.success) {
           enviados++;
           
-          // Marcar que o e-mail foi enviado (quando o campo existir no schema)
-          // Por enquanto, vamos apenas logar
-          console.log(`✅ E-mail de aviso enviado com sucesso para ${usuario.email.substring(0, 3)}***`);
+          // Registrar envio no histórico para evitar duplicados
+          try {
+            await prisma.remarketingEmail.upsert({
+              where: {
+                userId_tipo: {
+                  userId: usuario.id,
+                  tipo: 'trial_expiration_warning'
+                }
+              },
+              create: {
+                userId: usuario.id,
+                tipo: 'trial_expiration_warning',
+                enviado: true,
+                dataEnvio: new Date()
+              },
+              update: {
+                enviado: true,
+                dataEnvio: new Date()
+              }
+            });
+          } catch (error: any) {
+            // Se não conseguir salvar histórico, apenas logar (não crítico)
+            console.warn('⚠️ Não foi possível salvar histórico de e-mail (não crítico):', error.message);
+          }
           
-          // TODO: Atualizar campo trialExpirationEmailSent quando adicionado ao schema
-          // await prisma.user.update({
-          //   where: { id: usuario.id },
-          //   data: { trialExpirationEmailSent: true }
-          // });
+          console.log(`✅ E-mail de aviso enviado com sucesso para ${usuario.email.substring(0, 3)}***`);
         } else {
           erros++;
           console.error(`❌ Erro ao enviar e-mail para ${usuario.email.substring(0, 3)}***:`, resultado.error);

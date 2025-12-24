@@ -116,10 +116,10 @@ export default function OnePage() {
 
   // SEO: Atualizar título da página
   useEffect(() => {
-    document.title = 'Treinos Personalizados com IA | AthletIA - Teste Grátis por 3 Dias'
+    document.title = 'Treinos Personalizados com IA | AthletIA - Teste Grátis por 24 Horas'
     const metaDescription = document.querySelector('meta[name="description"]')
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Treinos inteligentes criados para o seu corpo, seus objetivos e sua rotina. Teste grátis por 3 dias. Treino personalizado com IA que evolui com você.')
+      metaDescription.setAttribute('content', 'Treinos inteligentes criados para o seu corpo, seus objetivos e sua rotina. Teste grátis por 24 horas. Treino personalizado com IA que evolui com você.')
     }
   }, [])
 
