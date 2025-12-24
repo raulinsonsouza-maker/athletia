@@ -16,14 +16,31 @@ class WebSocketManager {
   initialize(server: HTTPServer) {
     const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
     
+    // Parse FRONTEND_URL para suportar múltiplas URLs separadas por vírgula
+    const origins = FRONTEND_URL.split(',').map(url => url.trim());
+    
+    // Adicionar https://athletia.site explicitamente se não estiver na lista
+    if (!origins.includes('https://athletia.site') && !origins.includes('http://athletia.site')) {
+      origins.push('https://athletia.site');
+    }
+    
+    console.log('[WebSocket] Inicializando Socket.IO com origins:', origins);
+    
     this.io = new SocketIOServer(server, {
+      path: '/socket.io/',
       cors: {
-        origin: FRONTEND_URL.split(',').map(url => url.trim()),
+        origin: origins,
         credentials: true,
         methods: ['GET', 'POST']
       },
-      transports: ['websocket', 'polling']
+      transports: ['websocket', 'polling'],
+      allowEIO3: true,
+      pingTimeout: 60000,
+      pingInterval: 25000,
+      cookie: false
     });
+    
+    console.log('[WebSocket] Socket.IO inicializado com sucesso');
 
     // Middleware de autenticação
     this.io.use(async (socket: AuthenticatedSocket, next) => {
@@ -48,6 +65,11 @@ class WebSocketManager {
         
         socket.userId = decoded.userId;
         socket.userRole = decoded.role;
+        
+        console.log('[WebSocket] Autenticação bem-sucedida:', {
+          userId: socket.userId,
+          role: socket.userRole
+        });
 
         // Verificar se usuário existe e está ativo
         const user = await prisma.user.findUnique({
@@ -61,8 +83,8 @@ class WebSocketManager {
 
         next();
       } catch (error: any) {
-        console.error('[WebSocket] Erro de autenticação:', error.message);
-        next(new Error('Autenticação falhou'));
+        console.error('[WebSocket] Erro na autenticação:', error.message || error);
+        return next(new Error('Token inválido'));
       }
     });
 
@@ -71,7 +93,12 @@ class WebSocketManager {
       const userId = socket.userId!;
       const isAdmin = socket.userRole === 'ADMIN';
 
-      console.log(`[WebSocket] Cliente conectado: ${socket.id} (User: ${userId}, Admin: ${isAdmin})`);
+      console.log('[WebSocket] Nova conexão estabelecida:', {
+        socketId: socket.id,
+        userId: userId,
+        role: socket.userRole,
+        isAdmin
+      });
 
       // Registrar socket do usuário
       if (!this.userSockets.has(userId)) {

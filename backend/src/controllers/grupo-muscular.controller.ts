@@ -76,11 +76,22 @@ export const uploadImagemGrupoAdmin = async (req: AuthRequest, res: Response) =>
   try {
     const { id } = req.params
 
+    console.log('[Upload] Recebendo upload de imagem para grupo:', id)
+    console.log('[Upload] req.file:', req.file ? {
+      filename: req.file.filename,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      path: req.file.path
+    } : 'Nenhum arquivo recebido')
+
     if (!id) {
+      console.error('[Upload] ID do grupo não fornecido')
       return res.status(400).json({ error: 'ID do grupo é obrigatório' })
     }
 
     if (!req.file) {
+      console.error('[Upload] Nenhum arquivo recebido no req.file')
       return res.status(400).json({ error: 'Nenhum arquivo enviado' })
     }
 
@@ -91,11 +102,14 @@ export const uploadImagemGrupoAdmin = async (req: AuthRequest, res: Response) =>
     })
 
     if (!grupo) {
+      console.error('[Upload] Grupo não encontrado:', id)
       return res.status(404).json({ error: 'Grupo muscular não encontrado' })
     }
 
     const ext = path.extname(req.file.filename).toLowerCase() || '.jpg'
     const imagemUrl = `/api/uploads/grupos-musculares/${id}/capa${ext}`
+
+    console.log('[Upload] Atualizando grupo com imagemUrl:', imagemUrl)
 
     const grupoAtualizado = await prisma.grupoMuscularVisual.update({
       where: { id },
@@ -111,12 +125,15 @@ export const uploadImagemGrupoAdmin = async (req: AuthRequest, res: Response) =>
       }
     })
 
+    console.log('[Upload] Grupo atualizado com sucesso:', grupoAtualizado.id)
+
     res.json({
       message: 'Imagem atualizada com sucesso',
       grupo: grupoAtualizado
     })
   } catch (error: any) {
-    console.error('Erro ao fazer upload da imagem do grupo muscular:', error)
+    console.error('[Upload] Erro ao fazer upload da imagem do grupo muscular:', error)
+    console.error('[Upload] Stack trace:', error.stack)
     res.status(500).json({
       error: 'Erro ao fazer upload da imagem',
       message: error.message

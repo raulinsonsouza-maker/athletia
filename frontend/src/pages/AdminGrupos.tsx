@@ -268,7 +268,17 @@ export default function AdminGrupos() {
                       const form = new FormData()
                       form.append('imagem', file)
 
+                      console.log('[Upload] Iniciando upload de imagem:', {
+                        grupoId: editingId,
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type
+                      })
+
                       const response = await api.post(`/admin/grupos-musculares/${editingId}/imagem`, form)
+                      
+                      console.log('[Upload] Resposta do servidor:', response.data)
+                      
                       const grupoAtualizado = response.data.grupo as GrupoMuscularVisual
                       
                       setFormData((prev) => ({
@@ -279,7 +289,12 @@ export default function AdminGrupos() {
                       await carregarGrupos()
                       showToast('Imagem enviada com sucesso!', 'success')
                     } catch (error: any) {
-                      console.error('Erro ao fazer upload da imagem do grupo:', error)
+                      console.error('[Upload] Erro ao fazer upload da imagem do grupo:', error)
+                      console.error('[Upload] Detalhes do erro:', {
+                        status: error.response?.status,
+                        data: error.response?.data,
+                        message: error.message
+                      })
                       const message =
                         error.response?.data?.error ||
                         error.response?.data?.message ||

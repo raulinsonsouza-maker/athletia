@@ -72,12 +72,12 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#050505]/95 backdrop-blur-md border-b border-white/10">
-      <div className="flex items-center justify-between h-16 px-4 md:px-6">
+      <div className="flex items-center justify-between h-16 px-4 md:px-6 max-w-full">
         {/* Left: Menu + Logo */}
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink-0">
           <button
             onClick={onMenuToggle}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 hover:text-white"
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 hover:text-white flex-shrink-0"
             aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"}
           >
             <svg
@@ -104,10 +104,10 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
             </svg>
           </button>
 
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30 flex-shrink-0">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/30 flex-shrink-0">
               <svg
-                className="w-5 h-5 md:w-6 md:h-6 text-primary"
+                className="w-4 h-4 md:w-5 md:h-5 text-primary"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -126,8 +126,8 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
                 />
               </svg>
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg md:text-xl font-display font-bold text-light whitespace-nowrap leading-tight">
+            <div className="hidden sm:block min-w-0">
+              <h1 className="text-base md:text-lg font-display font-bold text-light whitespace-nowrap leading-none">
                 Painel Administrativo
               </h1>
             </div>
@@ -135,7 +135,7 @@ export default function AdminHeader({ onMenuToggle, sidebarOpen }: AdminHeaderPr
         </div>
 
         {/* Right: User Menu */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
           {/* Notifications */}
           <button
             onClick={handleNotificationClick}
