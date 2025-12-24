@@ -53,6 +53,7 @@ model User {
   adminAuditLogs                 AdminAuditLog[]
   chatSessions                   ChatSession[]
   assignedChatSessions           ChatSession[] @relation("AssignedAdmin")
+  pushSubscriptions              PushSubscription[]
 
   @@map("users")
 }
@@ -748,4 +749,22 @@ model SystemSettings {
   updatedAt          DateTime @updatedAt @map("updated_at")
 
   @@map("system_settings")
+}
+
+model PushSubscription {
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  endpoint            String    @unique
+  p256dh              String
+  auth                String
+  ultimaMensagemEnviada String?  @map("ultima_mensagem_enviada")
+  historicoMensagens  Json?     @map("historico_mensagens") // Array de mensagens enviadas recentemente
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("push_subscriptions")
 }

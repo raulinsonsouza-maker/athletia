@@ -2,7 +2,7 @@
   "name": "AthletIA - Sistema Inteligente de Treinos",
   "short_name": "AthletIA",
   "description": "Sistema inteligente de treinos personalizados",
-  "start_url": "/",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#F9A620",
   "theme_color": "#F9A620",

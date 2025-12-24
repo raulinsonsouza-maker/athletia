@@ -9,6 +9,7 @@ import DiaSemanaIcon from '../components/icons/DiaSemanaIcon'
 import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
 import TrialBanner from '../components/TrialBanner'
 import AvisoTrialAcabando from '../components/AvisoTrialAcabando'
+import { usePushNotification } from '../hooks/usePushNotification'
 
 const InfoChip = ({ label, value }: { label: string; value: string }) => (
   <div className="flex flex-col bg-white/5 border border-white/10 rounded-2xl px-4 py-3 min-w-[30%]">
@@ -22,6 +23,7 @@ export default function MeuPlano() {
   const { showToast, ToastContainer } = useToast()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
+  const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
 
   useEffect(() => {
     const carregarHome = async () => {
@@ -271,6 +273,47 @@ export default function MeuPlano() {
             ))}
           </div>
         </section>
+
+        {/* Notificações Push */}
+        {isSupported && (
+          <section className="bg-white/5 border border-white/10 rounded-3xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white mb-1">Notificações</p>
+                <p className="text-xs text-white/60">
+                  Receba lembretes diários sobre seus treinos
+                </p>
+              </div>
+              <button
+                onClick={async () => {
+                  if (isSubscribed) {
+                    const removed = await removerSubscription()
+                    if (removed) {
+                      showToast('Notificações desativadas', 'success')
+                    }
+                  } else {
+                    const granted = await solicitarPermissao()
+                    if (granted) {
+                      showToast('Notificações ativadas! Você receberá lembretes diários', 'success')
+                    } else {
+                      showToast('Permissão de notificações negada', 'error')
+                    }
+                  }
+                }}
+                disabled={isLoading}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isSubscribed ? 'bg-primary' : 'bg-white/20'
+                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isSubscribed ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </section>
+        )}
       </div>
       <BottomTabs active="meu-plano" />
       <ToastContainer />

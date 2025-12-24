@@ -36,8 +36,8 @@ api.interceptors.request.use((config) => {
       console.warn('[API] Rota admin sem token:', config.url)
     }
   } else {
-    // Para rotas normais, usar token do usuário
-    const token = localStorage.getItem('accessToken')
+    // Para rotas normais, usar token do usuário (verificar ambos storages)
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     } else {
@@ -142,15 +142,20 @@ api.interceptors.response.use(
       } else {
         // Para rotas normais (usuários)
         try {
-          const refreshToken = localStorage.getItem('refreshToken')
+          // Verificar ambos storages para refresh token
+          let refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
+          const isLocalStorage = !!localStorage.getItem('refreshToken')
+          
           if (refreshToken) {
             const response = await axios.post(`${API_URL}/auth/refresh`, {
               refreshToken
             })
 
             const { accessToken, refreshToken: newRefreshToken } = response.data
-            localStorage.setItem('accessToken', accessToken)
-            localStorage.setItem('refreshToken', newRefreshToken)
+            // Salvar no mesmo storage de origem
+            const storage = isLocalStorage ? localStorage : sessionStorage
+            storage.setItem('accessToken', accessToken)
+            storage.setItem('refreshToken', newRefreshToken)
 
             originalRequest.headers.Authorization = `Bearer ${accessToken}`
             return api(originalRequest)
@@ -159,6 +164,9 @@ api.interceptors.response.use(
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('user')
+            sessionStorage.removeItem('accessToken')
+            sessionStorage.removeItem('refreshToken')
+            sessionStorage.removeItem('user')
             // Garantir que vai para /login e não /admin/login
             if (!window.location.pathname.startsWith('/admin')) {
               window.location.href = '/login'
@@ -167,9 +175,13 @@ api.interceptors.response.use(
           }
         } catch (refreshError: any) {
           console.error('[API] Erro ao renovar token:', refreshError)
+          // Limpar ambos storages
           localStorage.removeItem('accessToken')
           localStorage.removeItem('refreshToken')
           localStorage.removeItem('user')
+          sessionStorage.removeItem('accessToken')
+          sessionStorage.removeItem('refreshToken')
+          sessionStorage.removeItem('user')
           // Garantir que vai para /login e não /admin/login
           if (!window.location.pathname.startsWith('/admin')) {
             window.location.href = '/login'

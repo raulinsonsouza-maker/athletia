@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
-import { BarChart, DoughnutChart, LineChart } from '../components/ChartWrapper'
+import { BarChart, DoughnutChart } from '../components/ChartWrapper'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
 
@@ -172,34 +172,6 @@ export default function Progresso() {
     return [...top4, ['Outros', outrosTotal]]
   }, [historico])
 
-  const volumePorSemana = useMemo(() => {
-    const mapa: Record<string, number> = {}
-    historico.forEach((treino) => {
-      if (!treino.data) return
-      const data = new Date(treino.data)
-      if (isNaN(data.getTime())) return
-      const inicioSemana = getWeekStart(data)
-      const semanaKey = inicioSemana.toISOString().split('T')[0]
-      let volumeSemana = 0
-      treino.exercicios?.forEach((ex) => {
-        if (ex.concluido && ex.carga && ex.series && ex.repeticoes) {
-          const match = String(ex.repeticoes).match(/(\d+)-?(\d+)?/)
-          if (match) {
-            const repMin = parseInt(match[1])
-            const repMax = match[2] ? parseInt(match[2]) : repMin
-            const repMedia = (repMin + repMax) / 2
-            volumeSemana += ex.series * repMedia * ex.carga
-          }
-        }
-      })
-      if (volumeSemana > 0) {
-        mapa[semanaKey] = (mapa[semanaKey] || 0) + volumeSemana
-      }
-    })
-    return Object.entries(mapa)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-8)
-  }, [historico])
 
   const frequenciaPorSemana = useMemo(() => {
     const mapa: Record<string, number> = {}
@@ -442,33 +414,6 @@ export default function Progresso() {
             </div>
           )}
 
-          {/* Mostrar gráfico de volume apenas se houver dados de carga */}
-          {volumePorSemana.length > 0 && volumePorSemana.some(([_, volume]) => volume > 0) && (
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-white/50">Carga</p>
-              <h3 className="text-lg font-semibold mb-4">Volume semanal</h3>
-              <div className="h-52">
-                <LineChart
-                  data={{
-                    labels: volumePorSemana.map(([semana]) => {
-                      const data = new Date(semana)
-                      return `${data.getDate()}/${data.getMonth() + 1}`
-                    }),
-                    datasets: [
-                      {
-                        label: 'Volume (kg)',
-                        data: volumePorSemana.map(([_, volume]) => volume),
-                        borderColor: 'rgba(249, 166, 32, 1)',
-                        backgroundColor: 'rgba(249, 166, 32, 0.15)',
-                        tension: 0.4,
-                        fill: true
-                      }
-                    ]
-                  }}
-                />
-              </div>
-            </div>
-          )}
 
           {grupos.length > 0 && (
             <div className="bg-white/5 border border-white/10 rounded-3xl p-4 space-y-4">

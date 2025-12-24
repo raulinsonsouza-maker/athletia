@@ -29,7 +29,9 @@ import whatsappRoutes from './routes/whatsapp.routes';
 import chatRoutes from './routes/chat.routes';
 import adminChatRoutes from './routes/admin-chat.routes';
 import adminSettingsRoutes from './routes/admin-settings.routes';
+import pushNotificationRoutes from './routes/push-notification.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
+import { inicializarWebPush } from './services/push-notification.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
 import cron from 'node-cron';
 import { executarJobRemarketing } from './jobs/remarketing-email';
@@ -365,6 +367,7 @@ app.use('/api/test', testRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin/chat', adminChatRoutes);
+app.use('/api/push', pushNotificationRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -389,6 +392,14 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 // Inicializar WebSocket
 websocketManager.initialize(server);
+
+// Inicializar Web Push (VAPID)
+const pushInitialized = inicializarWebPush();
+if (pushInitialized) {
+  console.log('🔔 Web Push inicializado com sucesso');
+} else {
+  console.warn('⚠️ Web Push não inicializado (VAPID keys não configuradas)');
+}
 
 server.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
@@ -461,5 +472,22 @@ server.listen(PORT, () => {
   });
 
   console.log('📱 Job de alertas de expiração configurado para executar diariamente às 9h');
+
+  // Configurar job de notificações push diárias (executa diariamente às 8h)
+  if (pushInitialized) {
+    cron.schedule('0 8 * * *', async () => {
+      try {
+        const { enviarNotificacoesDiarias } = await import('./jobs/push-notification-scheduler');
+        console.log('[CRON] Executando job de notificações push...');
+        await enviarNotificacoesDiarias();
+      } catch (error: any) {
+        console.error('[CRON] Erro ao executar job de notificações push:', error);
+      }
+    }, {
+      timezone: 'America/Sao_Paulo'
+    });
+
+    console.log('🔔 Job de notificações push configurado para executar diariamente às 8h');
+  }
 });
 

@@ -103,3 +103,65 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
+// Push notifications - Receber notificações
+self.addEventListener('push', (event) => {
+  console.log('[SW] Notificação push recebida:', event);
+
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'AthletIA', body: event.data.text() };
+    }
+  }
+
+  const options = {
+    title: data.title || 'AthletIA',
+    body: data.body || 'Nova notificação',
+    icon: data.icon || '/icon-192x192.png',
+    badge: data.badge || '/icon-192x192.png',
+    vibrate: data.vibrate || [200, 100, 200],
+    data: data.data || {},
+    tag: 'athletia-notification',
+    requireInteraction: false
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(options.title, options)
+  );
+});
+
+// Notification click - Abrir/focar app quando usuário clica na notificação
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notificação clicada:', event);
+
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/treino';
+
+  event.waitUntil(
+    clients.matchAll({
+      type: 'window',
+      includeUncontrolled: true
+    }).then((clientList) => {
+      // Verificar se já existe uma janela aberta
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus().then(() => {
+            // Navegar para a URL se necessário
+            if (!client.url.includes(urlToOpen)) {
+              return client.navigate(urlToOpen);
+            }
+          });
+        }
+      }
+      // Se não há janela aberta, abrir nova
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+

@@ -25,8 +25,8 @@ export default function ChatWidget() {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    // Conectar WebSocket
-    const token = localStorage.getItem('accessToken');
+    // Conectar WebSocket (verificar ambos storages)
+    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
     if (token) {
       chatService.connect(token).catch(console.error);
     }

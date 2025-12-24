@@ -4,6 +4,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoadingFallback from './components/LoadingFallback'
 import ChatWidget from './components/ChatWidget'
+import PWAInstallPrompt from './components/PWAInstallPrompt'
 
 // Páginas críticas - manter no bundle inicial (Login e Register)
 import Login from './pages/Login'
@@ -52,6 +53,7 @@ function App() {
     <AuthProvider>
       <Router>
         <ChatWidget />
+        <PWAInstallPrompt />
         <Routes>
           {/* Rotas públicas */}
           <Route 

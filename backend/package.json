@@ -28,7 +28,8 @@
     "refatorar-treinos-intercalacao": "tsx src/scripts/refatorar-treinos-intercalacao.ts",
     "refatorar-nomes-treinos": "tsx src/scripts/refatorar-nomes-treinos.ts",
     "refatorar-nomes-treinos-nao-concluidos": "tsx src/scripts/refatorar-nomes-treinos-nao-concluidos.ts",
-    "marcar-sem-equipamento": "tsx src/scripts/marcar-exercicios-sem-equipamento.ts"
+    "marcar-sem-equipamento": "tsx src/scripts/marcar-exercicios-sem-equipamento.ts",
+    "gerar-vapid-keys": "tsx scripts/gerar-vapid-keys.ts"
   },
   "keywords": [
     "fitness",
@@ -56,7 +57,8 @@
     "openai": "^6.9.0",
     "resend": "^6.5.2",
     "socket.io": "^4.8.3",
-    "string-similarity": "^4.0.4"
+    "string-similarity": "^4.0.4",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -66,6 +68,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.10.5",
     "@types/node-cron": "^3.0.11",
+    "@types/web-push": "^3.6.4",
     "prisma": "^5.7.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"

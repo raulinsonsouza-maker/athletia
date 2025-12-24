@@ -17,10 +17,10 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, senha: string) => Promise<void>
+  login: (email: string, senha: string, rememberMe?: boolean) => Promise<void>
   register: (email: string, senha: string, nome?: string) => Promise<void>
   logout: () => void
-  setUserFromResponse: (user: User, accessToken: string, refreshToken: string) => void
+  setUserFromResponse: (user: User, accessToken: string, refreshToken: string, rememberMe?: boolean) => void
   updateUser: (userData: Partial<User>) => void
   refreshUser: () => Promise<void>
   isAuthenticated: boolean
@@ -35,35 +35,60 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Helper para obter storage baseado em rememberMe
+  const getStorage = (rememberMe: boolean = true) => {
+    return rememberMe ? localStorage : sessionStorage
+  }
+
+  // Helper para limpar ambos storages
+  const clearAllStorages = () => {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+    sessionStorage.removeItem('accessToken')
+    sessionStorage.removeItem('refreshToken')
+    sessionStorage.removeItem('user')
+  }
+
   useEffect(() => {
-    // Verificar se há token salvo
-    const token = localStorage.getItem('accessToken')
-    const userData = localStorage.getItem('user')
+    // Verificar se há token salvo (localStorage primeiro, depois sessionStorage)
+    let token = localStorage.getItem('accessToken')
+    let userData = localStorage.getItem('user')
+    
+    // Se não encontrar no localStorage, tentar sessionStorage
+    if (!token || !userData) {
+      token = sessionStorage.getItem('accessToken')
+      userData = sessionStorage.getItem('user')
+    }
 
     if (token && userData) {
       try {
         setUser(JSON.parse(userData))
       } catch (error) {
         console.error('Erro ao carregar usuário:', error)
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        localStorage.removeItem('user')
+        clearAllStorages()
       }
     }
 
     setLoading(false)
   }, [])
 
-  const login = async (email: string, senha: string) => {
+  const login = async (email: string, senha: string, rememberMe: boolean = true) => {
     try {
       // Normalizar email/username (trim e lowercase)
       const emailNormalizado = email.trim().toLowerCase()
       // Normalizar senha (trim para remover espaços)
       const senhaNormalizada = senha.trim()
       const response = await authService.login(emailNormalizado, senhaNormalizada)
-      localStorage.setItem('accessToken', response.accessToken)
-      localStorage.setItem('refreshToken', response.refreshToken)
-      localStorage.setItem('user', JSON.stringify(response.user))
+      
+      // Limpar ambos storages antes de salvar
+      clearAllStorages()
+      
+      // Salvar no storage apropriado baseado em rememberMe
+      const storage = getStorage(rememberMe)
+      storage.setItem('accessToken', response.accessToken)
+      storage.setItem('refreshToken', response.refreshToken)
+      storage.setItem('user', JSON.stringify(response.user))
       setUser(response.user)
     } catch (error: any) {
       console.error('Erro no login:', error)
@@ -80,17 +105,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (email: string, senha: string, nome?: string) => {
     const response = await authService.register(email, senha, nome)
-    localStorage.setItem('accessToken', response.accessToken)
-    localStorage.setItem('refreshToken', response.refreshToken)
-    localStorage.setItem('user', JSON.stringify(response.user))
+    // No registro, sempre usar localStorage (rememberMe = true por padrão)
+    clearAllStorages()
+    const storage = getStorage(true)
+    storage.setItem('accessToken', response.accessToken)
+    storage.setItem('refreshToken', response.refreshToken)
+    storage.setItem('user', JSON.stringify(response.user))
     setUser(response.user)
     // Após registro, redirecionar para onboarding
   }
 
   const logout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
-    localStorage.removeItem('user')
+    clearAllStorages()
     setUser(null)
 
     // Garantir retorno imediato para tela de login
@@ -99,24 +125,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const setUserFromResponse = (userData: User, accessToken: string, refreshToken: string) => {
-    localStorage.setItem('accessToken', accessToken)
-    localStorage.setItem('refreshToken', refreshToken)
-    localStorage.setItem('user', JSON.stringify(userData))
+  const setUserFromResponse = (userData: User, accessToken: string, refreshToken: string, rememberMe: boolean = true) => {
+    clearAllStorages()
+    const storage = getStorage(rememberMe)
+    storage.setItem('accessToken', accessToken)
+    storage.setItem('refreshToken', refreshToken)
+    storage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...userData }
-      localStorage.setItem('user', JSON.stringify(updatedUser))
+      // Verificar qual storage está sendo usado
+      const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage
+      storage.setItem('user', JSON.stringify(updatedUser))
       setUser(updatedUser)
     }
   }
 
   const refreshUser = async () => {
     try {
-      const token = localStorage.getItem('accessToken')
+      // Verificar ambos storages
+      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
       if (!token) {
         console.warn('[AuthContext] Tentativa de refresh sem token')
         return
@@ -136,16 +167,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           dataFimTrial: response.user.dataFimTrial || undefined,
           trialUtilizado: response.user.trialUtilizado || false
         }
-        localStorage.setItem('user', JSON.stringify(userData))
+        // Usar o mesmo storage onde o token foi encontrado
+        const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage
+        storage.setItem('user', JSON.stringify(userData))
         setUser(userData)
       }
     } catch (error: any) {
       console.error('[AuthContext] Erro ao atualizar dados do usuário:', error)
       // Se for erro 401, limpar tokens e redirecionar para login
       if (error.response?.status === 401) {
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
-        localStorage.removeItem('user')
+        clearAllStorages()
         setUser(null)
       }
       throw error
