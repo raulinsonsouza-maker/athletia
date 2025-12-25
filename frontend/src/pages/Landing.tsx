@@ -427,72 +427,47 @@ export default function Landing() {
 
           {/* SEÇÃO 6.5 – POR QUE ATHLETIA */}
           <section aria-label="Por que AthletIA" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-br from-dark via-dark-lighter/30 to-dark">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                {/* Lado esquerdo - Visualização do App melhorada */}
-                <div className="hidden md:block order-2 md:order-1">
-                  <div className="relative">
-                    <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl border border-primary/30 flex items-center justify-center overflow-hidden shadow-2xl shadow-primary/20">
-                      <div className="text-center space-y-4 relative z-10">
-                        <div className="w-32 h-56 bg-dark-lighter rounded-3xl mx-auto border-4 border-primary/30 shadow-2xl relative overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <svg className="w-16 h-16 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                          </div>
-                        </div>
-                        <p className="text-light-muted text-sm font-medium">Visualização do App</p>
+            <div className="max-w-4xl mx-auto">
+              <div className="space-y-10 text-center">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
+                  Por que <span className="text-primary">AthletIA</span>?
+                </h2>
+                
+                <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                  {[
+                    {
+                      title: 'Inteligente e adaptável',
+                      description: 'A IA do AthletIA aprende com seu desempenho e se ajusta para mantê-lo desafiado.'
+                    },
+                    {
+                      title: 'Todos os níveis são bem-vindos',
+                      description: 'De iniciantes a entusiastas do fitness, o AthletIA atende a todos os níveis de experiência.'
+                    },
+                    {
+                      title: 'Conveniência em primeiro lugar',
+                      description: 'Treine quando e onde quiser. Chega de perder treinos por falta de planejamento.'
+                    },
+                    {
+                      title: 'Sem suposições',
+                      description: 'Obtenha orientação especializada sem o alto custo de um personal trainer.'
+                    }
+                  ].map((beneficio, index) => (
+                    <div key={index} className="flex items-start gap-4 group bg-dark-lighter/50 rounded-xl p-6 border border-grey/20 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 group-hover:bg-primary/30 flex items-center justify-center transition-colors">
+                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
                       </div>
-                      {/* Efeitos de brilho decorativos */}
-                      <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-primary/10 blur-3xl -z-0"></div>
-                      <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-primary/5 blur-3xl -z-0"></div>
+                      <div className="flex-1 text-left">
+                        <h3 className="text-xl font-bold text-light mb-2">
+                          {beneficio.title}
+                        </h3>
+                        <p className="text-light-muted leading-relaxed">
+                          {beneficio.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Lado direito - Benefícios */}
-                <div className="space-y-8 order-1 md:order-2">
-                  <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
-                    Por que <span className="text-primary">AthletIA</span>?
-                  </h2>
-                  
-                  <div className="space-y-6">
-                    {[
-                      {
-                        title: 'Inteligente e adaptável',
-                        description: 'A IA do AthletIA aprende com seu desempenho e se ajusta para mantê-lo desafiado.'
-                      },
-                      {
-                        title: 'Todos os níveis são bem-vindos',
-                        description: 'De iniciantes a entusiastas do fitness, o AthletIA atende a todos os níveis de experiência.'
-                      },
-                      {
-                        title: 'Conveniência em primeiro lugar',
-                        description: 'Treine quando e onde quiser. Chega de perder treinos por falta de planejamento.'
-                      },
-                      {
-                        title: 'Sem suposições',
-                        description: 'Obtenha orientação especializada sem o alto custo de um personal trainer.'
-                      }
-                    ].map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-4 group">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 group-hover:bg-primary/30 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-light mb-2">
-                            {beneficio.title}
-                          </h3>
-                          <p className="text-light-muted leading-relaxed">
-                            {beneficio.description}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
