@@ -11,26 +11,26 @@ export interface MessageHistory {
 }
 
 export const MENSAGENS_COM_TREINO: string[] = [
-  'Hey, vamos treinar hoje?',
-  'Hora de suar! Seu treino está esperando',
-  'Bora treinar? Seu corpo agradece',
-  'Treino do dia chegou! Vamos lá?',
-  'Não deixe seu treino esperando',
-  'Momento de evoluir! Vamos treinar?',
-  'Hora de mostrar seus músculos! Treino hoje',
-  'Vamos lá! Seu treino está pronto',
-  'Bora transformar o corpo! Treino do dia',
-  'Não deixe para depois! Treine agora',
+  'Vamos treinar hoje? Seu treino está esperando por você!',
+  'Hora de suar! Seu treino do dia está pronto',
+  'Bora treinar? Seu corpo agradece cada esforço',
+  'Treino do dia chegou! Vamos conquistar seus objetivos?',
+  'Não deixe seu treino esperando. Hora de evoluir!',
+  'Momento de evoluir! Seu treino está pronto',
+  'Hora de mostrar resultados! Treino do dia aguardando',
+  'Vamos lá! Seu treino personalizado está pronto',
+  'Bora transformar o corpo! Treino do dia te espera',
+  'Não deixe para depois! Seu treino está pronto agora',
   'Momento de quebrar limites! Vamos treinar?',
-  'Seu treino te espera! Vamos conquistar?',
-  'Hora de suar a camisa! Treino hoje',
-  'Vamos lá! Cada treino te aproxima do objetivo',
+  'Seu treino te espera! Vamos conquistar seus objetivos?',
+  'Hora de suar a camisa! Treino do dia está pronto',
+  'Cada treino te aproxima do objetivo. Vamos lá!',
   'Treino do dia! Seu futuro eu agradece',
-  'Bora trabalhar? Seu treino está pronto',
-  'Hora de evoluir! Vamos treinar?',
-  'Não perca o ritmo! Treino hoje',
-  'Vamos lá! Seu corpo pede movimento',
-  'Momento de construir! Treine agora'
+  'Bora trabalhar? Seu treino personalizado está pronto',
+  'Hora de evoluir! Vamos treinar agora?',
+  'Não perca o ritmo! Treino do dia aguardando',
+  'Seu corpo pede movimento. Treino do dia está pronto!',
+  'Momento de construir! Treine agora e veja os resultados'
 ];
 
 export const MENSAGENS_SEM_TREINO: string[] = [
@@ -104,13 +104,30 @@ function personalizarMensagem(mensagem: string, nomeUsuario?: string): string {
     return mensagem;
   }
 
-  // Adiciona nome apenas no início se fizer sentido
-  const primeiraPalavra = mensagem.split(' ')[0];
-  if (primeiraPalavra === 'Hey' || primeiraPalavra === 'Hora' || primeiraPalavra === 'Bora') {
-    return mensagem.replace(/^Hey|^Hora|^Bora/, `${primeiraPalavra === 'Hey' ? 'Oi' : primeiraPalavra}, ${nomeUsuario.split(' ')[0]}`);
+  const primeiroNome = nomeUsuario.split(' ')[0];
+  
+  // Adiciona nome de forma natural no início da mensagem
+  // Capitaliza a primeira letra após o nome
+  if (mensagem.startsWith('Vamos')) {
+    return `${primeiroNome}, vamos ${mensagem.substring(6).toLowerCase()}`;
+  }
+  
+  if (mensagem.startsWith('Bora')) {
+    return `${primeiroNome}, bora ${mensagem.substring(5).toLowerCase()}`;
+  }
+  
+  if (mensagem.startsWith('Hora')) {
+    // Para "Hora de...", mantém "Hora" e adiciona nome antes
+    return `${primeiroNome}, ${mensagem.toLowerCase()}`;
+  }
+  
+  // Para outras mensagens, adiciona o nome no início de forma natural
+  if (mensagem.startsWith('Não') || mensagem.startsWith('Momento') || mensagem.startsWith('Seu') || mensagem.startsWith('Treino') || mensagem.startsWith('Cada')) {
+    return `${primeiroNome}, ${mensagem.toLowerCase()}`;
   }
 
-  return mensagem;
+  // Se não se encaixa em nenhum padrão, adiciona o nome no início
+  return `${primeiroNome}, ${mensagem.toLowerCase()}`;
 }
 
 /**

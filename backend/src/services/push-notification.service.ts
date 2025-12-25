@@ -102,16 +102,25 @@ export async function enviarNotificacao(
       return { enviado: false, motivo: 'Usuário não tem subscription ativa' };
     }
 
+    // URL base para ícones (usar FRONTEND_URL ou fallback)
+    const baseUrl = process.env.FRONTEND_URL || 'https://athletia.site';
+    const iconUrl = `${baseUrl}/icon-192x192.png`;
+    const badgeUrl = `${baseUrl}/icon-192x192.png`;
+
     const payload = JSON.stringify({
       title: titulo,
       body: mensagem,
-      icon: '/icon-192x192.png',
-      badge: '/icon-192x192.png',
+      icon: iconUrl,
+      badge: badgeUrl,
+      image: iconUrl, // Imagem grande para notificações expandidas
       vibrate: [200, 100, 200],
       data: {
         url: url || '/treino',
         dateOfArrival: Date.now()
-      }
+      },
+      tag: 'athletia-notification', // Tag para agrupar notificações
+      requireInteraction: false,
+      silent: false
     });
 
     const resultados = await Promise.allSettled(
