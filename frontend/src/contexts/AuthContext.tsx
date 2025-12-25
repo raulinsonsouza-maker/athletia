@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { authService } from '../services/auth.service'
 
 interface User {
@@ -51,28 +51,132 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     sessionStorage.removeItem('user')
   }
 
-  useEffect(() => {
-    // Verificar se há token salvo (localStorage primeiro, depois sessionStorage)
-    let token = localStorage.getItem('accessToken')
-    let userData = localStorage.getItem('user')
-    
-    // Se não encontrar no localStorage, tentar sessionStorage
-    if (!token || !userData) {
-      token = sessionStorage.getItem('accessToken')
-      userData = sessionStorage.getItem('user')
+  // Decodificar JWT sem verificar assinatura (apenas para ler payload)
+  const decodeJWT = (token: string): { exp?: number; userId?: string; type?: string } | null => {
+    try {
+      const base64Url = token.split('.')[1]
+      if (!base64Url) return null
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
+      return JSON.parse(jsonPayload)
+    } catch (error) {
+      console.error('[AuthContext] Erro ao decodificar JWT:', error)
+      return null
     }
+  }
 
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData))
-      } catch (error) {
-        console.error('Erro ao carregar usuário:', error)
-        clearAllStorages()
-      }
-    }
+  // Verificar se o token está expirado ou próximo de expirar
+  const isTokenExpired = useCallback((token: string, bufferMinutes: number = 0): boolean => {
+    const decoded = decodeJWT(token)
+    if (!decoded || !decoded.exp) return true
 
-    setLoading(false)
+    const exp = decoded.exp * 1000 // Converter para milissegundos
+    const now = Date.now()
+    const bufferMs = bufferMinutes * 60 * 1000
+
+    return exp <= (now + bufferMs)
   }, [])
+
+  // Fazer refresh automático do token
+  const refreshAccessToken = useCallback(async (): Promise<boolean> => {
+    try {
+      // Verificar ambos storages para refresh token
+      let refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
+      const isLocalStorage = !!localStorage.getItem('refreshToken')
+      
+      if (!refreshToken) {
+        console.warn('[AuthContext] Tentativa de refresh sem refreshToken')
+        return false
+      }
+
+      // Verificar se refresh token está expirado
+      if (isTokenExpired(refreshToken)) {
+        console.warn('[AuthContext] Refresh token expirado')
+        clearAllStorages()
+        setUser(null)
+        return false
+      }
+
+      const response = await authService.refreshToken(refreshToken)
+      
+      // Salvar novos tokens no mesmo storage de origem
+      const storage = isLocalStorage ? localStorage : sessionStorage
+      storage.setItem('accessToken', response.accessToken)
+      storage.setItem('refreshToken', response.refreshToken)
+      
+      return true
+    } catch (error: any) {
+      console.error('[AuthContext] Erro ao fazer refresh do token:', error)
+      clearAllStorages()
+      setUser(null)
+      return false
+    }
+  }, [isTokenExpired])
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      // Verificar se há token salvo (localStorage primeiro, depois sessionStorage)
+      let token = localStorage.getItem('accessToken')
+      let refreshToken = localStorage.getItem('refreshToken')
+      let userData = localStorage.getItem('user')
+      let isLocalStorage = true
+      
+      // Se não encontrar no localStorage, tentar sessionStorage
+      if (!token || !userData) {
+        token = sessionStorage.getItem('accessToken')
+        refreshToken = sessionStorage.getItem('refreshToken')
+        userData = sessionStorage.getItem('user')
+        isLocalStorage = false
+      }
+
+      if (token && userData) {
+        try {
+          // Verificar se o access token está expirado
+          if (isTokenExpired(token)) {
+            console.log('[AuthContext] Access token expirado, tentando refresh automático...')
+            
+            // Se refresh token existe e não está expirado, fazer refresh
+            if (refreshToken && !isTokenExpired(refreshToken)) {
+              const refreshSuccess = await refreshAccessToken()
+              if (refreshSuccess) {
+                // Buscar novo token do storage
+                const storage = isLocalStorage ? localStorage : sessionStorage
+                token = storage.getItem('accessToken')
+                if (token) {
+                  setUser(JSON.parse(userData))
+                  setLoading(false)
+                  return
+                }
+              }
+            }
+            
+            // Se refresh falhou ou refresh token expirado, limpar e deslogar
+            console.warn('[AuthContext] Não foi possível renovar token, deslogando...')
+            clearAllStorages()
+            setUser(null)
+            setLoading(false)
+            return
+          }
+
+          // Token válido, carregar usuário
+          setUser(JSON.parse(userData))
+        } catch (error) {
+          console.error('Erro ao carregar usuário:', error)
+          clearAllStorages()
+          setUser(null)
+        }
+      }
+
+      setLoading(false)
+    }
+
+    initializeAuth()
+  }, [isTokenExpired, refreshAccessToken])
 
   const login = async (email: string, senha: string, rememberMe: boolean = true) => {
     try {
@@ -80,7 +184,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const emailNormalizado = email.trim().toLowerCase()
       // Normalizar senha (trim para remover espaços)
       const senhaNormalizada = senha.trim()
-      const response = await authService.login(emailNormalizado, senhaNormalizada)
+      const response = await authService.login(emailNormalizado, senhaNormalizada, rememberMe)
       
       // Limpar ambos storages antes de salvar
       clearAllStorages()
@@ -236,6 +340,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const dataFimTrial = new Date(user.dataFimTrial)
     return dataFimTrial <= agora && !user.planoAtivo
   }
+
+  // Refresh proativo de token (verificar a cada 5 minutos)
+  useEffect(() => {
+    if (!user) return
+
+    const checkAndRefreshToken = async () => {
+      // Verificar ambos storages
+      let token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+      const isLocalStorage = !!localStorage.getItem('accessToken')
+      
+      if (!token) return
+
+      // Verificar se está próximo de expirar (menos de 5 minutos)
+      if (isTokenExpired(token, 5)) {
+        console.log('[AuthContext] Token próximo de expirar, fazendo refresh proativo...')
+        await refreshAccessToken()
+      }
+    }
+
+    // Verificar imediatamente
+    checkAndRefreshToken()
+
+    // Verificar a cada 5 minutos
+    const interval = setInterval(checkAndRefreshToken, 5 * 60 * 1000)
+
+    return () => clearInterval(interval)
+  }, [user, isTokenExpired, refreshAccessToken])
 
   return (
     <AuthContext.Provider

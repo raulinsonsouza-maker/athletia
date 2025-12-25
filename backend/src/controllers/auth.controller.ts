@@ -82,15 +82,19 @@ async function enviarMensagemBoasVindasWhatsApp(
 }
 
 // Gerar tokens
-const generateTokens = (userId: string) => {
+const generateTokens = (userId: string, rememberMe: boolean = true) => {
   if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
     throw new Error('JWT secrets não configurados');
   }
   
+  // Se rememberMe = true: access token expira em 7 dias (mesmo que refresh token)
+  // Se rememberMe = false: access token expira em 1 hora (sessionStorage)
+  const accessTokenExpiresIn = rememberMe ? '7d' : '1h';
+  
   const accessToken = jwt.sign(
     { userId, type: 'access' },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN } as jwt.SignOptions
+    { expiresIn: accessTokenExpiresIn } as jwt.SignOptions
   );
 
   const refreshToken = jwt.sign(
@@ -237,8 +241,8 @@ export const register = async (req: Request, res: Response) => {
       }
     });
 
-    // Gerar tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    // Gerar tokens (register sempre usa rememberMe = true por padrão)
+    const { accessToken, refreshToken } = generateTokens(user.id, true);
     await saveRefreshToken(user.id, refreshToken);
 
     res.status(201).json({
@@ -259,7 +263,7 @@ export const register = async (req: Request, res: Response) => {
 // Login
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, senha } = req.body;
+    const { email, senha, rememberMe } = req.body;
 
     if (!email || !senha) {
       return res.status(400).json({
@@ -328,8 +332,9 @@ export const login = async (req: Request, res: Response) => {
 
     console.log(`[LOGIN] Login bem-sucedido para: ${emailHash} (Role: ${user.role})`);
 
-    // Gerar tokens
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    // Gerar tokens com rememberMe (padrão true se não especificado)
+    const rememberMeValue = rememberMe !== undefined ? Boolean(rememberMe) : true;
+    const { accessToken, refreshToken } = generateTokens(user.id, rememberMeValue);
     await saveRefreshToken(user.id, refreshToken);
 
     // Verificar status do trial
@@ -495,8 +500,8 @@ export const refreshToken = async (req: Request, res: Response) => {
       });
     }
 
-    // Gerar novo access token
-    const { accessToken, refreshToken: newRefreshToken } = generateTokens(storedToken.userId);
+    // Gerar novo access token (refresh mantém rememberMe = true por padrão)
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(storedToken.userId, true);
 
     // Atualizar refresh token
     await prisma.refreshToken.delete({
@@ -666,8 +671,8 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       // Não falhar o cadastro se houver erro ao gerar treinos
     }
 
-    // Gerar tokens para login automático
-    const { accessToken, refreshToken } = generateTokens(user.id);
+    // Gerar tokens para login automático (cadastro sempre usa rememberMe = true)
+    const { accessToken, refreshToken } = generateTokens(user.id, true);
     await saveRefreshToken(user.id, refreshToken);
 
     // Enviar e-mail de boas-vindas para trial (não crítico - não deve bloquear cadastro)

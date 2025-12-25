@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal'
@@ -9,10 +9,19 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(true) // Por padrão, manter logado
+  // Restaurar preferência de rememberMe do localStorage
+  const [rememberMe, setRememberMe] = useState(() => {
+    const saved = localStorage.getItem('rememberMePreference')
+    return saved !== null ? saved === 'true' : true // Por padrão, manter logado
+  })
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+
+  // Salvar preferência de rememberMe quando mudar
+  useEffect(() => {
+    localStorage.setItem('rememberMePreference', String(rememberMe))
+  }, [rememberMe])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
