@@ -23,6 +23,7 @@ export default function LandingHero({ onStartOnboarding }: LandingHeroProps) {
             <button
               onClick={onStartOnboarding}
               className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 w-full sm:w-auto text-center"
+              aria-label="Criar meu treino personalizado agora"
             >
               Criar meu treino agora
             </button>

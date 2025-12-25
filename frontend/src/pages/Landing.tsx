@@ -187,7 +187,7 @@ export default function Landing() {
           </div>
         </header>
 
-        <main role="main" id="main-content">
+        <main role="main" id="main-content" aria-label="Conteúdo principal da landing page">
           {/* SEÇÃO 1 – HERO ULTRA AGRESSIVO */}
           <LandingHero 
             onStartOnboarding={iniciarOnboarding}
@@ -209,6 +209,7 @@ export default function Landing() {
                 <button
                   onClick={iniciarOnboarding}
                   className="btn-primary text-base md:text-lg px-10 md:px-14 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                  aria-label="Criar meu treino personalizado agora"
                 >
                   Quero meu treino personalizado
                 </button>
@@ -342,6 +343,7 @@ export default function Landing() {
                 <button
                   onClick={iniciarOnboarding}
                   className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
+                  aria-label="Criar meu treino personalizado em 2 minutos"
                 >
                   Criar meu treino em 2 minutos
                 </button>
@@ -412,6 +414,7 @@ export default function Landing() {
                 <button
                   onClick={iniciarOnboarding}
                   className="btn-primary text-base md:text-lg px-10 md:px-14 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                  aria-label="Quero resultados como os depoimentos mostram"
                 >
                   Quero resultados assim
                 </button>
@@ -426,20 +429,30 @@ export default function Landing() {
           <section aria-label="Por que AthletIA" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-br from-dark via-dark-lighter/30 to-dark">
             <div className="max-w-6xl mx-auto">
               <div className="grid md:grid-cols-2 gap-12 items-center">
-                {/* Lado esquerdo - Visual placeholder (pode adicionar imagem de app depois) */}
-                <div className="hidden md:block">
+                {/* Lado esquerdo - Visualização do App melhorada */}
+                <div className="hidden md:block order-2 md:order-1">
                   <div className="relative">
-                    <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl border border-primary/30 flex items-center justify-center">
-                      <div className="text-center space-y-4">
-                        <div className="w-32 h-56 bg-dark-lighter rounded-3xl mx-auto border-4 border-primary/30 shadow-2xl"></div>
-                        <p className="text-light-muted text-sm">Visualização do App</p>
+                    <div className="w-full h-96 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl border border-primary/30 flex items-center justify-center overflow-hidden shadow-2xl shadow-primary/20">
+                      <div className="text-center space-y-4 relative z-10">
+                        <div className="w-32 h-56 bg-dark-lighter rounded-3xl mx-auto border-4 border-primary/30 shadow-2xl relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <svg className="w-16 h-16 text-primary/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        </div>
+                        <p className="text-light-muted text-sm font-medium">Visualização do App</p>
                       </div>
+                      {/* Efeitos de brilho decorativos */}
+                      <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-primary/10 blur-3xl -z-0"></div>
+                      <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-primary/5 blur-3xl -z-0"></div>
                     </div>
                   </div>
                 </div>
 
                 {/* Lado direito - Benefícios */}
-                <div className="space-y-8">
+                <div className="space-y-8 order-1 md:order-2">
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light">
                     Por que <span className="text-primary">AthletIA</span>?
                   </h2>
@@ -463,8 +476,8 @@ export default function Landing() {
                         description: 'Obtenha orientação especializada sem o alto custo de um personal trainer.'
                       }
                     ].map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center">
+                      <div key={index} className="flex items-start gap-4 group">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 group-hover:bg-primary/30 flex items-center justify-center transition-colors">
                           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
@@ -510,6 +523,7 @@ export default function Landing() {
                 <button
                   onClick={iniciarOnboarding}
                   className="bg-dark text-primary text-xl md:text-2xl px-12 md:px-20 py-6 md:py-8 font-black shadow-2xl shadow-dark/50 hover:scale-[1.05] active:scale-[0.95] transition-all duration-200 rounded-2xl border-4 border-dark/20 hover:border-dark/40"
+                  aria-label="Começar a criar meu treino personalizado agora"
                 >
                   Começar agora
                 </button>
