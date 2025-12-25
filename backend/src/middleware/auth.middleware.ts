@@ -15,15 +15,24 @@ export interface AuthRequest extends Request {
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
+    // SEGURANÇA: Suporte dual - aceitar token de cookie (HttpOnly) ou header Authorization
+    // Isso permite migração gradual sem quebrar funcionalidade existente
+    let token: string | undefined;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    // 1. Tentar obter token do cookie (preferencial para segurança)
+    if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken;
+    }
+    // 2. Fallback para header Authorization (compatibilidade)
+    else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+      token = req.headers.authorization.substring(7); // Remove "Bearer "
+    }
+
+    if (!token) {
       return res.status(401).json({
         error: 'Token não fornecido'
       });
     }
-
-    const token = authHeader.substring(7); // Remove "Bearer "
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; type: string };
 

@@ -245,9 +245,27 @@ export const register = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = generateTokens(user.id, true);
     await saveRefreshToken(user.id, refreshToken);
 
+    // SEGURANÇA: Enviar tokens em cookies HttpOnly (prevenção XSS)
+    // Também retornar no body para compatibilidade durante migração
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      httpOnly: true, // Previne acesso via JavaScript (XSS)
+      secure: isProduction, // Apenas HTTPS em produção
+      sameSite: 'strict' as const, // Previne CSRF
+      maxAge: 15 * 60 * 1000, // 15 minutos (mesmo tempo do access token)
+      path: '/'
+    };
+
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias (mesmo tempo do refresh token)
+    });
+
     res.status(201).json({
       message: 'Usuário criado com sucesso. Você tem 24 horas de acesso gratuito!',
       user,
+      // Manter tokens no body para compatibilidade durante migração
       accessToken,
       refreshToken
     });
@@ -337,6 +355,23 @@ export const login = async (req: Request, res: Response) => {
     const { accessToken, refreshToken } = generateTokens(user.id, rememberMeValue);
     await saveRefreshToken(user.id, refreshToken);
 
+    // SEGURANÇA: Enviar tokens em cookies HttpOnly (prevenção XSS)
+    // Também retornar no body para compatibilidade durante migração
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      httpOnly: true, // Previne acesso via JavaScript (XSS)
+      secure: isProduction, // Apenas HTTPS em produção
+      sameSite: 'strict' as const, // Previne CSRF
+      maxAge: 15 * 60 * 1000, // 15 minutos (mesmo tempo do access token)
+      path: '/'
+    };
+
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias (mesmo tempo do refresh token)
+    });
+
     // Verificar status do trial
     const { verificarTrialAtivo, obterDiasRestantesTrial } = await import('../services/trial.service');
     const trialAtivo = await verificarTrialAtivo(user.id);
@@ -360,6 +395,7 @@ export const login = async (req: Request, res: Response) => {
         ativo: trialAtivo,
         diasRestantes: diasRestantesTrial
       },
+      // Manter tokens no body para compatibilidade durante migração
       accessToken,
       refreshToken
     });
@@ -456,7 +492,17 @@ export const obterStatusTrial = async (req: any, res: Response) => {
 
 export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const { refreshToken: token } = req.body;
+    // SEGURANÇA: Aceitar refresh token de cookie (preferencial) ou body (compatibilidade)
+    let token: string | undefined = req.cookies?.refreshToken;
+    if (!token && req.body?.refreshToken) {
+      token = req.body.refreshToken;
+    }
+
+    if (!token) {
+      return res.status(401).json({
+        error: 'Refresh token não fornecido'
+      });
+    }
 
     // Verificar token no banco
     // Usar select explícito para evitar erro se campos WhatsApp não existirem ainda
@@ -509,7 +555,24 @@ export const refreshToken = async (req: Request, res: Response) => {
     });
     await saveRefreshToken(storedToken.userId, newRefreshToken);
 
+    // SEGURANÇA: Enviar novos tokens em cookies HttpOnly
+    const isProduction = process.env.NODE_ENV === 'production';
+    const cookieOptions = {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'strict' as const,
+      maxAge: 15 * 60 * 1000, // 15 minutos
+      path: '/'
+    };
+
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', newRefreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 dias
+    });
+
     res.json({
+      // Manter tokens no body para compatibilidade durante migração
       accessToken,
       refreshToken: newRefreshToken
     });

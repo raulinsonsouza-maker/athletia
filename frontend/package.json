@@ -9,11 +9,15 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "gerar-icones": "node scripts/gerar-icones-pwa.js",
-    "test:performance": "node scripts/test-performance.js"
+    "test:performance": "node scripts/test-performance.js",
+    "security:audit": "npm audit",
+    "security:fix": "npm audit fix"
   },
   "dependencies": {
+    "@types/js-cookie": "^3.0.6",
     "axios": "^1.6.2",
     "chart.js": "^4.5.1",
+    "js-cookie": "^3.0.5",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^18.2.0",

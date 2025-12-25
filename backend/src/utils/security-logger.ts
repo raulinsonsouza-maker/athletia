@@ -3,6 +3,8 @@
  * Centraliza logging de eventos críticos para monitoramento
  */
 
+import { sanitizeObject, hashEmail } from './log-sanitizer';
+
 interface SecurityEventDetails {
   userId?: string;
   ip?: string;
@@ -46,11 +48,14 @@ export function logSecurityEvent(
   severity: SecurityEventSeverity,
   details: SecurityEventDetails
 ) {
+  // SEGURANÇA: Sanitizar detalhes antes de logar
+  const sanitizedDetails = sanitizeObject(details, ['email', 'telefone', 'nome']);
+  
   const logEntry = {
     timestamp: new Date().toISOString(),
     type,
     severity,
-    ...details
+    ...sanitizedDetails
   };
 
   // Em desenvolvimento, logar no console
@@ -174,12 +179,15 @@ export function logAuthFailed(
   reason: string,
   req?: any
 ) {
+  // Sanitizar identifier (pode ser email)
+  const sanitizedIdentifier = identifier.includes('@') ? hashEmail(identifier) : identifier;
+  
   logSecurityEvent(
     SecurityEventType.AUTH_FAILED,
     SecurityEventSeverity.MEDIUM,
     {
       metadata: {
-        identifier,
+        identifier: sanitizedIdentifier,
         reason
       },
       ip: req?.ip || req?.socket?.remoteAddress,

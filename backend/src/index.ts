@@ -7,6 +7,7 @@ import express from 'express';
 import { createServer } from 'http';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import path from 'path';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
@@ -30,6 +31,7 @@ import chatRoutes from './routes/chat.routes';
 import adminChatRoutes from './routes/admin-chat.routes';
 import adminSettingsRoutes from './routes/admin-settings.routes';
 import pushNotificationRoutes from './routes/push-notification.routes';
+import mfaRoutes from './routes/mfa.routes';
 import { sincronizarTodosExerciciosComGrupos } from './services/grupo-muscular.service';
 import { inicializarWebPush } from './services/push-notification.service';
 import { getUploadExerciciosPath, getImagensBancoPathCandidates } from './utils/upload-paths';
@@ -103,6 +105,9 @@ const sensitiveLimiter = rateLimit({
   skip: (req: any) => req.method === 'OPTIONS'
 });
 
+// Middleware para parsing de cookies (suporte a tokens em cookies)
+app.use(cookieParser());
+
 // Middlewares de segurança
 app.use(helmet({
   contentSecurityPolicy: {
@@ -132,7 +137,10 @@ app.use(cors({
     'https://www.athletia.site',
     'http://191.252.109.144'
   ],
-  credentials: true
+  credentials: true, // Necessário para cookies HttpOnly
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-MFA-Token'],
+  exposedHeaders: ['Content-Type']
 }));
 // SEGURANÇA: Limitar tamanho de payload para prevenir DoS
 // Middleware para parsear JSON, mas pular se for multipart/form-data
@@ -408,6 +416,7 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin/chat', adminChatRoutes);
 app.use('/api/push', pushNotificationRoutes);
+app.use('/api/mfa', mfaRoutes);
 
 // 404 handler
 app.use((req, res) => {

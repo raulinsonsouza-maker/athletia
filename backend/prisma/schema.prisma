@@ -34,6 +34,8 @@ model User {
   currentTrainingId     String?   @map("current_training_id") // UUID do treino ativo
   role                  Role      @default(USER)
   ativo                 Boolean   @default(true) // Soft delete - usuários desabilitados não aparecem na listagem
+  mfaSecret             String?   @map("mfa_secret") // Secret TOTP para MFA
+  mfaEnabled            Boolean   @default(false) @map("mfa_enabled") // Flag indicando se MFA está ativado
   perfil                Perfil?
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")

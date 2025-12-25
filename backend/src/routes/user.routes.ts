@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { obterModoTreino, atualizarModoTreino, definirTreinoAtivoController } from '../controllers/user.controller';
+import { obterModoTreino, atualizarModoTreino, definirTreinoAtivoController, deleteAccount } from '../controllers/user.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -15,6 +15,9 @@ router.put('/modo-treino', atualizarModoTreino);
 
 // Definir treino ativo
 router.put('/treino-ativo', definirTreinoAtivoController);
+
+// Excluir conta (LGPD)
+router.delete('/delete-account', deleteAccount);
 
 export default router;
 

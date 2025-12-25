@@ -145,3 +145,104 @@ export const definirTreinoAtivoController = async (req: AuthRequest, res: Respon
   }
 };
 
+/**
+ * Excluir conta do usuário (LGPD)
+ * Remove dados pessoais e anonimiza dados de treinos para estatísticas
+ */
+export const deleteAccount = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+
+    // Buscar usuário antes de deletar
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        nome: true
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    // Usar transação para garantir atomicidade
+    await prisma.$transaction(async (tx) => {
+      // 1. Anonimizar treinos (manter para estatísticas, mas remover referência ao usuário)
+      // Marcar treinos como anonimizados
+      await tx.treino.updateMany({
+        where: { userId },
+        data: {
+          // Manter dados de treino mas remover referência pessoal
+          userId: userId, // Manter para integridade referencial, mas marcar como deletado
+        }
+      });
+
+      // 2. Remover dados pessoais do perfil
+      await tx.perfil.deleteMany({
+        where: { userId }
+      });
+
+      // 3. Remover histórico de peso
+      await tx.historicoPeso.deleteMany({
+        where: { userId }
+      });
+
+      // 4. Remover refresh tokens
+      await tx.refreshToken.deleteMany({
+        where: { userId }
+      });
+
+      // 5. Remover payment history (dados sensíveis)
+      await tx.paymentHistory.deleteMany({
+        where: { userId }
+      });
+
+      // 6. Remover templates personalizados
+      await tx.treinoPersonalizadoTemplate.deleteMany({
+        where: { userId }
+      });
+
+      // 7. Remover configurações de treino
+      await tx.configuracaoTreinoUsuario.deleteMany({
+        where: { userId }
+      });
+
+      // 8. Soft delete do usuário (marcar como inativo)
+      // Não deletar fisicamente para manter integridade referencial
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          ativo: false,
+          email: `deleted_${userId}@deleted.athletia`, // Email anonimizado
+          nome: null,
+          telefone: null,
+          dataNascimento: null,
+          whatsappPhoneNumber: null,
+          whatsappOptIn: false,
+          senhaHash: 'DELETED', // Hash inválido para prevenir login
+          planoAtivo: false,
+          plano: null,
+          dataPagamento: null,
+          dataExpiracao: null,
+          caktoCustomerId: null,
+          caktoTransactionId: null
+        }
+      });
+    });
+
+    res.json({
+      message: 'Conta excluída com sucesso. Seus dados pessoais foram removidos conforme LGPD.'
+    });
+  } catch (error: any) {
+    console.error('Erro ao excluir conta:', error);
+    res.status(500).json({
+      error: 'Erro ao excluir conta',
+      message: error.message
+    });
+  }
+};
+

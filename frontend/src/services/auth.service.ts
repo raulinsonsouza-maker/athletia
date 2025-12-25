@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 import { getApiUrl } from '../utils/api-url'
 
 const API_URL = getApiUrl()
@@ -7,7 +8,9 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  // SEGURANÇA: Habilitar envio de cookies (HttpOnly) para tokens
+  withCredentials: true
 })
 
 // Interceptor para adicionar token
@@ -36,8 +39,13 @@ api.interceptors.request.use((config) => {
       console.warn('[API] Rota admin sem token:', config.url)
     }
   } else {
-    // Para rotas normais, usar token do usuário (verificar ambos storages)
-    const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+    // SEGURANÇA: Priorizar cookies (HttpOnly), fallback para localStorage/sessionStorage
+    // Cookies são enviados automaticamente pelo axios com withCredentials: true
+    // Mas ainda precisamos do header para compatibilidade durante migração
+    const cookieToken = Cookies.get('accessToken')
+    const storageToken = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+    const token = cookieToken || storageToken
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     } else {
@@ -142,17 +150,23 @@ api.interceptors.response.use(
       } else {
         // Para rotas normais (usuários)
         try {
-          // Verificar ambos storages para refresh token
-          let refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
+          // SEGURANÇA: Priorizar cookie, fallback para storage
+          // Cookies são enviados automaticamente, mas precisamos do body para compatibilidade
+          const cookieRefreshToken = Cookies.get('refreshToken')
+          const storageRefreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
+          const refreshToken = cookieRefreshToken || storageRefreshToken
           const isLocalStorage = !!localStorage.getItem('refreshToken')
           
           if (refreshToken) {
             const response = await axios.post(`${API_URL}/auth/refresh`, {
               refreshToken
+            }, {
+              withCredentials: true // Garantir envio de cookies
             })
 
             const { accessToken, refreshToken: newRefreshToken } = response.data
-            // Salvar no mesmo storage de origem
+            // Cookies são definidos automaticamente pelo servidor (HttpOnly)
+            // Manter storage para compatibilidade durante migração
             const storage = isLocalStorage ? localStorage : sessionStorage
             storage.setItem('accessToken', accessToken)
             storage.setItem('refreshToken', newRefreshToken)

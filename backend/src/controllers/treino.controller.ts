@@ -9,6 +9,8 @@ import {
   garantirPlanoSemanal as garantirPlanoSemanalInteligente,
   gerarTreinoDoDiaUnico
 } from '../services/treino-engine.service';
+import { validateExercicioTreinoOwnership, validateTreinoOwnership } from '../utils/ownership-validator';
+import { logIDORAttempt } from '../utils/security-logger';
 
 // Gerar treino do dia ou semana completa - USA APENAS MOTOR CENTRALIZADO
 export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
@@ -169,6 +171,17 @@ export const concluirExercicio = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({
         error: 'Usuário não autenticado',
         message: 'Token de autenticação inválido ou ausente',
+        requestId
+      });
+    }
+
+    // SEGURANÇA: Validar ownership do exercício antes de processar
+    const ownershipValidation = await validateExercicioTreinoOwnership(id, userId);
+    if (!ownershipValidation.valid) {
+      logIDORAttempt(userId, 'exercicio-treino', id, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para modificar este exercício',
         requestId
       });
     }
@@ -362,6 +375,16 @@ export const concluirTreino = async (req: AuthRequest, res: Response) => {
       })
     }
 
+    // SEGURANÇA: Validar ownership do treino antes de processar
+    const ownershipValidation = await validateTreinoOwnership(id, userId);
+    if (!ownershipValidation.valid) {
+      logIDORAttempt(userId, 'treino', id, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para modificar este treino'
+      });
+    }
+
     const treinoAtualizado = await treinoService.concluirTreino(id, userId)
 
     res.json({
@@ -386,6 +409,16 @@ export const gerarVersaoAlternativa = async (req: AuthRequest, res: Response) =>
     if (!treinoId) {
       return res.status(400).json({
         error: 'ID do treino é obrigatório'
+      });
+    }
+
+    // SEGURANÇA: Validar ownership do treino antes de processar
+    const ownershipValidation = await validateTreinoOwnership(treinoId, userId);
+    if (!ownershipValidation.valid) {
+      logIDORAttempt(userId, 'treino', treinoId, req);
+      return res.status(403).json({
+        error: 'Acesso negado',
+        message: 'Você não tem permissão para modificar este treino'
       });
     }
 
