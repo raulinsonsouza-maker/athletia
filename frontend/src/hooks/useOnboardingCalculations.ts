@@ -8,12 +8,18 @@ import { OnboardingData } from '../types/onboarding.types'
 export function useOnboardingCalculations(onboardingData: OnboardingData | null) {
   // Calcular IMC
   const imc = useMemo(() => {
-    if (!onboardingData?.pesoAtual || !onboardingData?.altura) return null
-    const peso = Number(onboardingData.pesoAtual)
-    const altura = Number(onboardingData.altura) / 100 // converter cm para m
-    if (peso <= 0 || altura <= 0) return null
-    const imcValue = peso / (altura * altura)
-    return imcValue.toFixed(1)
+    try {
+      if (!onboardingData?.pesoAtual || !onboardingData?.altura) return null
+      const peso = Number(onboardingData.pesoAtual)
+      const altura = Number(onboardingData.altura) / 100 // converter cm para m
+      if (isNaN(peso) || isNaN(altura) || peso <= 0 || altura <= 0) return null
+      const imcValue = peso / (altura * altura)
+      if (isNaN(imcValue) || !isFinite(imcValue)) return null
+      return imcValue.toFixed(1)
+    } catch (error) {
+      console.error('[useOnboardingCalculations] Erro ao calcular IMC:', error)
+      return null
+    }
   }, [onboardingData?.pesoAtual, onboardingData?.altura])
 
   // Classificação do IMC
@@ -57,23 +63,35 @@ export function useOnboardingCalculations(onboardingData: OnboardingData | null)
 
   // Calcular calorias
   const calorias = useMemo(() => {
-    if (!onboardingData?.pesoAtual || !onboardingData?.altura || !onboardingData?.idade) return null
-    const peso = Number(onboardingData.pesoAtual)
-    const altura = Number(onboardingData.altura)
-    const idade = Number(onboardingData.idade)
+    try {
+      if (!onboardingData?.pesoAtual || !onboardingData?.altura || !onboardingData?.idade) return null
+      const peso = Number(onboardingData.pesoAtual)
+      const altura = Number(onboardingData.altura)
+      const idade = Number(onboardingData.idade)
 
-    // TMB (Taxa Metabólica Basal) - Fórmula de Mifflin-St Jeor
-    const tmb = onboardingData.sexo === 'Masculino' 
-      ? 10 * peso + 6.25 * altura - 5 * idade + 5
-      : 10 * peso + 6.25 * altura - 5 * idade - 161
+      if (isNaN(peso) || isNaN(altura) || isNaN(idade) || peso <= 0 || altura <= 0 || idade <= 0) {
+        return null
+      }
 
-    // Multiplicador de atividade
-    const multiplicador = onboardingData.frequenciaSemanal ? 
-      (onboardingData.frequenciaSemanal <= 2 ? 1.2 :
-       onboardingData.frequenciaSemanal <= 4 ? 1.375 : 1.55) : 1.2
+      // TMB (Taxa Metabólica Basal) - Fórmula de Mifflin-St Jeor
+      const tmb = onboardingData.sexo === 'Masculino' 
+        ? 10 * peso + 6.25 * altura - 5 * idade + 5
+        : 10 * peso + 6.25 * altura - 5 * idade - 161
 
-    const caloriasDiarias = Math.round(tmb * multiplicador)
-    return caloriasDiarias.toString()
+      if (isNaN(tmb) || !isFinite(tmb)) return null
+
+      // Multiplicador de atividade
+      const multiplicador = onboardingData.frequenciaSemanal ? 
+        (onboardingData.frequenciaSemanal <= 2 ? 1.2 :
+         onboardingData.frequenciaSemanal <= 4 ? 1.375 : 1.55) : 1.2
+
+      const caloriasDiarias = Math.round(tmb * multiplicador)
+      if (isNaN(caloriasDiarias) || !isFinite(caloriasDiarias)) return null
+      return caloriasDiarias.toString()
+    } catch (error) {
+      console.error('[useOnboardingCalculations] Erro ao calcular calorias:', error)
+      return null
+    }
   }, [
     onboardingData?.pesoAtual,
     onboardingData?.altura,
@@ -84,10 +102,17 @@ export function useOnboardingCalculations(onboardingData: OnboardingData | null)
 
   // Calcular água
   const agua = useMemo(() => {
-    if (!onboardingData?.pesoAtual) return null
-    const peso = Number(onboardingData.pesoAtual)
-    const aguaDiaria = peso * 0.035 // 35ml por kg
-    return aguaDiaria.toFixed(1)
+    try {
+      if (!onboardingData?.pesoAtual) return null
+      const peso = Number(onboardingData.pesoAtual)
+      if (isNaN(peso) || peso <= 0) return null
+      const aguaDiaria = peso * 0.035 // 35ml por kg
+      if (isNaN(aguaDiaria) || !isFinite(aguaDiaria)) return null
+      return aguaDiaria.toFixed(1)
+    } catch (error) {
+      console.error('[useOnboardingCalculations] Erro ao calcular água:', error)
+      return null
+    }
   }, [onboardingData?.pesoAtual])
 
   // Calcular transformação (imagens antes/depois)

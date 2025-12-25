@@ -27,20 +27,49 @@ export default function Cadastro() {
     // Carregar dados do onboarding do localStorage
     const data = localStorage.getItem('onboardingData')
     if (!data) {
+      console.warn('[Cadastro] Nenhum dado de onboarding encontrado no localStorage')
       // Se não tem dados, voltar para landing
       navigate('/')
       return
     }
+    
     try {
       const parsedData = JSON.parse(data)
-      if (!parsedData || typeof parsedData !== 'object') {
-        throw new Error('Dados de onboarding inválidos')
+      
+      // Validar se é um objeto válido
+      if (!parsedData || typeof parsedData !== 'object' || Array.isArray(parsedData)) {
+        throw new Error('Dados de onboarding inválidos: não é um objeto válido')
       }
-      setOnboardingData(parsedData)
-    } catch (parseError) {
-      console.error('Erro ao carregar dados do onboarding:', parseError)
+      
+      // Garantir que arrays existam e sejam arrays válidos
+      const validatedData: OnboardingData = {
+        ...parsedData,
+        lesoes: Array.isArray(parsedData.lesoes) ? parsedData.lesoes : [],
+        preferencias: Array.isArray(parsedData.preferencias) ? parsedData.preferencias : [],
+        problemasAnteriores: Array.isArray(parsedData.problemasAnteriores) ? parsedData.problemasAnteriores : [],
+        objetivosAdicionais: Array.isArray(parsedData.objetivosAdicionais) ? parsedData.objetivosAdicionais : [],
+      }
+      
+      console.log('[Cadastro] Dados do onboarding carregados com sucesso:', validatedData)
+      setOnboardingData(validatedData)
+    } catch (parseError: any) {
+      console.error('[Cadastro] Erro ao carregar dados do onboarding:', {
+        error: parseError,
+        message: parseError?.message,
+        data: data?.substring(0, 200), // Primeiros 200 caracteres para debug
+        stack: parseError?.stack
+      })
+      
+      // Limpar dados corrompidos
       localStorage.removeItem('onboardingData')
-      navigate('/')
+      
+      // Mostrar mensagem de erro mais detalhada
+      setError('Erro ao carregar dados do onboarding. Por favor, complete o processo novamente.')
+      
+      // Redirecionar após um pequeno delay para mostrar o erro
+      setTimeout(() => {
+        navigate('/')
+      }, 2000)
     }
   }, [navigate])
 
@@ -141,7 +170,14 @@ export default function Cadastro() {
   if (!onboardingData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark via-dark-lighter to-dark">
-        <div className="text-light">Carregando...</div>
+        <div className="text-center">
+          <div className="text-light mb-4">Carregando seus dados...</div>
+          {error && (
+            <div className="text-red-400 text-sm max-w-md mx-auto px-4">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
     )
   }

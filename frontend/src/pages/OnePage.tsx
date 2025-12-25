@@ -104,11 +104,44 @@ export default function OnePage() {
 
   // Finalizar onboarding - scroll para consolidação
   const finalizarOnboarding = useCallback(() => {
-    localStorage.setItem('onboardingData', JSON.stringify(onboardingData))
-    setOnboardingFinalizado(true)
-    setTimeout(() => {
-      consolidacaoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 300)
+    try {
+      // Garantir que arrays existam antes de salvar
+      const dataToSave: OnboardingData = {
+        ...onboardingData,
+        lesoes: Array.isArray(onboardingData.lesoes) ? onboardingData.lesoes : [],
+        preferencias: Array.isArray(onboardingData.preferencias) ? onboardingData.preferencias : [],
+        problemasAnteriores: Array.isArray(onboardingData.problemasAnteriores) ? onboardingData.problemasAnteriores : [],
+        objetivosAdicionais: Array.isArray(onboardingData.objetivosAdicionais) ? onboardingData.objetivosAdicionais : [],
+      }
+      
+      const jsonData = JSON.stringify(dataToSave)
+      
+      // Validar se o JSON foi criado corretamente
+      if (!jsonData || jsonData === 'null' || jsonData === 'undefined') {
+        throw new Error('Erro ao serializar dados do onboarding')
+      }
+      
+      // Tentar fazer parse para validar
+      const parsed = JSON.parse(jsonData)
+      if (!parsed || typeof parsed !== 'object') {
+        throw new Error('Dados do onboarding inválidos após serialização')
+      }
+      
+      localStorage.setItem('onboardingData', jsonData)
+      console.log('[OnePage] Dados do onboarding salvos com sucesso:', dataToSave)
+      
+      setOnboardingFinalizado(true)
+      setTimeout(() => {
+        consolidacaoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 300)
+    } catch (error: any) {
+      console.error('[OnePage] Erro ao salvar dados do onboarding:', {
+        error,
+        message: error?.message,
+        onboardingData
+      })
+      alert('Erro ao salvar dados do onboarding. Por favor, tente novamente.')
+    }
   }, [onboardingData])
 
   // Verificar se onboarding foi completado
