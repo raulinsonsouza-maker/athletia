@@ -348,7 +348,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkAndRefreshToken = async () => {
       // Verificar ambos storages
       let token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
-      const isLocalStorage = !!localStorage.getItem('accessToken')
       
       if (!token) return
 
