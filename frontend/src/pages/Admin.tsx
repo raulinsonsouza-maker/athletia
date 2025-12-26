@@ -1262,7 +1262,8 @@ export default function Admin() {
                             perfil: '',
                             ultimoAcesso: '',
                             dataCadastroInicio: '',
-                            dataCadastroFim: ''
+                            dataCadastroFim: '',
+                            etapaFunil: ''
                           })
                         }}
                         className="btn-secondary text-sm"
