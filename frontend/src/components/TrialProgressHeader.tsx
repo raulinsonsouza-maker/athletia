@@ -14,15 +14,17 @@ interface TrialProgressData {
 }
 
 export default function TrialProgressHeader() {
-  const { user, isTrialAtivo } = useAuth()
+  const { user, isAuthenticated, isTrialAtivo } = useAuth()
   const navigate = useNavigate()
   const [progresso, setProgresso] = useState<TrialProgressData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const carregarProgresso = async () => {
-      if (!user || !isTrialAtivo()) {
+      // Não carregar se não estiver autenticado ou não estiver em trial
+      if (!isAuthenticated || !user || !isTrialAtivo()) {
         setLoading(false)
+        setProgresso(null)
         return
       }
 
@@ -62,7 +64,8 @@ export default function TrialProgressHeader() {
     }
   }, [isTrialAtivo, progresso, loading])
 
-  if (!isTrialAtivo() || !progresso || loading) {
+  // Não renderizar se não estiver autenticado, não estiver em trial, ou não houver progresso
+  if (!isAuthenticated || !user || !isTrialAtivo() || !progresso || loading) {
     return null
   }
 
