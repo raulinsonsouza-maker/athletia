@@ -39,7 +39,7 @@ export default function TrialBanner() {
           onClick={handleEscolherPlano}
           className="px-4 py-2 bg-primary text-dark font-semibold rounded-full hover:bg-primary/90 transition text-sm whitespace-nowrap"
         >
-          Assinar Agora
+          Continuar Evoluindo
         </button>
       </div>
     </div>

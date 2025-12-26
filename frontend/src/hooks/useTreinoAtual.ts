@@ -317,20 +317,27 @@ export function useTreinoAtual() {
     if (!blocoAtivo) {
       console.error('[finalizarTreino] Bloco ativo não encontrado')
       showToast('Erro: Treino não encontrado', 'error')
-      return false
+      return { success: false, isFirstTraining: false, nextTrainingData: null }
     }
 
     try {
       console.log('[finalizarTreino] Iniciando finalização do treino:', blocoAtivo.id)
-      await treinoGateway.finalizarTreino(blocoAtivo.id)
+      const response = await treinoGateway.finalizarTreino(blocoAtivo.id)
       console.log('[finalizarTreino] Treino finalizado com sucesso')
       showToast('Treino concluído com sucesso!', 'success')
-      return true
+      return {
+        success: true,
+        isFirstTraining: response.isFirstTraining || false,
+        nextTrainingData: {
+          nextTrainingId: response.nextTrainingId || null,
+          nextTrainingAvailable: response.nextTrainingAvailable || false
+        }
+      }
     } catch (error: any) {
       console.error('[finalizarTreino] Erro ao finalizar treino:', error)
       const errorMessage = error?.response?.data?.message || error?.message || 'Erro ao finalizar treino'
       showToast(errorMessage, 'error')
-      return false
+      return { success: false, isFirstTraining: false, nextTrainingData: null }
     }
   }, [blocoAtivo, showToast])
 

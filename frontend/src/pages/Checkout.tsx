@@ -4,6 +4,19 @@ import { useAuth } from '../contexts/AuthContext'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 
+// Registrar evento de analytics (não bloqueia se falhar)
+const registrarEventoAnalytics = (eventType: string, properties?: any) => {
+  try {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('analytics:event', {
+        detail: { eventType, properties }
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao registrar evento de analytics:', error)
+  }
+}
+
 interface Planos {
   id: string
   nome: string
@@ -51,6 +64,11 @@ export default function Checkout() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
+    // Registrar evento de paywall visualizado
+    registrarEventoAnalytics('paywall_viewed', {
+      screen: 'checkout',
+      reason: 'trial_expired'
+    })
   }, [])
 
   const handleContinuarParaPagamento = async () => {
@@ -71,6 +89,11 @@ export default function Checkout() {
       })
 
       if (response.data?.checkoutUrl) {
+        // Registrar evento de início de assinatura
+        registrarEventoAnalytics('subscription_started', {
+          plan: planoSelecionado,
+          source: 'checkout'
+        })
         window.location.href = response.data.checkoutUrl
       } else {
         throw new Error('URL de checkout não recebida')
@@ -99,10 +122,10 @@ export default function Checkout() {
         {/* Header Direto */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
-            Escolha seu plano
+            Desbloquear Meu Plano
           </h1>
           <p className="text-lg md:text-xl text-light-muted max-w-2xl mx-auto">
-            Selecione o plano ideal e continue sua evolução
+            Mantenha seu progresso e continue sua evolução
           </p>
         </div>
 

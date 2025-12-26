@@ -43,20 +43,49 @@ export default function AvisoTrialAcabando() {
         </div>
         <div className="flex-1">
           <h3 className="text-white font-bold text-lg mb-2">
-            Seu teste vai acabar em breve!
+            Seu plano personalizado será pausado em breve
           </h3>
           <p className="text-white/90 mb-4">
             {horasRestantes <= 1
-              ? 'Falta menos de 1 hora para seu período de teste expirar.'
+              ? 'Falta menos de 1 hora. Seu progresso e consistência ficarão bloqueados.'
               : diasRestantes === 0
-              ? `Faltam apenas ${horasRestantes} ${horasRestantes === 1 ? 'hora' : 'horas'}!`
-              : `Faltam apenas ${horasRestantes} ${horasRestantes === 1 ? 'hora' : 'horas'} para seu período de teste expirar.`}
+              ? `Faltam apenas ${horasRestantes} ${horasRestantes === 1 ? 'hora' : 'horas'}. Seu progresso e consistência ficarão bloqueados.`
+              : `Faltam apenas ${horasRestantes} ${horasRestantes === 1 ? 'hora' : 'horas'}. Seu progresso e consistência ficarão bloqueados.`}
           </p>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-3 mb-4">
+            <p className="text-xs text-white/70 mb-2">O que será bloqueado:</p>
+            <ul className="space-y-1 text-xs text-white/80">
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                Treinos personalizados
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                Histórico completo
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                Ajustes automáticos
+              </li>
+              <li className="flex items-center gap-2">
+                <svg className="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                Progresso detalhado
+              </li>
+            </ul>
+          </div>
           <button
             onClick={() => navigate('/checkout')}
             className="w-full py-3 bg-primary text-dark font-bold rounded-full hover:bg-primary/90 transition shadow-glow"
           >
-            Escolher Plano Agora
+            Manter Meu Progresso
           </button>
         </div>
       </div>

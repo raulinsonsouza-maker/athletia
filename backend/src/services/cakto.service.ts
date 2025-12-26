@@ -296,6 +296,19 @@ export async function processPaymentApproved(webhookData: any) {
 
     console.log('✅ Histórico de pagamento salvo');
 
+    // Registrar evento de analytics (não bloqueia se falhar)
+    try {
+      const { registrarEventoAsync } = await import('./analytics.service');
+      registrarEventoAsync(user.id, 'subscription_started', {
+        plan: plano,
+        price: amount,
+        billing_cycle: plano === 'MENSAL' ? 'monthly' : plano === 'TRIMESTRAL' ? 'quarterly' : 'semiannual',
+        source: 'cakto_webhook'
+      });
+    } catch (error) {
+      console.error('Erro ao registrar evento de assinatura:', error);
+    }
+
     // Gerar treinos automaticamente (usar função existente)
     try {
       const { gerarTreinos30Dias } = await import('./treino.service');

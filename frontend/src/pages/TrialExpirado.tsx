@@ -72,7 +72,7 @@ export default function TrialExpirado() {
             onClick={() => navigate('/checkout')}
             className="w-full py-4 rounded-full bg-primary text-dark font-bold text-lg shadow-glow hover:bg-primary/90 transition"
           >
-            Escolher Plano
+            Desbloquear Meu Plano
           </button>
           <button
             onClick={() => navigate('/login')}

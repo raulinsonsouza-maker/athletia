@@ -5,6 +5,10 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LoadingFallback from './components/LoadingFallback'
 import ChatWidget from './components/ChatWidget'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
+import TrialProgressHeader from './components/TrialProgressHeader'
+import TrialLastDayBanner from './components/TrialLastDayBanner'
+import PaywallModal from './components/PaywallModal'
+import { useState, useEffect } from 'react'
 
 // Páginas críticas - manter no bundle inicial (Login e Register)
 import Login from './pages/Login'
@@ -50,11 +54,33 @@ const BlogCategory = lazy(() => import('./pages/BlogCategory'))
 const BlogCategories = lazy(() => import('./pages/BlogCategories'))
 
 function App() {
+  const [paywallOpen, setPaywallOpen] = useState(false)
+  const [blockedAction, setBlockedAction] = useState<string | undefined>()
+
+  useEffect(() => {
+    const handlePaywallBlocked = (event: CustomEvent) => {
+      setBlockedAction(event.detail?.blockedAction)
+      setPaywallOpen(true)
+    }
+
+    window.addEventListener('paywall:blocked', handlePaywallBlocked as EventListener)
+    return () => {
+      window.removeEventListener('paywall:blocked', handlePaywallBlocked as EventListener)
+    }
+  }, [])
+
   return (
     <AuthProvider>
       <Router>
+        <TrialProgressHeader />
+        <TrialLastDayBanner />
         <ChatWidget />
         <PWAInstallPrompt />
+        <PaywallModal
+          isOpen={paywallOpen}
+          onClose={() => setPaywallOpen(false)}
+          blockedAction={blockedAction}
+        />
         <Routes>
           {/* Rotas públicas */}
           <Route 

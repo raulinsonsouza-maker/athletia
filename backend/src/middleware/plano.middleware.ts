@@ -66,6 +66,17 @@ export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFun
       const agora = new Date();
       const trialExpirado = user.dataFimTrial && new Date(user.dataFimTrial) < agora;
       
+      // Determinar ação bloqueada baseada na rota
+      const path = req.path || '';
+      let blockedAction: string | undefined;
+      if (path.includes('/concluir') || path.includes('/gerar')) {
+        blockedAction = 'iniciar treino';
+      } else if (path.includes('/estatisticas') || path.includes('/progresso')) {
+        blockedAction = 'ver progresso detalhado';
+      } else if (path.includes('/personalizado') || path.includes('/editar')) {
+        blockedAction = 'ajustar treino';
+      }
+      
       return res.status(402).json({
         error: 'Plano não ativo',
         message: trialExpirado
@@ -74,7 +85,8 @@ export const verificarPlanoAtivo = async (req: any, res: Response, next: NextFun
             ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
             : 'É necessário ativar um plano para acessar esta funcionalidade',
         redirectTo: '/checkout', // Sempre redirecionar para checkout quando trial expirado ou sem plano
-        trialExpirado
+        trialExpirado,
+        blockedAction
       });
     }
 
@@ -144,6 +156,16 @@ export const permitirAcessoSemPlano = (allowedPaths: string[]) => {
         const agora = new Date();
         const trialExpirado = user.dataFimTrial && new Date(user.dataFimTrial) < agora;
         
+        // Determinar ação bloqueada baseada na rota
+        let blockedAction: string | undefined;
+        if (path.includes('/concluir') || path.includes('/gerar')) {
+          blockedAction = 'iniciar treino';
+        } else if (path.includes('/estatisticas') || path.includes('/progresso')) {
+          blockedAction = 'ver progresso detalhado';
+        } else if (path.includes('/personalizado') || path.includes('/editar')) {
+          blockedAction = 'ajustar treino';
+        }
+        
         return res.status(402).json({
           error: 'Plano não ativo',
           message: trialExpirado
@@ -152,7 +174,8 @@ export const permitirAcessoSemPlano = (allowedPaths: string[]) => {
               ? 'Seu plano expirou. Renove para continuar usando a plataforma.'
               : 'É necessário ativar um plano para acessar esta funcionalidade',
           redirectTo: '/checkout', // Sempre redirecionar para checkout quando trial expirado ou sem plano
-          trialExpirado
+          trialExpirado,
+          blockedAction
         });
       }
 

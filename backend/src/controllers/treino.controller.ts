@@ -57,6 +57,17 @@ export const gerarTreinoDoDia = async (req: AuthRequest, res: Response) => {
         });
       }
 
+      // Registrar evento de plano de treino gerado (não bloqueia se falhar)
+      try {
+        const { registrarEventoAsync } = await import('../services/analytics.service');
+        registrarEventoAsync(userId, 'training_plan_generated', {
+          plan_type: 'daily',
+          difficulty: 'auto'
+        });
+      } catch (error) {
+        console.error('Erro ao registrar evento de plano gerado:', error);
+      }
+
       // Buscar treino completo do banco
       const treinoCompleto = await prisma.treino.findUnique({
         where: { id: treinoGerado.id },
@@ -127,6 +138,24 @@ export const buscarTreinoDoDia = async (req: AuthRequest, res: Response) => {
         treino: null,
         message: 'Nenhum treino encontrado para esta data'
       });
+    }
+
+    // Registrar evento de treino iniciado (apenas se não estiver concluído)
+    if (!treino.concluido) {
+      try {
+        const { registrarEventoAsync } = await import('../services/analytics.service');
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { planoAtivo: true }
+        });
+        registrarEventoAsync(userId, 'training_started', {
+          training_id: treino.id,
+          day_of_week: dataTreino.getDay(),
+          is_trial: !user?.planoAtivo || false
+        });
+      } catch (error) {
+        console.error('Erro ao registrar evento de treino iniciado:', error);
+      }
     }
 
     return res.json(treino);
@@ -385,11 +414,82 @@ export const concluirTreino = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Contar treinos concluídos ANTES de concluir este (para detectar primeiro/segundo)
+    const totalTreinosConcluidosAntes = await prisma.treino.count({
+      where: {
+        userId,
+        concluido: true,
+        id: { not: id } // Excluir o treino atual
+      }
+    });
+
     const treinoAtualizado = await treinoService.concluirTreino(id, userId)
+
+    // Após concluir, o total agora é +1
+    const totalTreinosConcluidos = totalTreinosConcluidosAntes + 1;
+
+    // Registrar evento de analytics
+    try {
+      const { registrarEventoAsync } = await import('../services/analytics.service');
+      
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { planoAtivo: true }
+      });
+
+      // Registrar evento de treino concluído
+      if (treinoAtualizado) {
+        registrarEventoAsync(userId, 'training_completed', {
+          training_id: id,
+          duration: null, // Duração não está disponível no retorno
+          is_trial: !user?.planoAtivo || false
+        });
+      }
+
+      // Verificar se é o primeiro treino
+      if (totalTreinosConcluidos === 1) {
+        registrarEventoAsync(userId, 'first_training_completed', {
+          training_id: id
+        });
+      }
+
+      // Verificar se é o segundo treino (North Star)
+      if (totalTreinosConcluidos === 2) {
+        registrarEventoAsync(userId, 'second_training_completed', {
+          training_id: id
+        });
+      }
+    } catch (error) {
+      // Não bloquear resposta se analytics falhar
+      console.error('Erro ao registrar eventos de analytics:', error);
+    }
+
+    const isFirstTraining = totalTreinosConcluidos === 1;
+
+    // Buscar próximo treino disponível
+    const proximoTreino = await prisma.treino.findFirst({
+      where: {
+        userId,
+        concluido: false,
+        data: {
+          gte: new Date()
+        }
+      },
+      orderBy: {
+        data: 'asc'
+      },
+      select: {
+        id: true,
+        data: true
+      }
+    });
 
     res.json({
       message: 'Treino concluído com sucesso',
-      treino: treinoAtualizado
+      treino: treinoAtualizado,
+      isFirstTraining,
+      nextTrainingAvailable: !!proximoTreino,
+      nextTrainingId: proximoTreino?.id || null
     })
   } catch (error: any) {
     console.error('Erro ao concluir treino:', error)

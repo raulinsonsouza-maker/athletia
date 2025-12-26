@@ -219,12 +219,24 @@ export const register = async (req: Request, res: Response) => {
     const dataInicioTrial = new Date();
     const dataFimTrial = calcularDataFimTrial(dataInicioTrial);
 
+    // Sanitizar nome (remover "teste", "test", etc.)
+    let nomeSanitizado = nome || null;
+    if (nomeSanitizado) {
+      const nomeLower = nomeSanitizado.toLowerCase();
+      const palavrasTeste = ['teste', 'test', 'demo', 'trial', 'temp', 'temporary'];
+      if (palavrasTeste.some(palavra => nomeLower.includes(palavra))) {
+        // Se contém palavra de teste, usar apenas primeiro nome ou email
+        const primeiroNome = nomeSanitizado.split(' ')[0];
+        nomeSanitizado = primeiroNome.length > 2 ? primeiroNome : emailNormalizado.split('@')[0];
+      }
+    }
+
     // Criar usuário com trial iniciado
     const user = await prisma.user.create({
       data: {
         email: emailNormalizado,
         senhaHash,
-        nome: nome || null,
+        nome: nomeSanitizado,
         dataInicioTrial,
         dataFimTrial,
         trialUtilizado: true
@@ -240,6 +252,18 @@ export const register = async (req: Request, res: Response) => {
         trialUtilizado: true
       }
     });
+
+    // Registrar evento de analytics (não bloqueia se falhar)
+    try {
+      const { registrarEventoAsync } = await import('../services/analytics.service');
+      registrarEventoAsync(user.id, 'user_registered', {
+        source: req.body.source || 'direct',
+        device: req.headers['user-agent'] || 'unknown',
+        created_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao registrar evento de cadastro:', error);
+    }
 
     // Gerar tokens (register sempre usa rememberMe = true por padrão)
     const { accessToken, refreshToken } = generateTokens(user.id, true);
@@ -490,6 +514,28 @@ export const obterStatusTrial = async (req: any, res: Response) => {
   }
 };
 
+// Obter progresso do trial
+export const obterProgressoTrial = async (req: any, res: Response) => {
+  try {
+    const userId = req.userId;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Não autenticado' });
+    }
+
+    const { obterProgressoTrial } = await import('../services/trial-progress.service');
+    const progresso = await obterProgressoTrial(userId);
+
+    res.json(progresso);
+  } catch (error: any) {
+    console.error('Erro ao obter progresso do trial:', error);
+    res.status(500).json({
+      error: 'Erro ao obter progresso do trial',
+      message: error.message
+    });
+  }
+};
+
 export const refreshToken = async (req: Request, res: Response) => {
   try {
     // SEGURANÇA: Aceitar refresh token de cookie (preferencial) ou body (compatibilidade)
@@ -657,12 +703,24 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       }
     }
 
+    // Sanitizar nome (remover "teste", "test", etc.)
+    let nomeSanitizado = nome ? nome.trim() : null;
+    if (nomeSanitizado) {
+      const nomeLower = nomeSanitizado.toLowerCase();
+      const palavrasTeste = ['teste', 'test', 'demo', 'trial', 'temp', 'temporary'];
+      if (palavrasTeste.some(palavra => nomeLower.includes(palavra))) {
+        // Se contém palavra de teste, usar apenas primeiro nome ou email
+        const primeiroNome = nomeSanitizado.split(' ')[0];
+        nomeSanitizado = primeiroNome.length > 2 ? primeiroNome : emailNormalizado.split('@')[0];
+      }
+    }
+
     // Criar usuário com planoAtivo = false e trial iniciado
     const user = await prisma.user.create({
       data: {
         email: emailNormalizado,
         senhaHash,
-        nome: nome.trim(),
+        nome: nomeSanitizado,
         telefone: telefone.trim(),
         whatsappPhoneNumber,
         planoAtivo: false, // Ainda não pagou
@@ -720,6 +778,17 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
         console.error('Erro ao enviar mensagem WhatsApp de boas-vindas:', error);
         // Não falhar o cadastro se WhatsApp falhar
       });
+    }
+
+    // Registrar evento de onboarding completo (não bloqueia se falhar)
+    try {
+      const { registrarEventoAsync } = await import('../services/analytics.service');
+      registrarEventoAsync(user.id, 'onboarding_completed', {
+        goal: onboardingData?.objetivo || null,
+        experience_level: onboardingData?.experiencia || null
+      });
+    } catch (error) {
+      console.error('Erro ao registrar evento de onboarding:', error);
     }
 
     // Gerar treinos para trial (permite acesso imediato ao sistema por 24 horas)

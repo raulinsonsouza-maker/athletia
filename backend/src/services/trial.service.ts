@@ -1,11 +1,16 @@
 import { prisma } from '../lib/prisma';
 
 /**
- * Calcula a data de fim do trial (24 horas após o início)
+ * Calcula a data de fim do trial
+ * Feature flag: TRIAL_DURATION_DAYS (default: 1 para backward compatibility)
+ * Novo padrão: 3 dias (72 horas)
  */
 export function calcularDataFimTrial(dataInicio: Date): Date {
   const dataFim = new Date(dataInicio);
-  dataFim.setHours(dataFim.getHours() + 24);
+  // Feature flag: TRIAL_DURATION_DAYS (default 1 para backward compat)
+  const trialDurationDays = parseInt(process.env.TRIAL_DURATION_DAYS || '1', 10);
+  const trialDurationHours = trialDurationDays * 24;
+  dataFim.setHours(dataFim.getHours() + trialDurationHours);
   return dataFim;
 }
 

@@ -71,6 +71,17 @@ export const createPerfil = async (req: AuthRequest, res: Response) => {
       rpePreferido
     } = req.body;
 
+    // Validação de peso (30kg - 300kg)
+    if (pesoAtual !== undefined && pesoAtual !== null && pesoAtual !== '') {
+      const pesoNum = typeof pesoAtual === 'string' ? parseFloat(pesoAtual) : pesoAtual;
+      if (pesoNum < 30 || pesoNum > 300) {
+        return res.status(400).json({
+          error: 'Peso inválido',
+          message: 'O peso deve estar entre 30kg e 300kg'
+        });
+      }
+    }
+
     // Converter tipos corretamente
     const perfil = await prisma.perfil.create({
       data: {
@@ -108,10 +119,17 @@ export const createPerfil = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    // Se peso foi informado, criar registro no histórico
+    // Validação de peso antes de criar histórico
     if (pesoAtual !== undefined && pesoAtual !== null && pesoAtual !== '') {
       const pesoNum = typeof pesoAtual === 'string' ? parseFloat(pesoAtual) : pesoAtual
       if (!isNaN(pesoNum)) {
+        // Validar peso (30kg - 300kg)
+        if (pesoNum < 30 || pesoNum > 300) {
+          return res.status(400).json({
+            error: 'Peso inválido',
+            message: 'O peso deve estar entre 30kg e 300kg'
+          });
+        }
         await prisma.historicoPeso.create({
           data: {
             userId,
@@ -244,14 +262,23 @@ export const updatePerfil = async (req: AuthRequest, res: Response) => {
       }
     });
 
-    // Atualizar nome do usuário, se enviado
+    // Atualizar nome do usuário, se enviado (com sanitização)
     if (user && typeof user.nome === 'string') {
+      let nomeSanitizado = user.nome;
+      const nomeLower = nomeSanitizado.toLowerCase();
+      const palavrasTeste = ['teste', 'test', 'demo', 'trial', 'temp', 'temporary'];
+      if (palavrasTeste.some(palavra => nomeLower.includes(palavra))) {
+        // Se contém palavra de teste, usar apenas primeiro nome
+        const primeiroNome = nomeSanitizado.split(' ')[0];
+        nomeSanitizado = primeiroNome.length > 2 ? primeiroNome : nomeSanitizado;
+      }
+      
       await prisma.user.update({
         where: { id: perfil.user.id },
-        data: { nome: user.nome }
+        data: { nome: nomeSanitizado }
       });
       // Atualizar objeto de retorno em memória
-      (perfil as any).user.nome = user.nome;
+      (perfil as any).user.nome = nomeSanitizado;
     }
 
     res.json({

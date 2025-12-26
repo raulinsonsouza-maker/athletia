@@ -174,6 +174,12 @@ export const marcarExercicioTreino = async (exercicioId: string, concluido: bool
 
 export const concluirTreino = async (treinoId: string) => {
   const response = await api.post(`/treino/${treinoId}/concluir`)
-  return response.data
+  return response.data as {
+    message: string
+    treino: any
+    isFirstTraining?: boolean
+    nextTrainingAvailable?: boolean
+    nextTrainingId?: string | null
+  }
 }
 

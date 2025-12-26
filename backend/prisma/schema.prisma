@@ -48,6 +48,7 @@ model User {
   configuracoesTreino            ConfiguracaoTreinoUsuario[]
   paymentHistory                 PaymentHistory[]
   passwordResetTokens            PasswordResetToken[]
+  analyticsEvents                AnalyticsEvent[]
   remarketingEmails              RemarketingEmail[]
   whatsappConversations          WhatsAppConversation[]
   whatsappCadence                WhatsAppCadence?
@@ -385,6 +386,22 @@ model PasswordResetToken {
   @@index([expiresAt])
   @@index([used])
   @@map("password_reset_tokens")
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  eventType String   @map("event_type")
+  properties Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@index([userId, eventType])
+  @@map("analytics_events")
 }
 
 model RemarketingEmail {

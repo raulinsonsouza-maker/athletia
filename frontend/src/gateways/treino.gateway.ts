@@ -7,10 +7,16 @@
 import { obterPlanoAtualResumo, marcarExercicioTreino, concluirTreino } from '../services/treino.service'
 import { PlanoAtualResponse } from '../types/treino.types'
 
+export interface FinalizarTreinoResponse {
+  isFirstTraining?: boolean
+  nextTrainingAvailable?: boolean
+  nextTrainingId?: string | null
+}
+
 export interface TreinoGateway {
   carregarPlano(): Promise<PlanoAtualResponse>
   marcarExercicio(exercicioId: string, concluido: boolean): Promise<void>
-  finalizarTreino(treinoId: string): Promise<void>
+  finalizarTreino(treinoId: string): Promise<FinalizarTreinoResponse>
 }
 
 /**
@@ -25,8 +31,13 @@ export const treinoGateway: TreinoGateway = {
     await marcarExercicioTreino(exercicioId, concluido)
   },
 
-  async finalizarTreino(treinoId: string) {
-    await concluirTreino(treinoId)
+  async finalizarTreino(treinoId: string): Promise<FinalizarTreinoResponse> {
+    const response = await concluirTreino(treinoId)
+    return {
+      isFirstTraining: response.isFirstTraining || false,
+      nextTrainingAvailable: response.nextTrainingAvailable || false,
+      nextTrainingId: response.nextTrainingId || null
+    }
   }
 }
 

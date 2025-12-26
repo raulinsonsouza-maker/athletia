@@ -9,6 +9,8 @@ import { ExercicioInfo } from '../components/treino/ExercicioInfo'
 import { ChecklistModal } from '../components/treino/ChecklistModal'
 import { ImagemExpandidaModal } from '../components/treino/ImagemExpandidaModal'
 import { useToast } from '../hooks/useToast'
+import FirstTrainingComplete from '../components/FirstTrainingComplete'
+import { useState } from 'react'
 
 /**
  * Componente principal de treino atual - Redesenhado
@@ -18,6 +20,11 @@ export default function TreinoAtual() {
   const navigate = useNavigate()
   const { ToastContainer } = useToast()
   const [concluindoTreino, setConcluindoTreino] = useState(false)
+  const [showFirstTrainingModal, setShowFirstTrainingModal] = useState(false)
+  const [nextTrainingData, setNextTrainingData] = useState<{
+    nextTrainingId: string | null
+    nextTrainingAvailable: boolean
+  } | null>(null)
 
   // Hooks principais
   const {
@@ -72,10 +79,17 @@ export default function TreinoAtual() {
     
     setConcluindoTreino(true)
     try {
-      const sucesso = await finalizarTreino()
-      if (sucesso) {
+      const resultado = await finalizarTreino()
+      if (resultado.success) {
         cronometro.pausar()
-        setTimeout(() => navigate('/meu-plano'), 1000)
+        
+        // Se for primeiro treino, mostrar modal
+        if (resultado.isFirstTraining && resultado.nextTrainingData) {
+          setNextTrainingData(resultado.nextTrainingData)
+          setShowFirstTrainingModal(true)
+        } else {
+          setTimeout(() => navigate('/meu-plano'), 1000)
+        }
       }
     } catch (error) {
       console.error('[handleFinalizarTreino] Erro:', error)
@@ -409,6 +423,15 @@ export default function TreinoAtual() {
       )}
 
       <ToastContainer />
+      <FirstTrainingComplete
+        isOpen={showFirstTrainingModal}
+        nextTrainingId={nextTrainingData?.nextTrainingId || null}
+        nextTrainingAvailable={nextTrainingData?.nextTrainingAvailable || false}
+        onContinue={() => {
+          setShowFirstTrainingModal(false)
+          setNextTrainingData(null)
+        }}
+      />
     </div>
   )
 }

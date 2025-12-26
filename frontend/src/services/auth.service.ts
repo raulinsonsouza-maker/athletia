@@ -102,6 +102,16 @@ api.interceptors.response.use(
       })
     }
 
+    // Tratamento para 402 Payment Required (paywall)
+    if (error.response?.status === 402) {
+      // Disparar evento customizado para que o App.tsx possa abrir o PaywallModal
+      if (typeof window !== 'undefined') {
+        const blockedAction = error.response?.data?.blockedAction || undefined
+        window.dispatchEvent(new CustomEvent('paywall:blocked', { detail: { blockedAction } }))
+      }
+      // Não rejeitar aqui - deixar o handler processar
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
