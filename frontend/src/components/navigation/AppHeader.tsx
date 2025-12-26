@@ -30,7 +30,7 @@ const IconButton = ({
 export default function AppHeader({ title, subtitle, backTo, actions }: AppHeaderProps) {
   const navigate = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
-  const { logout } = useAuth()
+  const { logout, isTrialAtivo } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -48,7 +48,7 @@ export default function AppHeader({ title, subtitle, backTo, actions }: AppHeade
 
   return (
     <>
-      <header className="sticky top-0 z-40 px-5 pt-6 pb-4 flex items-center justify-between bg-[#050505]/95 backdrop-blur border-b border-white/10">
+      <header className={`sticky z-40 px-5 pt-6 pb-4 flex items-center justify-between bg-[#050505]/95 backdrop-blur border-b border-white/10 ${isTrialAtivo() ? 'top-[60px]' : 'top-0'}`}>
         <div className="flex items-center gap-3">
           {backTo ? (
             <IconButton ariaLabel="Voltar" onClick={() => navigate(backTo)}>

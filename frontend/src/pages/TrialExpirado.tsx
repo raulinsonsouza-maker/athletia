@@ -29,7 +29,7 @@ export default function TrialExpirado() {
             Seu período de teste acabou
           </h1>
           <p className="text-white/70 text-lg">
-            Você experimentou o Athletia por 24 horas gratuitas. Agora é hora de escolher um plano para continuar sua jornada!
+            Você experimentou o Athletia por 3 dias gratuitos. Agora é hora de escolher um plano para continuar sua jornada!
           </p>
         </div>
 

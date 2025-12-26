@@ -11,10 +11,10 @@ export default function FAQCadastro() {
   const faqs: FAQItem[] = [
     {
       pergunta: 'Preciso de cartão de crédito para o trial?',
-      resposta: 'Não. O trial de 24 horas é gratuito e não requer cartão de crédito. Você testa tudo sem compromisso.'
+      resposta: 'Não. O trial de 3 dias é gratuito e não requer cartão de crédito. Você testa tudo sem compromisso.'
     },
     {
-      pergunta: 'O que acontece se eu não assinar após 24h?',
+      pergunta: 'O que acontece se eu não assinar após 3 dias?',
       resposta: 'Seu acesso será bloqueado, mas seus dados ficam preservados. Você pode assinar depois e retomar de onde parou.'
     },
     {

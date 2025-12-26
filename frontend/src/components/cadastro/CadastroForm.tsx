@@ -286,7 +286,7 @@ export default function CadastroForm({ onSubmit, loading = false, error, onScrol
                   Acesso imediato após o cadastro
                 </p>
                 <p className="text-sm text-light-muted">
-                  Ao criar sua conta, você terá acesso imediato ao seu treino personalizado por <strong className="text-primary">24 horas, sem nenhum custo</strong>. Sem cartão de crédito necessário.
+                  Ao criar sua conta, você terá acesso imediato ao seu treino personalizado por <strong className="text-primary">3 dias, sem nenhum custo</strong>. Sem cartão de crédito necessário.
                 </p>
               </div>
             </div>

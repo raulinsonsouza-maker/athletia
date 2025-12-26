@@ -21,7 +21,7 @@ export default function TrialLastDayBanner() {
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-yellow-500/30 border-b-2 border-yellow-500/50 backdrop-blur-xl">
+    <div className="fixed top-[60px] left-0 right-0 z-40 bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-yellow-500/30 border-b-2 border-yellow-500/50 backdrop-blur-xl">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">

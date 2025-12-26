@@ -350,7 +350,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bem-vindo! Você tem 24 horas de acesso gratuito</title>
+  <title>Bem-vindo! Você tem 3 dias de acesso gratuito</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
@@ -375,7 +375,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
               </p>
               
               <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
-                Parabéns! Seu cadastro foi realizado com sucesso e você agora tem <strong style="color: #F9A620;">24 horas de acesso completo e gratuito</strong> para testar todos os recursos da plataforma AthletIA.
+                Parabéns! Seu cadastro foi realizado com sucesso e você agora tem <strong style="color: #F9A620;">3 dias de acesso completo e gratuito</strong> para testar todos os recursos da plataforma AthletIA.
               </p>
               
               <!-- Trial Info Destacado -->
@@ -384,7 +384,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                   🎁 Teste Gratuito Ativo
                 </h2>
                 <p style="margin: 0 0 20px 0; color: #070600; font-size: 18px; font-weight: 600;">
-                  Você tem acesso completo por <strong>24 horas</strong>
+                  Você tem acesso completo por <strong>3 dias</strong>
                 </p>
                 <div style="background-color: rgba(7, 6, 0, 0.2); border-radius: 8px; padding: 15px; margin-top: 15px;">
                   <p style="margin: 0 0 8px 0; color: #070600; font-size: 14px; font-weight: 600;">
@@ -486,7 +486,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                   💳 Planos Disponíveis Após o Trial
                 </h2>
                 <p style="margin: 0 0 20px 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">
-                  Após suas 24 horas de acesso gratuito, escolha um dos planos abaixo para continuar usando o AthletIA sem interrupções:
+                  Após seus 3 dias de acesso gratuito, escolha um dos planos abaixo para continuar usando o AthletIA sem interrupções:
                 </p>
                 <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px;">
                   <!-- Plano Mensal -->
@@ -525,7 +525,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                       ⏰ Importante
                     </p>
                     <p style="margin: 0; color: #E0E0E8; font-size: 14px; line-height: 1.6;">
-                      Seu período de teste de 24 horas expira em <strong style="color: #F9A620;">${dataFormatada}</strong>. Aproveite para conhecer todos os recursos e, se gostar, escolha um plano para continuar usando o AthletIA sem interrupções!
+                      Seu período de teste de 3 dias expira em <strong style="color: #F9A620;">${dataFormatada}</strong>. Aproveite para conhecer todos os recursos e, se gostar, escolha um plano para continuar usando o AthletIA sem interrupções!
                     </p>
                   </div>
                 </div>
@@ -578,7 +578,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
 }
 
 /**
- * Envia e-mail de boas-vindas para trial de 24 horas
+ * Envia e-mail de boas-vindas para trial de 3 dias
  */
 export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
@@ -600,7 +600,7 @@ export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promis
     console.log('📧 Preparando envio de e-mail de boas-vindas trial:', {
       to: data.email,
       from: FROM_EMAIL,
-      subject: 'Bem-vindo! Você tem 24 horas de acesso gratuito no AthletIA'
+      subject: 'Bem-vindo! Você tem 3 dias de acesso gratuito no AthletIA'
     });
 
     const html = generateTrialWelcomeEmailHTML(data);
@@ -609,7 +609,7 @@ export async function sendTrialWelcomeEmail(data: TrialWelcomeEmailData): Promis
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: data.email,
-      subject: 'Bem-vindo! Você tem 24 horas de acesso gratuito no AthletIA',
+      subject: 'Bem-vindo! Você tem 3 dias de acesso gratuito no AthletIA',
       html: html,
       headers: {
         'X-Entity-Ref-ID': `trial-welcome-${Date.now()}`

@@ -30,7 +30,7 @@ export default function PlanosSection({ onScrollToForm }: PlanosSectionProps) {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-4">
-            Valores dos planos após 24 horas
+            Valores dos planos após 3 dias
           </h2>
           <p className="text-lg text-light-muted">
             Após o período de teste, escolha o plano ideal para continuar
@@ -71,7 +71,7 @@ export default function PlanosSection({ onScrollToForm }: PlanosSectionProps) {
 
         <div className="text-center bg-dark-lighter border-2 border-grey/30 rounded-2xl p-6 mb-10">
           <p className="text-base text-light-muted mb-2">
-            Você terá <strong className="text-primary">24 horas gratuitas</strong> para testar tudo antes de escolher um plano.
+            Você terá <strong className="text-primary">3 dias gratuitos</strong> para testar tudo antes de escolher um plano.
           </p>
           <p className="text-sm text-light-muted">
             Sem cartão de crédito necessário para o período de teste.

@@ -48,7 +48,7 @@ export default function ComoFuncionaSection() {
               3. Teste o sistema gratuitamente
             </h3>
             <p className="text-white/70 leading-relaxed">
-              Acesse o Athletia por 24 horas e avalie se faz sentido para você. Sem compromisso.
+              Acesse o Athletia por 3 dias e avalie se faz sentido para você. Sem compromisso.
             </p>
           </div>
         </div>

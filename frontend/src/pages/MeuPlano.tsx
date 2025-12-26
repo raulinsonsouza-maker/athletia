@@ -7,9 +7,7 @@ import BottomTabs from '../components/navigation/BottomTabs'
 import AppHeader from '../components/navigation/AppHeader'
 import DiaSemanaIcon from '../components/icons/DiaSemanaIcon'
 import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
-import TrialBanner from '../components/TrialBanner'
 import AvisoTrialAcabando from '../components/AvisoTrialAcabando'
-import TrialProgress from '../components/TrialProgress'
 import { usePushNotification } from '../hooks/usePushNotification'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -177,9 +175,7 @@ export default function MeuPlano() {
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
       <AppHeader title="Meu Plano" />
       <div className="px-5 pt-6 space-y-6">
-        <TrialProgress />
         <AvisoTrialAcabando />
-        <TrialBanner />
         <AvisoExpiracaoPlano />
         <section className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl">
           {/* Efeito de brilho sutil */}

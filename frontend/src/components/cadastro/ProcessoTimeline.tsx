@@ -12,13 +12,13 @@ export default function ProcessoTimeline({ onScrollToForm }: ProcessoTimelinePro
     },
     {
       numero: 2,
-      titulo: 'Durante 24 horas',
+      titulo: 'Durante 3 dias',
       descricao: 'Teste todos os recursos da plataforma sem nenhum custo.',
       resultado: 'Treinos, progresso e ajustes automáticos disponíveis'
     },
     {
       numero: 3,
-      titulo: 'Após 24 horas',
+      titulo: 'Após 3 dias',
       descricao: 'Escolha um dos planos para continuar sua evolução sem interrupções.',
       resultado: 'Acesso contínuo com treinos gerados para 30 dias'
     }

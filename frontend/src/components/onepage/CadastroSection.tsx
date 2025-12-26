@@ -80,7 +80,7 @@ export default function CadastroSection({ onboardingData }: CadastroSectionProps
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">
-            Acesse gratuitamente por 24 horas
+            Acesse gratuitamente por 3 dias
           </h2>
           <p className="text-xl text-white/70">
             Não pedimos cartão. Comece agora e teste todos os recursos.

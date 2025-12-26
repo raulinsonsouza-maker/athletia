@@ -133,7 +133,7 @@ export default function Cadastro() {
         console.warn('Erro ao limpar localStorage:', error)
       }
 
-      // Redirecionar para dashboard (meu-plano) - usuário tem trial de 24 horas ativo
+      // Redirecionar para dashboard (meu-plano) - usuário tem trial de 3 dias ativo
       navigate('/meu-plano')
     } catch (err: any) {
       console.error('Erro no cadastro:', err)
@@ -196,7 +196,7 @@ export default function Cadastro() {
       {/* SEÇÃO 4 - BENEFÍCIOS: Lista simples e resumida */}
       <BeneficiosSection onScrollToForm={scrollToForm} />
 
-      {/* SEÇÃO 5 - VALORES DOS PLANOS: Após 24h */}
+      {/* SEÇÃO 5 - VALORES DOS PLANOS: Após 3 dias */}
       <PlanosSection onScrollToForm={scrollToForm} />
 
       {/* SEÇÃO 6 - FORMULÁRIO DE CADASTRO: Com texto claro */}

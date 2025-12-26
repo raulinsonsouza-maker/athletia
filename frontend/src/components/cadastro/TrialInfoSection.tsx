@@ -17,13 +17,13 @@ export default function TrialInfoSection({ onScrollToForm }: TrialInfoSectionPro
             </div>
             
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-extrabold text-light mb-4">
-              24 horas de acesso completo e gratuito
+              3 dias de acesso completo e gratuito
             </h2>
             <p className="text-lg md:text-xl text-primary font-semibold mb-6">
               Teste todos os recursos sem compromisso
             </p>
             <p className="text-base md:text-lg text-light-muted leading-relaxed max-w-3xl mx-auto">
-              Ao finalizar seu cadastro, você terá <strong className="text-primary">24 horas</strong> para explorar toda a plataforma sem nenhum custo. Após esse período, escolha um dos planos abaixo para continuar sua jornada.
+              Ao finalizar seu cadastro, você terá <strong className="text-primary">3 dias</strong> para explorar toda a plataforma sem nenhum custo. Após esse período, escolha um dos planos abaixo para continuar sua jornada.
             </p>
           </div>
 
@@ -75,7 +75,7 @@ export default function TrialInfoSection({ onScrollToForm }: TrialInfoSectionPro
           {/* O que acontece após 24h */}
           <div className="mb-10">
             <h3 className="text-xl md:text-2xl font-bold text-light mb-6 text-center">
-              O que acontece após 24 horas?
+              O que acontece após 3 dias?
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="p-6 rounded-2xl bg-dark-lighter border-2 border-grey/30">

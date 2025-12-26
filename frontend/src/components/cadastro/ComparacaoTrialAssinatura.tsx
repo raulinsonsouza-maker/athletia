@@ -17,7 +17,7 @@ export default function ComparacaoTrialAssinatura() {
     },
     {
       nome: 'Duração',
-      trial: '24 horas',
+      trial: '3 dias',
       assinatura: 'Ilimitado'
     },
     {
@@ -71,7 +71,7 @@ export default function ComparacaoTrialAssinatura() {
               <h3 className="text-lg font-bold text-light">Recurso</h3>
             </div>
             <div className="text-center">
-              <h3 className="text-lg font-bold text-light">Trial 24h</h3>
+              <h3 className="text-lg font-bold text-light">Trial 3 dias</h3>
             </div>
             <div className="text-center">
               <h3 className="text-lg font-bold text-primary">Assinatura</h3>
@@ -99,7 +99,7 @@ export default function ComparacaoTrialAssinatura() {
           <div className="p-6 bg-primary/10 border-t border-primary/30">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <p className="text-sm text-light-muted mb-1">Trial de 24 horas</p>
+                <p className="text-sm text-light-muted mb-1">Trial de 3 dias</p>
                 <p className="text-lg font-bold text-light">100% gratuito e sem cartão</p>
               </div>
               <div className="text-center md:text-right">
