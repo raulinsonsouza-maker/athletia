@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { obterHomeTreinos, obterPlanoAtualResumo } from '../services/treino.service'
 import { TreinoHomeResponse, TreinoCardResumo } from '../types/treino.types'
+import ProgressoSemanal from '../components/ProgressoSemanal'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
 // useAuth removido - TrialProgressHeader já cobre isso
@@ -256,13 +257,6 @@ export default function Treinos() {
     navigate(`/treino/atual?treino=${treinoId}`)
   }
 
-  const handleIniciarTreino = () => {
-    if (dados?.planosAtivos?.[0]) {
-      navigate(`/treino/atual?treino=${dados.planosAtivos[0].id}`)
-    } else {
-      navigate('/treino/atual')
-    }
-  }
 
   // Skeleton loading
   if (loading) {
@@ -279,8 +273,11 @@ export default function Treinos() {
     )
   }
 
-  const treinoHoje = dados?.planosAtivos?.[0]
-  const outrosTreinos = dados?.planosAtivos?.slice(1) || []
+  // Usar treinoDestaque se disponível, caso contrário usar o primeiro de planosAtivos (compatibilidade)
+  const treinoDestaque = dados?.treinoDestaque || dados?.destaquePlanoAtual || dados?.planosAtivos?.[0]
+  
+  // Filtrar outros treinos (excluir o treino em destaque da listagem)
+  const outrosTreinos = dados?.planosAtivos?.filter(t => t.id !== treinoDestaque?.id) || []
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
@@ -288,13 +285,73 @@ export default function Treinos() {
       
       <div className="px-5 pt-6 space-y-6">
         <AvisoExpiracaoPlano />
-        {/* CARD DESTAQUE - TREINO DE HOJE */}
-        {treinoHoje && (
+        
+        {/* PROGRESSO SEMANAL */}
+        {dados?.semana && dados?.insights && (
+          <ProgressoSemanal
+            semana={dados.semana}
+            realizados={dados.insights.progressoSemana.realizados}
+            planejados={dados.insights.progressoSemana.planejados}
+          />
+        )}
+        
+        {/* MENSAGEM CONTEXTUAL */}
+        {treinoDestaque && (() => {
+          const hoje = new Date()
+          hoje.setHours(0, 0, 0, 0)
+          const dataTreino = treinoDestaque.data ? new Date(treinoDestaque.data) : null
+          const status = treinoDestaque.status || 
+            (dataTreino ? (dataTreino.setHours(0, 0, 0, 0), dataTreino.getTime() === hoje.getTime() ? 'hoje' : 
+             dataTreino.getTime() > hoje.getTime() ? 'futuro' : 
+             treinoDestaque.concluido ? 'concluido' : 'passado_pendente') : 'futuro')
+          
+          if (status === 'hoje') {
+            return (
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
+                <svg className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-primary mb-1">Este é seu treino de hoje</p>
+                  <p className="text-xs text-white/60">Complete este treino para manter sua consistência semanal.</p>
+                </div>
+              </div>
+            )
+          } else if (status === 'futuro' && treinoDestaque.diasAteTreino) {
+            return (
+              <div className="bg-success/10 border border-success/20 rounded-xl p-4 flex items-start gap-3">
+                <svg className="w-5 h-5 text-success mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-success mb-1">Seu próximo treino é em {treinoDestaque.diasAteTreino} {treinoDestaque.diasAteTreino === 1 ? 'dia' : 'dias'}</p>
+                  <p className="text-xs text-white/60">Continue seguindo seu plano para alcançar seus objetivos.</p>
+                </div>
+              </div>
+            )
+          } else if (status === 'passado_pendente') {
+            return (
+              <div className="bg-warning/10 border border-warning/20 rounded-xl p-4 flex items-start gap-3">
+                <svg className="w-5 h-5 text-warning mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-warning mb-1">Você tem treino(s) pendente(s)</p>
+                  <p className="text-xs text-white/60">Complete os treinos passados para manter sua rotina em dia.</p>
+                </div>
+              </div>
+            )
+          }
+          return null
+        })()}
+        
+        {/* CARD DESTAQUE - TREINO QUE DEVE SER FEITO AGORA */}
+        {treinoDestaque && (
           <section className="relative rounded-2xl overflow-hidden">
             <div className="h-48 relative">
               {(() => {
                 const imagemPadrao = obterImagemPorGenero(genero, 'treinos') || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&q=80'
-                const imagemFinal = treinoHoje.imagem || imagemPadrao
+                const imagemFinal = treinoDestaque.imagem || imagemPadrao
                 return (
                   <img
                     key={`treino-hoje-${imagemFinal}`}
@@ -343,10 +400,66 @@ export default function Treinos() {
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-end justify-between">
                   <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      {/* Badge de Status */}
+                      {(() => {
+                        const hoje = new Date()
+                        hoje.setHours(0, 0, 0, 0)
+                        const dataTreino = treinoDestaque.data ? new Date(treinoDestaque.data) : null
+                        if (dataTreino) {
+                          dataTreino.setHours(0, 0, 0, 0)
+                          const status = treinoDestaque.status || 
+                            (dataTreino.getTime() === hoje.getTime() ? 'hoje' : 
+                             dataTreino.getTime() > hoje.getTime() ? 'futuro' : 
+                             treinoDestaque.concluido ? 'concluido' : 'passado_pendente')
+                          
+                          if (status === 'hoje') {
+                            return (
+                              <span className="px-3 py-1 bg-primary text-dark text-xs font-bold rounded-full flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Treino de Hoje
+                              </span>
+                            )
+                          } else if (status === 'futuro' && treinoDestaque.diasAteTreino) {
+                            return (
+                              <span className="px-3 py-1 bg-success/20 text-success border border-success/30 text-xs font-bold rounded-full flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Próximo em {treinoDestaque.diasAteTreino} {treinoDestaque.diasAteTreino === 1 ? 'dia' : 'dias'}
+                              </span>
+                            )
+                          } else if (status === 'passado_pendente') {
+                            return (
+                              <span className="px-3 py-1 bg-warning/20 text-warning border border-warning/30 text-xs font-bold rounded-full flex items-center gap-1.5">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                Pendente
+                              </span>
+                            )
+                          }
+                        }
+                        return null
+                      })()}
+                      
+                      {/* Indicador de Sequência */}
+                      {treinoDestaque.sequencia && (
+                        <span className="px-3 py-1 bg-white/10 text-white/70 text-xs font-medium rounded-full">
+                          Treino {treinoDestaque.sequencia}
+                          {treinoDestaque.posicaoNaSemana && dados?.planosAtivos && (
+                            <span className="ml-1 text-white/50">({treinoDestaque.posicaoNaSemana}/{dados.planosAtivos.length})</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    
                     <div className="text-xs uppercase tracking-[0.2em] text-primary mb-1 flex items-center gap-2 flex-wrap">
-                      {(treinoHoje as any).gruposPrincipais && (treinoHoje as any).gruposPrincipais.length > 0 ? (
-                        (treinoHoje as any).gruposPrincipais.slice(0, 2).map((grupo: string, index: number) => (
-                          <span key={`grupo-${treinoHoje.id}-${grupo}`} className="flex items-center gap-2">
+                      {(treinoDestaque as any).gruposPrincipais && (treinoDestaque as any).gruposPrincipais.length > 0 ? (
+                        (treinoDestaque as any).gruposPrincipais.slice(0, 2).map((grupo: string, index: number) => (
+                          <span key={`grupo-${treinoDestaque.id}-${grupo}`} className="flex items-center gap-2">
                             {index > 0 && <IconeSeparador className="w-1.5 h-1.5 text-primary/60" />}
                             {grupo}
                           </span>
@@ -355,15 +468,15 @@ export default function Treinos() {
                         <span>Treino do dia</span>
                       )}
                     </div>
-                    <h2 className="text-xl font-bold">{treinoHoje.titulo}</h2>
+                    <h2 className="text-xl font-bold">{treinoDestaque.titulo}</h2>
                     <div className="text-sm text-white/60 mt-1 flex items-center gap-2">
-                      <span>{formatarDuracao(treinoHoje.duracao)}</span>
+                      <span>{formatarDuracao(treinoDestaque.duracao)}</span>
                       <IconeSeparador className="w-1.5 h-1.5 text-white/40" />
-                      <span>{treinoHoje.totalExercicios} exercícios</span>
+                      <span>{treinoDestaque.totalExercicios} exercícios</span>
                     </div>
                   </div>
                   <button
-                    onClick={handleIniciarTreino}
+                    onClick={() => handleNavegar(treinoDestaque.id)}
                     className="bg-primary text-black font-bold px-5 py-2.5 rounded-full text-sm flex items-center gap-2"
                   >
                     <IconePlay />
@@ -400,29 +513,89 @@ export default function Treinos() {
         </div>
 
         {/* PRÓXIMOS TREINOS */}
-        {outrosTreinos.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-sm uppercase tracking-[0.15em] text-white/50">Próximos Treinos</h2>
-              <span className="text-xs text-white/30">{outrosTreinos.length} programados</span>
-            </div>
-            <p className="text-xs text-white/40 mb-3">
-              Esta é sua agenda de treinos semanal completa
-            </p>
-            <div className="space-y-2">
-              {outrosTreinos.map((treino) => (
-                <CardTreino 
-                  key={treino.id} 
-                  item={treino as any} 
-                  onNavigate={handleNavegar} 
-                />
-              ))}
-            </div>
-          </section>
-        )}
+        {outrosTreinos.length > 0 && (() => {
+          const hoje = new Date()
+          hoje.setHours(0, 0, 0, 0)
+          
+          // Separar treinos futuros e passados pendentes
+          const treinosFuturos = outrosTreinos.filter(t => {
+            if (!t.data) return false
+            const dataTreino = new Date(t.data)
+            dataTreino.setHours(0, 0, 0, 0)
+            return dataTreino.getTime() >= hoje.getTime() && !t.concluido
+          }).sort((a, b) => {
+            const dataA = a.data ? new Date(a.data).getTime() : 0
+            const dataB = b.data ? new Date(b.data).getTime() : 0
+            return dataA - dataB
+          })
+          
+          const treinosPassadosPendentes = outrosTreinos.filter(t => {
+            if (!t.data) return false
+            const dataTreino = new Date(t.data)
+            dataTreino.setHours(0, 0, 0, 0)
+            return dataTreino.getTime() < hoje.getTime() && !t.concluido
+          }).sort((a, b) => {
+            const dataA = a.data ? new Date(a.data).getTime() : 0
+            const dataB = b.data ? new Date(b.data).getTime() : 0
+            return dataB - dataA // Mais recente primeiro
+          })
+          
+          return (
+            <section>
+              {/* Treinos Futuros */}
+              {treinosFuturos.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-sm uppercase tracking-[0.15em] text-white/50">Próximos Treinos</h2>
+                    <span className="text-xs text-white/30">{treinosFuturos.length} programado{treinosFuturos.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <p className="text-xs text-white/40 mb-3">
+                    Esta é sua agenda de treinos semanal completa
+                  </p>
+                  <div className="space-y-2 mb-6">
+                    {treinosFuturos.map((treino) => (
+                      <CardTreino 
+                        key={treino.id} 
+                        item={treino as any} 
+                        onNavigate={handleNavegar} 
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              
+              {/* Separador visual se houver treinos passados pendentes */}
+              {treinosPassadosPendentes.length > 0 && treinosFuturos.length > 0 && (
+                <div className="my-6 border-t border-white/10"></div>
+              )}
+              
+              {/* Treinos Passados Pendentes */}
+              {treinosPassadosPendentes.length > 0 && (
+                <>
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-sm uppercase tracking-[0.15em] text-warning/70">Treinos Pendentes</h2>
+                    <span className="text-xs text-warning/50">{treinosPassadosPendentes.length} pendente{treinosPassadosPendentes.length !== 1 ? 's' : ''}</span>
+                  </div>
+                  <p className="text-xs text-warning/60 mb-3">
+                    Treinos passados que ainda não foram concluídos
+                  </p>
+                  <div className="space-y-2">
+                    {treinosPassadosPendentes.map((treino) => (
+                      <CardTreino 
+                        key={treino.id} 
+                        item={treino as any} 
+                        onNavigate={handleNavegar} 
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
+          )
+        })()}
 
         {/* ESTADO VAZIO */}
-        {!treinoHoje && outrosTreinos.length === 0 && (
+        {!treinoDestaque && outrosTreinos.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-white/30">

@@ -122,6 +122,12 @@ export interface TreinoCardResumo {
   data?: string | Date
   totalExercicios?: number
   concluido?: boolean
+  // Novos campos para clareza do fluxo
+  status?: 'hoje' | 'futuro' | 'passado_pendente' | 'concluido'
+  sequencia?: string // Letra do treino (A, B, C, D, E)
+  posicaoNaSemana?: number // Posição sequencial na semana (1, 2, 3, 4, 5)
+  diasAteTreino?: number // Dias até/passados desde o treino (negativo = passado)
+  gruposPrincipais?: string[] // Grupos musculares principais
 }
 
 export interface TreinoHomeSection {
@@ -135,7 +141,8 @@ export interface TreinoHomeResponse {
   recursos: RecursoPersonalizado[]
   secoes: TreinoHomeSection[]
   planosAtivos: TreinoCardResumo[]
-  destaquePlanoAtual?: TreinoCardResumo | null
+  treinoDestaque?: TreinoCardResumo | null // Novo campo: treino que deve aparecer em destaque
+  destaquePlanoAtual?: TreinoCardResumo | null // Mantido para compatibilidade
   semana: TreinoSemanaDia[]
   insights: TreinoHomeInsights
   recomendacoes: string[]

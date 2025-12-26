@@ -15,6 +15,45 @@ function normalizarData(data: Date): Date {
   return normalizada;
 }
 
+/**
+ * Determina qual treino deve aparecer em destaque seguindo a prioridade:
+ * 1. Treino de hoje não concluído
+ * 2. Próximo treino futuro mais próximo
+ * 3. Treino passado mais recente não concluído
+ */
+function determinarTreinoDestaque(treinos: any[], hoje: Date): any | null {
+  const hojeNormalizado = normalizarData(hoje);
+  
+  // 1. Buscar treino de hoje não concluído
+  const treinoHoje = treinos.find(t => {
+    const dataTreino = normalizarData(t.data);
+    return dataTreino.getTime() === hojeNormalizado.getTime() && !t.concluido;
+  });
+  if (treinoHoje) return treinoHoje;
+  
+  // 2. Buscar próximo treino futuro não concluído
+  const treinosFuturos = treinos
+    .filter(t => {
+      const dataTreino = normalizarData(t.data);
+      return dataTreino.getTime() > hojeNormalizado.getTime() && !t.concluido;
+    })
+    .sort((a, b) => a.data.getTime() - b.data.getTime());
+  
+  if (treinosFuturos.length > 0) {
+    return treinosFuturos[0];
+  }
+  
+  // 3. Buscar treino passado mais recente não concluído
+  const treinosPassados = treinos
+    .filter(t => {
+      const dataTreino = normalizarData(t.data);
+      return dataTreino.getTime() < hojeNormalizado.getTime() && !t.concluido;
+    })
+    .sort((a, b) => b.data.getTime() - a.data.getTime());
+  
+  return treinosPassados.length > 0 ? treinosPassados[0] : null;
+}
+
 function extrairRepeticoes(valor: string): number {
   const match = valor?.match(/\d+/);
   return match ? parseInt(match[0], 10) : 10;
@@ -185,9 +224,28 @@ export async function obterResumoTreinos(userId: string) {
   const proximosTreinos = Array.from(mapaProximosTreinos.values())
     .sort((a, b) => a.data.getTime() - b.data.getTime());
 
-  // Gerar planosAtivos com imagens inteligentes
-  const planosAtivos = proximosTreinos.map((treino) => {
+  // Gerar planosAtivos com imagens inteligentes e informações de status/sequência
+  const planosAtivos = proximosTreinos.map((treino, index) => {
     const gruposPrincipais = extrairGruposPrincipais(treino.exercicios);
+    const dataTreino = normalizarData(treino.data);
+    const hojeNormalizado = normalizarData(hoje);
+    
+    // Calcular status do treino
+    let status: 'hoje' | 'futuro' | 'passado_pendente' | 'concluido' = 'futuro';
+    if (treino.concluido) {
+      status = 'concluido';
+    } else if (dataTreino.getTime() === hojeNormalizado.getTime()) {
+      status = 'hoje';
+    } else if (dataTreino.getTime() < hojeNormalizado.getTime()) {
+      status = 'passado_pendente';
+    }
+    
+    // Calcular dias até/passados desde o treino
+    const diffMs = dataTreino.getTime() - hojeNormalizado.getTime();
+    const diasAteTreino = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    
+    // Obter sequência (letra do treino ou posição)
+    const sequencia = treino.letraTreino || String.fromCharCode(65 + (index % 26)); // A, B, C, etc.
 
     return {
       id: treino.id,
@@ -201,9 +259,22 @@ export async function obterResumoTreinos(userId: string) {
       concluido: treino.concluido || false,
       imagem: (treino.letraTreino && imagensPadrao[treino.letraTreino])
         ? imagensPadrao[treino.letraTreino]
-        : obterImagemTreino(gruposPrincipais, genero)
+        : obterImagemTreino(gruposPrincipais, genero),
+      // Novos campos
+      status,
+      sequencia,
+      posicaoNaSemana: index + 1,
+      diasAteTreino
     };
   });
+  
+  // Determinar treino em destaque usando a lógica de prioridade
+  const treinoDestaque = determinarTreinoDestaque(proximosTreinos, hoje);
+  
+  // Encontrar o treino em destaque no array planosAtivos
+  const treinoDestaqueFormatado = treinoDestaque 
+    ? planosAtivos.find(p => p.id === treinoDestaque.id) || null
+    : null;
 
   // Calcular período da semana usando função utilitária para consistência
   const inicioSemanaCalculado = obterInicioSemana(hoje);
@@ -326,7 +397,8 @@ export async function obterResumoTreinos(userId: string) {
       }
     ],
     planosAtivos,
-    destaquePlanoAtual: planosAtivos[0] || null,
+    treinoDestaque: treinoDestaqueFormatado,
+    destaquePlanoAtual: treinoDestaqueFormatado || planosAtivos[0] || null, // Manter compatibilidade
     semana,
     insights: {
       progressoSemana: {
