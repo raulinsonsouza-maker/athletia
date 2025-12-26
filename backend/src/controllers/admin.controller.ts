@@ -62,7 +62,8 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
       perfil,
       ultimoAcesso,
       dataCadastroInicio,
-      dataCadastroFim
+      dataCadastroFim,
+      etapaFunil
     } = req.query;
     
     const pageNum = parseInt(page as string);
@@ -203,7 +204,7 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
             vencimentoTexto = `Expirado há ${diasExpirado} ${diasExpirado === 1 ? 'dia' : 'dias'}`;
           }
         } else if (diasRestantes < 1) {
-          // Para trials de 24 horas, mostrar horas quando < 1 dia
+          // Mostrar horas quando falta menos de 1 dia
           const horasRestantes = Math.floor(diasRestantes * 24);
           if (horasRestantes <= 0) {
             vencimentoTexto = 'Vence em menos de 1 hora';
@@ -212,10 +213,18 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
           } else {
             vencimentoTexto = `Vence em ${horasRestantes} horas`;
           }
-        } else if (diasRestantes === 1) {
-          vencimentoTexto = 'Vence em 1 dia';
+        } else if (diasRestantes < 2) {
+          // Entre 1 e 2 dias, mostrar em horas para maior precisão quando está próximo de expirar
+          const horasRestantes = Math.floor(diasRestantes * 24);
+          vencimentoTexto = `Vence em ${horasRestantes} horas`;
         } else {
-          vencimentoTexto = `Vence em ${Math.ceil(diasRestantes)} dias`;
+          // 2 ou mais dias, mostrar em dias
+          const diasInteiros = Math.floor(diasRestantes);
+          if (diasInteiros === 1) {
+            vencimentoTexto = 'Vence em 1 dia';
+          } else {
+            vencimentoTexto = `Vence em ${diasInteiros} dias`;
+          }
         }
       }
 
@@ -310,6 +319,41 @@ export const listarUsuarios = async (req: AuthRequest, res: Response) => {
         }
         if (ultimoAcesso === 'MAIS_7_DIAS') {
           return diffDays > 7;
+        }
+        return true;
+      });
+    }
+
+    // Filtro por etapa do funil
+    if (etapaFunil) {
+      // Buscar IDs de usuários que acessaram checkout
+      const usuariosComCheckout = await prisma.analyticsEvent.findMany({
+        where: {
+          eventType: 'paywall_viewed'
+        },
+        select: {
+          userId: true
+        },
+        distinct: ['userId']
+      }).then(events => new Set(events.map(e => e.userId)));
+
+      usuariosFiltrados = usuariosFiltrados.filter(u => {
+        const temPerfil = !!u.perfilCompleto;
+        const temCheckout = usuariosComCheckout.has(u.id);
+        const temPlanoAtivo = u.estagioTrial === 'PLANO_ATIVO';
+
+        if (etapaFunil === 'ONBOARDING_SEM_CADASTRO') {
+          // No novo fluxo, onboarding completo = cadastro, então isso não se aplica
+          // Mas podemos filtrar usuários com perfil incompleto
+          return !temPerfil;
+        }
+        if (etapaFunil === 'CADASTRO_SEM_CHECKOUT') {
+          // Tem perfil (cadastrado) mas não acessou checkout
+          return temPerfil && !temCheckout && !temPlanoAtivo;
+        }
+        if (etapaFunil === 'CHECKOUT_SEM_ATIVACAO') {
+          // Acessou checkout mas não tem plano ativo
+          return temCheckout && !temPlanoAtivo;
         }
         return true;
       });
@@ -436,7 +480,7 @@ export const obterResumoUsuarios = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Estender período de trial por 24 horas adicionais
+// Estender período de trial por 24 horas adicionais (extensão manual)
 export const estenderTrial = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -480,7 +524,7 @@ export const estenderTrial = async (req: AuthRequest, res: Response) => {
     });
 
     res.json({
-      message: 'Trial estendido com sucesso por 24 horas',
+      message: 'Trial estendido com sucesso por 24 horas adicionais',
       novaDataFim: novaDataFim.toISOString()
     });
   } catch (error: any) {
@@ -1406,6 +1450,28 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
       }
     });
 
+    // 5. Taxa de checkout acessado (usuários que visualizaram o paywall / usuários cadastrados)
+    // Buscar IDs únicos de usuários que acessaram o checkout
+    const eventosCheckout = await prisma.analyticsEvent.findMany({
+      where: {
+        eventType: 'paywall_viewed'
+      },
+      select: {
+        userId: true
+      },
+      distinct: ['userId']
+    });
+    const usuariosComCheckoutAcessado = eventosCheckout.length;
+    
+    const taxaCheckoutAcessado = usuariosCadastrados > 0
+      ? (usuariosComCheckoutAcessado / usuariosCadastrados) * 100
+      : 0;
+
+    // 6. Taxa de conversão de checkout para ativação (usuários com plano / usuários que acessaram checkout)
+    const taxaConversaoCheckoutAtivacao = usuariosComCheckoutAcessado > 0
+      ? (usuariosComPlanoAtivo / usuariosComCheckoutAcessado) * 100
+      : 0;
+
     // Calcular cadastros por período - com tratamento de erro
     let cadastros = {
       hoje: 0,
@@ -1563,8 +1629,11 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
         // Métricas de funil do novo fluxo
         taxaConclusaoOnboarding: Math.round(taxaConclusaoOnboarding * 100) / 100,
         taxaCadastroAposOnboarding: Math.round(taxaCadastroAposOnboarding * 100) / 100,
+        taxaCheckoutAcessado: Math.round(taxaCheckoutAcessado * 100) / 100,
         taxaConversaoCadastroAtivacao: Math.round(taxaConversaoCadastroAtivacao * 100) / 100,
-        usuariosEmTrial: usuariosEmTrial
+        taxaConversaoCheckoutAtivacao: Math.round(taxaConversaoCheckoutAtivacao * 100) / 100,
+        usuariosEmTrial: usuariosEmTrial,
+        usuariosComCheckoutAcessado: usuariosComCheckoutAcessado
       },
       cadastros: cadastros
     });

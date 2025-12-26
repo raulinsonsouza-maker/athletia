@@ -166,8 +166,11 @@ interface Estatisticas {
     perfilIncompleto: number
     taxaConclusaoOnboarding?: number
     taxaCadastroAposOnboarding?: number
+    taxaCheckoutAcessado?: number
     taxaConversaoCadastroAtivacao?: number
+    taxaConversaoCheckoutAtivacao?: number
     usuariosEmTrial?: number
+    usuariosComCheckoutAcessado?: number
   }
   cadastros?: {
     hoje: number
@@ -206,7 +209,8 @@ export default function Admin() {
     perfil: '',
     ultimoAcesso: '',
     dataCadastroInicio: '',
-    dataCadastroFim: ''
+    dataCadastroFim: '',
+    etapaFunil: '' // Novo filtro para etapas do funil
   })
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const [exercicios, setExercicios] = useState<any[]>([])
@@ -395,8 +399,8 @@ export default function Admin() {
   }, [filtros.estagioTrial.length, filtros.estagioTrial.join(',')])
 
   const filtrosKey = useMemo(() => {
-    return `${tipoAcessoStr}|${estagioTrialStr}|${filtros.vencimento}|${filtros.perfil}|${filtros.ultimoAcesso}|${filtros.dataCadastroInicio}|${filtros.dataCadastroFim}`
-  }, [tipoAcessoStr, estagioTrialStr, filtros.vencimento, filtros.perfil, filtros.ultimoAcesso, filtros.dataCadastroInicio, filtros.dataCadastroFim])
+    return `${tipoAcessoStr}|${estagioTrialStr}|${filtros.vencimento}|${filtros.perfil}|${filtros.ultimoAcesso}|${filtros.dataCadastroInicio}|${filtros.dataCadastroFim}|${filtros.etapaFunil}`
+  }, [tipoAcessoStr, estagioTrialStr, filtros.vencimento, filtros.perfil, filtros.ultimoAcesso, filtros.dataCadastroInicio, filtros.dataCadastroFim, filtros.etapaFunil])
 
   const carregarResumoUsuarios = useCallback(async () => {
     setLoadingResumo(true)
@@ -432,6 +436,7 @@ export default function Admin() {
       if (currentFiltros.ultimoAcesso) params.append('ultimoAcesso', currentFiltros.ultimoAcesso)
       if (currentFiltros.dataCadastroInicio) params.append('dataCadastroInicio', currentFiltros.dataCadastroInicio)
       if (currentFiltros.dataCadastroFim) params.append('dataCadastroFim', currentFiltros.dataCadastroFim)
+      if (currentFiltros.etapaFunil) params.append('etapaFunil', currentFiltros.etapaFunil)
       // Passar um limite alto para listar todos os usuários
       params.append('limit', '10000')
       const queryString = params.toString()
@@ -994,14 +999,15 @@ export default function Admin() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                     </svg>
                     <span className="font-semibold text-light">Filtros Inteligentes</span>
-                    {(filtros.tipoAcesso.length > 0 || filtros.estagioTrial.length > 0 || filtros.vencimento || filtros.perfil || filtros.ultimoAcesso || filtros.dataCadastroInicio || filtros.dataCadastroFim) && (
+                    {(filtros.tipoAcesso.length > 0 || filtros.estagioTrial.length > 0 || filtros.vencimento || filtros.perfil || filtros.ultimoAcesso || filtros.dataCadastroInicio || filtros.dataCadastroFim || filtros.etapaFunil) && (
                       <span className="badge-primary text-xs">{[
                         filtros.tipoAcesso.length,
                         filtros.estagioTrial.length,
                         filtros.vencimento ? 1 : 0,
                         filtros.perfil ? 1 : 0,
                         filtros.ultimoAcesso ? 1 : 0,
-                        (filtros.dataCadastroInicio || filtros.dataCadastroFim) ? 1 : 0
+                        (filtros.dataCadastroInicio || filtros.dataCadastroFim) ? 1 : 0,
+                        filtros.etapaFunil ? 1 : 0
                       ].reduce((a, b) => a + b, 0)} ativo(s)</span>
                     )}
                   </div>
@@ -1075,6 +1081,36 @@ export default function Admin() {
                                 <p className="text-xs text-light-muted/70 mt-0.5">
                                   {estagio === 'D1' ? 'Primeiro dia de trial' : estagio === 'D2' ? 'Segundo dia de trial' : 'Último dia - requer atenção'}
                                 </p>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Etapa do Funil */}
+                      <div>
+                        <label className="block text-sm font-medium text-light mb-2">Etapa do Funil</label>
+                        <div className="space-y-2">
+                          {[
+                            { value: '', label: 'Todas as etapas' },
+                            { value: 'ONBOARDING_SEM_CADASTRO', label: 'Onboarding sem Cadastro', description: 'Completou onboarding mas não cadastrou' },
+                            { value: 'CADASTRO_SEM_CHECKOUT', label: 'Cadastro sem Checkout', description: 'Cadastrou mas não acessou checkout' },
+                            { value: 'CHECKOUT_SEM_ATIVACAO', label: 'Checkout sem Ativação', description: 'Acessou checkout mas não ativou plano' }
+                          ].map(opcao => (
+                            <label key={opcao.value} className="flex items-start gap-2 cursor-pointer group">
+                              <input
+                                type="radio"
+                                name="etapaFunil"
+                                value={opcao.value}
+                                checked={filtros.etapaFunil === opcao.value}
+                                onChange={(e) => setFiltros({ ...filtros, etapaFunil: e.target.value })}
+                                className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary mt-0.5"
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm text-light group-hover:text-light">{opcao.label}</span>
+                                {opcao.description && (
+                                  <p className="text-xs text-light-muted">{opcao.description}</p>
+                                )}
                               </div>
                             </label>
                           ))}
@@ -2278,28 +2314,39 @@ export default function Admin() {
                       {/* Métricas de Funil do Novo Fluxo */}
                       {estatisticas.metricas.taxaConclusaoOnboarding !== undefined && (
                         <div className="mt-6">
-                          <h3 className="text-lg font-semibold text-light mb-4">Funil de Conversão</h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <h3 className="text-lg font-semibold text-light mb-4">Funil de Conversão Completo</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                             <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
-                              <p className="text-sm text-light-muted mb-2">Conclusão de Onboarding</p>
+                              <p className="text-sm text-light-muted mb-2">1. Onboarding</p>
                               <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConclusaoOnboarding}%</p>
                               <p className="text-xs text-light-muted mt-1">Onboarding completo / Total</p>
                             </div>
                             <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
-                              <p className="text-sm text-light-muted mb-2">Cadastro Após Onboarding</p>
+                              <p className="text-sm text-light-muted mb-2">2. Cadastro</p>
                               <p className="text-3xl font-bold text-success">{estatisticas.metricas.taxaCadastroAposOnboarding}%</p>
                               <p className="text-xs text-light-muted mt-1">Cadastrados / Com perfil</p>
                             </div>
                             <div className="card-hover p-4 bg-gradient-to-br from-warning/20 to-warning/5 border border-warning/30">
-                              <p className="text-sm text-light-muted mb-2">Conversão Cadastro → Ativação</p>
-                              <p className="text-3xl font-bold text-warning">{estatisticas.metricas.taxaConversaoCadastroAtivacao}%</p>
-                              <p className="text-xs text-light-muted mt-1">Plano ativo / Cadastrados</p>
+                              <p className="text-sm text-light-muted mb-2">3. Checkout</p>
+                              <p className="text-3xl font-bold text-warning">{estatisticas.metricas.taxaCheckoutAcessado || 0}%</p>
+                              <p className="text-xs text-light-muted mt-1">Checkout acessado / Cadastrados</p>
+                              <p className="text-xs text-light-muted mt-0.5">({estatisticas.metricas.usuariosComCheckoutAcessado || 0} usuários)</p>
+                            </div>
+                            <div className="card-hover p-4 bg-gradient-to-br from-error/20 to-error/5 border border-error/30">
+                              <p className="text-sm text-light-muted mb-2">4. Ativação</p>
+                              <p className="text-3xl font-bold text-error">{estatisticas.metricas.taxaConversaoCheckoutAtivacao || 0}%</p>
+                              <p className="text-xs text-light-muted mt-1">Plano ativo / Checkout</p>
                             </div>
                             <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
-                              <p className="text-sm text-light-muted mb-2">Usuários em Trial</p>
+                              <p className="text-sm text-light-muted mb-2">Em Trial</p>
                               <p className="text-3xl font-bold text-primary">{estatisticas.metricas.usuariosEmTrial || 0}</p>
                               <p className="text-xs text-light-muted mt-1">Trial ativo sem plano</p>
                             </div>
+                          </div>
+                          <div className="mt-4 p-4 bg-dark-lighter rounded-lg border border-grey/30">
+                            <p className="text-sm text-light-muted mb-2">Taxa de Conversão Geral (Cadastro → Ativação)</p>
+                            <p className="text-2xl font-bold text-primary">{estatisticas.metricas.taxaConversaoCadastroAtivacao}%</p>
+                            <p className="text-xs text-light-muted mt-1">Plano ativo / Total cadastrados</p>
                           </div>
                         </div>
                       )}

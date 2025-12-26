@@ -2,13 +2,13 @@ import { prisma } from '../lib/prisma';
 
 /**
  * Calcula a data de fim do trial
- * Feature flag: TRIAL_DURATION_DAYS (default: 1 para backward compatibility)
+ * Feature flag: TRIAL_DURATION_DAYS (default: 3 dias)
  * Novo padrão: 3 dias (72 horas)
  */
 export function calcularDataFimTrial(dataInicio: Date): Date {
   const dataFim = new Date(dataInicio);
-  // Feature flag: TRIAL_DURATION_DAYS (default 1 para backward compat)
-  const trialDurationDays = parseInt(process.env.TRIAL_DURATION_DAYS || '1', 10);
+  // Feature flag: TRIAL_DURATION_DAYS (default 3 dias)
+  const trialDurationDays = parseInt(process.env.TRIAL_DURATION_DAYS || '3', 10);
   const trialDurationHours = trialDurationDays * 24;
   dataFim.setHours(dataFim.getHours() + trialDurationHours);
   return dataFim;
@@ -17,7 +17,7 @@ export function calcularDataFimTrial(dataInicio: Date): Date {
 /**
  * Calcula o estágio atual do trial baseado nas datas de início e fim
  * Retorna: 'D1' (0-24h), 'D2' (24-48h), 'D3' (48-72h), ou 'EXPIrado' (>72h ou já expirado)
- * Nota: Para trials de 24 horas, a maioria dos usuários estará em D1 durante todo o período
+ * Nota: Para trials de 3 dias (72 horas), os usuários passarão pelos estágios D1, D2 e D3
  */
 export function calcularEstagioTrial(dataInicio: Date | null, dataFim: Date | null, agora?: Date): 'D1' | 'D2' | 'D3' | 'EXPIrado' {
   if (!dataInicio || !dataFim) {
@@ -86,7 +86,7 @@ export async function verificarTrialAtivo(userId: string): Promise<boolean> {
 
 /**
  * Retorna o número de dias restantes do trial
- * Para trials de 24 horas, retorna valor decimal (< 1) para permitir cálculo de horas no frontend
+ * Retorna valor decimal para permitir cálculo preciso de horas no frontend quando necessário
  */
 export async function obterDiasRestantesTrial(userId: string): Promise<number> {
   const user = await prisma.user.findUnique({
