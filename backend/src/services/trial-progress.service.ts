@@ -70,14 +70,14 @@ export async function obterProgressoTrial(userId: string): Promise<{
   const treinosRestantes = Math.max(0, TRIAL_GOAL_TRAININGS - treinosConcluidos);
   const progressoPercentual = Math.round((treinosConcluidos / TRIAL_GOAL_TRAININGS) * 100);
 
-  // Calcular dias
+  // Obter duração do trial da variável de ambiente (padrão: 3 dias)
+  const trialDurationDays = parseInt(process.env.TRIAL_DURATION_DAYS || '3', 10);
+  const diasTotais = trialDurationDays;
+
+  // Calcular dia atual (1-indexed)
   const diffMs = agora.getTime() - dataInicio.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diaAtual = Math.min(diffDays + 1, 3); // Máximo 3 dias
-
-  // Calcular duração total do trial em dias
-  const trialDurationMs = dataFim.getTime() - dataInicio.getTime();
-  const diasTotais = Math.ceil(trialDurationMs / (1000 * 60 * 60 * 24));
+  const diaAtual = Math.min(diffDays + 1, diasTotais); // Máximo = diasTotais
 
   // Calcular dias restantes
   const restanteMs = dataFim.getTime() - agora.getTime();
