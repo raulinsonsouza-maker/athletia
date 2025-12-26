@@ -333,7 +333,11 @@ export async function obterResumoTreinos(userId: string) {
 
   // Validar dados reais do banco
   const realizados = treinosSemana.filter(treino => treino.concluido === true).length;
-  const planejados = treinosSemana.length;
+  
+  // Usar frequência semanal do perfil ao invés de contar treinos da semana
+  // Isso garante que mostramos a meta do usuário, não a quantidade de treinos gerados
+  const frequenciaSemanal = perfil?.frequenciaSemanal || 3; // Default 3 se não tiver configurado
+  const planejados = frequenciaSemanal;
 
   // Calcular volume total apenas de treinos concluídos com exercícios válidos
   const volumeTotal = treinosSemana

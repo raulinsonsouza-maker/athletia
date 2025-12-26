@@ -163,7 +163,12 @@ const TreinoCard = memo(function TreinoCard({
           </div>
           <div className="bg-dark-lighter border border-grey/30 rounded-lg p-2">
             <div className="text-xs text-light-muted mb-1">Tempo</div>
-            <div className="text-lg font-bold text-light">{treino.tempoEstimado || 60} min</div>
+            <div className="text-lg font-bold text-light">
+              {(() => {
+                const minutos = Math.round(treino.tempoEstimado || 60)
+                return `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`
+              })()}
+            </div>
           </div>
           {volume > 0 && (
             <div className="bg-dark-lighter border border-grey/30 rounded-lg p-2">
@@ -231,7 +236,12 @@ const TreinoCard = memo(function TreinoCard({
             </svg>
             <p className="text-xs text-light-muted">Tempo</p>
           </div>
-          <p className="text-xl font-bold text-light">{treino.tempoEstimado || 60} min</p>
+          <p className="text-xl font-bold text-light">
+            {(() => {
+              const minutos = Math.round(treino.tempoEstimado || 60)
+              return `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'}`
+            })()}
+          </p>
         </div>
         {volume > 0 && (
           <div className="bg-dark-lighter border border-grey/30 rounded-lg p-3">

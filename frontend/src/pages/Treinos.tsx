@@ -43,7 +43,11 @@ const IconeSeparador = ({ className = 'w-1.5 h-1.5 text-white/40' }: { className
 // COMPONENTES
 // ============================================================================
 
-const formatarDuracao = (minutos: number) => `${minutos} min`
+const formatarDuracao = (minutos: number) => {
+  // Arredondar para número inteiro e mostrar "minutos"
+  const minutosInteiros = Math.round(minutos)
+  return `${minutosInteiros} ${minutosInteiros === 1 ? 'minuto' : 'minutos'}`
+}
 
 const formatarData = (data: string | Date) => {
   const d = new Date(data)
@@ -283,7 +287,7 @@ export default function Treinos() {
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
       <AppHeader title="Treinos" />
       
-      <div className="px-5 pt-6 space-y-6">
+      <div className="px-5 space-y-6" style={{ paddingTop: '1.5rem' }}>
         <AvisoExpiracaoPlano />
         
         {/* PROGRESSO SEMANAL */}
