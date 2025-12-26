@@ -6,7 +6,8 @@ import LoadingFallback from './components/LoadingFallback'
 import ChatWidget from './components/ChatWidget'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import TrialProgressHeader from './components/TrialProgressHeader'
-import TrialLastDayBanner from './components/TrialLastDayBanner'
+// TrialLastDayBanner desabilitado temporariamente
+// import TrialLastDayBanner from './components/TrialLastDayBanner'
 import PaywallModal from './components/PaywallModal'
 import { useState, useEffect } from 'react'
 
@@ -73,7 +74,8 @@ function App() {
     <AuthProvider>
       <Router>
         <TrialProgressHeader />
-        <TrialLastDayBanner />
+        {/* TrialLastDayBanner desabilitado temporariamente - aparece apenas nas últimas 12h */}
+        {/* <TrialLastDayBanner /> */}
         <ChatWidget />
         <PWAInstallPrompt />
         <PaywallModal

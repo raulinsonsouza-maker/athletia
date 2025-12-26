@@ -5,8 +5,8 @@ import { useToast } from '../hooks/useToast'
 import { BarChart, DoughnutChart } from '../components/ChartWrapper'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
-import TrialProgress from '../components/TrialProgress'
-import { useAuth } from '../contexts/AuthContext'
+// TrialProgress removido - TrialProgressHeader já cobre isso
+// useAuth removido - TrialProgressHeader já cobre isso
 
 interface Estatisticas {
   periodo: number
@@ -60,7 +60,7 @@ const formatarVolume = (volume: number): string => {
 export default function Progresso() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  const { isTrialAtivo } = useAuth()
+  // isTrialAtivo removido - TrialProgressHeader já cobre isso
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [historico, setHistorico] = useState<TreinoHistorico[]>([])
   const [loading, setLoading] = useState(true)
@@ -319,7 +319,7 @@ export default function Progresso() {
     <div className="min-h-screen bg-dark text-white pb-24">
       <AppHeader title="Progresso" />
       <div className="px-5 pt-6 space-y-6">
-        {isTrialAtivo() && <TrialProgress />}
+        {/* TrialProgress removido - TrialProgressHeader já cobre isso */}
         {refreshing && (
           <div className="flex items-center gap-2 text-xs text-white/60">
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />

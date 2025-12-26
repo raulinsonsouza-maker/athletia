@@ -4,8 +4,7 @@ import { obterHomeTreinos, obterPlanoAtualResumo } from '../services/treino.serv
 import { TreinoHomeResponse, TreinoCardResumo } from '../types/treino.types'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
-import TrialProgress from '../components/TrialProgress'
-import { useAuth } from '../contexts/AuthContext'
+// useAuth removido - TrialProgressHeader já cobre isso
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
@@ -179,7 +178,7 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
 export default function Treinos() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  const { isTrialAtivo } = useAuth()
+  // isTrialAtivo removido - TrialProgressHeader já cobre isso
   const [dados, setDados] = useState<TreinoHomeResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [genero, setGenero] = useState<Genero>(null)
@@ -288,7 +287,6 @@ export default function Treinos() {
       <AppHeader title="Treinos" />
       
       <div className="px-5 pt-6 space-y-6">
-        {isTrialAtivo() && <TrialProgress />}
         <AvisoExpiracaoPlano />
         {/* CARD DESTAQUE - TREINO DE HOJE */}
         {treinoHoje && (

@@ -2,17 +2,25 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function TrialLastDayBanner() {
-  const { user, isTrialAtivo, diasRestantesTrial } = useAuth()
+  const { user, isTrialAtivo } = useAuth()
   const navigate = useNavigate()
 
   if (!isTrialAtivo() || !user) {
     return null
   }
 
-  const diasRestantes = diasRestantesTrial()
+  // Só mostrar no último dia (menos de 12 horas restantes)
+  if (!user.dataFimTrial) {
+    return null
+  }
   
-  // Só mostrar no último dia (menos de 1 dia restante)
-  if (diasRestantes >= 1) {
+  const agora = new Date()
+  const dataFimTrial = new Date(user.dataFimTrial)
+  const horasRestantes = (dataFimTrial.getTime() - agora.getTime()) / (1000 * 60 * 60)
+  
+  // Só mostrar se faltam menos de 12 horas mas mais de 0
+  // E não mostrar se TrialProgressHeader já está visível (evitar duplicação)
+  if (horasRestantes <= 0 || horasRestantes > 12) {
     return null
   }
 
