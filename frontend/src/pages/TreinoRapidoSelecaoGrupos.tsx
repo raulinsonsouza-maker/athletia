@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
+import { useAuth } from '../contexts/AuthContext'
 import { treinoRapidoService, GrupoMuscularCard } from '../services/treino-rapido.service'
 import { getImagemPadraoGrupo } from '../constants/imagens.constants'
 
 export default function TreinoRapidoSelecaoGrupos() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
+  const { isTrialAtivo } = useAuth()
   const [selecionados, setSelecionados] = useState<string[]>([])
   const [grupos, setGrupos] = useState<GrupoMuscularCard[]>([])
   const [carregando, setCarregando] = useState(true)
@@ -69,7 +71,14 @@ export default function TreinoRapidoSelecaoGrupos() {
   return (
     <div className="min-h-screen bg-dark text-white pb-24">
       <AppHeader title="Treino rápido" backTo="/treinos" />
-      <div className="px-5 space-y-4">
+      <div 
+        className="px-5 space-y-4" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         <p className="text-sm text-white/70">
           Escolha os grupos musculares que deseja trabalhar hoje. Vamos ajustar automaticamente o volume e a
           intensidade para o seu perfil.

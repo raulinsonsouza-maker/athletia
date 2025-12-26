@@ -5,6 +5,7 @@ import { useToast } from '../hooks/useToast'
 import { validatePerfil } from '../utils/validation'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
+import { useAuth } from '../contexts/AuthContext'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -60,6 +61,7 @@ interface HistoricoPeso {
 export default function Perfil() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
+  const { isTrialAtivo } = useAuth()
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [loading, setLoading] = useState(true)
   const [editando, setEditando] = useState(false)
@@ -331,7 +333,14 @@ export default function Perfil() {
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-32">
       <AppHeader title="Meu Perfil" />
       <ToastContainer />
-      <div className="px-5 pt-6 space-y-6 pb-28">
+      <div 
+        className="px-5 space-y-6 pb-28" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         <section className="relative rounded-[32px] border border-white/10 overflow-hidden min-h-[200px]">
           <img src={heroImage} alt="Banner do perfil" className="absolute inset-0 w-full h-full object-cover opacity-50" />
           <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />

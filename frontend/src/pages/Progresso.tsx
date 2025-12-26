@@ -5,8 +5,8 @@ import { useToast } from '../hooks/useToast'
 import { BarChart, DoughnutChart } from '../components/ChartWrapper'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
+import { useAuth } from '../contexts/AuthContext'
 // TrialProgress removido - TrialProgressHeader já cobre isso
-// useAuth removido - TrialProgressHeader já cobre isso
 
 interface Estatisticas {
   periodo: number
@@ -60,7 +60,7 @@ const formatarVolume = (volume: number): string => {
 export default function Progresso() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  // isTrialAtivo removido - TrialProgressHeader já cobre isso
+  const { isTrialAtivo } = useAuth()
   const [estatisticas, setEstatisticas] = useState<Estatisticas | null>(null)
   const [historico, setHistorico] = useState<TreinoHistorico[]>([])
   const [loading, setLoading] = useState(true)
@@ -277,7 +277,14 @@ export default function Progresso() {
     return (
       <div className="min-h-screen bg-dark text-white pb-24">
         <AppHeader title="Progresso" />
-        <div className="px-5 pt-6">
+        <div 
+          className="px-5" 
+          style={{ 
+            paddingTop: isTrialAtivo() 
+              ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+              : '1.5rem' 
+          }}
+        >
           <div className="flex justify-center py-20">
             <div className="h-10 w-10 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           </div>
@@ -291,7 +298,14 @@ export default function Progresso() {
     return (
       <div className="min-h-screen bg-dark text-white pb-24">
         <AppHeader title="Progresso" />
-        <div className="px-5 pt-6">
+        <div 
+          className="px-5" 
+          style={{ 
+            paddingTop: isTrialAtivo() 
+              ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+              : '1.5rem' 
+          }}
+        >
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
               <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,7 +332,14 @@ export default function Progresso() {
   return (
     <div className="min-h-screen bg-dark text-white pb-24">
       <AppHeader title="Progresso" />
-      <div className="px-5 pt-6 space-y-6">
+      <div 
+        className="px-5 space-y-6" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         {/* TrialProgress removido - TrialProgressHeader já cobre isso */}
         {refreshing && (
           <div className="flex items-center gap-2 text-xs text-white/60">

@@ -3,10 +3,12 @@ import { TreinoCompleto } from '../types/treino.types'
 import { buscarHistoricoTreinos } from '../services/treino.service'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
+import { useAuth } from '../contexts/AuthContext'
 
 type Treino = TreinoCompleto
 
 export default function Historico() {
+  const { isTrialAtivo } = useAuth()
   const [treinos, setTreinos] = useState<Treino[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -48,7 +50,14 @@ export default function Historico() {
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-28">
       <AppHeader title="Histórico" />
 
-      <div className="px-5 pt-6 space-y-6">
+      <div 
+        className="px-5 space-y-6" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         {error && (
           <div className="bg-error/10 border border-error/40 text-error rounded-3xl px-4 py-3">
             {error}

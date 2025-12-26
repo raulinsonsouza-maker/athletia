@@ -4,6 +4,7 @@ import { treinoRapidoService } from '../services/treino-rapido.service'
 import { useToast } from '../hooks/useToast'
 import AppHeader from '../components/navigation/AppHeader'
 import BottomTabs from '../components/navigation/BottomTabs'
+import { useAuth } from '../contexts/AuthContext'
 
 const DURACOES = [20, 30, 40, 50, 60]
 const DIFICULDADES = ['Iniciante', 'Intermediário', 'Avançado'] as const
@@ -13,6 +14,7 @@ export default function TreinoRapidoConfiguracao() {
   const navigate = useNavigate()
   const location = useLocation()
   const { showToast, ToastContainer } = useToast()
+  const { isTrialAtivo } = useAuth()
 
   const [duracao, setDuracao] = useState<number>(60)
   const [dificuldade, setDificuldade] = useState<'Iniciante' | 'Intermediário' | 'Avançado'>('Intermediário')
@@ -66,7 +68,14 @@ export default function TreinoRapidoConfiguracao() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark text-white pb-24">
       <AppHeader title="Configurar treino" backTo="/treino-rapido" />
-      <div className="px-5 space-y-6">
+      <div 
+        className="px-5 space-y-6" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>

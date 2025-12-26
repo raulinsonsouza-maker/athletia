@@ -28,7 +28,7 @@ const InfoChip = ({ label, value, icon }: { label: string; value: string; icon?:
 export default function MeuPlano() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  const { user } = useAuth()
+  const { user, isTrialAtivo } = useAuth()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
   const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
@@ -174,7 +174,14 @@ export default function MeuPlano() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-dark-light to-dark-lighter text-white pb-32">
       <AppHeader title="Meu Plano" />
-      <div className="px-5 pt-6 space-y-6">
+      <div 
+        className="px-5 space-y-6" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         {/* AvisoTrialAcabando removido - TrialProgressHeader já cobre isso */}
         <AvisoExpiracaoPlano />
         <section className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl">

@@ -5,7 +5,7 @@ import { TreinoHomeResponse, TreinoCardResumo } from '../types/treino.types'
 import ProgressoSemanal from '../components/ProgressoSemanal'
 import { useToast } from '../hooks/useToast'
 import BottomTabs from '../components/navigation/BottomTabs'
-// useAuth removido - TrialProgressHeader já cobre isso
+import { useAuth } from '../contexts/AuthContext'
 import AppHeader from '../components/navigation/AppHeader'
 import { Genero, normalizarGenero, obterImagemPorGenero } from '../utils/imagemGenero'
 import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
@@ -183,7 +183,7 @@ const CardTreino = ({ item, onNavigate }: CardTreinoProps) => {
 export default function Treinos() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  // isTrialAtivo removido - TrialProgressHeader já cobre isso
+  const { isTrialAtivo } = useAuth()
   const [dados, setDados] = useState<TreinoHomeResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [genero, setGenero] = useState<Genero>(null)
@@ -287,7 +287,14 @@ export default function Treinos() {
     <div className="min-h-screen bg-[#0a0a0a] text-white pb-24">
       <AppHeader title="Treinos" />
       
-      <div className="px-5 space-y-6" style={{ paddingTop: '1.5rem' }}>
+      <div 
+        className="px-5 space-y-6" 
+        style={{ 
+          paddingTop: isTrialAtivo() 
+            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            : '1.5rem' 
+        }}
+      >
         <AvisoExpiracaoPlano />
         
         {/* PROGRESSO SEMANAL */}
