@@ -67,3 +67,6 @@ export interface GenderContent {
   }
 }
 
+// Tipo helper para type-safe updates do OnboardingData
+export type OnboardingDataValue<T extends keyof OnboardingData> = OnboardingData[T]
+

@@ -10,7 +10,6 @@ import { ChecklistModal } from '../components/treino/ChecklistModal'
 import { ImagemExpandidaModal } from '../components/treino/ImagemExpandidaModal'
 import { useToast } from '../hooks/useToast'
 import FirstTrainingComplete from '../components/FirstTrainingComplete'
-import { useState } from 'react'
 
 /**
  * Componente principal de treino atual - Redesenhado

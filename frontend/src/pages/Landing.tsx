@@ -9,9 +9,12 @@ import { OnboardingData, OnboardingStep } from '../types/onboarding.types'
 import { useOnboardingNavigation } from '../hooks/onboarding/useOnboardingNavigation'
 import { useOnboardingAnalytics } from '../hooks/onboarding/useOnboardingAnalytics'
 import { useGenderContent } from '../hooks/onboarding/useGenderContent'
+import { useOnboardingPersistence } from '../hooks/onboarding/useOnboardingPersistence'
 import OnboardingHeader from '../components/onboarding/OnboardingHeader'
 import OnboardingFooter from '../components/onboarding/OnboardingFooter'
 import FeedbackCard from '../components/onboarding/FeedbackCard'
+import OnboardingRestoreModal from '../components/onboarding/OnboardingRestoreModal'
+import ImageSkeleton from '../components/onboarding/ImageSkeleton'
 import LandingHero from '../components/landing/LandingHero'
 import ComparisonTable from '../components/landing/ComparisonTable'
 import StepIdade from '../components/onboarding/steps/StepIdade'
@@ -47,13 +50,20 @@ export default function Landing() {
   const [modalTermos, setModalTermos] = useState(false)
   const [modalPrivacidade, setModalPrivacidade] = useState(false)
   const [modalCookies, setModalCookies] = useState(false)
+  const [showRestoreModal, setShowRestoreModal] = useState(false)
 
   // Hooks customizados
   const { nextStep, prevStep } = useOnboardingNavigation(step, setStep)
   const { analiseAgua, analiseCondicionamento } = useOnboardingAnalytics(onboardingData)
   const genderContent = useGenderContent(onboardingData)
+  
+  // Persistência do onboarding
+  const { hasDraft, draftStep, draftData, clearDraft } = useOnboardingPersistence(step, onboardingData)
 
-  const handleChange = useCallback((field: keyof OnboardingData, value: any) => {
+  const handleChange = useCallback(<K extends keyof OnboardingData>(
+    field: K,
+    value: OnboardingData[K]
+  ) => {
     setOnboardingData(prev => ({ ...prev, [field]: value }))
   }, [])
 
@@ -78,43 +88,15 @@ export default function Landing() {
     })
   }
 
-  const calcularIdadeAPartirData = (data?: string | null) => {
-    if (!data) return null
-
-    const numbers = data.replace(/\D/g, '')
-    if (numbers.length !== 8) return null
-
-    const dia = parseInt(numbers.slice(0, 2), 10)
-    const mes = parseInt(numbers.slice(2, 4), 10) - 1
-    const ano = parseInt(numbers.slice(4, 8), 10)
-
-    if (Number.isNaN(dia) || Number.isNaN(mes) || Number.isNaN(ano)) return null
-
-    const dataNascimento = new Date(ano, mes, dia)
-    if (Number.isNaN(dataNascimento.getTime())) return null
-
-    const hoje = new Date()
-    let idade = hoje.getFullYear() - dataNascimento.getFullYear()
-    const mesAtual = hoje.getMonth()
-    const diaAtual = hoje.getDate()
-
-    if (mesAtual < mes || (mesAtual === mes && diaAtual < dia)) {
-      idade--
-    }
-
-    return idade
-  }
-
   useEffect(() => {
     if (step === 4 && !onboardingData.altura) {
       setOnboardingData((prev) => ({ ...prev, altura: DEFAULT_VALUES.altura }))
     } else if (step === 4.5 && !onboardingData.pesoAtual) {
       setOnboardingData((prev) => ({ ...prev, pesoAtual: DEFAULT_VALUES.pesoAtual }))
     } else if (step === 14 && !onboardingData.idade) {
-      const idadeCalculada = calcularIdadeAPartirData(onboardingData.dataNascimento)
-      setOnboardingData((prev) => ({ ...prev, idade: idadeCalculada ?? DEFAULT_VALUES.idade }))
+      setOnboardingData((prev) => ({ ...prev, idade: DEFAULT_VALUES.idade }))
     }
-  }, [step, onboardingData.altura, onboardingData.pesoAtual, onboardingData.idade, onboardingData.dataNascimento])
+  }, [step, onboardingData.altura, onboardingData.pesoAtual, onboardingData.idade])
 
   const finalizarOnboarding = useCallback(() => {
     try {
@@ -179,8 +161,30 @@ export default function Landing() {
     if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
       (window as any).gtag_report_conversion()
     }
+    
+    // Verificar se há draft antes de iniciar
+    if (hasDraft && draftStep !== null && draftStep > 0) {
+      setShowRestoreModal(true)
+    } else {
+      setStep(1)
+    }
+  }, [hasDraft, draftStep])
+
+  // Restaurar draft
+  const handleRestoreDraft = useCallback(() => {
+    if (draftStep !== null && draftData !== null) {
+      setOnboardingData(draftData)
+      setStep(draftStep)
+    }
+    setShowRestoreModal(false)
+  }, [draftStep, draftData])
+
+  // Descartar draft e começar do zero
+  const handleDiscardDraft = useCallback(() => {
+    clearDraft()
     setStep(1)
-  }, [])
+    setShowRestoreModal(false)
+  }, [clearDraft])
 
   // Detectar parâmetro start=true na URL e iniciar onboarding automaticamente
   useEffect(() => {
@@ -663,16 +667,12 @@ export default function Landing() {
                       aria-pressed={selected}
                     >
                       <div className="w-full aspect-[3/4] bg-dark-lighter">
-                        <img 
-                          src={tipo.image} 
+                        <ImageSkeleton
+                          src={tipo.image}
                           alt={`Treino personalizado para ${tipo.label} - Sistema inteligente de treinos adaptativos`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          width="300"
-                          height="400"
-                          onError={(e) => {
-                            e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=${tipo.label}`
-                          }}
+                          className="w-full h-full"
+                          width={300}
+                          height={400}
                         />
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
@@ -854,16 +854,12 @@ export default function Landing() {
                       }`}
                     >
                       <div className="w-full aspect-[3/4] bg-dark-lighter">
-                        <img 
-                          src={obj.image} 
+                        <ImageSkeleton
+                          src={obj.image}
                           alt={`Treino personalizado para objetivo: ${obj.title} - Sistema inteligente de treinos com IA`}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          width="300"
-                          height="400"
-                          onError={(e) => {
-                            e.currentTarget.src = `https://via.placeholder.com/300x400/4A4946/F9A620?text=${obj.title}`
-                          }}
+                          className="w-full h-full"
+                          width={300}
+                          height={400}
                         />
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
@@ -1419,6 +1415,17 @@ export default function Landing() {
         onNext={nextStep}
         onFinish={finalizarOnboarding}
       />
+
+      {/* Modal de recuperação de draft */}
+      {draftStep !== null && (
+        <OnboardingRestoreModal
+          isOpen={showRestoreModal}
+          onClose={() => setShowRestoreModal(false)}
+          onRestore={handleRestoreDraft}
+          onDiscard={handleDiscardDraft}
+          savedStep={draftStep}
+        />
+      )}
     </div>
   )
 }

@@ -50,6 +50,41 @@ export default defineConfig({
       output: {
         // Code splitting manual para reduzir tamanho dos chunks
         manualChunks(id) {
+          // CRÍTICO: Excluir componentes admin e chart do bundle da landing
+          // Verificar ANTES de qualquer outra lógica para garantir separação
+          
+          // Componentes e serviços admin - chunk separado (NUNCA incluir na landing)
+          if (id.includes('/components/admin/') ||
+              id.includes('/components/Admin') ||
+              id.includes('/services/admin') ||
+              id.includes('/services/grupo-muscular-admin') ||
+              id.includes('/services/whatsapp-admin') ||
+              id.includes('GrupoMuscularFormModal') ||
+              id.includes('GruposMuscularesAdminList') ||
+              id.includes('ExerciciosAdminList') ||
+              id.includes('AdminHeader') ||
+              id.includes('AdminSidebar') ||
+              id.includes('/pages/Admin') ||
+              id.includes('/pages/AdminBlog') ||
+              id.includes('/pages/AdminGrupos') ||
+              id.includes('/pages/AdminLogin')) {
+            return 'admin-pages'
+          }
+          
+          // Chart.js e componentes relacionados - chunk separado (usado apenas em Progresso/Perfil)
+          if (id.includes('chart.js') || 
+              id.includes('react-chartjs') || 
+              id.includes('chartjs') ||
+              id.includes('ChartWrapper') ||
+              id.includes('/components/Chart')) {
+            return 'chart-vendor'
+          }
+          
+          // Separar página Progresso (usa Chart.js)
+          if (id.includes('/pages/Progresso')) {
+            return 'progresso-page'
+          }
+          
           // Separar node_modules em chunks específicos
           if (id.includes('node_modules')) {
             // React core (necessário desde o início)
@@ -67,7 +102,7 @@ export default defineConfig({
               return 'router-vendor'
             }
             
-            // Chart.js (usado apenas em Progresso - NUNCA carregar na landing)
+            // Chart.js já foi tratado acima, mas garantir aqui também
             if (id.includes('chart.js') || id.includes('react-chartjs') || id.includes('chartjs')) {
               return 'chart-vendor'
             }
@@ -86,22 +121,14 @@ export default defineConfig({
             return 'vendor'
           }
           
-          // Agrupar TODAS as páginas admin em chunk separado (nunca carregar na landing)
-          if (id.includes('/pages/Admin') || 
-              id.includes('/pages/AdminBlog') || 
-              id.includes('/pages/AdminGrupos') ||
-              id.includes('/pages/AdminLogin')) {
-            return 'admin-pages'
-          }
-          
-          // Separar página Progresso (usa Chart.js)
-          if (id.includes('/pages/Progresso')) {
-            return 'progresso-page'
-          }
-          
           // Separar páginas de blog (não críticas para landing)
           if (id.includes('/pages/Blog')) {
             return 'blog-pages'
+          }
+          
+          // Landing page e onboarding - manter separado (chunk próprio)
+          if (id.includes('/pages/Landing') || id.includes('/components/landing') || id.includes('/components/onboarding')) {
+            return undefined // Deixa Vite decidir, mas não agrupa com admin/chart
           }
         },
         // Organizar assets por tipo

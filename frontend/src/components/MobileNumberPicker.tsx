@@ -77,6 +77,26 @@ export default function MobileNumberPicker({
     scrollTimeoutRef.current = window.setTimeout(handleScrollEnd, SCROLL_END_DELAY)
   }, [handleScrollEnd])
 
+  // Suporte para scroll da roda do mouse (desktop)
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    const container = containerRef.current
+    if (!container) return
+
+    const delta = e.deltaY > 0 ? ITEM_HEIGHT : -ITEM_HEIGHT
+    const newScrollTop = container.scrollTop + delta
+    
+    container.scrollTop = newScrollTop
+    handleScroll()
+  }, [handleScroll])
+
+  // Suporte para clique duplo para digitar manualmente (implementação futura)
+  const handleDoubleClick = useCallback(() => {
+    // TODO: Implementar modal/input para digitar valor manualmente
+    // Por enquanto, apenas log para não quebrar funcionalidade existente
+    console.log('Double click para digitar manualmente - funcionalidade futura')
+  }, [])
+
   useEffect(() => {
     scrollToValue(value)
   }, [scrollToValue, value])
@@ -99,7 +119,9 @@ export default function MobileNumberPicker({
         <div
           ref={containerRef}
           onScroll={handleScroll}
-          className="relative flex-1 h-40 overflow-y-auto hide-scrollbar scroll-smooth snap-y snap-mandatory py-14"
+          onWheel={handleWheel}
+          onDoubleClick={handleDoubleClick}
+          className="relative flex-1 h-40 overflow-y-auto hide-scrollbar scroll-smooth snap-y snap-mandatory py-14 cursor-pointer"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 pointer-events-none rounded-full border border-light/20 bg-white/5" />

@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 
 interface PaywallModalProps {
   isOpen: boolean
@@ -9,7 +8,6 @@ interface PaywallModalProps {
 
 export default function PaywallModal({ isOpen, onClose, blockedAction }: PaywallModalProps) {
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   if (!isOpen) return null
 

@@ -57,7 +57,12 @@ export default function OnboardingFooter({
               type="button"
               onClick={onNext}
               disabled={isDisabled()}
-              className="btn-primary px-12 py-3 text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`btn-primary px-12 py-3 text-lg font-bold transition-all duration-200 ${
+                isDisabled() 
+                  ? 'opacity-40 cursor-not-allowed hover:opacity-40' 
+                  : 'hover:scale-105 active:scale-95'
+              }`}
+              aria-disabled={isDisabled()}
             >
               {step === 5.5 || step === 7.5 ? 'Entendi' : 'Continuar'}
             </button>
@@ -66,7 +71,13 @@ export default function OnboardingFooter({
           <button
             type="button"
             onClick={onFinish}
-            className="btn-primary px-12 py-3 text-lg font-bold"
+            disabled={isDisabled()}
+            className={`btn-primary px-12 py-3 text-lg font-bold transition-all duration-200 ${
+              isDisabled() 
+                ? 'opacity-40 cursor-not-allowed hover:opacity-40' 
+                : 'hover:scale-105 active:scale-95'
+            }`}
+            aria-disabled={isDisabled()}
           >
             Finalizar
           </button>
