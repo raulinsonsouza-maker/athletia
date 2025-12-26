@@ -72,14 +72,23 @@ export async function buscarOuCriarExercicioAerobico(nome: string): Promise<any>
  * Valida dados mínimos do perfil para geração de treinos
  */
 function validarDadosMinimos(perfil: any): void {
+  const dadosFaltando: string[] = [];
+  
   if (!perfil.objetivo) {
-    throw new Error('Para gerar seu treino preciso de objetivo, experiência e frequência semanal.');
+    dadosFaltando.push('objetivo');
   }
   if (!perfil.experiencia) {
-    throw new Error('Para gerar seu treino preciso de objetivo, experiência e frequência semanal.');
+    dadosFaltando.push('experiência');
   }
   if (!perfil.frequenciaSemanal) {
-    throw new Error('Para gerar seu treino preciso de objetivo, experiência e frequência semanal.');
+    dadosFaltando.push('frequência semanal');
+  }
+  
+  if (dadosFaltando.length > 0) {
+    throw new Error(
+      `Para gerar seu treino preciso dos seguintes dados: ${dadosFaltando.join(', ')}. ` +
+      `Por favor, complete seu perfil no onboarding.`
+    );
   }
 }
 

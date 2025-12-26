@@ -791,16 +791,53 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       console.error('Erro ao registrar evento de onboarding:', error);
     }
 
-    // Gerar treinos para trial (permite acesso imediato ao sistema por 24 horas)
+    // Gerar treinos para trial (permite acesso imediato ao sistema por 3 dias)
+    let treinosGerados = false;
+    let treinosError: string | null = null;
     try {
       const { gerarTreinos30Dias } = await import('../services/treino.service');
       console.log(`🔄 Gerando treinos para trial de 3 dias para o usuário ${user.id}...`);
       
-      await gerarTreinos30Dias(user.id);
-      console.log('✅ Treinos gerados com sucesso para trial');
+      // Verificar se perfil foi criado corretamente
+      const perfilCriado = await prisma.perfil.findUnique({
+        where: { userId: user.id }
+      });
+      
+      if (!perfilCriado) {
+        treinosError = 'Perfil não encontrado após criação';
+        console.warn('⚠️ Perfil não encontrado. Treinos não serão gerados.');
+      } else if (!perfilCriado.objetivo || !perfilCriado.experiencia || !perfilCriado.frequenciaSemanal) {
+        treinosError = 'Perfil incompleto: objetivo, experiência ou frequência semanal não definidos';
+        console.warn('⚠️ Perfil incompleto. Dados faltando:', {
+          objetivo: perfilCriado.objetivo,
+          experiencia: perfilCriado.experiencia,
+          frequenciaSemanal: perfilCriado.frequenciaSemanal
+        });
+      } else {
+        const treinos = await gerarTreinos30Dias(user.id);
+        if (treinos && treinos.length > 0) {
+          treinosGerados = true;
+          console.log(`✅ ${treinos.length} treinos gerados com sucesso para trial`);
+        } else {
+          treinosError = 'Nenhum treino foi gerado. Verifique se há exercícios cadastrados.';
+          console.warn('⚠️ Nenhum treino foi gerado para trial');
+        }
+      }
     } catch (error: any) {
-      console.error('⚠️ Erro ao gerar treinos para trial (não crítico):', error.message);
+      treinosError = error.message || 'Erro desconhecido ao gerar treinos';
+      console.error('⚠️ Erro ao gerar treinos para trial (não crítico):', {
+        message: error.message,
+        stack: error.stack,
+        userId: user.id
+      });
       // Não falhar o cadastro se houver erro ao gerar treinos
+    }
+    
+    // Log final sobre geração de treinos
+    if (treinosGerados) {
+      console.log('✅ Trial configurado com sucesso: treinos gerados');
+    } else {
+      console.warn('⚠️ Trial configurado, mas treinos não foram gerados:', treinosError);
     }
 
     // Gerar tokens para login automático (cadastro sempre usa rememberMe = true)

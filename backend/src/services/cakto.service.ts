@@ -310,18 +310,43 @@ export async function processPaymentApproved(webhookData: any) {
     }
 
     // Gerar treinos automaticamente (usar função existente)
+    let treinosGerados = false;
+    let treinosError: string | null = null;
     try {
       const { gerarTreinos30Dias } = await import('./treino.service');
       console.log(`🔄 Gerando treinos para os próximos 30 dias para o usuário ${user.id}...`);
       
       if (user.perfil) {
-        await gerarTreinos30Dias(user.id);
-        console.log('✅ Treinos gerados com sucesso');
+        // Verificar se perfil tem dados mínimos necessários
+        const perfil = user.perfil;
+        if (!perfil.objetivo || !perfil.experiencia || !perfil.frequenciaSemanal) {
+          console.warn('⚠️ Perfil incompleto. Dados faltando:', {
+            objetivo: perfil.objetivo,
+            experiencia: perfil.experiencia,
+            frequenciaSemanal: perfil.frequenciaSemanal
+          });
+          treinosError = 'Perfil incompleto: objetivo, experiência ou frequência semanal não definidos';
+        } else {
+          const treinos = await gerarTreinos30Dias(user.id);
+          if (treinos && treinos.length > 0) {
+            treinosGerados = true;
+            console.log(`✅ ${treinos.length} treinos gerados com sucesso`);
+          } else {
+            treinosError = 'Nenhum treino foi gerado. Verifique se há exercícios cadastrados.';
+            console.warn('⚠️ Nenhum treino foi gerado');
+          }
+        }
       } else {
+        treinosError = 'Usuário não possui perfil. Complete o onboarding primeiro.';
         console.warn('⚠️ Usuário não possui perfil. Treinos não serão gerados.');
       }
     } catch (error: any) {
-      console.error('⚠️ Erro ao gerar treinos (não crítico):', error.message);
+      treinosError = error.message || 'Erro desconhecido ao gerar treinos';
+      console.error('⚠️ Erro ao gerar treinos (não crítico):', {
+        message: error.message,
+        stack: error.stack,
+        userId: user.id
+      });
       // Não falhar o webhook se não conseguir gerar treinos
     }
 
@@ -369,7 +394,9 @@ export async function processPaymentApproved(webhookData: any) {
       user_id: user.id,
       emailSent: emailSent,
       emailError: emailError,
-      emailMessageId: emailMessageId
+      emailMessageId: emailMessageId,
+      treinosGerados: treinosGerados,
+      treinosError: treinosError
     };
 
     console.log('✅ Pagamento aprovado processado:', {
