@@ -72,7 +72,7 @@ export default function TreinoRapidoConfiguracao() {
         className="px-5 space-y-6" 
         style={{ 
           paddingTop: isTrialAtivo() 
-            ? 'calc(var(--trial-header-height, 60px) + 6rem)' 
+            ? 'calc(var(--trial-header-height, 60px) + 1.5rem)' 
             : '1.5rem' 
         }}
       >

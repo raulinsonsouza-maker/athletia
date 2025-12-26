@@ -92,13 +92,21 @@ export default function TrialProgressHeader() {
               />
             </svg>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-bold text-white">
-                  Dia {progresso.diaAtual} de {progresso.diasTotais}
-                </span>
-                <span className="text-xs text-white/70">
-                  • {progresso.treinosConcluidos}/{progresso.objetivo} treinos
-                </span>
+              <div className="mb-1.5">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-xs font-bold text-white">
+                    Trial: Dia {progresso.diaAtual} de {progresso.diasTotais}
+                  </span>
+                </div>
+                <div className="text-xs text-white/80">
+                  {progresso.treinosConcluidos === progresso.objetivo ? (
+                    <span>✅ {progresso.objetivo} treinos concluídos!</span>
+                  ) : progresso.treinosRestantes > 0 ? (
+                    <span>Faltam {progresso.treinosRestantes} treino{progresso.treinosRestantes > 1 ? 's' : ''} para completar ({progresso.treinosConcluidos}/{progresso.objetivo})</span>
+                  ) : (
+                    <span>{progresso.treinosConcluidos}/{progresso.objetivo} treinos concluídos</span>
+                  )}
+                </div>
               </div>
               <div className="w-full bg-white/20 rounded-full h-1.5">
                 <div
