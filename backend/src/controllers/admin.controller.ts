@@ -404,17 +404,17 @@ export const obterResumoUsuarios = async (req: AuthRequest, res: Response) => {
       const estagio = calcularEstagioTrial(user.dataInicioTrial, user.dataFimTrial, agora);
       const dataFimTrial = new Date(user.dataFimTrial);
 
-      // Trials ativos hoje (qualquer estágio ativo hoje)
+      // Trials ativos hoje (qualquer estágio ativo no período de trial de 3 dias)
       if (estagio !== 'EXPIrado' && dataFimTrial >= inicioHoje && dataFimTrial <= fimHoje) {
         trialsAtivosHoje++;
       }
 
-      // Trials D3 (último dia)
+      // Trials D3 (último dia do trial - requer atenção imediata)
       if (estagio === 'D3') {
         trialsD3++;
       }
 
-      // Trials expirados nas últimas 24h
+      // Trials expirados nas últimas 24h (oportunidade de reativação)
       if (estagio === 'EXPIrado' && dataFimTrial >= inicio24hAtras && dataFimTrial <= agora) {
         trialsExpirados24h++;
       }
@@ -436,7 +436,7 @@ export const obterResumoUsuarios = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Estender trial por 24 horas
+// Estender período de trial por 24 horas adicionais
 export const estenderTrial = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -468,7 +468,7 @@ export const estenderTrial = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Adicionar 24 horas ao trial
+    // Adicionar 24 horas ao período de trial
     const novaDataFim = new Date(user.dataFimTrial);
     novaDataFim.setHours(novaDataFim.getHours() + 24);
 
@@ -492,7 +492,7 @@ export const estenderTrial = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Converter trial em plano ativo manualmente
+// Converter trial em plano ativo manualmente (para testes ou casos especiais)
 export const converterManual = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -572,7 +572,7 @@ export const converterManual = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// Encerrar trial antecipadamente
+// Encerrar período de trial antecipadamente
 export const encerrarTrial = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -604,7 +604,7 @@ export const encerrarTrial = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Definir data de fim do trial para agora
+    // Definir data de fim do período de trial para agora
     await prisma.user.update({
       where: { id },
       data: {
@@ -1087,6 +1087,8 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
         planoAtivo: usuario.planoAtivo,
         dataPagamento: usuario.dataPagamento,
         dataExpiracao: usuario.dataExpiracao,
+        dataInicioTrial: usuario.dataInicioTrial,
+        dataFimTrial: usuario.dataFimTrial,
         senhaHash: usuario.senhaHash ? `${usuario.senhaHash.substring(0, 20)}...` : null, // Mostrar apenas início do hash para debug
         createdAt: usuario.createdAt,
         updatedAt: usuario.updatedAt
@@ -1106,7 +1108,8 @@ export const obterDetalhesUsuario = async (req: AuthRequest, res: Response) => {
         lesoes: usuario.perfil.lesoes,
         preferencias: usuario.perfil.preferencias,
         problemasAnteriores: usuario.perfil.problemasAnteriores,
-        objetivosAdicionais: usuario.perfil.objetivosAdicionais
+        objetivosAdicionais: usuario.perfil.objetivosAdicionais,
+        createdAt: usuario.perfil.createdAt
       } : null,
       historicoPeso: historicoPeso,
       treinos: {
@@ -1358,6 +1361,51 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
       ? (usuariosComPlanoAtivo / usuariosNormais) * 100 
       : 0;
 
+    // Métricas de funil do novo fluxo
+    // 1. Taxa de conclusão de onboarding (usuários com perfil completo / total de usuários)
+    const usuariosComPerfilCompleto = await prisma.user.count({
+      where: {
+        role: 'USER',
+        perfil: {
+          idade: { not: null },
+          sexo: { not: null },
+          altura: { not: null },
+          pesoAtual: { not: null },
+          objetivo: { not: null },
+          experiencia: { not: null }
+        }
+      }
+    });
+    
+    const taxaConclusaoOnboarding = usuariosNormais > 0
+      ? (usuariosComPerfilCompleto / usuariosNormais) * 100
+      : 0;
+
+    // 2. Taxa de cadastro após onboarding (usuários cadastrados com perfil / usuários com perfil)
+    // Todos os usuários com perfil já estão cadastrados no novo fluxo
+    const taxaCadastroAposOnboarding = usuariosComPerfil > 0
+      ? 100 // No novo fluxo, se tem perfil, já está cadastrado
+      : 0;
+
+    // 3. Taxa de conversão de cadastro para ativação (usuários com plano ativo / usuários cadastrados)
+    const usuariosCadastrados = usuariosComPerfil; // No novo fluxo, cadastro = ter perfil
+    const taxaConversaoCadastroAtivacao = usuariosCadastrados > 0
+      ? (usuariosComPlanoAtivo / usuariosCadastrados) * 100
+      : 0;
+
+    // 4. Usuários em trial (com trial ativo mas sem plano)
+    const agora = new Date();
+    const usuariosEmTrial = await prisma.user.count({
+      where: {
+        role: 'USER',
+        planoAtivo: false,
+        dataInicioTrial: { not: null },
+        dataFimTrial: { 
+          gte: agora // Trial ainda não expirou
+        }
+      }
+    });
+
     // Calcular cadastros por período - com tratamento de erro
     let cadastros = {
       hoje: 0,
@@ -1511,7 +1559,12 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
         taxaConversao: Math.round(taxaConversao * 100) / 100,
         taxaConclusaoTreinos: Math.round(taxaConclusaoTreinos * 100) / 100,
         perfilCompleto: usuariosComPerfil,
-        perfilIncompleto: usuariosNormais - usuariosComPerfil
+        perfilIncompleto: usuariosNormais - usuariosComPerfil,
+        // Métricas de funil do novo fluxo
+        taxaConclusaoOnboarding: Math.round(taxaConclusaoOnboarding * 100) / 100,
+        taxaCadastroAposOnboarding: Math.round(taxaCadastroAposOnboarding * 100) / 100,
+        taxaConversaoCadastroAtivacao: Math.round(taxaConversaoCadastroAtivacao * 100) / 100,
+        usuariosEmTrial: usuariosEmTrial
       },
       cadastros: cadastros
     });

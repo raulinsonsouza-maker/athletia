@@ -1,6 +1,6 @@
 interface TimelineEvent {
   id: string
-  type: 'cadastro' | 'acesso' | 'conversao' | 'trial_extendido' | 'senha_redefinida' | 'email_enviado' | 'whatsapp_enviado' | 'nota_adicionada'
+  type: 'cadastro' | 'onboarding_completo' | 'checkout_acessado' | 'plano_ativado' | 'acesso' | 'conversao' | 'trial_extendido' | 'senha_redefinida' | 'email_enviado' | 'whatsapp_enviado' | 'nota_adicionada'
   title: string
   description: string
   date: string
@@ -13,7 +13,12 @@ interface UserTimelineProps {
   userDetails?: {
     planoAtivo?: boolean
     dataPagamento?: string | null
+    dataInicioTrial?: string | null
+    dataFimTrial?: string | null
     ultimoAcesso?: string | null
+    perfil?: {
+      createdAt?: string
+    } | null
   }
 }
 
@@ -30,13 +35,35 @@ export default function UserTimeline({ userId: _userId, userCreatedAt, userDetai
     date: userCreatedAt,
   })
 
-  // Evento de conversão (se houver plano ativo)
+  // Evento de onboarding completo (se houver perfil)
+  if (userDetails?.perfil?.createdAt) {
+    events.push({
+      id: 'onboarding_completo',
+      type: 'onboarding_completo',
+      title: 'Onboarding concluído',
+      description: 'Perfil criado com dados do onboarding',
+      date: userDetails.perfil.createdAt,
+    })
+  }
+
+  // Evento de início de trial (se houver)
+  if (userDetails?.dataInicioTrial) {
+    events.push({
+      id: 'trial_iniciado',
+      type: 'cadastro',
+      title: 'Trial iniciado',
+      description: 'Período de trial de 3 dias iniciado',
+      date: userDetails.dataInicioTrial,
+    })
+  }
+
+  // Evento de ativação de plano (novo fluxo)
   if (userDetails?.planoAtivo && userDetails?.dataPagamento) {
     events.push({
-      id: 'conversao',
-      type: 'conversao',
-      title: 'Conversão para plano pago',
-      description: `Plano ${userDetails.planoAtivo ? 'ativado' : 'desativado'}`,
+      id: 'plano_ativado',
+      type: 'plano_ativado',
+      title: 'Plano ativado',
+      description: 'Pagamento confirmado e plano ativado',
       date: userDetails.dataPagamento,
     })
   }
@@ -151,6 +178,39 @@ export default function UserTimeline({ userId: _userId, userCreatedAt, userDetai
             />
           </svg>
         )
+      case 'onboarding_completo':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        )
+      case 'checkout_acessado':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+            />
+          </svg>
+        )
+      case 'plano_ativado':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+            />
+          </svg>
+        )
       default:
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,6 +243,12 @@ export default function UserTimeline({ userId: _userId, userCreatedAt, userDetai
         return 'bg-success/20 text-success border-success/30'
       case 'nota_adicionada':
         return 'bg-grey/20 text-light-muted border-grey/30'
+      case 'onboarding_completo':
+        return 'bg-success/20 text-success border-success/30'
+      case 'checkout_acessado':
+        return 'bg-primary/20 text-primary border-primary/30'
+      case 'plano_ativado':
+        return 'bg-success/20 text-success border-success/30'
       default:
         return 'bg-grey/20 text-light-muted border-grey/30'
     }

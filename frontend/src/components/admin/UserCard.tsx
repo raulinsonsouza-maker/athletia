@@ -54,9 +54,9 @@ export default function UserCard({ user, onClick, isSelected }: UserCardProps) {
   }
 
   const getEstagioLabel = (estagio: string) => {
-    if (estagio === 'D1') return 'Trial D1'
-    if (estagio === 'D2') return 'Trial D2'
-    if (estagio === 'D3') return 'Trial D3'
+    if (estagio === 'D1') return 'Trial - Dia 1'
+    if (estagio === 'D2') return 'Trial - Dia 2'
+    if (estagio === 'D3') return 'Trial - Dia 3 (Expira Hoje)'
     if (estagio === 'EXPIrado') return 'Trial Expirado'
     if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
     return 'Sem Acesso'

@@ -58,6 +58,8 @@ interface UserDetails {
     planoAtivo: boolean
     dataPagamento: string | null
     dataExpiracao: string | null
+    dataInicioTrial?: string | null
+    dataFimTrial?: string | null
     senhaHash?: string | null
     ativo?: boolean
     createdAt: string
@@ -89,6 +91,7 @@ interface UserProfile {
   preferencias: string[]
   problemasAnteriores: string[]
   objetivosAdicionais: string[]
+  createdAt?: string
 }
 
 interface UserTraining {
@@ -161,6 +164,10 @@ interface Estatisticas {
     taxaConclusaoTreinos: number
     perfilCompleto: number
     perfilIncompleto: number
+    taxaConclusaoOnboarding?: number
+    taxaCadastroAposOnboarding?: number
+    taxaConversaoCadastroAtivacao?: number
+    usuariosEmTrial?: number
   }
   cadastros?: {
     hoje: number
@@ -899,13 +906,13 @@ export default function Admin() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-light-muted">Trials Ativos Hoje</p>
+                    <p className="text-sm text-light-muted">Trials Ativos</p>
                     <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <p className="text-3xl font-bold text-primary">{resumoUsuarios.trialsAtivosHoje}</p>
-                  <p className="text-xs text-light-muted mt-1" title="Trials de 24 horas ativos no momento">Em trial hoje (24h)</p>
+                  <p className="text-xs text-light-muted mt-1" title="Usuários em período de trial ativo">Em período de trial</p>
                   </div>
 
                   <div 
@@ -921,13 +928,13 @@ export default function Admin() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-light-muted">Trials D3</p>
+                    <p className="text-sm text-light-muted">Trials Expirando Hoje</p>
                     <svg className="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </div>
                   <p className="text-3xl font-bold text-warning">{resumoUsuarios.trialsD3}</p>
-                  <p className="text-xs text-light-muted mt-1" title="Trials entre 48-72 horas desde o início">Próximos de expirar - urgente</p>
+                  <p className="text-xs text-light-muted mt-1" title="Trials no último dia (Dia 3) - requer atenção imediata">Último dia de trial</p>
                   </div>
 
                   <div 
@@ -1015,25 +1022,29 @@ export default function Admin() {
                       <div>
                         <label className="block text-sm font-medium text-light mb-2">Tipo de Acesso</label>
                         <div className="space-y-2">
-                          {['TRIAL_ATIVO', 'TRIAL_EXPIRADO', 'PLANO_ATIVO', 'SEM_ACESSO'].map(tipo => (
-                            <label key={tipo} className="flex items-center gap-2 cursor-pointer">
+                          {[
+                            { value: 'TRIAL_ATIVO', label: 'Trial Ativo', description: 'Em período de trial ativo' },
+                            { value: 'TRIAL_EXPIRADO', label: 'Trial Expirado', description: 'Trial expirado sem plano' },
+                            { value: 'PLANO_ATIVO', label: 'Plano Ativo', description: 'Com assinatura ativa' },
+                            { value: 'SEM_ACESSO', label: 'Sem Acesso', description: 'Sem trial e sem plano' }
+                          ].map(tipo => (
+                            <label key={tipo.value} className="flex items-start gap-2 cursor-pointer group">
                               <input
                                 type="checkbox"
-                                checked={filtros.tipoAcesso.includes(tipo)}
+                                checked={filtros.tipoAcesso.includes(tipo.value)}
                                 onChange={(e) => {
                                   if (e.target.checked) {
-                                    setFiltros({ ...filtros, tipoAcesso: [...filtros.tipoAcesso, tipo] })
+                                    setFiltros({ ...filtros, tipoAcesso: [...filtros.tipoAcesso, tipo.value] })
                                   } else {
-                                    setFiltros({ ...filtros, tipoAcesso: filtros.tipoAcesso.filter(t => t !== tipo) })
+                                    setFiltros({ ...filtros, tipoAcesso: filtros.tipoAcesso.filter(t => t !== tipo.value) })
                                   }
                                 }}
-                                className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
+                                className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary mt-0.5"
                               />
-                              <span className="text-sm text-light-muted">
-                                {tipo === 'TRIAL_ATIVO' ? 'Trial Ativo' : 
-                                 tipo === 'TRIAL_EXPIRADO' ? 'Trial Expirado' :
-                                 tipo === 'PLANO_ATIVO' ? 'Plano Ativo' : 'Sem Acesso'}
-                              </span>
+                              <div className="flex-1">
+                                <span className="text-sm text-light group-hover:text-light">{tipo.label}</span>
+                                <p className="text-xs text-light-muted">{tipo.description}</p>
+                              </div>
                             </label>
                           ))}
                         </div>
@@ -1057,9 +1068,14 @@ export default function Admin() {
                                 }}
                                 className="w-4 h-4 rounded border-grey/30 bg-dark-lighter text-primary focus:ring-primary"
                               />
-                              <span className="text-sm text-light-muted">
-                                Trial {estagio} {estagio === 'D1' ? '(0-24h)' : estagio === 'D2' ? '(24-48h)' : '(48-72h)'}
-                              </span>
+                              <div className="flex-1">
+                                <span className="text-sm text-light-muted">
+                                  Trial - Dia {estagio.replace('D', '')} {estagio === 'D1' ? '(0-24h)' : estagio === 'D2' ? '(24-48h)' : '(48-72h - Expira Hoje)'}
+                                </span>
+                                <p className="text-xs text-light-muted/70 mt-0.5">
+                                  {estagio === 'D1' ? 'Primeiro dia de trial' : estagio === 'D2' ? 'Segundo dia de trial' : 'Último dia - requer atenção'}
+                                </p>
+                              </div>
                             </label>
                           ))}
                         </div>
@@ -1365,9 +1381,9 @@ export default function Admin() {
                         }
 
                         const getEstagioLabel = (estagio: string) => {
-                          if (estagio === 'D1') return 'Trial D1'
-                          if (estagio === 'D2') return 'Trial D2'
-                          if (estagio === 'D3') return 'Trial D3'
+                          if (estagio === 'D1') return 'Trial - Dia 1'
+                          if (estagio === 'D2') return 'Trial - Dia 2'
+                          if (estagio === 'D3') return 'Trial - Dia 3 (Expira Hoje)'
                           if (estagio === 'EXPIrado') return 'Trial Expirado'
                           if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
                           return 'Sem Acesso'
@@ -1483,9 +1499,9 @@ export default function Admin() {
                             }
 
                             const getEstagioLabel = (estagio: string) => {
-                              if (estagio === 'D1') return 'Trial D1'
-                              if (estagio === 'D2') return 'Trial D2'
-                              if (estagio === 'D3') return 'Trial D3'
+                              if (estagio === 'D1') return 'Trial - Dia 1'
+                              if (estagio === 'D2') return 'Trial - Dia 2'
+                              if (estagio === 'D3') return 'Trial - Dia 3 (Expira Hoje)'
                               if (estagio === 'EXPIrado') return 'Trial Expirado'
                               if (estagio === 'PLANO_ATIVO') return 'Plano Ativo'
                               return 'Sem Acesso'
@@ -1590,7 +1606,7 @@ export default function Admin() {
                                               <button
                                                 onClick={async (e) => {
                                                   e.stopPropagation()
-                                                  if (confirm('Deseja estender o trial por mais 1 dia?')) {
+                                                  if (confirm('Deseja estender o período de trial por mais 24 horas?')) {
                                                     setProcessandoAcao(user.id)
                                                     try {
                                                       await estenderTrial(user.id)
@@ -1621,7 +1637,7 @@ export default function Admin() {
                                                     setProcessandoAcao(user.id)
                                                     try {
                                                       await converterManual(user.id, plano.toUpperCase() as 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL')
-                                                      showToast('Usuário convertido para plano ativo', 'success')
+                                                      showToast(`Usuário convertido para plano ${plano.toUpperCase()} com sucesso`, 'success')
                                                       await carregarUsuarios()
                                                       await carregarResumoUsuarios()
                                                     } catch (error: any) {
@@ -1643,11 +1659,11 @@ export default function Admin() {
                                               <button
                                                 onClick={async (e) => {
                                                   e.stopPropagation()
-                                                  if (confirm('Deseja encerrar o trial antecipadamente?')) {
+                                                  if (confirm('Deseja encerrar o período de trial antecipadamente? O usuário perderá o acesso imediatamente.')) {
                                                     setProcessandoAcao(user.id)
                                                     try {
                                                       await encerrarTrial(user.id)
-                                                      showToast('Trial encerrado com sucesso', 'success')
+                                                      showToast('Período de trial encerrado com sucesso', 'success')
                                                       await carregarUsuarios()
                                                       await carregarResumoUsuarios()
                                                     } catch (error: any) {
@@ -1663,7 +1679,7 @@ export default function Admin() {
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
-                                                Encerrar Trial
+                                                Encerrar Trial Antecipadamente
                                               </button>
                                             </>
                                           )}
@@ -1830,7 +1846,12 @@ export default function Admin() {
                         userDetails={{
                           planoAtivo: userDetails.usuario.planoAtivo,
                           dataPagamento: userDetails.usuario.dataPagamento,
+                          dataInicioTrial: userDetails.usuario.dataInicioTrial || null,
+                          dataFimTrial: userDetails.usuario.dataFimTrial || null,
                           ultimoAcesso: userDetails.usuario.updatedAt,
+                          perfil: userDetails.perfil ? {
+                            createdAt: userDetails.perfil.createdAt || userDetails.usuario.createdAt
+                          } : null,
                         }}
                       />
                     </div>
@@ -1954,7 +1975,7 @@ export default function Admin() {
                       Resumo Geral
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-sm text-light-muted">Total de Usuários</p>
                           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1966,7 +1987,7 @@ export default function Admin() {
                           {estatisticas.usuarios.admins} admins, {estatisticas.usuarios.usuarios} usuários
                         </p>
                       </div>
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-sm text-light-muted">Usuários com Plano Ativo</p>
                           <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1975,10 +1996,10 @@ export default function Admin() {
                         </div>
                         <p className="text-3xl font-bold text-success">{estatisticas.usuarios.comPlanoAtivo || 0}</p>
                         <p className="text-xs text-light-muted mt-1">
-                          {estatisticas.metricas?.taxaConversao ? `${estatisticas.metricas.taxaConversao}% de conversão` : 'N/A'}
+                          {estatisticas.metricas?.taxaConversao ? `${estatisticas.metricas.taxaConversao}% de conversão geral` : 'N/A'}
                         </p>
                       </div>
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-sm text-light-muted">Total de Treinos</p>
                           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1990,7 +2011,7 @@ export default function Admin() {
                           {estatisticas.treinos.concluidos || 0} concluídos ({estatisticas.treinos.taxaConclusao || 0}%)
                         </p>
                       </div>
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                         <div className="flex items-center justify-between mb-2">
                           <p className="text-sm text-light-muted">Total de Exercícios</p>
                           <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2153,7 +2174,7 @@ export default function Admin() {
                           </p>
                           <p className="text-xs text-light-muted mt-1">Mês atual</p>
                         </div>
-                        <div className="card-hover p-4">
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                           <div className="flex items-center justify-between mb-2">
                             <p className="text-sm text-light-muted">Planos Ativos</p>
                             <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2163,7 +2184,7 @@ export default function Admin() {
                           <p className="text-3xl font-bold text-primary">{estatisticas.financeiro.planosAtivos.total}</p>
                           <p className="text-xs text-light-muted mt-1">Total de assinaturas ativas</p>
                         </div>
-                        <div className="card-hover p-4">
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                           <div className="flex items-center justify-between mb-2">
                             <p className="text-sm text-light-muted">Taxa de Conversão</p>
                             <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2173,7 +2194,7 @@ export default function Admin() {
                           <p className="text-3xl font-bold text-primary">
                             {estatisticas.metricas?.taxaConversao || 0}%
                           </p>
-                          <p className="text-xs text-light-muted mt-1">Onboarding / Pagamento</p>
+                          <p className="text-xs text-light-muted mt-1">Cadastro → Ativação</p>
                         </div>
                       </div>
 
@@ -2181,7 +2202,7 @@ export default function Admin() {
                       <div className="mt-6">
                         <h3 className="text-lg font-semibold text-light mb-4">Receita por Tipo de Plano</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="card-hover p-4">
+                          <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                             <div className="flex items-center justify-between mb-2">
                               <p className="text-sm font-medium text-light">Mensal</p>
                               <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.mensal} ativos</span>
@@ -2193,7 +2214,7 @@ export default function Admin() {
                               R$ {estatisticas.financeiro.precos.MENSAL.toFixed(2).replace('.', ',')} por assinatura
                             </p>
                           </div>
-                          <div className="card-hover p-4">
+                          <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                             <div className="flex items-center justify-between mb-2">
                               <p className="text-sm font-medium text-light">Trimestral</p>
                               <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.trimestral} ativos</span>
@@ -2205,7 +2226,7 @@ export default function Admin() {
                               R$ {estatisticas.financeiro.precos.TRIMESTRAL.toFixed(2).replace('.', ',')} por assinatura
                             </p>
                           </div>
-                          <div className="card-hover p-4">
+                          <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                             <div className="flex items-center justify-between mb-2">
                               <p className="text-sm font-medium text-light">Semestral</p>
                               <span className="badge-primary text-xs">{estatisticas.financeiro.planosAtivos.semestral} ativos</span>
@@ -2231,28 +2252,57 @@ export default function Admin() {
                         </svg>
                         Métricas de Conversão e Engajamento
                       </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="card-hover p-4">
-                          <p className="text-sm text-light-muted mb-2">Taxa de Conversão</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
+                          <p className="text-sm text-light-muted mb-2">Taxa de Conversão Geral</p>
                           <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConversao}%</p>
-                          <p className="text-xs text-light-muted mt-1">Usuários com plano ativo</p>
+                          <p className="text-xs text-light-muted mt-1">Usuários com plano ativo / Total</p>
                         </div>
-                        <div className="card-hover p-4">
+                        <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
                           <p className="text-sm text-light-muted mb-2">Taxa de Conclusão de Treinos</p>
                           <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConclusaoTreinos}%</p>
                           <p className="text-xs text-light-muted mt-1">Média geral</p>
                         </div>
-                        <div className="card-hover p-4">
+                        <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
                           <p className="text-sm text-light-muted mb-2">Perfis Completos</p>
                           <p className="text-3xl font-bold text-success">{estatisticas.metricas.perfilCompleto}</p>
                           <p className="text-xs text-light-muted mt-1">Onboarding completo</p>
                         </div>
-                        <div className="card-hover p-4">
+                        <div className="card-hover p-4 bg-gradient-to-br from-warning/20 to-warning/5 border border-warning/30">
                           <p className="text-sm text-light-muted mb-2">Perfis Incompletos</p>
                           <p className="text-3xl font-bold text-warning">{estatisticas.metricas.perfilIncompleto}</p>
                           <p className="text-xs text-light-muted mt-1">Onboarding incompleto</p>
                         </div>
                       </div>
+
+                      {/* Métricas de Funil do Novo Fluxo */}
+                      {estatisticas.metricas.taxaConclusaoOnboarding !== undefined && (
+                        <div className="mt-6">
+                          <h3 className="text-lg font-semibold text-light mb-4">Funil de Conversão</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
+                              <p className="text-sm text-light-muted mb-2">Conclusão de Onboarding</p>
+                              <p className="text-3xl font-bold text-primary">{estatisticas.metricas.taxaConclusaoOnboarding}%</p>
+                              <p className="text-xs text-light-muted mt-1">Onboarding completo / Total</p>
+                            </div>
+                            <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
+                              <p className="text-sm text-light-muted mb-2">Cadastro Após Onboarding</p>
+                              <p className="text-3xl font-bold text-success">{estatisticas.metricas.taxaCadastroAposOnboarding}%</p>
+                              <p className="text-xs text-light-muted mt-1">Cadastrados / Com perfil</p>
+                            </div>
+                            <div className="card-hover p-4 bg-gradient-to-br from-warning/20 to-warning/5 border border-warning/30">
+                              <p className="text-sm text-light-muted mb-2">Conversão Cadastro → Ativação</p>
+                              <p className="text-3xl font-bold text-warning">{estatisticas.metricas.taxaConversaoCadastroAtivacao}%</p>
+                              <p className="text-xs text-light-muted mt-1">Plano ativo / Cadastrados</p>
+                            </div>
+                            <div className="card-hover p-4 bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30">
+                              <p className="text-sm text-light-muted mb-2">Usuários em Trial</p>
+                              <p className="text-3xl font-bold text-primary">{estatisticas.metricas.usuariosEmTrial || 0}</p>
+                              <p className="text-xs text-light-muted mt-1">Trial ativo sem plano</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -2264,22 +2314,26 @@ export default function Admin() {
                       </svg>
                       Distribuição de Usuários
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="card-hover p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-success/20 to-success/5 border border-success/30">
                         <p className="text-sm text-light-muted mb-2">Com Perfil Completo</p>
                         <p className="text-2xl font-bold text-success">{estatisticas.usuarios.comPerfil}</p>
+                        <p className="text-xs text-light-muted mt-1">Onboarding concluído</p>
                       </div>
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-warning/20 to-warning/5 border border-warning/30">
                         <p className="text-sm text-light-muted mb-2">Sem Perfil</p>
                         <p className="text-2xl font-bold text-warning">{estatisticas.usuarios.semPerfil || 0}</p>
+                        <p className="text-xs text-light-muted mt-1">Onboarding não iniciado</p>
                       </div>
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-error/20 to-error/5 border border-error/30">
                         <p className="text-sm text-light-muted mb-2">Com Plano mas Sem Perfil</p>
                         <p className="text-2xl font-bold text-error">{estatisticas.usuarios.comPlanoSemPerfil || 0}</p>
+                        <p className="text-xs text-light-muted mt-1">Inconsistência de dados</p>
                       </div>
-                      <div className="card-hover p-4">
+                      <div className="card-hover p-4 bg-gradient-to-br from-warning/20 to-warning/5 border border-warning/30">
                         <p className="text-sm text-light-muted mb-2">Com Perfil mas Sem Plano</p>
                         <p className="text-2xl font-bold text-warning">{estatisticas.usuarios.comPerfilSemPlano || 0}</p>
+                        <p className="text-xs text-light-muted mt-1">Aguardando pagamento</p>
                       </div>
                     </div>
                   </div>

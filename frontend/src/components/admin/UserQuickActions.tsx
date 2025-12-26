@@ -32,7 +32,7 @@ export default function UserQuickActions({
   const actions = [
     {
       id: 'extend_trial',
-      label: 'Estender Trial',
+      label: 'Estender Trial (24h)',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
