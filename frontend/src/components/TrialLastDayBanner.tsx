@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useState, useEffect } from 'react'
 
 export default function TrialLastDayBanner() {
   const { user, isTrialAtivo } = useAuth()
@@ -28,8 +29,36 @@ export default function TrialLastDayBanner() {
     navigate('/checkout')
   }
 
+  // Calcular altura do TrialProgressHeader dinamicamente
+  const getTrialHeaderHeight = () => {
+    const header = document.getElementById('trial-progress-header')
+    if (header) {
+      return header.offsetHeight
+    }
+    return 60 // fallback
+  }
+
+  const [headerHeight, setHeaderHeight] = useState(60)
+
+  useEffect(() => {
+    const updateHeight = () => {
+      setHeaderHeight(getTrialHeaderHeight())
+    }
+    updateHeight()
+    window.addEventListener('resize', updateHeight)
+    // Atualizar após um pequeno delay para garantir que o header foi renderizado
+    const timeout = setTimeout(updateHeight, 100)
+    return () => {
+      window.removeEventListener('resize', updateHeight)
+      clearTimeout(timeout)
+    }
+  }, [])
+
   return (
-    <div className="fixed top-[60px] left-0 right-0 z-40 bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-yellow-500/30 border-b-2 border-yellow-500/50 backdrop-blur-xl">
+    <div 
+      className="fixed left-0 right-0 z-40 bg-gradient-to-r from-yellow-500/30 via-orange-500/30 to-yellow-500/30 border-b-2 border-yellow-500/50 backdrop-blur-xl"
+      style={{ top: `${headerHeight}px` }}
+    >
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
