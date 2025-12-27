@@ -85,7 +85,9 @@ END $$;
 -- =====================================================
 -- PASSO 2: INSERÇÃO DOS EXERCÍCIOS
 -- =====================================================
+-- Usa CTE para capturar os IDs dos exercícios inseridos
 
+WITH exercicios_inseridos AS (
 INSERT INTO exercicios (
     id,
     nome,
@@ -692,17 +694,25 @@ DECLARE
     exercicios_processados INT := 0;
     ordem_counter INT;
     v_timestamp_lote TIMESTAMP;
+    total_no_intervalo INT;
 BEGIN
     -- Recupera o timestamp do lote
     SELECT (current_setting('app.timestamp_lote', true))::TIMESTAMP INTO v_timestamp_lote;
     
-    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 10 minutos)
+    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 30 minutos)
     IF v_timestamp_lote IS NULL THEN
-        v_timestamp_lote := transaction_timestamp() - INTERVAL '10 minutes';
-        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 10 minutos.';
+        v_timestamp_lote := transaction_timestamp() - INTERVAL '30 minutes';
+        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 30 minutos.';
+        RAISE NOTICE 'Timestamp atual: %, Timestamp usado: %', transaction_timestamp(), v_timestamp_lote;
     ELSE
         RAISE NOTICE 'Timestamp do lote recuperado: %', v_timestamp_lote;
     END IF;
+    
+    -- Debug: conta quantos exercícios existem no intervalo
+    SELECT COUNT(*) INTO total_no_intervalo
+    FROM exercicios 
+    WHERE created_at >= (v_timestamp_lote - INTERVAL '1 second');
+    RAISE NOTICE 'Exercícios encontrados no intervalo: %', total_no_intervalo;
     
     -- Itera sobre todos os exercícios inseridos neste lote
     -- Usa um intervalo maior para garantir que capture todos os exercícios
@@ -818,10 +828,11 @@ BEGIN
     -- Recupera o timestamp do lote
     SELECT (current_setting('app.timestamp_lote', true))::TIMESTAMP INTO v_timestamp_lote;
     
-    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 10 minutos)
+    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 30 minutos)
     IF v_timestamp_lote IS NULL THEN
-        v_timestamp_lote := transaction_timestamp() - INTERVAL '10 minutes';
-        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 10 minutos.';
+        v_timestamp_lote := transaction_timestamp() - INTERVAL '30 minutes';
+        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 30 minutos.';
+        RAISE NOTICE 'Timestamp atual: %, Timestamp usado: %', transaction_timestamp(), v_timestamp_lote;
     ELSE
         RAISE NOTICE 'Timestamp do lote recuperado: %', v_timestamp_lote;
     END IF;
@@ -831,6 +842,8 @@ BEGIN
     SELECT COUNT(*) INTO total_exercicios
     FROM exercicios
     WHERE created_at >= (v_timestamp_lote - INTERVAL '1 second');
+    
+    RAISE NOTICE 'Debug: Total de exercícios encontrados: %', total_exercicios;
     
     SELECT COUNT(DISTINCT e.id) INTO exercicios_sem_grupos
     FROM exercicios e
