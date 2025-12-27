@@ -26,8 +26,10 @@ DECLARE
 BEGIN
     -- Armazena o timestamp em uma variável de sessão
     -- transaction_timestamp() retorna o mesmo valor durante toda a transação
+    -- false = não persiste além da transação atual
     PERFORM set_config('app.timestamp_lote', v_timestamp_lote::text, false);
     RAISE NOTICE 'Lote de inserção iniciado em: %', v_timestamp_lote;
+    RAISE NOTICE 'Timestamp armazenado: %', current_setting('app.timestamp_lote', true);
 END $$;
 
 -- =====================================================
@@ -694,16 +696,20 @@ BEGIN
     -- Recupera o timestamp do lote
     SELECT (current_setting('app.timestamp_lote', true))::TIMESTAMP INTO v_timestamp_lote;
     
-    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 5 minutos)
+    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 10 minutos)
     IF v_timestamp_lote IS NULL THEN
-        v_timestamp_lote := transaction_timestamp() - INTERVAL '5 minutes';
-        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 5 minutos.';
+        v_timestamp_lote := transaction_timestamp() - INTERVAL '10 minutes';
+        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 10 minutos.';
+    ELSE
+        RAISE NOTICE 'Timestamp do lote recuperado: %', v_timestamp_lote;
     END IF;
     
     -- Itera sobre todos os exercícios inseridos neste lote
+    -- Usa um intervalo maior para garantir que capture todos os exercícios
     FOR exercicio_record IN 
-        SELECT * FROM exercicios 
-        WHERE created_at >= v_timestamp_lote
+        SELECT id, nome, grupo_muscular_principal, sinergistas
+        FROM exercicios 
+        WHERE created_at >= (v_timestamp_lote - INTERVAL '1 second')
         ORDER BY created_at
     LOOP
         exercicios_processados := exercicios_processados + 1;
@@ -812,32 +818,35 @@ BEGIN
     -- Recupera o timestamp do lote
     SELECT (current_setting('app.timestamp_lote', true))::TIMESTAMP INTO v_timestamp_lote;
     
-    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 5 minutos)
+    -- Se não conseguir recuperar, usa um intervalo seguro (últimos 10 minutos)
     IF v_timestamp_lote IS NULL THEN
-        v_timestamp_lote := transaction_timestamp() - INTERVAL '5 minutes';
-        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 5 minutos.';
+        v_timestamp_lote := transaction_timestamp() - INTERVAL '10 minutes';
+        RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 10 minutos.';
+    ELSE
+        RAISE NOTICE 'Timestamp do lote recuperado: %', v_timestamp_lote;
     END IF;
     
     -- Usa o timestamp do lote para contar exercícios inseridos
+    -- Usa um intervalo maior para garantir que capture todos os exercícios
     SELECT COUNT(*) INTO total_exercicios
     FROM exercicios
-    WHERE created_at >= v_timestamp_lote;
+    WHERE created_at >= (v_timestamp_lote - INTERVAL '1 second');
     
     SELECT COUNT(DISTINCT e.id) INTO exercicios_sem_grupos
     FROM exercicios e
     LEFT JOIN exercicios_grupos_musculares egm ON e.id = egm.exercicio_id
-    WHERE e.created_at >= v_timestamp_lote
+    WHERE e.created_at >= (v_timestamp_lote - INTERVAL '1 second')
       AND egm.id IS NULL;
     
     SELECT COUNT(*) INTO total_grupos_associados
     FROM exercicios_grupos_musculares egm
     INNER JOIN exercicios e ON egm.exercicio_id = e.id
-    WHERE e.created_at >= v_timestamp_lote;
+    WHERE e.created_at >= (v_timestamp_lote - INTERVAL '1 second');
     
     SELECT COUNT(DISTINCT exercicio_id) INTO exercicios_com_grupos
     FROM exercicios_grupos_musculares egm
     INNER JOIN exercicios e ON egm.exercicio_id = e.id
-    WHERE e.created_at >= v_timestamp_lote;
+    WHERE e.created_at >= (v_timestamp_lote - INTERVAL '1 second');
     
     RAISE NOTICE '========================================';
     RAISE NOTICE 'RELATÓRIO DE INSERÇÃO';
