@@ -85,9 +85,7 @@ END $$;
 -- =====================================================
 -- PASSO 2: INSERÇÃO DOS EXERCÍCIOS
 -- =====================================================
--- Usa CTE para capturar os IDs dos exercícios inseridos
 
-WITH exercicios_inseridos AS (
 INSERT INTO exercicios (
     id,
     nome,
