@@ -113,14 +113,22 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://www.googletagmanager.com", "https://googleads.g.doubleclick.net"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", FRONTEND_URL],
+      connectSrc: [
+        "'self'", 
+        FRONTEND_URL,
+        "https://www.googletagmanager.com",
+        "https://www.google.com",
+        "https://www.google.com.br",
+        "https://www.googleadservices.com",
+        "https://googleads.g.doubleclick.net"
+      ],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
+      frameSrc: ["https://www.googletagmanager.com"],
     },
   },
   crossOriginResourcePolicy: { policy: "cross-origin" },

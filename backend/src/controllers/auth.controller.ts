@@ -881,9 +881,25 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Erro no cadastro pré-pagamento:', error);
+    console.error('Stack trace:', error.stack);
+    console.error('Detalhes do erro:', {
+      message: error.message,
+      name: error.name,
+      code: error.code
+    });
+    
+    // Verificar se é erro de validação do Prisma
+    if (error.code === 'P2002') {
+      return res.status(400).json({
+        error: 'E-mail já cadastrado'
+      });
+    }
+    
     res.status(500).json({
       error: 'Erro ao realizar cadastro',
-      message: error.message
+      message: process.env.NODE_ENV === 'production' 
+        ? 'Erro interno do servidor. Tente novamente mais tarde.' 
+        : error.message
     });
   }
 };

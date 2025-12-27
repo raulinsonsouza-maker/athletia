@@ -137,6 +137,12 @@ export default function Cadastro() {
       navigate('/meu-plano')
     } catch (err: any) {
       console.error('Erro no cadastro:', err)
+      console.error('Detalhes do erro:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        stack: err.stack
+      })
       
       // Tratamento específico de erros
       let errorMessage = 'Erro ao realizar cadastro'
@@ -144,11 +150,16 @@ export default function Cadastro() {
       if (err.response) {
         // Erro da API
         if (err.response.status === 400) {
-          errorMessage = err.response.data?.error || 'Dados inválidos. Verifique as informações e tente novamente.'
+          // Verificar se há detalhes de validação
+          if (err.response.data?.details && Array.isArray(err.response.data.details)) {
+            errorMessage = err.response.data.details[0]?.msg || err.response.data.error || 'Dados inválidos. Verifique as informações e tente novamente.'
+          } else {
+            errorMessage = err.response.data?.error || err.response.data?.message || 'Dados inválidos. Verifique as informações e tente novamente.'
+          }
         } else if (err.response.status === 409 || err.response.data?.error?.includes('já cadastrado')) {
           errorMessage = 'Este e-mail já está cadastrado. Você pode fazer login ou usar outro e-mail.'
         } else if (err.response.status >= 500) {
-          errorMessage = 'Erro no servidor. Tente novamente em alguns instantes.'
+          errorMessage = err.response.data?.error || err.response.data?.message || 'Erro no servidor. Tente novamente em alguns instantes.'
         } else {
           errorMessage = err.response.data?.error || err.response.data?.message || errorMessage
         }
