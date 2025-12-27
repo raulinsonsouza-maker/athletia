@@ -45,9 +45,22 @@ class WebSocketManager {
     // Middleware de autenticação
     this.io.use(async (socket: AuthenticatedSocket, next) => {
       try {
-        const token = socket.handshake.auth.token || socket.handshake.headers.authorization?.replace('Bearer ', '');
+        // Tentar obter token de múltiplas fontes
+        const token = 
+          socket.handshake.auth?.token || 
+          socket.handshake.headers?.authorization?.replace('Bearer ', '') ||
+          socket.handshake.headers?.authorization?.replace('bearer ', '') ||
+          socket.handshake.query?.token as string;
+        
+        console.log('[WebSocket] Tentativa de conexão:', {
+          hasAuthToken: !!socket.handshake.auth?.token,
+          hasHeaderAuth: !!socket.handshake.headers?.authorization,
+          hasQueryToken: !!socket.handshake.query?.token,
+          tokenLength: token ? token.length : 0
+        });
         
         if (!token) {
+          console.error('[WebSocket] Token não fornecido na conexão');
           return next(new Error('Token não fornecido'));
         }
 

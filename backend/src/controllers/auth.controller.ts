@@ -713,6 +713,28 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       }
     }
 
+    // Verificar se número de WhatsApp já existe (se fornecido)
+    if (whatsappPhoneNumber) {
+      const existingUserByPhone = await prisma.user.findUnique({
+        where: { whatsappPhoneNumber }
+      });
+
+      if (existingUserByPhone) {
+        // Se o número pertence ao mesmo email, permitir (pode ser atualização)
+        if (existingUserByPhone.email === emailNormalizado) {
+          // Mesmo usuário tentando recadastrar - retornar erro apropriado
+          return res.status(400).json({
+            error: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.'
+          });
+        } else {
+          // Número já usado por outro usuário
+          return res.status(400).json({
+            error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+          });
+        }
+      }
+    }
+
     // Sanitizar nome (remover "teste", "test", etc.)
     let nomeSanitizado = nome ? nome.trim() : null;
     if (nomeSanitizado) {
@@ -898,11 +920,24 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
       code: error.code
     });
     
-    // Verificar se é erro de validação do Prisma
+    // Verificar se é erro de constraint única do Prisma
     if (error.code === 'P2002') {
-      return res.status(400).json({
-        error: 'E-mail já cadastrado'
-      });
+      const target = error.meta?.target || [];
+      
+      // Verificar qual campo causou o erro
+      if (target.includes('email')) {
+        return res.status(400).json({
+          error: 'E-mail já cadastrado'
+        });
+      } else if (target.includes('whatsapp_phone_number')) {
+        return res.status(400).json({
+          error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+        });
+      } else {
+        return res.status(400).json({
+          error: 'Dados já cadastrados. Verifique as informações e tente novamente.'
+        });
+      }
     }
     
     res.status(500).json({
@@ -932,15 +967,53 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
       });
     }
 
+    const emailNormalizado = email.toLowerCase().trim();
+
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() }
+      where: { email: emailNormalizado }
     });
 
     if (existingUser) {
       return res.status(400).json({
         error: 'E-mail já cadastrado'
       });
+    }
+
+    // Normalizar telefone para formato E.164 (se fornecido)
+    let whatsappPhoneNumber: string | null = null;
+    if (telefone) {
+      // Remove caracteres não numéricos
+      const cleaned = telefone.replace(/\D/g, '');
+      // Adiciona código do país se não tiver
+      if (cleaned.length > 0) {
+        if (!cleaned.startsWith('55')) {
+          whatsappPhoneNumber = '+55' + cleaned;
+        } else {
+          whatsappPhoneNumber = '+' + cleaned;
+        }
+      }
+    }
+
+    // Verificar se número de WhatsApp já existe (se fornecido)
+    if (whatsappPhoneNumber) {
+      const existingUserByPhone = await prisma.user.findUnique({
+        where: { whatsappPhoneNumber }
+      });
+
+      if (existingUserByPhone) {
+        // Se o número pertence ao mesmo email, permitir (pode ser atualização)
+        if (existingUserByPhone.email === emailNormalizado) {
+          return res.status(400).json({
+            error: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.'
+          });
+        } else {
+          // Número já usado por outro usuário
+          return res.status(400).json({
+            error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+          });
+        }
+      }
     }
 
     // Gerar senha aleatória
@@ -950,11 +1023,12 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
     // Criar usuário
     const user = await prisma.user.create({
       data: {
-        email: email.toLowerCase().trim(),
+        email: emailNormalizado,
         senhaHash,
         nome: nome.trim(),
         dataNascimento: dataNascimento ? new Date(dataNascimento) : null,
         telefone: telefone.trim(),
+        whatsappPhoneNumber,
         plano: plano.toUpperCase(),
         role: 'USER'
       }
@@ -1048,9 +1122,38 @@ export const cadastroCompleto = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Erro no cadastro completo:', error);
+    console.error('Stack trace:', error.stack);
+    console.error('Detalhes do erro:', {
+      message: error.message,
+      name: error.name,
+      code: error.code
+    });
+    
+    // Verificar se é erro de constraint única do Prisma
+    if (error.code === 'P2002') {
+      const target = error.meta?.target || [];
+      
+      // Verificar qual campo causou o erro
+      if (target.includes('email')) {
+        return res.status(400).json({
+          error: 'E-mail já cadastrado'
+        });
+      } else if (target.includes('whatsapp_phone_number')) {
+        return res.status(400).json({
+          error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+        });
+      } else {
+        return res.status(400).json({
+          error: 'Dados já cadastrados. Verifique as informações e tente novamente.'
+        });
+      }
+    }
+    
     res.status(500).json({
       error: 'Erro ao realizar cadastro',
-      message: error.message
+      message: process.env.NODE_ENV === 'production' 
+        ? 'Erro interno do servidor. Tente novamente mais tarde.' 
+        : error.message
     });
   }
 };

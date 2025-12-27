@@ -42,9 +42,17 @@ class ChatService {
   }
 
   connect(token: string): Promise<Socket> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       if (this.socket?.connected) {
         resolve(this.socket);
+        return;
+      }
+
+      // Verificar se token existe
+      if (!token) {
+        const error = new Error('Token não fornecido para conexão WebSocket');
+        console.error('[Chat]', error.message);
+        reject(error);
         return;
       }
 
@@ -71,6 +79,7 @@ class ChatService {
       }
       
       console.log('[Chat] Conectando WebSocket em:', socketUrl);
+      console.log('[Chat] Token fornecido:', token ? `${token.substring(0, 20)}...` : 'NENHUM');
       
       this.socket = io(socketUrl, {
         auth: { token },
@@ -80,7 +89,11 @@ class ChatService {
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         timeout: 20000,
-        forceNew: false
+        forceNew: false,
+        // Adicionar headers de autenticação também (fallback)
+        extraHeaders: {
+          Authorization: `Bearer ${token}`
+        }
       });
 
       let resolved = false;
@@ -137,18 +150,45 @@ class ChatService {
         }
       });
 
-      // Timeout de segurança
+      // Timeout de segurança - tentar polling se WebSocket falhar
       setTimeout(() => {
         if (!resolved && this.socket && !this.socket.connected) {
-          console.warn('[Chat] Timeout na conexão WebSocket, usando polling');
+          console.warn('[Chat] Timeout na conexão WebSocket, tentando apenas polling');
           if (!resolved) {
-            resolved = true;
-            // Tentar forçar polling
-            this.socket.io.opts.transports = ['polling'];
-            resolve(this.socket);
+            // Desconectar e tentar novamente apenas com polling
+            this.socket.disconnect();
+            this.socket = io(socketUrl, {
+              auth: { token },
+              transports: ['polling'], // Apenas polling
+              reconnection: true,
+              reconnectionAttempts: 3,
+              reconnectionDelay: 2000,
+              timeout: 10000,
+              forceNew: true,
+              extraHeaders: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            
+            this.socket.on('connect', () => {
+              console.log('[Chat] Conectado via polling (fallback)');
+              if (!resolved) {
+                resolved = true;
+                resolve(this.socket);
+              }
+            });
+            
+            this.socket.on('connect_error', (error: any) => {
+              console.error('[Chat] Erro ao conectar via polling:', error.message || error);
+              if (!resolved) {
+                resolved = true;
+                // Ainda resolver para não bloquear UI, mas logar erro
+                resolve(this.socket);
+              }
+            });
           }
         }
-      }, 10000);
+      }, 8000);
     });
   }
 
