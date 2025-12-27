@@ -22,9 +22,10 @@ BEGIN;
 
 DO $$
 DECLARE
-    v_timestamp_lote TIMESTAMP := NOW();
+    v_timestamp_lote TIMESTAMP := transaction_timestamp();
 BEGIN
     -- Armazena o timestamp em uma variável de sessão
+    -- transaction_timestamp() retorna o mesmo valor durante toda a transação
     PERFORM set_config('app.timestamp_lote', v_timestamp_lote::text, false);
     RAISE NOTICE 'Lote de inserção iniciado em: %', v_timestamp_lote;
 END $$;
@@ -119,8 +120,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -138,8 +139,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -157,8 +158,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -176,8 +177,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -195,8 +196,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -214,8 +215,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -233,8 +234,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -252,8 +253,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -271,8 +272,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -290,8 +291,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -309,8 +310,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -328,8 +329,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -347,8 +348,8 @@ INSERT INTO exercicios (
     'Avançado',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -366,8 +367,8 @@ INSERT INTO exercicios (
     'Avançado',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -385,8 +386,8 @@ INSERT INTO exercicios (
     'Avançado',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -404,8 +405,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -423,8 +424,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -442,8 +443,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 -- ALONGAMENTOS E MOBILIDADE
 (
@@ -462,8 +463,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -481,8 +482,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -500,8 +501,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -519,8 +520,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -538,8 +539,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -557,8 +558,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -576,8 +577,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -595,8 +596,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -614,8 +615,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -633,8 +634,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -652,8 +653,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -671,8 +672,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -690,8 +691,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -709,8 +710,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -728,8 +729,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -747,8 +748,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -766,8 +767,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -785,8 +786,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -804,8 +805,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -823,8 +824,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -842,8 +843,8 @@ INSERT INTO exercicios (
     'Intermediário',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 ),
 (
     gen_random_uuid(),
@@ -861,8 +862,8 @@ INSERT INTO exercicios (
     'Iniciante',
     ARRAY[]::text[],
     true,
-    NOW(),
-    NOW()
+    transaction_timestamp(),
+    transaction_timestamp()
 );
 
 -- =====================================================
@@ -885,7 +886,7 @@ BEGIN
     
     -- Se não conseguir recuperar, usa um intervalo seguro (últimos 5 minutos)
     IF v_timestamp_lote IS NULL THEN
-        v_timestamp_lote := NOW() - INTERVAL '5 minutes';
+        v_timestamp_lote := transaction_timestamp() - INTERVAL '5 minutes';
         RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 5 minutos.';
     END IF;
     
@@ -919,7 +920,7 @@ BEGIN
                 grupo_principal_record.id,
                 'PRINCIPAL'::papel_grupo_muscular,
                 ordem_counter,
-                NOW()
+                transaction_timestamp()
             ) ON CONFLICT (exercicio_id, grupo_visual_id, papel) DO NOTHING;
             
             grupos_inseridos := grupos_inseridos + 1;
@@ -958,7 +959,7 @@ BEGIN
                             sinergista_record.id,
                             'SINERGISTA'::papel_grupo_muscular,
                             ordem_counter,
-                            NOW()
+                            transaction_timestamp()
                         ) ON CONFLICT (exercicio_id, grupo_visual_id, papel) DO NOTHING;
                         
                         grupos_inseridos := grupos_inseridos + 1;
@@ -995,7 +996,7 @@ BEGIN
     
     -- Se não conseguir recuperar, usa um intervalo seguro (últimos 5 minutos)
     IF v_timestamp_lote IS NULL THEN
-        v_timestamp_lote := NOW() - INTERVAL '5 minutes';
+        v_timestamp_lote := transaction_timestamp() - INTERVAL '5 minutes';
         RAISE WARNING 'Não foi possível recuperar timestamp do lote. Usando intervalo de 5 minutos.';
     END IF;
     
@@ -1044,8 +1045,8 @@ COMMIT;
 -- QUERIES DE VERIFICAÇÃO (Execute após COMMIT)
 -- =====================================================
 -- 
--- NOTA: A tabela temporária foi removida após o commit.
--- Use o timestamp de criação para verificar os exercícios inseridos.
+-- NOTA: Esta query é apenas para verificação manual após o commit.
+-- Use um intervalo de tempo adequado para encontrar os exercícios inseridos.
 -- 
 -- Exemplo de query de verificação:
 /*
@@ -1061,7 +1062,7 @@ SELECT
 FROM exercicios e
 LEFT JOIN exercicios_grupos_musculares egm ON e.id = egm.exercicio_id
 LEFT JOIN grupos_musculares_visuais gv ON egm.grupo_visual_id = gv.id
-WHERE e.created_at >= NOW() - INTERVAL '5 minute'
+WHERE e.created_at >= CURRENT_TIMESTAMP - INTERVAL '5 minutes'
 GROUP BY e.id, e.nome, e.grupo_muscular_principal, e.nivel_dificuldade, e.sem_equipamento, e.ativo
 ORDER BY e.created_at DESC;
 */
