@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -16,8 +16,13 @@ interface TrialProgressData {
 export default function TrialProgressHeader() {
   const { user, isAuthenticated, isTrialAtivo } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [progresso, setProgresso] = useState<TrialProgressData | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Rotas onde o banner não deve aparecer
+  const rotasOcultas = ['/checkout', '/treino/atual']
+  const deveOcultar = rotasOcultas.includes(location.pathname)
 
   useEffect(() => {
     const carregarProgresso = async () => {
@@ -64,8 +69,8 @@ export default function TrialProgressHeader() {
     }
   }, [isTrialAtivo, progresso, loading])
 
-  // Não renderizar se não estiver autenticado, não estiver em trial, ou não houver progresso
-  if (!isAuthenticated || !user || !isTrialAtivo() || !progresso || loading) {
+  // Não renderizar se não estiver autenticado, não estiver em trial, não houver progresso, ou estiver em rota oculta
+  if (!isAuthenticated || !user || !isTrialAtivo() || !progresso || loading || deveOcultar) {
     return null
   }
 

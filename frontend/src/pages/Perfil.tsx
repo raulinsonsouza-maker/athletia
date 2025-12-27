@@ -326,10 +326,22 @@ export default function Perfil() {
             : '1.5rem' 
         }}
       >
-        <section className="relative rounded-[32px] border border-white/10 overflow-hidden min-h-[200px]">
-          <img src={heroImage} alt="Banner do perfil" className="absolute inset-0 w-full h-full object-cover opacity-50" />
-          <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/80 to-transparent" />
-          <div className="relative z-10 px-6 py-8 space-y-4">
+        <section className="relative rounded-[32px] border border-white/10 overflow-hidden min-h-[250px]">
+          <img 
+            src={heroImage} 
+            alt="Banner do perfil" 
+            className="absolute inset-0 w-full h-full object-cover opacity-60" 
+            style={{ zIndex: 0 }}
+            onError={(e) => {
+              // Fallback para imagem padrão se a URL falhar
+              const target = e.target as HTMLImageElement
+              target.src = perfil.sexo === 'Feminino'
+                ? 'https://images.unsplash.com/photo-1469460340994-25b0127eea38?auto=format&fit=crop&w=1200&q=80'
+                : 'https://images.unsplash.com/photo-1483721310020-03333e577078?auto=format&fit=crop&w=1200&q=80'
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-dark via-dark/70 to-transparent" style={{ zIndex: 1 }} />
+          <div className="relative z-10 px-6 py-8 space-y-4" style={{ zIndex: 2 }}>
             <div className="flex items-center justify-between flex-wrap gap-3">
               <span className="px-4 py-1 rounded-full border border-white/20 text-xs uppercase tracking-[0.4em] text-white/70">
                 Perfil

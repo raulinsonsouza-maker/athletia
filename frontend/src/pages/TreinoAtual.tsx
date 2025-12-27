@@ -180,12 +180,12 @@ export default function TreinoAtual() {
       {/* CONTEÚDO PRINCIPAL - Layout Moderno */}
       <main className="flex-1 pt-16 pb-28 px-4 md:px-6 lg:px-8">
         {/* BARRA DE PROGRESSO SUPERIOR (UNIFICADA) */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-white/60">
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-semibold text-white/60">
               Exercício {exercicioAtivoIndex + 1} de {blocoAtivo.exercicios.length}
             </span>
-            <span className="text-sm font-bold text-primary">{progresso.percentual}%</span>
+            <span className="text-xs font-bold text-primary">{progresso.percentual}%</span>
           </div>
           <div className="flex items-center gap-1.5 justify-center mt-1">
             {blocoAtivo.exercicios.map((ex, idx) => {
@@ -194,7 +194,7 @@ export default function TreinoAtual() {
               return (
                 <div
                   key={ex.id}
-                  className={`h-2 flex-1 rounded-full transition-all ${
+                  className={`h-1.5 flex-1 rounded-full transition-all ${
                     ativo
                       ? 'bg-primary scale-y-110'
                       : concluido 
@@ -208,20 +208,20 @@ export default function TreinoAtual() {
         </div>
 
         {/* TÍTULO DO EXERCÍCIO */}
-        <h1 className="text-2xl md:text-4xl font-bold text-center mb-4 md:mb-6 leading-tight">
+        <h1 className="text-xl md:text-3xl font-bold text-center mb-3 md:mb-4 leading-tight">
           {exercicioAtivo.nome}
         </h1>
 
         {/* LAYOUT GRID MODERNO */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-7xl mx-auto">
           {/* COLUNA ESQUERDA: MÍDIA EM DESTAQUE */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* GIF/VIDEO GRANDE */}
             <div className="relative">
               <button
                 onClick={imagemModal.abrir}
                 disabled={!hasMedia}
-                className="w-full aspect-[3/2] md:aspect-[4/3] bg-[#111] rounded-2xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all relative group disabled:cursor-default"
+                className="w-full aspect-[3/2] md:aspect-[4/3] bg-[#111] rounded-xl overflow-hidden border-2 border-white/10 hover:border-primary/50 transition-all relative group disabled:cursor-default"
               >
                 {hasMedia ? (
                   <>
@@ -270,48 +270,64 @@ export default function TreinoAtual() {
               </button>
             </div>
 
-            {/* INFO CARDS HORIZONTAIS */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-3 md:p-4">
-                <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Séries</div>
-                <div className="text-2xl md:text-3xl font-bold">{exercicioAtivo.series}</div>
-              </div>
-              <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-3 md:p-4">
-                <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Repetições</div>
-                <div className="text-2xl md:text-3xl font-bold">{exercicioAtivo.repeticoes}</div>
-              </div>
-              {exercicioAtivo.carga && (
-                <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-3 md:p-4">
-                  <div className="text-xs text-white/50 uppercase tracking-wider mb-2">Carga</div>
-                  <div className="text-2xl md:text-3xl font-bold">
-                    {exercicioAtivo.carga}
-                    <span className="text-lg md:text-xl text-white/60">kg</span>
+            {/* CARD COMPACTO UNIFICADO */}
+            <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                {/* Séries x Repetições */}
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Séries</div>
+                    <div className="text-xl font-bold">{exercicioAtivo.series}</div>
+                  </div>
+                  <div className="text-white/30 text-xl">×</div>
+                  <div className="text-center">
+                    <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Reps</div>
+                    <div className="text-xl font-bold">{exercicioAtivo.repeticoes}</div>
                   </div>
                 </div>
-              )}
-              <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl border border-primary/30 p-3 md:p-4">
-                <div className="text-xs text-primary/80 uppercase tracking-wider mb-2">Grupo</div>
-                <div className="text-xl md:text-2xl font-bold text-primary">{exercicioAtivo.grupo}</div>
+                
+                {/* Separador */}
+                <div className="h-8 w-px bg-white/10" />
+                
+                {/* Grupo */}
+                <div className="flex-1 min-w-[120px]">
+                  <div className="text-xs text-primary/80 uppercase tracking-wider mb-1">Grupo</div>
+                  <div className="text-lg font-bold text-primary">{exercicioAtivo.grupo}</div>
+                </div>
+                
+                {/* Carga (se houver) */}
+                {exercicioAtivo.carga && (
+                  <>
+                    <div className="h-8 w-px bg-white/10" />
+                    <div className="text-center">
+                      <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Carga</div>
+                      <div className="text-lg font-bold">
+                        {exercicioAtivo.carga}
+                        <span className="text-sm text-white/60 ml-1">kg</span>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
           {/* COLUNA DIREITA: INFORMAÇÕES */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* NAVEGAÇÃO ENTRE EXERCÍCIOS */}
-            <div className="flex items-center justify-between gap-4 bg-[#111] rounded-xl border border-white/10 p-4">
+            <div className="flex items-center justify-between gap-3 bg-[#111] rounded-xl border border-white/10 p-3">
               <button
                 onClick={exercicioAnterior}
                 disabled={exercicioAtivoIndex === 0}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition border border-white/10 disabled:border-transparent"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition border border-white/10 disabled:border-transparent"
               >
                 <IconeSeta direcao="esquerda" />
-                <span className="text-sm font-medium">Anterior</span>
+                <span className="text-xs font-medium">Anterior</span>
               </button>
               
               <div className="flex-1 text-center">
-                <div className="text-xs text-white/50 mb-1">Progresso</div>
-                <div className="text-lg font-bold">
+                <div className="text-[10px] text-white/50 mb-0.5">Progresso</div>
+                <div className="text-sm font-bold">
                   {exercicioAtivoIndex + 1} / {blocoAtivo.exercicios.length}
                 </div>
               </div>
@@ -319,9 +335,9 @@ export default function TreinoAtual() {
               <button
                 onClick={irParaProximoExercicio}
                 disabled={exercicioAtivoIndex >= blocoAtivo.exercicios.length - 1}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition border border-white/10 disabled:border-transparent"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white/10 active:bg-white/15 transition border border-white/10 disabled:border-transparent"
               >
-                <span className="text-sm font-medium">Próximo</span>
+                <span className="text-xs font-medium">Próximo</span>
                 <IconeSeta direcao="direita" />
               </button>
             </div>
