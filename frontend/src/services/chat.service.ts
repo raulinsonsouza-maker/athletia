@@ -65,6 +65,11 @@ class ChatService {
       // Garantir que não termine com /
       socketUrl = socketUrl.replace(/\/$/, '');
       
+      // Se a URL atual é HTTPS, garantir que o WebSocket também use HTTPS/WSS
+      if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+        socketUrl = socketUrl.replace(/^http:/, 'https:');
+      }
+      
       console.log('[Chat] Conectando WebSocket em:', socketUrl);
       
       this.socket = io(socketUrl, {
@@ -89,8 +94,17 @@ class ChatService {
         }
       });
 
-      this.socket.on('connect_error', (error) => {
+      this.socket.on('connect_error', (error: any) => {
         console.error('[Chat] Erro de conexão:', error.message || error);
+        console.error('[Chat] Detalhes do erro:', {
+          message: error.message,
+          type: error.type,
+          description: error.description,
+          context: error.context,
+          transport: this.socket?.io?.engine?.transport?.name,
+          connected: this.socket?.connected,
+          socketUrl
+        });
         this.reconnectAttempts++;
         
         // Se polling funcionar, ainda considerar sucesso
@@ -105,6 +119,8 @@ class ChatService {
         
         if (this.reconnectAttempts >= this.maxReconnectAttempts) {
           console.error('[Chat] Máximo de tentativas de reconexão atingido');
+          console.error('[Chat] URL tentada:', socketUrl);
+          console.error('[Chat] Protocolo atual:', typeof window !== 'undefined' ? window.location.protocol : 'unknown');
           if (!resolved) {
             resolved = true;
             // Ainda resolver para não bloquear a UI, mas logar o erro
