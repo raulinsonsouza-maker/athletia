@@ -4,15 +4,18 @@ interface BottomTabsProps {
   active?: 'meu-plano' | 'treinos' | 'progresso' | 'historico' | 'perfil'
 }
 
+// Componente do Logo do App
+const AppLogo = ({ className = "w-6 h-6" }: { className?: string }) => (
+  <img 
+    src="/favicon.svg" 
+    alt="AthletIA Logo" 
+    className={className}
+  />
+)
+
 const IconHome = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M3 9.5l9-7 9 7M5 10.5V21h14v-10.5" />
-  </svg>
-)
-
-const IconGrid = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-    <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
   </svg>
 )
 
@@ -34,10 +37,11 @@ const IconUser = () => (
   </svg>
 )
 
+// Tabs reorganizados: Treinos no centro
 const TABS = [
   { id: 'meu-plano', label: 'Meu Plano', path: '/meu-plano', icon: <IconHome /> },
-  { id: 'treinos', label: 'Treinos', path: '/treino', icon: <IconGrid /> },
   { id: 'progresso', label: 'Progresso', path: '/progresso', icon: <IconChart /> },
+  { id: 'treinos', label: 'Treinos', path: '/treinos', icon: <AppLogo className="w-6 h-6" />, isCentral: true },
   { id: 'historico', label: 'Histórico', path: '/historico', icon: <IconHistory /> },
   { id: 'perfil', label: 'Perfil', path: '/perfil', icon: <IconUser /> }
 ]
@@ -50,14 +54,43 @@ export default function BottomTabs({ active }: BottomTabsProps) {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#0F0E0A]/95 border-t border-white/5 backdrop-blur-xl z-40">
-      <div className="flex items-center justify-between px-5 py-3">
+      <div className="flex items-center justify-between px-2 py-3 relative">
         {TABS.map((tab) => {
           const isActive = current === tab.id
+          const isCentral = 'isCentral' in tab && tab.isCentral
+
+          // Botão central especial para Treinos
+          if (isCentral) {
+            return (
+              <div key={tab.id} className="flex flex-col items-center -mt-3 relative z-10">
+                <button
+                  onClick={() => navigate(tab.path)}
+                  className={`
+                    w-14 h-14 rounded-full flex items-center justify-center
+                    transition-all duration-300 shadow-lg
+                    ${isActive 
+                      ? 'bg-gradient-to-br from-primary to-primary/80 shadow-primary/50 scale-105' 
+                      : 'bg-gradient-to-br from-primary/90 to-primary/70 shadow-primary/30 hover:scale-105'
+                    }
+                  `}
+                >
+                  <AppLogo className="w-7 h-7" />
+                </button>
+                <span className={`text-[10px] mt-1 font-semibold transition ${
+                  isActive ? 'text-primary' : 'text-white/70'
+                }`}>
+                  {tab.label}
+                </span>
+              </div>
+            )
+          }
+
+          // Botões laterais padrão
           return (
             <button
               key={tab.id}
               onClick={() => navigate(tab.path)}
-              className={`flex flex-col items-center gap-1 text-xs transition ${
+              className={`flex flex-col items-center gap-1 text-xs transition flex-1 ${
                 isActive ? 'text-primary font-semibold' : 'text-white/60'
               }`}
             >
