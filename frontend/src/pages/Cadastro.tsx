@@ -151,11 +151,19 @@ export default function Cadastro() {
         // Erro da API
         if (err.response.status === 400) {
           // Verificar se há detalhes de validação
-          if (err.response.data?.details && Array.isArray(err.response.data.details)) {
-            errorMessage = err.response.data.details[0]?.msg || err.response.data.error || 'Dados inválidos. Verifique as informações e tente novamente.'
+          if (err.response.data?.details && Array.isArray(err.response.data.details) && err.response.data.details.length > 0) {
+            // Pegar a primeira mensagem de erro de validação
+            const firstError = err.response.data.details[0]
+            errorMessage = firstError?.msg || firstError?.message || err.response.data.error || 'Dados inválidos. Verifique as informações e tente novamente.'
+            
+            // Log detalhado para debug
+            console.error('Erros de validação:', err.response.data.details)
           } else {
             errorMessage = err.response.data?.error || err.response.data?.message || 'Dados inválidos. Verifique as informações e tente novamente.'
           }
+          
+          // Log completo da resposta para debug
+          console.error('Resposta completa do servidor (400):', JSON.stringify(err.response.data, null, 2))
         } else if (err.response.status === 409 || err.response.data?.error?.includes('já cadastrado')) {
           errorMessage = 'Este e-mail já está cadastrado. Você pode fazer login ou usar outro e-mail.'
         } else if (err.response.status >= 500) {

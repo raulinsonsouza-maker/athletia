@@ -87,9 +87,11 @@ const cadastroCompletoValidation = [
     .isLength({ min: 2 })
     .withMessage('Nome deve ter no mínimo 2 caracteres'),
   body('email')
+    .notEmpty()
+    .withMessage('Email é obrigatório')
+    .trim()
     .isEmail()
     .withMessage('Email inválido')
-    .trim()
     .customSanitizer((value) => value.toLowerCase()),
   body('telefone')
     .notEmpty()
@@ -111,15 +113,19 @@ const cadastroPrePagamentoValidation = [
     .isLength({ min: 2 })
     .withMessage('Nome deve ter no mínimo 2 caracteres'),
   body('email')
+    .notEmpty()
+    .withMessage('Email é obrigatório')
+    .trim()
     .isEmail()
     .withMessage('Email inválido')
-    .trim()
     .customSanitizer((value) => value.toLowerCase()),
   body('telefone')
     .notEmpty()
     .withMessage('Telefone é obrigatório')
     .trim(),
   body('senha')
+    .notEmpty()
+    .withMessage('Senha é obrigatória')
     .isLength({ min: 8 })
     .withMessage('Senha deve ter no mínimo 8 caracteres'),
   body('onboarding')

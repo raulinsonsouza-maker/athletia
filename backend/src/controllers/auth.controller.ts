@@ -644,6 +644,16 @@ const generateRandomPassword = (length: number = 12): string => {
 // Cadastro pré-pagamento (cria usuário sem plano ativo, sem gerar treinos)
 export const cadastroPrePagamento = async (req: Request, res: Response) => {
   try {
+    // Log dos dados recebidos para debug (sem senha)
+    console.log('[CADASTRO-PRE-PAGAMENTO] Dados recebidos:', {
+      nome: req.body.nome,
+      email: req.body.email,
+      telefone: req.body.telefone,
+      temSenha: !!req.body.senha,
+      temOnboarding: !!req.body.onboarding,
+      onboardingKeys: req.body.onboarding ? Object.keys(req.body.onboarding) : []
+    });
+    
     const { nome, telefone, email, senha, onboarding } = req.body;
 
     // Validações
