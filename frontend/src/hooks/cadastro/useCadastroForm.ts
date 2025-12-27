@@ -39,17 +39,19 @@ export function useCadastroForm() {
         if (value.trim().length < 2) return 'Nome deve ter pelo menos 2 caracteres'
         return undefined
 
-      case 'email':
+      case 'email': {
         if (!value.trim()) return 'E-mail é obrigatório'
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(value)) return 'E-mail inválido'
         return undefined
+      }
 
-      case 'telefone':
+      case 'telefone': {
         if (!value) return 'Telefone é obrigatório'
         const phoneDigits = value.replace(/\D/g, '')
         if (phoneDigits.length < 10) return 'Telefone inválido'
         return undefined
+      }
 
       case 'senha':
         if (!value) return 'Senha é obrigatória'

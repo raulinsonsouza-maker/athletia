@@ -13,7 +13,7 @@ export function getApiBaseUrl(): string {
   }
   
   // Remover /api do final se existir (será adicionado por getApiUrl)
-  let cleanUrl = envUrl.replace(/\/api\/?$/, '')
+  const cleanUrl = envUrl.replace(/\/api\/?$/, '')
   
   // Se estamos em produção HTTPS (não localhost)
   if (typeof window !== 'undefined' && window.location.protocol === 'https:' && window.location.hostname !== 'localhost') {
@@ -35,7 +35,7 @@ export function getApiBaseUrl(): string {
     // Se a API está em HTTP, converter para HTTPS usando o domínio atual
     if (cleanUrl.startsWith('http://')) {
       // Extrair host, porta e path
-      const urlMatch = cleanUrl.match(/http:\/\/([^\/:]+)(:\d+)?(\/.*)?/)
+      const urlMatch = cleanUrl.match(/http:\/\/([^/:]+)(:\d+)?(\/.*)?/)
       if (urlMatch) {
         const [, , port, path] = urlMatch
         // Remover /api do path se existir

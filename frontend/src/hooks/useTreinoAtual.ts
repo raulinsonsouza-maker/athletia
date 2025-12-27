@@ -63,7 +63,7 @@ function treinoReducer(state: TreinoState, action: TreinoAction): TreinoState {
 
       // Determinar bloco ativo inicial
       const primeiroBlocoValido = blocosValidos[0]
-      let blocoAtivoId = primeiroBlocoValido?.id ?? null
+      const blocoAtivoId = primeiroBlocoValido?.id ?? null
       let exercicioIndex = 0
 
       // Encontrar primeiro exercício não concluído

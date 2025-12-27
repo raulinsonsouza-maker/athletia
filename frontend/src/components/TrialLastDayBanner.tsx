@@ -5,30 +5,7 @@ import { useState, useEffect } from 'react'
 export default function TrialLastDayBanner() {
   const { user, isTrialAtivo } = useAuth()
   const navigate = useNavigate()
-
-  if (!isTrialAtivo() || !user) {
-    return null
-  }
-
-  // Só mostrar no último dia (menos de 12 horas restantes)
-  if (!user.dataFimTrial) {
-    return null
-  }
   
-  const agora = new Date()
-  const dataFimTrial = new Date(user.dataFimTrial)
-  const horasRestantes = (dataFimTrial.getTime() - agora.getTime()) / (1000 * 60 * 60)
-  
-  // Só mostrar se faltam menos de 12 horas mas mais de 0
-  // E não mostrar se TrialProgressHeader já está visível (evitar duplicação)
-  if (horasRestantes <= 0 || horasRestantes > 12) {
-    return null
-  }
-
-  const handleAssinar = () => {
-    navigate('/checkout')
-  }
-
   // Calcular altura do TrialProgressHeader dinamicamente
   const getTrialHeaderHeight = () => {
     const header = document.getElementById('trial-progress-header')
@@ -53,6 +30,29 @@ export default function TrialLastDayBanner() {
       clearTimeout(timeout)
     }
   }, [])
+
+  if (!isTrialAtivo() || !user) {
+    return null
+  }
+
+  // Só mostrar no último dia (menos de 12 horas restantes)
+  if (!user.dataFimTrial) {
+    return null
+  }
+  
+  const agora = new Date()
+  const dataFimTrial = new Date(user.dataFimTrial)
+  const horasRestantes = (dataFimTrial.getTime() - agora.getTime()) / (1000 * 60 * 60)
+  
+  // Só mostrar se faltam menos de 12 horas mas mais de 0
+  // E não mostrar se TrialProgressHeader já está visível (evitar duplicação)
+  if (horasRestantes <= 0 || horasRestantes > 12) {
+    return null
+  }
+
+  const handleAssinar = () => {
+    navigate('/checkout')
+  }
 
   return (
     <div 

@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshAccessToken = useCallback(async (): Promise<boolean> => {
     try {
       // Verificar ambos storages para refresh token
-      let refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
+      const refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken')
       const isLocalStorage = !!localStorage.getItem('refreshToken')
       
       if (!refreshToken) {
@@ -347,7 +347,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const checkAndRefreshToken = async () => {
       // Verificar ambos storages
-      let token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
+      const token = localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken')
       
       if (!token) return
 
