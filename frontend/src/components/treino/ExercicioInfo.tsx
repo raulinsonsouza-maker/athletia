@@ -17,35 +17,79 @@ export const ExercicioInfo = memo(({ exercicio }: ExercicioInfoProps) => {
   const { abaAtiva, trocarAba } = useAbas()
 
   return (
-    <div className="bg-[#111] rounded-xl border border-white/10 overflow-hidden">
-      <div className="flex border-b border-white/10">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          const isActive = abaAtiva === tab.id
-          return (
-            <button
-              key={tab.id}
-              onClick={() => trocarAba(tab.id)}
-              className={`flex-1 py-2 px-2 flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider transition ${
-                isActive 
-                  ? 'bg-white/5 text-white border-b-2 border-primary' 
-                  : 'text-white/50 hover:text-white/70'
-              }`}
-            >
-              <Icon />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          )
-        })}
+    <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 overflow-hidden">
+      {/* SEÇÃO SUPERIOR: INFORMAÇÕES ESSENCIAIS (Sempre visível) */}
+      <div className="p-4 border-b border-white/10">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          {/* Séries x Repetições */}
+          <div className="flex items-center gap-2.5">
+            <div className="text-center">
+              <div className="text-[10px] text-white/50 uppercase tracking-wider mb-0.5">Séries</div>
+              <div className="text-lg font-bold">{exercicio.series}</div>
+            </div>
+            <div className="text-white/30 text-lg">×</div>
+            <div className="text-center">
+              <div className="text-[10px] text-white/50 uppercase tracking-wider mb-0.5">Reps</div>
+              <div className="text-lg font-bold">{exercicio.repeticoes}</div>
+            </div>
+          </div>
+          
+          {/* Separador */}
+          <div className="h-6 w-px bg-white/10" />
+          
+          {/* Grupo */}
+          <div className="flex-1 min-w-[100px]">
+            <div className="text-[10px] text-primary/80 uppercase tracking-wider mb-0.5">Grupo</div>
+            <div className="text-base font-bold text-primary">{exercicio.grupo}</div>
+          </div>
+          
+          {/* Carga (se houver) */}
+          {exercicio.carga && (
+            <>
+              <div className="h-6 w-px bg-white/10" />
+              <div className="text-center">
+                <div className="text-[10px] text-white/50 uppercase tracking-wider mb-0.5">Carga</div>
+                <div className="text-base font-bold">
+                  {exercicio.carga}
+                  <span className="text-xs text-white/60 ml-0.5">kg</span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      <div className="p-3 min-h-[100px]">
+      {/* SEÇÃO INFERIOR: TABS COM DETALHES */}
+      <div>
+        <div className="flex border-b border-white/10">
+          {tabs.map((tab) => {
+            const Icon = tab.icon
+            const isActive = abaAtiva === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => trocarAba(tab.id)}
+                className={`flex-1 py-2 px-2 flex items-center justify-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider transition ${
+                  isActive 
+                    ? 'bg-white/5 text-white border-b-2 border-primary' 
+                    : 'text-white/50 hover:text-white/70'
+                }`}
+              >
+                <Icon />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            )
+          })}
+        </div>
+
+        <div className="p-3 min-h-[90px]">
         {abaAtiva === 'alvo' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
               <span className="text-xs text-white/80">Músculo principal: <strong className="text-white">{exercicio.grupo}</strong></span>
             </div>
+            {/* Informações adicionais do alvo podem ser adicionadas aqui */}
           </div>
         )}
 
@@ -90,6 +134,7 @@ export const ExercicioInfo = memo(({ exercicio }: ExercicioInfoProps) => {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   )

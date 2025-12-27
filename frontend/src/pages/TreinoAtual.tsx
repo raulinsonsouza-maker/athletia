@@ -270,46 +270,6 @@ export default function TreinoAtual() {
               </button>
             </div>
 
-            {/* CARD COMPACTO UNIFICADO */}
-            <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] rounded-xl border border-white/10 p-4">
-              <div className="flex items-center justify-between gap-4 flex-wrap">
-                {/* Séries x Repetições */}
-                <div className="flex items-center gap-3">
-                  <div className="text-center">
-                    <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Séries</div>
-                    <div className="text-xl font-bold">{exercicioAtivo.series}</div>
-                  </div>
-                  <div className="text-white/30 text-xl">×</div>
-                  <div className="text-center">
-                    <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Reps</div>
-                    <div className="text-xl font-bold">{exercicioAtivo.repeticoes}</div>
-                  </div>
-                </div>
-                
-                {/* Separador */}
-                <div className="h-8 w-px bg-white/10" />
-                
-                {/* Grupo */}
-                <div className="flex-1 min-w-[120px]">
-                  <div className="text-xs text-primary/80 uppercase tracking-wider mb-1">Grupo</div>
-                  <div className="text-lg font-bold text-primary">{exercicioAtivo.grupo}</div>
-                </div>
-                
-                {/* Carga (se houver) */}
-                {exercicioAtivo.carga && (
-                  <>
-                    <div className="h-8 w-px bg-white/10" />
-                    <div className="text-center">
-                      <div className="text-xs text-white/50 uppercase tracking-wider mb-1">Carga</div>
-                      <div className="text-lg font-bold">
-                        {exercicioAtivo.carga}
-                        <span className="text-sm text-white/60 ml-1">kg</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* COLUNA DIREITA: INFORMAÇÕES */}
