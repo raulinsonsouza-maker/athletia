@@ -918,7 +918,7 @@ BEGIN
                 gen_random_uuid(),
                 exercicio_record.id,
                 grupo_principal_record.id,
-                'PRINCIPAL'::papel_grupo_muscular,
+                'PRINCIPAL'::"PapelGrupoMuscular",
                 ordem_counter,
                 transaction_timestamp()
             ) ON CONFLICT (exercicio_id, grupo_visual_id, papel) DO NOTHING;
@@ -957,7 +957,7 @@ BEGIN
                             gen_random_uuid(),
                             exercicio_record.id,
                             sinergista_record.id,
-                            'SINERGISTA'::papel_grupo_muscular,
+                            'SINERGISTA'::"PapelGrupoMuscular",
                             ordem_counter,
                             transaction_timestamp()
                         ) ON CONFLICT (exercicio_id, grupo_visual_id, papel) DO NOTHING;
