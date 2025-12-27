@@ -1,4 +1,5 @@
 import api from './auth.service'
+import { isAxiosError } from '../types/errors'
 import {
   TreinosSemanaisResponse,
   FiltrosTreino,
@@ -52,8 +53,8 @@ export const buscarTreinoPorId = async (id: string): Promise<TreinoCompleto | nu
   try {
     const response = await api.get(`/treino/${id}`)
     return response.data
-  } catch (error: any) {
-    if (error.response?.status === 404) {
+  } catch (error: unknown) {
+    if (isAxiosError(error) && error.response?.status === 404) {
       return null
     }
     throw error
@@ -98,7 +99,7 @@ export const buscarHistoricoTreinos = async (limite: number = 30, dataInicio?: D
     
     const response = await api.get(`/treino/historico?${params.toString()}`)
     return response.data || []
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro ao buscar histórico de treinos:', error)
     throw error
   }
@@ -152,7 +153,7 @@ export const gerarTreino = async (data?: string, gerarSemana: boolean = false): 
     console.log('[treino.service] Resposta do servidor:', response.data)
     
     return response.data
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[treino.service] Erro na requisição de gerar treino:', error)
     throw error
   }

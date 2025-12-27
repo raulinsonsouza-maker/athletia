@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
+import { isAxiosError, getErrorMessage, getErrorStatus } from '../types/errors'
 import { OnboardingData } from '../types/onboarding.types'
 import CadastroHero from '../components/cadastro/CadastroHero'
 import ResumoOnboarding from '../components/cadastro/ResumoOnboarding'
@@ -135,51 +136,53 @@ export default function Cadastro() {
 
       // Redirecionar para dashboard (meu-plano) - usuário tem trial de 3 dias ativo
       navigate('/meu-plano')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro no cadastro:', err)
+      const errorMessage = getErrorMessage(err)
+      const status = getErrorStatus(err)
+      
       console.error('Detalhes do erro:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        stack: err.stack
+        message: errorMessage,
+        status,
+        isAxiosError: isAxiosError(err)
       })
       
       // Tratamento específico de erros
-      let errorMessage = 'Erro ao realizar cadastro'
+      let finalErrorMessage = 'Erro ao realizar cadastro'
       
-      if (err.response) {
+      if (isAxiosError(err) && err.response) {
         // Erro da API
-        if (err.response.status === 400) {
+        if (status === 400) {
           // Verificar se há detalhes de validação
           if (err.response.data?.details && Array.isArray(err.response.data.details) && err.response.data.details.length > 0) {
             // Pegar a primeira mensagem de erro de validação
             const firstError = err.response.data.details[0]
-            errorMessage = firstError?.msg || firstError?.message || err.response.data.error || 'Dados inválidos. Verifique as informações e tente novamente.'
+            finalErrorMessage = firstError?.msg || firstError?.message || err.response.data.error || 'Dados inválidos. Verifique as informações e tente novamente.'
             
             // Log detalhado para debug
             console.error('Erros de validação:', err.response.data.details)
           } else {
-            errorMessage = err.response.data?.error || err.response.data?.message || 'Dados inválidos. Verifique as informações e tente novamente.'
+            finalErrorMessage = err.response.data?.error || err.response.data?.message || 'Dados inválidos. Verifique as informações e tente novamente.'
           }
           
           // Log completo da resposta para debug
           console.error('Resposta completa do servidor (400):', JSON.stringify(err.response.data, null, 2))
-        } else if (err.response.status === 409 || err.response.data?.error?.includes('já cadastrado')) {
-          errorMessage = 'Este e-mail já está cadastrado. Você pode fazer login ou usar outro e-mail.'
-        } else if (err.response.status >= 500) {
-          errorMessage = err.response.data?.error || err.response.data?.message || 'Erro no servidor. Tente novamente em alguns instantes.'
+        } else if (status === 409 || err.response.data?.error?.includes('já cadastrado')) {
+          finalErrorMessage = 'Este e-mail já está cadastrado. Você pode fazer login ou usar outro e-mail.'
+        } else if (status && status >= 500) {
+          finalErrorMessage = err.response.data?.error || err.response.data?.message || 'Erro no servidor. Tente novamente em alguns instantes.'
         } else {
-          errorMessage = err.response.data?.error || err.response.data?.message || errorMessage
+          finalErrorMessage = err.response.data?.error || err.response.data?.message || finalErrorMessage
         }
-      } else if (err.request) {
+      } else if (isAxiosError(err) && err.request) {
         // Erro de rede
-        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.'
-      } else if (err.message) {
+        finalErrorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.'
+      } else {
         // Erro de validação local
-        errorMessage = err.message
+        finalErrorMessage = errorMessage
       }
       
-      setError(errorMessage)
+      setError(finalErrorMessage)
     } finally {
       setLoading(false)
     }

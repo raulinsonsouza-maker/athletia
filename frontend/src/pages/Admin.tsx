@@ -285,9 +285,43 @@ export default function Admin() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [userNotes, setUserNotes] = useState<Array<{ id: string; content: string; createdAt: string; updatedAt?: string; tags?: string[] }>>([])
 
+  const verificarAdmin = useCallback(async () => {
+    try {
+      // Verificar se tem token admin
+      const adminToken = localStorage.getItem('adminAccessToken')
+      if (!adminToken) {
+        navigate('/admin/login')
+        return
+      }
+
+      // Verificar se token é válido - apenas validar, não carregar dados ainda
+      // Os dados serão carregados quando a tab correspondente for selecionada
+      setLoading(false)
+    } catch (error: any) {
+      if (import.meta.env.DEV) {
+        console.error('Erro ao verificar admin:', error)
+      }
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('adminAccessToken')
+        localStorage.removeItem('adminRefreshToken')
+        localStorage.removeItem('adminUser')
+        showToast('Sessão expirada. Faça login novamente.', 'error')
+        navigate('/admin/login')
+      } else if (error.isNetworkError || !error.response) {
+        // Erro de rede - backend offline
+        showToast('Erro de conexão. Verifique se o backend está rodando na porta 3001.', 'error')
+        setLoading(false)
+      } else {
+        showToast('Erro ao verificar autenticação. Tente novamente.', 'error')
+        setLoading(false)
+      }
+    }
+  }, [navigate, showToast])
+
   useEffect(() => {
     verificarAdmin()
-  }, [])
+  }, [verificarAdmin])
 
   // Listener para mudança de tab via evento customizado (ex: notificações)
   useEffect(() => {
@@ -351,40 +385,6 @@ export default function Admin() {
     }
   }, [showToast])
 
-  const verificarAdmin = async () => {
-    try {
-      // Verificar se tem token admin
-      const adminToken = localStorage.getItem('adminAccessToken')
-      if (!adminToken) {
-        navigate('/admin/login')
-        return
-      }
-
-      // Verificar se token é válido - apenas validar, não carregar dados ainda
-      // Os dados serão carregados quando a tab correspondente for selecionada
-      setLoading(false)
-    } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error('Erro ao verificar admin:', error)
-      }
-
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        localStorage.removeItem('adminAccessToken')
-        localStorage.removeItem('adminRefreshToken')
-        localStorage.removeItem('adminUser')
-        showToast('Sessão expirada. Faça login novamente.', 'error')
-        navigate('/admin/login')
-      } else if (error.isNetworkError || !error.response) {
-        // Erro de rede - backend offline
-        showToast('Erro de conexão. Verifique se o backend está rodando na porta 3001.', 'error')
-        setLoading(false)
-      } else {
-        showToast('Erro ao verificar autenticação. Tente novamente.', 'error')
-        setLoading(false)
-      }
-    }
-  }
-
   // Ref para acessar filtros atualizados sem causar loops
   const filtrosRef = useRef(filtros)
   filtrosRef.current = filtros
@@ -392,11 +392,11 @@ export default function Admin() {
   // Memoizar strings dos arrays de forma estável
   const tipoAcessoStr = useMemo(() => {
     return [...filtros.tipoAcesso].sort().join(',')
-  }, [filtros.tipoAcesso.length, filtros.tipoAcesso.join(',')])
+  }, [filtros.tipoAcesso])
   
   const estagioTrialStr = useMemo(() => {
     return [...filtros.estagioTrial].sort().join(',')
-  }, [filtros.estagioTrial.length, filtros.estagioTrial.join(',')])
+  }, [filtros.estagioTrial])
 
   const filtrosKey = useMemo(() => {
     return `${tipoAcessoStr}|${estagioTrialStr}|${filtros.vencimento}|${filtros.perfil}|${filtros.ultimoAcesso}|${filtros.dataCadastroInicio}|${filtros.dataCadastroFim}|${filtros.etapaFunil}`

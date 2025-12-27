@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -71,11 +71,7 @@ export default function Progresso() {
   const cacheRef = useRef<Record<number, { estatisticas: Estatisticas; historico: TreinoHistorico[] }>>({})
   const primeiraCarga = useRef(true)
 
-  useEffect(() => {
-    carregarDados()
-  }, [periodo])
-
-  const carregarDados = async () => {
+  const carregarDados = useCallback(async () => {
     const cacheExistente = cacheRef.current[periodo]
     if (cacheExistente) {
       setEstatisticas(cacheExistente.estatisticas)
@@ -108,7 +104,11 @@ export default function Progresso() {
       setRefreshing(false)
       primeiraCarga.current = false
     }
-  }
+  }, [periodo, showToast])
+
+  useEffect(() => {
+    carregarDados()
+  }, [carregarDados])
 
   const completedDates = useMemo(() => {
     const set = new Set<string>()

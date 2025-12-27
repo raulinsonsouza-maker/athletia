@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 
@@ -16,11 +16,7 @@ export default function TreinoImagensAdmin() {
 
     const letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
-    useEffect(() => {
-        carregarImagens()
-    }, [])
-
-    const carregarImagens = async () => {
+    const carregarImagens = useCallback(async () => {
         try {
             const response = await api.get('/admin/treino-imagens')
             const mapa: Record<string, string> = {}
@@ -34,7 +30,11 @@ export default function TreinoImagensAdmin() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [showToast])
+
+    useEffect(() => {
+        carregarImagens()
+    }, [carregarImagens])
 
     const handleSaveUrl = async (letra: string, url: string) => {
         try {

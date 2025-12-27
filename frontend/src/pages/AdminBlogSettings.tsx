@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -28,6 +28,8 @@ export default function AdminBlogSettings() {
   const { showToast, ToastContainer } = useToast()
   const [loading, setLoading] = useState(true)
   const [verificando, setVerificando] = useState(true)
+  
+  // Usar diretamente nos useEffect
   const [saving, setSaving] = useState(false)
   const [articles, setArticles] = useState<BlogArticle[]>([])
   const [categories, setCategories] = useState<BlogCategory[]>([])
@@ -65,6 +67,51 @@ export default function AdminBlogSettings() {
     document.title = 'Configurações do Blog - Painel Administrativo | AthletIA'
   }, [])
 
+  const carregarSettings = useCallback(async () => {
+    try {
+      const response = await api.get('/admin/blog/configuracoes')
+      const data = response.data
+      setFormData({
+        heroPostId: data.heroPostId || '',
+        featuredCount: data.featuredCount || 3,
+        categoriesDisplay: data.categoriesDisplay || [],
+        globalCtaId: data.globalCtaId || '',
+        blogIntroText: data.blogIntroText || '',
+        globalMetaTitle: data.globalMetaTitle || '',
+        globalMetaDescription: data.globalMetaDescription || ''
+      })
+    } catch (error: any) {
+      showToast(error.response?.data?.error || 'Erro ao carregar configurações', 'error')
+    }
+  }, [showToast])
+
+  const carregarArtigos = useCallback(async () => {
+    try {
+      const response = await api.get('/admin/blog/artigos?published=true')
+      setArticles(response.data)
+    } catch (error: any) {
+      console.error('Erro ao carregar artigos:', error)
+    }
+  }, [])
+
+  const carregarCategorias = useCallback(async () => {
+    try {
+      const response = await api.get('/admin/blog/categorias')
+      setCategories(response.data)
+    } catch (error: any) {
+      console.error('Erro ao carregar categorias:', error)
+    }
+  }, [])
+
+  const carregarCTAs = useCallback(async () => {
+    try {
+      const response = await api.get('/admin/blog/ctas')
+      setCtas(response.data)
+    } catch (error: any) {
+      console.error('Erro ao carregar CTAs:', error)
+    }
+  }, [])
+
   useEffect(() => {
     const carregarDados = async () => {
       try {
@@ -91,52 +138,7 @@ export default function AdminBlogSettings() {
       }
     }
     carregarDados()
-  }, [navigate])
-
-  const carregarSettings = async () => {
-    try {
-      const response = await api.get('/admin/blog/configuracoes')
-      const data = response.data
-      setFormData({
-        heroPostId: data.heroPostId || '',
-        featuredCount: data.featuredCount || 3,
-        categoriesDisplay: data.categoriesDisplay || [],
-        globalCtaId: data.globalCtaId || '',
-        blogIntroText: data.blogIntroText || '',
-        globalMetaTitle: data.globalMetaTitle || '',
-        globalMetaDescription: data.globalMetaDescription || ''
-      })
-    } catch (error: any) {
-      showToast(error.response?.data?.error || 'Erro ao carregar configurações', 'error')
-    }
-  }
-
-  const carregarArtigos = async () => {
-    try {
-      const response = await api.get('/admin/blog/artigos?published=true')
-      setArticles(response.data)
-    } catch (error: any) {
-      console.error('Erro ao carregar artigos:', error)
-    }
-  }
-
-  const carregarCategorias = async () => {
-    try {
-      const response = await api.get('/admin/blog/categorias')
-      setCategories(response.data)
-    } catch (error: any) {
-      console.error('Erro ao carregar categorias:', error)
-    }
-  }
-
-  const carregarCTAs = async () => {
-    try {
-      const response = await api.get('/admin/blog/ctas')
-      setCtas(response.data)
-    } catch (error: any) {
-      console.error('Erro ao carregar CTAs:', error)
-    }
-  }
+  }, [navigate, carregarSettings, carregarArtigos, carregarCategorias, carregarCTAs, showToast])
 
   const handleSave = async () => {
     setSaving(true)

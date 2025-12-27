@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../services/auth.service';
 import { useToast } from '../hooks/useToast';
 import { chatService, ChatMessage, ChatSession } from '../services/chat.service';
@@ -27,6 +27,33 @@ export default function AdminChat() {
   const [filter, setFilter] = useState<'all' | 'bot' | 'human' | 'closed'>('all');
   const [stats, setStats] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const loadSessions = useCallback(async () => {
+    try {
+      setLoadingSessions(true);
+      const params = new URLSearchParams();
+      if (filter !== 'all') {
+        params.append('status', filter);
+      }
+      const response = await api.get(`/admin/chat/sessions?${params.toString()}`);
+      setSessions(response.data.sessions || response.data);
+    } catch (error: any) {
+      console.error('Erro ao carregar sessões:', error);
+      showToast('Erro ao carregar sessões', 'error');
+    } finally {
+      setLoadingSessions(false);
+    }
+  }, [filter, showToast]);
+
+  const loadMessages = useCallback(async (sessionId: string) => {
+    try {
+      const response = await api.get(`/admin/chat/sessions/${sessionId}`);
+      setMessages(response.data.messages || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar mensagens:', error);
+      showToast('Erro ao carregar mensagens', 'error');
+    }
+  }, [showToast]);
 
   useEffect(() => {
     loadSessions();
@@ -115,7 +142,7 @@ export default function AdminChat() {
       }
       chatService.off('chat:session_assigned');
     };
-  }, [selectedSession]);
+  }, [selectedSession, loadSessions]);
 
   useEffect(() => {
     if (selectedSession) {
@@ -127,40 +154,13 @@ export default function AdminChat() {
         chatService.leaveSession(selectedSession.id);
       }
     };
-  }, [selectedSession?.id]);
+  }, [selectedSession, loadMessages]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
-
-  const loadSessions = async () => {
-    try {
-      setLoadingSessions(true);
-      const params = new URLSearchParams();
-      if (filter !== 'all') {
-        params.append('status', filter);
-      }
-      const response = await api.get(`/admin/chat/sessions?${params.toString()}`);
-      setSessions(response.data.sessions || response.data);
-    } catch (error: any) {
-      console.error('Erro ao carregar sessões:', error);
-      showToast('Erro ao carregar sessões', 'error');
-    } finally {
-      setLoadingSessions(false);
-    }
-  };
-
-  const loadMessages = async (sessionId: string) => {
-    try {
-      const response = await api.get(`/admin/chat/sessions/${sessionId}`);
-      setMessages(response.data.messages || []);
-    } catch (error: any) {
-      console.error('Erro ao carregar mensagens:', error);
-      showToast('Erro ao carregar mensagens', 'error');
-    }
-  };
 
   const loadStats = async () => {
     try {

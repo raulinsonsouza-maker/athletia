@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -38,7 +38,7 @@ export default function AdminGrupos() {
     verificarAdmin()
   }, [navigate])
 
-  const carregarGrupos = async () => {
+  const carregarGrupos = useCallback(async () => {
     try {
       setLoading(true)
       const lista = await grupoMuscularAdminService.listar()
@@ -49,7 +49,7 @@ export default function AdminGrupos() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()

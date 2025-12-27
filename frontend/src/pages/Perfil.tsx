@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -74,48 +74,14 @@ export default function Perfil() {
   const [pesoError, setPesoError] = useState('')
   const [historicoPeso, setHistoricoPeso] = useState<HistoricoPeso[]>([])
   const [loadingHistorico, setLoadingHistorico] = useState(false)
-  const [imagemPerfilPadrao, setImagemPerfilPadrao] = useState<string | null>(null)
+  const [imagemPerfilPadrao, _setImagemPerfilPadrao] = useState<string | null>(null)
 
   const inputBaseClass =
     'w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none transition'
   const inputErrorClass = 'border-error/60 focus:border-error focus:ring-error/30'
 
-  useEffect(() => {
-    carregarPerfil()
-  }, [])
 
-  useEffect(() => {
-    if (perfil?.pesoAtual) {
-      setPesoSlider(perfil.pesoAtual)
-    } else if (perfil && !perfil.pesoAtual) {
-      // Se não há peso definido, manter valor padrão de 75 kg
-      setPesoSlider(75)
-    }
-  }, [perfil?.pesoAtual])
-
-  useEffect(() => {
-    if (perfil) {
-      carregarHistoricoPeso()
-    }
-  }, [perfil])
-
-  useEffect(() => {
-    carregarImagemPerfilPadrao()
-  }, [])
-
-  const carregarImagemPerfilPadrao = async () => {
-    try {
-      const response = await api.get('/admin/settings/imagens')
-      if (response.data?.imagemPerfilPadrao) {
-        setImagemPerfilPadrao(response.data.imagemPerfilPadrao)
-      }
-    } catch (error) {
-      // Ignorar erro se não for admin ou se não existir ainda
-      console.debug('Não foi possível carregar imagem padrão do perfil:', error)
-    }
-  }
-
-  const carregarPerfil = async () => {
+  const carregarPerfil = useCallback(async () => {
     try {
       setLoading(true)
       const response = await api.get('/perfil')
@@ -132,9 +98,9 @@ export default function Perfil() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [navigate])
 
-  const carregarHistoricoPeso = async () => {
+  const carregarHistoricoPeso = useCallback(async () => {
     try {
       setLoadingHistorico(true)
       const response = await api.get('/peso/historico?limite=30')
@@ -144,7 +110,26 @@ export default function Perfil() {
     } finally {
       setLoadingHistorico(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    carregarPerfil()
+  }, [carregarPerfil])
+
+  useEffect(() => {
+    if (perfil?.pesoAtual) {
+      setPesoSlider(perfil.pesoAtual)
+    } else if (perfil && !perfil.pesoAtual) {
+      // Se não há peso definido, manter valor padrão de 75 kg
+      setPesoSlider(75)
+    }
+  }, [perfil?.pesoAtual])
+
+  useEffect(() => {
+    if (perfil) {
+      carregarHistoricoPeso()
+    }
+  }, [perfil, carregarHistoricoPeso])
 
   const handleSalvar = async () => {
     const validation = validatePerfil(formData)

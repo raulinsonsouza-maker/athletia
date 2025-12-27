@@ -146,7 +146,7 @@ api.interceptors.response.use(
             }
             return Promise.reject(error)
           }
-        } catch (refreshError: any) {
+        } catch (refreshError: unknown) {
           console.error('[API] Erro ao renovar token admin:', refreshError)
           localStorage.removeItem('adminAccessToken')
           localStorage.removeItem('adminRefreshToken')
@@ -197,7 +197,7 @@ api.interceptors.response.use(
             }
             return Promise.reject(error)
           }
-        } catch (refreshError: any) {
+        } catch (refreshError: unknown) {
           console.error('[API] Erro ao renovar token:', refreshError)
           // Limpar ambos storages
           localStorage.removeItem('accessToken')

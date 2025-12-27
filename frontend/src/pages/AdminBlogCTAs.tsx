@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -61,6 +61,18 @@ export default function AdminBlogCTAs() {
     document.title = 'CTAs do Blog - Painel Administrativo | AthletIA'
   }, [])
 
+  const carregarCTAs = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await api.get('/admin/blog/ctas')
+      setCtas(response.data)
+    } catch (error: any) {
+      showToast(error.response?.data?.error || 'Erro ao carregar CTAs', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [showToast])
+
   useEffect(() => {
     const verificarAdmin = async () => {
       try {
@@ -81,19 +93,7 @@ export default function AdminBlogCTAs() {
       }
     }
     verificarAdmin()
-  }, [navigate])
-
-  const carregarCTAs = async () => {
-    setLoading(true)
-    try {
-      const response = await api.get('/admin/blog/ctas')
-      setCtas(response.data)
-    } catch (error: any) {
-      showToast(error.response?.data?.error || 'Erro ao carregar CTAs', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [navigate, carregarCTAs, showToast])
 
   const handleCreate = () => {
     setSelectedCTA(null)

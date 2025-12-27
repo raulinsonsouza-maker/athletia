@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useToast } from '../hooks/useToast'
 import { whatsappAdminService, WhatsAppStatus, WhatsAppConfig, WhatsAppMessage, WhatsAppConversation, WhatsAppCadence } from '../services/whatsapp-admin.service'
 
@@ -31,11 +31,60 @@ export default function AdminWhatsApp() {
   const [users, setUsers] = useState<any[]>([])
   const [loadingUsers, setLoadingUsers] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [activeSection])
+  const loadMessages = useCallback(async () => {
+    setLoadingMessages(true)
+    try {
+      const data = await whatsappAdminService.listMessages({ page: messagesPage, limit: 50 })
+      setMessages(data.messages)
+      // setMessagesTotal(data.pagination.total) // Para uso futuro com paginação
+    } catch (error: any) {
+      showToast('Erro ao carregar mensagens', 'error')
+    } finally {
+      setLoadingMessages(false)
+    }
+  }, [showToast, messagesPage])
 
-  const loadData = async () => {
+  const loadConversations = useCallback(async () => {
+    setLoadingConversations(true)
+    try {
+      const data = await whatsappAdminService.listConversations({ page: 1, limit: 50 })
+      setConversations(data.conversations)
+    } catch (error: any) {
+      showToast('Erro ao carregar conversas', 'error')
+    } finally {
+      setLoadingConversations(false)
+    }
+  }, [showToast])
+
+  const loadCadence = useCallback(async () => {
+    setLoadingCadence(true)
+    try {
+      const [stats, usersData] = await Promise.all([
+        whatsappAdminService.getCadenceStats(),
+        whatsappAdminService.listCadenceUsers({ page: 1, limit: 50 })
+      ])
+      setCadenceStats(stats.stats)
+      setCadenceUsers(usersData.cadences)
+    } catch (error: any) {
+      showToast('Erro ao carregar cadência', 'error')
+    } finally {
+      setLoadingCadence(false)
+    }
+  }, [showToast])
+
+  const loadUsers = useCallback(async () => {
+    setLoadingUsers(true)
+    try {
+      const data = await whatsappAdminService.listUsers({ page: 1, limit: 50 })
+      setUsers(data.users)
+    } catch (error: any) {
+      showToast('Erro ao carregar usuários', 'error')
+    } finally {
+      setLoadingUsers(false)
+    }
+  }, [showToast])
+
+  const loadData = useCallback(async () => {
     setLoading(true)
     setConfigError(null) // Limpar erro ao recarregar
     try {
@@ -61,60 +110,15 @@ export default function AdminWhatsApp() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeSection, showToast, loadMessages, loadConversations, loadCadence, loadUsers])
 
-  const loadMessages = async () => {
-    setLoadingMessages(true)
-    try {
-      const data = await whatsappAdminService.listMessages({ page: messagesPage, limit: 50 })
-      setMessages(data.messages)
-      // setMessagesTotal(data.pagination.total) // Para uso futuro com paginação
-    } catch (error: any) {
-      showToast('Erro ao carregar mensagens', 'error')
-    } finally {
-      setLoadingMessages(false)
-    }
-  }
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
-  const loadConversations = async () => {
-    setLoadingConversations(true)
-    try {
-      const data = await whatsappAdminService.listConversations({ page: 1, limit: 50 })
-      setConversations(data.conversations)
-    } catch (error: any) {
-      showToast('Erro ao carregar conversas', 'error')
-    } finally {
-      setLoadingConversations(false)
-    }
-  }
-
-  const loadCadence = async () => {
-    setLoadingCadence(true)
-    try {
-      const [stats, usersData] = await Promise.all([
-        whatsappAdminService.getCadenceStats(),
-        whatsappAdminService.listCadenceUsers({ page: 1, limit: 50 })
-      ])
-      setCadenceStats(stats.stats)
-      setCadenceUsers(usersData.cadences)
-    } catch (error: any) {
-      showToast('Erro ao carregar cadência', 'error')
-    } finally {
-      setLoadingCadence(false)
-    }
-  }
-
-  const loadUsers = async () => {
-    setLoadingUsers(true)
-    try {
-      const data = await whatsappAdminService.listUsers({ page: 1, limit: 50 })
-      setUsers(data.users)
-    } catch (error: any) {
-      showToast('Erro ao carregar usuários', 'error')
-    } finally {
-      setLoadingUsers(false)
-    }
-  }
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const handleTestConnection = async () => {
     try {

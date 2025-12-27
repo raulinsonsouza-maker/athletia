@@ -172,7 +172,7 @@ class ChatService {
             
             this.socket.on('connect', () => {
               console.log('[Chat] Conectado via polling (fallback)');
-              if (!resolved) {
+              if (!resolved && this.socket) {
                 resolved = true;
                 resolve(this.socket);
               }
@@ -180,7 +180,7 @@ class ChatService {
             
             this.socket.on('connect_error', (error: any) => {
               console.error('[Chat] Erro ao conectar via polling:', error.message || error);
-              if (!resolved) {
+              if (!resolved && this.socket) {
                 resolved = true;
                 // Ainda resolver para não bloquear UI, mas logar erro
                 resolve(this.socket);

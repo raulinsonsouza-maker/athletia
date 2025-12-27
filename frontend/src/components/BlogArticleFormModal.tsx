@@ -226,14 +226,14 @@ export default function BlogArticleFormModal({
     if (isCreating && formData.title && !formData.slug) {
       setFormData(prev => ({ ...prev, slug: generateSlug(prev.title) }))
     }
-  }, [formData.title, isCreating])
+  }, [formData.title, formData.slug, isCreating, generateSlug])
 
   // Auto-gerar meta title se vazio
   useEffect(() => {
     if (formData.title && !formData.metaTitle) {
       setFormData(prev => ({ ...prev, metaTitle: prev.title }))
     }
-  }, [formData.title])
+  }, [formData.title, formData.metaTitle])
 
   // Auto-gerar meta description do excerpt (apenas se vazio e ao criar)
   const [metaDescriptionManuallyEdited, setMetaDescriptionManuallyEdited] = useState(false)
@@ -243,7 +243,7 @@ export default function BlogArticleFormModal({
       const metaDesc = generateMetaDescription(formData.excerpt)
       setFormData(prev => ({ ...prev, metaDescription: metaDesc }))
     }
-  }, [formData.excerpt, isCreating, metaDescriptionManuallyEdited])
+  }, [formData.excerpt, formData.metaDescription, isCreating, metaDescriptionManuallyEdited])
 
   // Calcular reading time automaticamente quando conteúdo mudar
   useEffect(() => {
@@ -255,7 +255,7 @@ export default function BlogArticleFormModal({
     } else if (formData.readingTime > 0) {
       setFormData(prev => ({ ...prev, readingTime: 0 }))
     }
-  }, [formData.content])
+  }, [formData.content, formData.readingTime])
 
   // Auto-gerar featured image alt do título (apenas se vazio e ao criar)
   const [imageAltManuallyEdited, setImageAltManuallyEdited] = useState(false)
@@ -265,7 +265,7 @@ export default function BlogArticleFormModal({
       const altText = generateImageAlt(formData.title)
       setFormData(prev => ({ ...prev, featuredImageAlt: altText }))
     }
-  }, [formData.title, selectedImageFile, isCreating, imageAltManuallyEdited])
+  }, [formData.title, formData.featuredImageAlt, selectedImageFile, isCreating, imageAltManuallyEdited])
 
   // Sugerir keywords baseadas em título e categoria
   useEffect(() => {

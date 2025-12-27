@@ -71,7 +71,7 @@ export async function registrarSubscription(): Promise<boolean> {
 
     console.log('[PUSH] Subscription registrada com sucesso');
     return true;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[PUSH] Erro ao registrar subscription:', error);
     return false;
   }
@@ -99,7 +99,7 @@ export async function removerSubscription(): Promise<boolean> {
     }
 
     return false;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[PUSH] Erro ao remover subscription:', error);
     return false;
   }

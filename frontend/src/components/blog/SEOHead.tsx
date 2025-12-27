@@ -272,7 +272,7 @@ export default function SEOHead({ article, breadcrumbItems }: SEOHeadProps) {
         }
       }
     }
-  }, [article])
+  }, [article, breadcrumbItems])
 
   return null
 }

@@ -63,7 +63,7 @@ export default function ChatWidget() {
       chatService.off('chat:message');
       chatService.off('chat:session_closed');
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isOpen]);
 
   useEffect(() => {
     if (isOpen && messagesEndRef.current) {

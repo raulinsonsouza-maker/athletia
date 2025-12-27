@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -68,6 +68,18 @@ export default function AdminBlogCategories() {
     document.title = 'Categorias do Blog - Painel Administrativo | AthletIA'
   }, [])
 
+  const carregarCategorias = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await api.get('/admin/blog/categorias')
+      setCategories(response.data)
+    } catch (error: any) {
+      showToast(error.response?.data?.error || 'Erro ao carregar categorias', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [showToast])
+
   useEffect(() => {
     const verificarAdmin = async () => {
       try {
@@ -88,19 +100,7 @@ export default function AdminBlogCategories() {
       }
     }
     verificarAdmin()
-  }, [navigate])
-
-  const carregarCategorias = async () => {
-    setLoading(true)
-    try {
-      const response = await api.get('/admin/blog/categorias')
-      setCategories(response.data)
-    } catch (error: any) {
-      showToast(error.response?.data?.error || 'Erro ao carregar categorias', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [navigate, carregarCategorias, showToast])
 
   const handleCreate = () => {
     setSelectedCategory(null)

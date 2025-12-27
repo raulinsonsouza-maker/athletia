@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 
@@ -14,11 +14,7 @@ export default function SistemaImagensAdmin() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState<'perfil' | 'login' | null>(null)
 
-  useEffect(() => {
-    carregarSettings()
-  }, [])
-
-  const carregarSettings = async () => {
+  const carregarSettings = useCallback(async () => {
     try {
       const response = await api.get('/admin/settings/imagens')
       setSettings(response.data)
@@ -28,7 +24,11 @@ export default function SistemaImagensAdmin() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [showToast])
+
+  useEffect(() => {
+    carregarSettings()
+  }, [carregarSettings])
 
   const handleFileUpload = async (tipo: 'perfil' | 'login', file: File) => {
     if (!file) return

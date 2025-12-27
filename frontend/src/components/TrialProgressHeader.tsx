@@ -41,7 +41,7 @@ export default function TrialProgressHeader() {
     carregarProgresso()
     const interval = setInterval(carregarProgresso, 60000) // Atualizar a cada minuto
     return () => clearInterval(interval)
-  }, [user, isTrialAtivo])
+  }, [user, isTrialAtivo, isAuthenticated])
 
   useEffect(() => {
     if (isTrialAtivo() && progresso && !loading) {

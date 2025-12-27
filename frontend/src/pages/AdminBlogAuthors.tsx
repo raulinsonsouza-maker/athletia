@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
@@ -61,6 +61,18 @@ export default function AdminBlogAuthors() {
     document.title = 'Autores do Blog - Painel Administrativo | AthletIA'
   }, [])
 
+  const carregarAutores = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await api.get('/admin/blog/autores')
+      setAuthors(response.data)
+    } catch (error: any) {
+      showToast(error.response?.data?.error || 'Erro ao carregar autores', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [showToast])
+
   useEffect(() => {
     const verificarAdmin = async () => {
       try {
@@ -81,19 +93,7 @@ export default function AdminBlogAuthors() {
       }
     }
     verificarAdmin()
-  }, [navigate])
-
-  const carregarAutores = async () => {
-    setLoading(true)
-    try {
-      const response = await api.get('/admin/blog/autores')
-      setAuthors(response.data)
-    } catch (error: any) {
-      showToast(error.response?.data?.error || 'Erro ao carregar autores', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [navigate, carregarAutores, showToast])
 
   const handleCreate = () => {
     setSelectedAuthor(null)

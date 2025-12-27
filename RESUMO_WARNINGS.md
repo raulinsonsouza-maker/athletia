@@ -86,10 +86,28 @@ export default function Component() { ... }
 ## Conclusão
 
 ✅ **Todos os erros críticos foram corrigidos**
-⚠️ **221 warnings restantes são principalmente:**
-- Uso de `any` (não impede funcionamento)
-- Dependências de hooks (pode causar bugs sutis, mas não crítico)
+
+### Progresso da Correção
+
+**Fase 1: Dependências de Hooks** ✅ **CONCLUÍDA**
+- Corrigidos ~30 warnings de dependências faltantes em useEffect/useMemo/useCallback
+- Arquivos corrigidos: Perfil.tsx, Admin.tsx, BlogArticleFormModal.tsx, e todos os arquivos Admin*
+
+**Fase 2: Tipos `any` em Handlers de Erro** ✅ **EM PROGRESSO**
+- Criado arquivo `frontend/src/types/errors.ts` com type guards e utilitários
+- Corrigidos handlers de erro em: auth.service.ts, treino.service.ts, push-notification.service.ts, Cadastro.tsx
+- Restam ~40 warnings em outras páginas
+
+**Fase 3: Tipos `any` em Estados e Formulários** ⏳ **PENDENTE**
+- ~80 warnings restantes
+
+**Fase 4: Tipos `any` Restantes** ⏳ **PENDENTE**
+- ~61 warnings restantes
+
+⚠️ **Warnings restantes são principalmente:**
+- Uso de `any` em estados e formulários (não impede funcionamento)
+- Uso de `any` em props e callbacks (não impede funcionamento)
 - Organização de exports (não afeta produção)
 
-**Recomendação:** O código está **pronto para deploy**. Os warnings podem ser corrigidos gradualmente em refatorações futuras, mas não bloqueiam o funcionamento.
+**Recomendação:** O código está **pronto para deploy**. As correções aplicadas melhoram significativamente a qualidade do código. Os warnings restantes podem ser corrigidos gradualmente em refatorações futuras, mas não bloqueiam o funcionamento.
 

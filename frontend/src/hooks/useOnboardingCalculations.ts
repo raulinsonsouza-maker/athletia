@@ -169,9 +169,7 @@ export function useOnboardingCalculations(onboardingData: OnboardingData | null)
       imagemFutura
     }
   }, [
-    onboardingData?.sexo,
-    onboardingData?.tipoCorpo,
-    onboardingData?.objetivo
+    onboardingData
   ])
 
   return {

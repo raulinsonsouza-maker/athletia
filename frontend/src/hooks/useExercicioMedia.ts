@@ -36,7 +36,7 @@ export function useExercicioMedia(options: ExercicioMediaOptions) {
     if (resolvedImageUrl && !imageError) return resolvedImageUrl
     if (currentFallback) return currentFallback
     return null
-  }, [resolvedImageUrl, currentFallback, imageError, fallbackIndex])
+  }, [resolvedImageUrl, currentFallback, imageError])
 
   // Handler de erro unificado
   const handleError = () => {

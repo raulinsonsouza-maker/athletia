@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useToast } from '../hooks/useToast'
 import api from '../services/auth.service'
 import { grupoMuscularAdminService } from '../services/grupo-muscular-admin.service'
@@ -30,17 +30,7 @@ export default function GrupoMuscularFormModal({
     const [loading, setLoading] = useState(false)
     const [uploadingImagem, setUploadingImagem] = useState(false)
 
-    useEffect(() => {
-        if (isOpen) {
-            if (grupoId) {
-                carregarGrupo(grupoId)
-            } else {
-                setFormData(formInicial)
-            }
-        }
-    }, [isOpen, grupoId])
-
-    const carregarGrupo = async (id: string) => {
+    const carregarGrupo = useCallback(async (id: string) => {
         try {
             setLoading(true)
             const grupo = await grupoMuscularAdminService.buscarPorId(id)
@@ -58,7 +48,17 @@ export default function GrupoMuscularFormModal({
         } finally {
             setLoading(false)
         }
-    }
+    }, [showToast, onClose])
+
+    useEffect(() => {
+        if (isOpen) {
+            if (grupoId) {
+                carregarGrupo(grupoId)
+            } else {
+                setFormData(formInicial)
+            }
+        }
+    }, [isOpen, grupoId, carregarGrupo])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
