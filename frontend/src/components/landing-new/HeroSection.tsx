@@ -83,15 +83,15 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
           isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
         }`}>
           <div className="relative w-full max-w-md">
-            {/* Imagem SVG - sem bordas pesadas */}
+            {/* Imagem Hero - nova versão */}
             <div className="relative">
               <img
-                src="/images/app-preview/novas/1.svg"
+                src="/images/app-preview/Editadas/Hero_nova.png"
                 alt="Interface do AthletIA mostrando treinos personalizados"
                 className="w-full h-auto drop-shadow-2xl"
                 loading="eager"
                 onError={(e) => {
-                  // Fallback para hero-app.webp se SVG não existir
+                  // Fallback para hero-app.webp se imagem não existir
                   const target = e.target as HTMLImageElement
                   target.src = '/images/app-preview/hero-app.webp'
                 }}

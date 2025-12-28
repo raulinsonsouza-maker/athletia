@@ -122,9 +122,23 @@ export default function StatisticsSection() {
               impressionam
             </span>
           </h2>
-          <p className="text-xl text-light-muted max-w-2xl mx-auto">
+          <p className="text-xl text-light-muted max-w-2xl mx-auto mb-12">
             Junte-se a milhares de pessoas que já transformaram seus corpos com o AthletIA
           </p>
+          
+          {/* Imagem de progresso com cards */}
+          <div className={`mb-16 transition-all duration-1000 delay-300 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}>
+            <div className="flex justify-center">
+              <img
+                src="/images/app-preview/Editadas/Progresso_com_cards.svg"
+                alt="Tela de progresso do AthletIA com cards e estatísticas"
+                className="w-full max-w-4xl h-auto drop-shadow-2xl"
+                loading="lazy"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
