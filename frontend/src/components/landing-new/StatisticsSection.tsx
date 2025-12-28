@@ -123,7 +123,7 @@ export default function StatisticsSection() {
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-2xl mx-auto mb-12">
-            Junte-se a milhares de pessoas que já transformaram seus corpos com o AthletIA
+            Milhares de pessoas já estão usando o AthletIA para alcançar resultados reais nos treinos
           </p>
           
           {/* Imagem de progresso com cards */}
@@ -132,9 +132,9 @@ export default function StatisticsSection() {
           }`}>
             <div className="flex justify-center">
               <img
-                src="/images/app-preview/Editadas/Progresso_com_cards.svg"
+                src="/images/app-preview/Editadas/Progresso_com_Cards.png"
                 alt="Tela de progresso do AthletIA com cards e estatísticas"
-                className="w-full max-w-4xl h-auto drop-shadow-2xl"
+                className="w-full max-w-4xl h-auto drop-shadow-2xl rounded-2xl"
                 loading="lazy"
               />
             </div>

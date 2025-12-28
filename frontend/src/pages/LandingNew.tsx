@@ -3,7 +3,6 @@ import HeroSection from '../components/landing-new/HeroSection'
 import StatisticsSection from '../components/landing-new/StatisticsSection'
 import FeaturesSection from '../components/landing-new/FeaturesSection'
 import HowItWorksSection from '../components/landing-new/HowItWorksSection'
-import ScreenshotsSection from '../components/landing-new/ScreenshotsSection'
 import TestimonialsSection from '../components/landing-new/TestimonialsSection'
 import CTASection from '../components/landing-new/CTASection'
 
@@ -46,7 +45,6 @@ export default function LandingNew() {
         <StatisticsSection />
         <FeaturesSection />
         <HowItWorksSection />
-        <ScreenshotsSection />
         <TestimonialsSection />
         <CTASection onStartOnboarding={handleStartOnboarding} />
       </main>
