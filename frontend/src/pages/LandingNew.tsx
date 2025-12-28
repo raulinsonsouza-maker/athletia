@@ -8,7 +8,6 @@ import HeroSection from '../components/landing-new/HeroSection'
 import StatisticsSection from '../components/landing-new/StatisticsSection'
 import FeaturesSection from '../components/landing-new/FeaturesSection'
 import ResumoOnboardingSection from '../components/landing-new/ResumoOnboardingSection'
-import HowItWorksSection from '../components/landing-new/HowItWorksSection'
 import TestimonialsSection from '../components/landing-new/TestimonialsSection'
 import CadastroFormSection from '../components/landing-new/CadastroFormSection'
 import FAQSection from '../components/landing-new/FAQSection'
@@ -220,15 +219,14 @@ export default function LandingNew() {
       </header>
 
       <main role="main" id="main-content" aria-label="Conteúdo principal da landing page">
-        {/* Análise do onboarding logo após header */}
-        <ResumoOnboardingSection onboardingData={onboardingData} />
-        
-        {/* Hero com nome do usuário */}
+        {/* Hero com nome do usuário - primeiro */}
         <HeroSection onStartOnboarding={handleScrollToForm} nomeUsuario={onboardingData.nome} />
+        
+        {/* Análise do onboarding logo após hero - foco em jornada */}
+        <ResumoOnboardingSection onboardingData={onboardingData} />
         
         <StatisticsSection />
         <FeaturesSection onStartOnboarding={handleScrollToForm} />
-        <HowItWorksSection onStartOnboarding={handleScrollToForm} />
         <TestimonialsSection onStartOnboarding={handleScrollToForm} />
         <CadastroFormSection 
           onSubmit={handleSubmit}

@@ -23,14 +23,25 @@ export default function ResumoOnboardingSection({ onboardingData }: ResumoOnboar
     return labels[onboardingData.objetivo] || onboardingData.objetivo
   }
 
-  const getLocalTreinoLabel = () => {
-    if (!onboardingData.localTreino) return null
-    const labels: Record<string, string> = {
-      'Casa': 'Casa',
-      'Academia': 'Academia',
-      'Misto': 'Casa e Academia'
+  const getObjetivoDescricao = () => {
+    const objetivo = onboardingData.objetivo
+    if (objetivo === 'Emagrecimento') return 'Vamos transformar seu corpo através de treinos focados em queima de gordura e definição'
+    if (objetivo === 'Hipertrofia') return 'Juntos vamos construir massa muscular e transformar seu físico de forma inteligente'
+    if (objetivo === 'Força') return 'Vamos aumentar sua força e potência através de treinos progressivos e eficientes'
+    return 'Vamos criar um plano personalizado para transformar seu corpo e alcançar seus objetivos'
+  }
+
+  const getEstadoAtualDescricao = () => {
+    if (classificacaoIMC && onboardingData.experiencia) {
+      return `Você está em ${classificacaoIMC.toLowerCase()} e tem nível ${onboardingData.experiencia.toLowerCase()} de experiência. Estamos prontos para começar sua transformação.`
     }
-    return labels[onboardingData.localTreino] || onboardingData.localTreino
+    if (classificacaoIMC) {
+      return `Você está em ${classificacaoIMC.toLowerCase()}. Vamos trabalhar juntos para alcançar seus objetivos.`
+    }
+    if (onboardingData.experiencia) {
+      return `Com seu nível ${onboardingData.experiencia.toLowerCase()} de experiência, vamos criar treinos que realmente vão desafiar você.`
+    }
+    return 'Vamos criar treinos personalizados que vão transformar seu corpo e sua vida.'
   }
 
   const formatarNumero = (numero: string | null): string => {
@@ -43,12 +54,14 @@ export default function ResumoOnboardingSection({ onboardingData }: ResumoOnboar
     return agua.replace('.', ',')
   }
 
-  const getObjetivoDescricao = () => {
-    const objetivo = onboardingData.objetivo
-    if (objetivo === 'Emagrecimento') return 'Plano focado em queima de gordura e definição muscular'
-    if (objetivo === 'Hipertrofia') return 'Plano otimizado para crescimento muscular e ganho de massa'
-    if (objetivo === 'Força') return 'Plano desenvolvido para aumento de força e potência muscular'
-    return 'Plano personalizado para seus objetivos específicos'
+  const getLocalTreinoLabel = () => {
+    if (!onboardingData.localTreino) return null
+    const labels: Record<string, string> = {
+      'Casa': 'Casa',
+      'Academia': 'Academia',
+      'Misto': 'Casa e Academia'
+    }
+    return labels[onboardingData.localTreino] || onboardingData.localTreino
   }
 
   return (
@@ -60,100 +73,126 @@ export default function ResumoOnboardingSection({ onboardingData }: ResumoOnboar
         <div className={`transition-all duration-1000 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-3 text-center">
-            Seu perfil{' '}
-            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              personalizado
-            </span>
-          </h2>
-          <p className="text-base md:text-lg text-light-muted text-center mb-8 max-w-2xl mx-auto">
-            Baseado nas suas respostas, analisamos seu perfil e criamos um plano totalmente adaptado
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-            {/* Objetivo */}
-            <div className="bg-dark-lighter/60 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-primary/30">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <p className="text-xs text-light-muted font-medium">Objetivo</p>
-              </div>
-              <p className="text-lg md:text-xl font-bold text-light">{getObjetivoLabel()}</p>
-              <p className="text-xs text-light-muted mt-1">{getObjetivoDescricao()}</p>
-            </div>
-
-            {/* IMC */}
-            {imc && classificacaoIMC && (
-              <div className="bg-dark-lighter/60 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-primary/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs text-light-muted font-medium">IMC</p>
-                </div>
-                <p className="text-lg md:text-xl font-bold text-light">{imc}</p>
-                <p className="text-xs text-light-muted mt-1">{classificacaoIMC}</p>
-              </div>
-            )}
-
-            {/* Calorias */}
-            {calorias && (
-              <div className="bg-dark-lighter/60 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-primary/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                  </div>
-                  <p className="text-xs text-light-muted font-medium">Calorias/dia</p>
-                </div>
-                <p className="text-lg md:text-xl font-bold text-light">{formatarNumero(calorias)} kcal</p>
-                <p className="text-xs text-light-muted mt-1">Baseado no seu metabolismo</p>
-              </div>
-            )}
-
-            {/* Água */}
-            {agua && (
-              <div className="bg-dark-lighter/60 backdrop-blur-xl rounded-xl p-4 md:p-5 border border-primary/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                  </div>
-                  <p className="text-xs text-light-muted font-medium">Água/dia</p>
-                </div>
-                <p className="text-lg md:text-xl font-bold text-light">{formatarAgua(agua)}L</p>
-                <p className="text-xs text-light-muted mt-1">Hidratação ideal</p>
-              </div>
-            )}
+          {/* Título focado na jornada */}
+          <div className="text-center mb-8 md:mb-12">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-4">
+              Sua jornada de{' '}
+              <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                transformação começa aqui
+              </span>
+            </h2>
+            <p className="text-base md:text-lg text-light-muted max-w-3xl mx-auto leading-relaxed">
+              {getEstadoAtualDescricao()}
+            </p>
           </div>
 
-          {/* Detalhes do Treino */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-            {onboardingData.experiencia && (
-              <div className="bg-dark-lighter/40 backdrop-blur-sm rounded-xl p-4 border border-grey/20">
-                <p className="text-xs text-light-muted mb-1">Nível</p>
-                <p className="text-base md:text-lg font-semibold text-light">{onboardingData.experiencia}</p>
+          {/* Card principal - Estado Atual e Objetivo */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-10">
+            {/* Estado Atual */}
+            <div className="bg-dark-lighter/60 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-grey/30">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <div className="w-12 h-12 rounded-xl bg-grey/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-light-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg md:text-xl font-bold text-light-muted">Estado Atual</h3>
+                  <p className="text-sm text-light-muted/80">Onde você está agora</p>
+                </div>
               </div>
-            )}
-            {onboardingData.frequenciaSemanal && (
-              <div className="bg-dark-lighter/40 backdrop-blur-sm rounded-xl p-4 border border-grey/20">
-                <p className="text-xs text-light-muted mb-1">Frequência</p>
-                <p className="text-base md:text-lg font-semibold text-light">{onboardingData.frequenciaSemanal}x por semana</p>
+              <div className="space-y-4">
+                {imc && classificacaoIMC && (
+                  <div>
+                    <p className="text-xs text-light-muted mb-1">IMC</p>
+                    <p className="text-2xl md:text-3xl font-bold text-light">{imc}</p>
+                    <p className="text-sm text-light-muted mt-1">{classificacaoIMC}</p>
+                  </div>
+                )}
+                {onboardingData.experiencia && (
+                  <div className="pt-4 border-t border-grey/20">
+                    <p className="text-xs text-light-muted mb-1">Nível de Experiência</p>
+                    <p className="text-xl font-semibold text-light">{onboardingData.experiencia}</p>
+                  </div>
+                )}
+                {onboardingData.frequenciaSemanal && onboardingData.tempoDisponivel && (
+                  <div className="pt-4 border-t border-grey/20">
+                    <p className="text-xs text-light-muted mb-1">Rotina Atual</p>
+                    <p className="text-lg font-semibold text-light">
+                      {onboardingData.frequenciaSemanal}x por semana • {onboardingData.tempoDisponivel}min
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-            {onboardingData.tempoDisponivel && getLocalTreinoLabel() && (
-              <div className="bg-dark-lighter/40 backdrop-blur-sm rounded-xl p-4 border border-grey/20">
-                <p className="text-xs text-light-muted mb-1">Treino</p>
-                <p className="text-base md:text-lg font-semibold text-light">{onboardingData.tempoDisponivel}min • {getLocalTreinoLabel()}</p>
+            </div>
+
+            {/* Objetivo */}
+            <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 backdrop-blur-xl rounded-2xl p-6 md:p-8 border-2 border-primary/40">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <div className="w-12 h-12 rounded-xl bg-primary/30 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg md:text-xl font-bold text-primary">Seu Objetivo</h3>
+                  <p className="text-sm text-light-muted">Onde vamos chegar juntos</p>
+                </div>
               </div>
-            )}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-light-muted mb-1">Foco Principal</p>
+                  <p className="text-2xl md:text-3xl font-bold text-light">{getObjetivoLabel()}</p>
+                  <p className="text-sm text-light-muted mt-2 leading-relaxed">{getObjetivoDescricao()}</p>
+                </div>
+                {calorias && (
+                  <div className="pt-4 border-t border-primary/20">
+                    <p className="text-xs text-light-muted mb-1">Calorias Diárias Recomendadas</p>
+                    <p className="text-xl font-semibold text-primary">{formatarNumero(calorias)} kcal</p>
+                    <p className="text-xs text-light-muted mt-1">Otimizado para seu metabolismo</p>
+                  </div>
+                )}
+                {agua && (
+                  <div className="pt-4 border-t border-primary/20">
+                    <p className="text-xs text-light-muted mb-1">Hidratação Ideal</p>
+                    <p className="text-xl font-semibold text-primary">{formatarAgua(agua)}L por dia</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Resumo da Jornada */}
+          <div className="bg-dark-lighter/40 backdrop-blur-sm rounded-xl p-5 md:p-6 border border-primary/20">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 mt-1">
+                <svg className="w-6 h-6 md:w-7 md:h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-base md:text-lg font-bold text-light mb-2">
+                  Plano Personalizado Criado
+                </h4>
+                <p className="text-sm md:text-base text-light-muted leading-relaxed mb-3">
+                  Com base nas suas informações, criamos um plano completo que vai te levar do seu estado atual até seu objetivo. 
+                  {onboardingData.frequenciaSemanal && getLocalTreinoLabel() && (
+                    <> Os treinos estão ajustados para <strong className="text-primary">{onboardingData.frequenciaSemanal}x por semana</strong> e podem ser feitos <strong className="text-primary">{getLocalTreinoLabel()?.toLowerCase()}</strong>.</>
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1.5 bg-primary/20 text-primary text-xs font-semibold rounded-full border border-primary/30">
+                    Treinos Personalizados
+                  </span>
+                  <span className="px-3 py-1.5 bg-primary/20 text-primary text-xs font-semibold rounded-full border border-primary/30">
+                    Progressão Automática
+                  </span>
+                  <span className="px-3 py-1.5 bg-primary/20 text-primary text-xs font-semibold rounded-full border border-primary/30">
+                    Ajuste Inteligente
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
