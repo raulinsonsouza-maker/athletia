@@ -8,10 +8,6 @@ interface Screenshot {
 
 const screenshots: Screenshot[] = [
   {
-    image: '/images/app-preview/screenshot-1.webp',
-    alt: 'Screenshot do AthletIA em ação'
-  },
-  {
     image: '/images/app-preview/screenshot-2.webp',
     alt: 'Interface do AthletIA mostrando funcionalidades'
   }
@@ -42,7 +38,7 @@ export default function ScreenshotsSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 max-w-2xl mx-auto">
             {screenshots.map((screenshot, index) => (
               <div
                 key={index}
