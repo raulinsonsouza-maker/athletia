@@ -35,9 +35,24 @@ const testimonials: Testimonial[] = [
   }
 ]
 
-export default function TestimonialsSection() {
+interface TestimonialsSectionProps {
+  onStartOnboarding?: () => void
+}
+
+export default function TestimonialsSection({ onStartOnboarding }: TestimonialsSectionProps) {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 })
   const [currentIndex, setCurrentIndex] = useState(0)
+
+  const handleCTA = () => {
+    if (onStartOnboarding) {
+      onStartOnboarding()
+    } else {
+      const element = document.getElementById('formulario-cadastro')
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+  }
 
   useEffect(() => {
     if (!isVisible) return
@@ -144,17 +159,12 @@ export default function TestimonialsSection() {
         </div>
 
         {/* CTA intermediário após depoimentos */}
-        <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${
+        <div className={`text-center mt-12 md:mt-16 transition-all duration-1000 delay-700 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
           <button
-            onClick={() => {
-              const element = document.getElementById('formulario-cadastro')
-              if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }
-            }}
-            className="btn-primary text-lg md:text-xl px-10 md:px-14 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300"
+            onClick={handleCTA}
+            className="btn-primary text-base md:text-lg px-6 md:px-10 py-4 md:py-5 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:w-auto"
           >
             Quero Resultados Assim - R$ 19,90/mês
           </button>

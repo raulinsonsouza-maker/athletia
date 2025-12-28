@@ -54,15 +54,15 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-            <button
-              onClick={handleCTA}
-              className="btn-primary text-xl md:text-2xl px-12 md:px-16 py-6 md:py-7 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group w-full sm:w-auto"
-            >
-              <span className="relative z-10">Começar Agora</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </button>
-          </div>
+              <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center mb-10 md:mb-12">
+                <button
+                  onClick={handleCTA}
+                  className="btn-primary text-lg md:text-xl px-8 md:px-12 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group w-full sm:w-auto"
+                >
+                  <span className="relative z-10">Começar Agora</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </button>
+              </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm md:text-base text-light-muted max-w-2xl mx-auto">
             <div className="flex flex-col items-center gap-2">

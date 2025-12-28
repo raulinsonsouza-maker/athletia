@@ -220,12 +220,16 @@ export default function LandingNew() {
       </header>
 
       <main role="main" id="main-content" aria-label="Conteúdo principal da landing page">
-        <HeroSection onStartOnboarding={handleScrollToForm} />
+        {/* Análise do onboarding logo após header */}
+        <ResumoOnboardingSection onboardingData={onboardingData} />
+        
+        {/* Hero com nome do usuário */}
+        <HeroSection onStartOnboarding={handleScrollToForm} nomeUsuario={onboardingData.nome} />
+        
         <StatisticsSection />
         <FeaturesSection onStartOnboarding={handleScrollToForm} />
-        <ResumoOnboardingSection onboardingData={onboardingData} />
         <HowItWorksSection onStartOnboarding={handleScrollToForm} />
-        <TestimonialsSection />
+        <TestimonialsSection onStartOnboarding={handleScrollToForm} />
         <CadastroFormSection 
           onSubmit={handleSubmit}
           loading={loading}

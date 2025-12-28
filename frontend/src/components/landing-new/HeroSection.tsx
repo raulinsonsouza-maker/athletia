@@ -3,9 +3,10 @@ import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 
 interface HeroSectionProps {
   onStartOnboarding?: () => void
+  nomeUsuario?: string
 }
 
-export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
+export default function HeroSection({ onStartOnboarding, nomeUsuario }: HeroSectionProps) {
   const navigate = useNavigate()
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.2 })
 
@@ -20,7 +21,7 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
   return (
     <section 
       ref={ref as React.RefObject<HTMLElement>}
-      className={`min-h-screen flex items-center justify-center px-4 md:px-6 py-20 md:py-32 relative overflow-hidden transition-opacity duration-1000 ${
+      className={`py-16 md:py-24 px-4 md:px-6 relative overflow-hidden transition-opacity duration-1000 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
     >
@@ -32,23 +33,34 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
         <div className={`text-center lg:text-left space-y-8 transition-all duration-1000 delay-300 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
         }`}>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
-            Transforme seu corpo com{' '}
-            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              treinos inteligentes
-            </span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-extrabold leading-[1.1] tracking-tight text-light">
+            {nomeUsuario ? (
+              <>
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  {nomeUsuario}
+                </span>
+                {', transforme seu corpo com treinos inteligentes'}
+              </>
+            ) : (
+              <>
+                Transforme seu corpo com{' '}
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  treinos inteligentes
+                </span>
+              </>
+            )}
           </h1>
 
-          <p className="text-xl md:text-2xl lg:text-3xl text-light-muted leading-relaxed max-w-2xl mx-auto lg:mx-0">
+          <p className="text-lg md:text-xl lg:text-2xl text-light-muted leading-relaxed max-w-2xl mx-auto lg:mx-0">
             Treinos personalizados criados por IA que se adaptam ao seu corpo. Veja resultados reais em semanas.
           </p>
 
-          <div className="space-y-6 pt-4">
+          <div className="space-y-6 pt-6">
             {/* CTA Principal */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <button
                 onClick={handleCTA}
-                className="btn-primary text-lg md:text-xl px-10 md:px-14 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group"
+                className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group w-full sm:w-auto"
               >
                 <span className="relative z-10">Começar Agora - R$ 19,90/mês</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -56,44 +68,25 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
             </div>
 
             {/* Benefícios em destaque */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              <div className="flex flex-col items-center lg:items-start gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
-                <div className="flex items-center gap-2 w-full justify-center lg:justify-start">
-                  <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-sm md:text-base text-light font-semibold text-center lg:text-left">Resultados reais em semanas</span>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 pt-4">
+              <div className="flex items-center gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-primary/20">
+                <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm md:text-base text-light font-semibold">Resultados em semanas</span>
               </div>
-              <div className="flex flex-col items-center lg:items-start gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
-                <div className="flex items-center gap-2 w-full justify-center lg:justify-start">
-                  <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-sm md:text-base text-light font-semibold text-center lg:text-left">Treinos que evoluem com você</span>
-                </div>
+              <div className="flex items-center gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-primary/20">
+                <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm md:text-base text-light font-semibold">Treinos que evoluem</span>
               </div>
-              <div className="flex flex-col items-center lg:items-start gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
-                <div className="flex items-center gap-2 w-full justify-center lg:justify-start">
-                  <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span className="text-sm md:text-base text-light font-semibold text-center lg:text-left">Cancele quando quiser</span>
-                </div>
+              <div className="flex items-center gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-lg p-3 md:p-4 border border-primary/20">
+                <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span className="text-sm md:text-base text-light font-semibold">Cancele quando quiser</span>
               </div>
-            </div>
-
-            {/* Link para ver mais */}
-            <div className="flex justify-center lg:justify-start pt-2">
-              <button
-                onClick={() => {
-                  const element = document.getElementById('features')
-                  element?.scrollIntoView({ behavior: 'smooth' })
-                }}
-                className="text-base md:text-lg text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors"
-              >
-                Ver o que você terá acesso →
-              </button>
             </div>
           </div>
         </div>

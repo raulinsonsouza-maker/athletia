@@ -77,24 +77,24 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
       className="py-20 md:py-32 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark relative overflow-hidden"
     >
       <div className="max-w-2xl mx-auto">
-        <div className={`text-center mb-12 transition-all duration-1000 ${
+        <div className={`text-center mb-10 md:mb-12 transition-all duration-1000 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-light mb-3 md:mb-4">
             Finalize seu{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               cadastro
             </span>
           </h2>
-          <p className="text-xl text-light-muted max-w-2xl mx-auto">
-            Complete seu cadastro e comece a transformar seu corpo hoje mesmo
+          <p className="text-base md:text-lg text-light-muted max-w-xl mx-auto">
+            Complete seus dados e comece a transformar seu corpo hoje mesmo
           </p>
         </div>
 
-        <div className={`transition-all duration-1000 delay-300 ${
+        <div className={`bg-dark-lighter/70 backdrop-blur-xl rounded-2xl md:rounded-3xl border-2 border-primary/30 p-6 md:p-8 shadow-2xl shadow-primary/20 transition-all duration-1000 delay-300 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
             {/* Nome Completo */}
             <div>
               <label htmlFor="nomeCompleto" className="block text-sm font-medium text-light mb-2">
@@ -106,12 +106,12 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
                 value={formData.nomeCompleto}
                 onChange={(e) => handleChange('nomeCompleto', e.target.value)}
                 onBlur={() => handleBlur('nomeCompleto')}
-                className={`w-full bg-dark-lighter/50 backdrop-blur-xl border-2 rounded-xl px-4 py-3 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                className={`w-full bg-dark/80 backdrop-blur-xl border-2 rounded-xl px-4 py-3.5 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
                   touched.nomeCompleto && errors.nomeCompleto
                     ? 'border-error'
                     : touched.nomeCompleto
                     ? 'border-primary'
-                    : 'border-grey/20'
+                    : 'border-grey/30'
                 }`}
                 placeholder="Seu nome completo"
               />
@@ -132,19 +132,19 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
                 onBlur={() => handleBlur('telefone')}
               >
                 {(inputProps: any) => (
-                  <input
-                    {...inputProps}
-                    id="telefone"
-                    type="tel"
-                    className={`w-full bg-dark-lighter/50 backdrop-blur-xl border-2 rounded-xl px-4 py-3 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
-                      touched.telefone && errors.telefone
-                        ? 'border-error'
-                        : touched.telefone
-                        ? 'border-primary'
-                        : 'border-grey/20'
-                    }`}
-                    placeholder="(00) 00000-0000"
-                  />
+                    <input
+                      {...inputProps}
+                      id="telefone"
+                      type="tel"
+                      className={`w-full bg-dark/80 backdrop-blur-xl border-2 rounded-xl px-4 py-3.5 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                        touched.telefone && errors.telefone
+                          ? 'border-error'
+                          : touched.telefone
+                          ? 'border-primary'
+                          : 'border-grey/30'
+                      }`}
+                      placeholder="(00) 00000-0000"
+                    />
                 )}
               </InputMask>
               {touched.telefone && errors.telefone && (
@@ -157,21 +157,21 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
               <label htmlFor="email" className="block text-sm font-medium text-light mb-2">
                 Email
               </label>
-              <input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
-                onBlur={() => handleBlur('email')}
-                className={`w-full bg-dark-lighter/50 backdrop-blur-xl border-2 rounded-xl px-4 py-3 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
-                  touched.email && errors.email
-                    ? 'border-error'
-                    : touched.email
-                    ? 'border-primary'
-                    : 'border-grey/20'
-                }`}
-                placeholder="seu@email.com"
-              />
+                <input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  onBlur={() => handleBlur('email')}
+                  className={`w-full bg-dark/80 backdrop-blur-xl border-2 rounded-xl px-4 py-3.5 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                    touched.email && errors.email
+                      ? 'border-error'
+                      : touched.email
+                      ? 'border-primary'
+                      : 'border-grey/30'
+                  }`}
+                  placeholder="seu@email.com"
+                />
               {touched.email && errors.email && (
                 <p className="mt-1 text-sm text-error">{errors.email}</p>
               )}
@@ -189,13 +189,13 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
                   value={formData.senha}
                   onChange={(e) => handleChange('senha', e.target.value)}
                   onBlur={() => handleBlur('senha')}
-                  className={`w-full bg-dark-lighter/50 backdrop-blur-xl border-2 rounded-xl px-4 py-3 pr-12 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
-                    touched.senha && errors.senha
-                      ? 'border-error'
-                      : touched.senha
-                      ? 'border-primary'
-                      : 'border-grey/20'
-                  }`}
+                    className={`w-full bg-dark/80 backdrop-blur-xl border-2 rounded-xl px-4 py-3.5 pr-12 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                      touched.senha && errors.senha
+                        ? 'border-error'
+                        : touched.senha
+                        ? 'border-primary'
+                        : 'border-grey/30'
+                    }`}
                   placeholder="Mínimo 6 caracteres"
                 />
                 <button
@@ -251,13 +251,13 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
                   value={formData.confirmarSenha}
                   onChange={(e) => handleChange('confirmarSenha', e.target.value)}
                   onBlur={() => handleBlur('confirmarSenha')}
-                  className={`w-full bg-dark-lighter/50 backdrop-blur-xl border-2 rounded-xl px-4 py-3 pr-12 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
-                    touched.confirmarSenha && errors.confirmarSenha
-                      ? 'border-error'
-                      : touched.confirmarSenha
-                      ? 'border-primary'
-                      : 'border-grey/20'
-                  }`}
+                    className={`w-full bg-dark/80 backdrop-blur-xl border-2 rounded-xl px-4 py-3.5 pr-12 text-light focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+                      touched.confirmarSenha && errors.confirmarSenha
+                        ? 'border-error'
+                        : touched.confirmarSenha
+                        ? 'border-primary'
+                        : 'border-grey/30'
+                    }`}
                   placeholder="Confirme sua senha"
                 />
                 <button
