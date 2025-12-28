@@ -77,6 +77,38 @@ export default function LandingNew() {
     }, 100)
   }, [])
 
+  const redirecionarParaCheckoutCakto = useCallback(async (novoUsuario: { id: string; email: string }) => {
+    if (!novoUsuario?.email) {
+      setError('Não conseguimos identificar seu e-mail para o pagamento. Tente novamente.')
+      return false
+    }
+
+    try {
+      const checkoutResponse = await api.post('/payment/checkout', {
+        plano: 'MENSAL',
+        email: novoUsuario.email,
+        userId: novoUsuario.id,
+        source: 'landing_new'
+      })
+
+      if (!checkoutResponse.data?.checkoutUrl) {
+        throw new Error('URL de checkout não recebida')
+      }
+
+      window.location.href = checkoutResponse.data.checkoutUrl
+      return true
+    } catch (checkoutError: any) {
+      console.error('[LandingNew] Erro ao gerar checkout do Cakto:', checkoutError)
+      const errorMessage =
+        checkoutError.response?.data?.error ||
+        checkoutError.response?.data?.message ||
+        'Não foi possível abrir a tela de pagamento agora. Tente novamente em instantes.'
+
+      setError(errorMessage)
+      return false
+    }
+  }, [])
+
   const handleSubmit = useCallback(async (formData: {
     nomeCompleto: string
     telefone: string
@@ -127,8 +159,10 @@ export default function LandingNew() {
         console.warn('Erro ao limpar localStorage:', error)
       }
 
-      // Redirecionar para checkout (não para meu-plano, pois ainda não pagou)
-      navigate('/checkout')
+      const redirecionado = await redirecionarParaCheckoutCakto(user)
+      if (redirecionado) {
+        return
+      }
     } catch (err: unknown) {
       console.error('Erro no cadastro:', err)
       const errorMessage = getErrorMessage(err)
@@ -179,7 +213,7 @@ export default function LandingNew() {
     } finally {
       setLoading(false)
     }
-  }, [onboardingData, navigate, setUserFromResponse])
+  }, [onboardingData, setUserFromResponse, redirecionarParaCheckoutCakto])
 
 
   // Não renderizar até os dados estarem carregados
