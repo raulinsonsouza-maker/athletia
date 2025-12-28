@@ -8,16 +8,12 @@ interface Screenshot {
 
 const screenshots: Screenshot[] = [
   {
-    image: '/images/lp-new/gallery/gallery-progresso-2.webp',
-    alt: 'Tela de progresso avançado do AthletIA'
+    image: '/images/app-preview/screenshot-1.webp',
+    alt: 'Screenshot do AthletIA em ação'
   },
   {
-    image: '/images/lp-new/gallery/gallery-perfil-peso.webp',
-    alt: 'Perfil com histórico de peso e evolução'
-  },
-  {
-    image: '/images/lp-new/gallery/gallery-progresso-forca.webp',
-    alt: 'Progressão de força por grupo muscular'
+    image: '/images/app-preview/screenshot-2.webp',
+    alt: 'Interface do AthletIA mostrando funcionalidades'
   }
 ]
 
@@ -46,7 +42,7 @@ export default function ScreenshotsSection() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
             {screenshots.map((screenshot, index) => (
               <div
                 key={index}

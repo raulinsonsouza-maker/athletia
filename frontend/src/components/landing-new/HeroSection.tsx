@@ -95,7 +95,7 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
               {/* Placeholder para screenshot - será substituído pela imagem real */}
               <div className="aspect-[9/19.5] bg-gradient-to-br from-dark-lighter to-dark flex items-center justify-center relative overflow-hidden">
                 <img
-                  src="/images/app-preview/treinos-screen.webp"
+                  src="/images/app-preview/hero-app.webp"
                   alt="Interface do AthletIA mostrando treinos personalizados"
                   className="w-full h-full object-cover"
                   loading="eager"

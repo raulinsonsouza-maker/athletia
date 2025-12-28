@@ -9,34 +9,34 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    title: 'Planejamento Inteligente',
-    description: 'Visualize seu progresso semanal e acesse ações rápidas para manter sua consistência.',
-    image: '/images/lp-new/features/feature-meu-plano.webp',
-    imageAlt: 'Dashboard do AthletIA mostrando progresso semanal e ações rápidas'
+    title: 'Treinos Personalizados',
+    description: 'Acesse seus treinos personalizados criados pela IA, com exercícios, séries e repetições otimizadas para você.',
+    image: '/images/app-preview/feature-treinos.webp',
+    imageAlt: 'Tela de treinos personalizados do AthletIA'
   },
   {
     title: 'Acompanhe seu Progresso',
-    description: 'Gráficos detalhados de frequência, métricas de treinos, exercícios e volume total.',
-    image: '/images/lp-new/features/feature-progresso-graficos.webp',
+    description: 'Gráficos detalhados de frequência, métricas de treinos, exercícios e volume total para visualizar sua evolução.',
+    image: '/images/app-preview/feature-progresso.webp',
     imageAlt: 'Gráficos de progresso do AthletIA'
   },
   {
     title: 'Exercícios Detalhados',
-    description: 'Guias completos com ilustrações e instruções de execução para cada exercício.',
-    image: '/images/lp-new/features/feature-exercicio-detalhe.webp',
-    imageAlt: 'Detalhes do exercício Agachamento Hack'
+    description: 'Guias completos com ilustrações e instruções de execução para cada exercício, garantindo a forma correta.',
+    image: '/images/app-preview/feature-exercicios.webp',
+    imageAlt: 'Detalhes de exercícios do AthletIA'
   },
   {
-    title: 'Análise por Grupo Muscular',
-    description: 'Visualize quais grupos você mais treina e acompanhe sua evolução por região.',
-    image: '/images/lp-new/features/feature-progresso-regioes.webp',
-    imageAlt: 'Gráfico donut mostrando regiões mais treinadas'
+    title: 'Histórico Completo',
+    description: 'Visualize todo seu histórico de treinos, acompanhe suas sessões anteriores e veja sua evolução ao longo do tempo.',
+    image: '/images/app-preview/feature-historico.webp',
+    imageAlt: 'Histórico de treinos do AthletIA'
   },
   {
-    title: 'Saúde em Foco',
-    description: 'Acompanhe seu peso, IMC, calorias diárias e água recomendada para otimizar seus resultados.',
-    image: '/images/lp-new/features/feature-perfil-metricas.webp',
-    imageAlt: 'Métricas de saúde no perfil do AthletIA'
+    title: 'Perfil e Métricas',
+    description: 'Acompanhe seu peso, IMC, calorias diárias e água recomendada para otimizar seus resultados e manter-se saudável.',
+    image: '/images/app-preview/feature-perfil.webp',
+    imageAlt: 'Perfil e métricas de saúde do AthletIA'
   }
 ]
 
