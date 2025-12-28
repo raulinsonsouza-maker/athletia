@@ -24,14 +24,10 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
     >
-      {/* Background com gradiente animado */}
-      <div className="absolute inset-0 bg-gradient-to-br from-dark via-dark-lighter to-dark">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-primary/5" />
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
+      {/* Background minimalista - estilo Productive */}
+      <div className="absolute inset-0 bg-gradient-to-b from-dark via-dark-lighter to-dark" />
 
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-20 items-center relative z-10">
         {/* Conteúdo textual */}
         <div className={`text-center lg:text-left space-y-8 transition-all duration-1000 delay-300 ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
@@ -82,36 +78,28 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Preview do app com animação */}
+        {/* Preview do app - estilo Productive (mais limpo) */}
         <div className={`relative flex justify-center lg:justify-end transition-all duration-1000 delay-500 ${
           isVisible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'
         }`}>
-          <div className="relative max-w-sm w-full">
-            {/* Glow effect */}
-            <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-primary/30 via-primary/20 to-transparent blur-3xl -z-10 scale-110" />
-            
-            {/* Frame do telefone */}
-            <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-dark-lighter/50 backdrop-blur-xl bg-dark-lighter/30">
-              {/* Placeholder para screenshot - será substituído pela imagem real */}
-              <div className="aspect-[9/19.5] bg-gradient-to-br from-dark-lighter to-dark flex items-center justify-center relative overflow-hidden">
-                <img
-                  src="/images/app-preview/hero-app.webp"
-                  alt="Interface do AthletIA mostrando treinos personalizados"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-                {/* Overlay para efeito de profundidade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-dark/50 via-transparent to-transparent" />
-              </div>
+          <div className="relative w-full max-w-md">
+            {/* Imagem SVG - sem bordas pesadas */}
+            <div className="relative">
+              <img
+                src="/images/app-preview/novas/1.svg"
+                alt="Interface do AthletIA mostrando treinos personalizados"
+                className="w-full h-auto drop-shadow-2xl"
+                loading="eager"
+                onError={(e) => {
+                  // Fallback para hero-app.webp se SVG não existir
+                  const target = e.target as HTMLImageElement
+                  target.src = '/images/app-preview/hero-app.webp'
+                }}
+              />
             </div>
-
-            {/* Elementos flutuantes decorativos */}
-            <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-            <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }} />
           </div>
         </div>
       </div>
     </section>
   )
 }
-
