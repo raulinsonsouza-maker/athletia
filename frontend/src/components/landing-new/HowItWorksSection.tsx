@@ -7,23 +7,23 @@ interface HowItWorksSectionProps {
 const steps = [
   {
     number: 1,
-    title: 'Receba seu treino completo',
-    description: 'Em segundos, você terá acesso a um programa de treinos completo, com exercícios, séries, repetições e descansos otimizados para você.'
+    title: 'Responda perguntas rápidas',
+    description: 'Nosso questionário inteligente leva apenas 2 minutos e coleta informações sobre seus objetivos, nível de experiência e preferências.'
   },
   {
     number: 2,
-    title: 'Evolua automaticamente',
-    description: 'A cada treino, o sistema ajusta automaticamente peso, repetições e volume baseado no seu desempenho real, garantindo progressão constante.'
+    title: 'A IA analisa seu perfil',
+    description: 'Nossa inteligência artificial processa suas respostas e cria um plano personalizado exclusivo para você.'
   },
   {
     number: 3,
-    title: 'Acompanhe seu progresso',
-    description: 'Visualize gráficos detalhados de frequência, métricas de treinos e evolução ao longo do tempo para manter a motivação em alta.'
+    title: 'Receba seu treino completo',
+    description: 'Em segundos, você terá acesso a um programa de treinos completo, com exercícios, séries, repetições e descansos otimizados.'
   },
   {
     number: 4,
-    title: 'Alcance seus objetivos',
-    description: 'Com treinos personalizados que se adaptam ao seu corpo, você terá tudo que precisa para transformar seus resultados em realidade.'
+    title: 'Evolua automaticamente',
+    description: 'A cada treino, o sistema ajusta automaticamente peso, repetições e volume baseado no seu desempenho real.'
   }
 ]
 
@@ -55,7 +55,7 @@ export default function HowItWorksSection({ onStartOnboarding }: HowItWorksSecti
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-3xl mx-auto">
-            Agora que conhecemos seu perfil, vamos juntos nesta jornada de transformação
+            Um processo simples que transforma seus objetivos em treinos personalizados que realmente funcionam
           </p>
         </div>
 

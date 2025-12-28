@@ -8,6 +8,7 @@ import HeroSection from '../components/landing-new/HeroSection'
 import StatisticsSection from '../components/landing-new/StatisticsSection'
 import FeaturesSection from '../components/landing-new/FeaturesSection'
 import ResumoOnboardingSection from '../components/landing-new/ResumoOnboardingSection'
+import HowItWorksSection from '../components/landing-new/HowItWorksSection'
 import TestimonialsSection from '../components/landing-new/TestimonialsSection'
 import CadastroFormSection from '../components/landing-new/CadastroFormSection'
 import FAQSection from '../components/landing-new/FAQSection'
@@ -224,6 +225,9 @@ export default function LandingNew() {
         
         {/* Análise do onboarding logo após hero - foco em jornada */}
         <ResumoOnboardingSection onboardingData={onboardingData} />
+        
+        {/* Jornada em passos pós-análise */}
+        <HowItWorksSection onStartOnboarding={handleScrollToForm} />
         
         <StatisticsSection />
         <FeaturesSection onStartOnboarding={handleScrollToForm} />
