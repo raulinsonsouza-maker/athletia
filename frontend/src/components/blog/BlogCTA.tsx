@@ -12,8 +12,12 @@ export default function BlogCTA({ title, description, buttonText, link }: BlogCT
 
   const handleClick = () => {
     // Disparar evento de conversão do Google Ads
-    if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
-      (window as any).gtag_report_conversion()
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'conversion', {
+        'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+        'value': 1.0,
+        'currency': 'BRL'
+      })
     }
     
     // Todos os CTAs devem levar para o step 1 do onboarding

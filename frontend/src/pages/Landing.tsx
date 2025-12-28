@@ -158,8 +158,12 @@ export default function Landing() {
   // Função para iniciar o onboarding com tracking de conversão
   const iniciarOnboarding = useCallback(() => {
     // Disparar evento de conversão do Google Ads
-    if (typeof window !== 'undefined' && (window as any).gtag_report_conversion) {
-      (window as any).gtag_report_conversion()
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'conversion', {
+        'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+        'value': 1.0,
+        'currency': 'BRL'
+      })
     }
     
     // Verificar se há draft antes de iniciar
@@ -663,11 +667,11 @@ export default function Landing() {
                       aria-label={`Selecionar tipo de corpo: ${tipo.label}`}
                       aria-pressed={selected}
                     >
-                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none overflow-hidden">
+                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none overflow-hidden relative">
                         <ImageSkeleton
                           src={tipo.image}
                           alt={`Treino personalizado para ${tipo.label} - Sistema inteligente de treinos adaptativos`}
-                          className="w-full h-full object-cover object-top sm:object-center"
+                          className="absolute inset-0 w-full h-full object-contain object-center"
                           width={300}
                           height={400}
                         />
@@ -844,11 +848,11 @@ export default function Landing() {
                           : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                     >
-                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none overflow-hidden">
+                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none overflow-hidden relative">
                         <ImageSkeleton
                           src={obj.image}
                           alt={`Treino personalizado para objetivo: ${obj.title} - Sistema inteligente de treinos com IA`}
-                          className="w-full h-full object-cover object-top sm:object-center"
+                          className="absolute inset-0 w-full h-full object-contain object-center"
                           width={300}
                           height={400}
                         />

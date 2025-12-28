@@ -34,8 +34,14 @@ export default function ImageSkeleton({
     }
   }
 
+  // Extrair classes de objeto do className passado, ou usar object-cover como padrão
+  const hasObjectClass = className.includes('object-')
+  const imageClassName = hasObjectClass 
+    ? className 
+    : `${className} object-cover`.trim()
+
   return (
-    <div className={`relative ${className}`} style={{ width, height, ...style }}>
+    <div className="relative" style={{ width, height, ...style }}>
       {/* Skeleton placeholder - efeito de pulsação */}
       {isLoading && (
         <div 
@@ -51,9 +57,9 @@ export default function ImageSkeleton({
         <img
           src={src}
           alt={alt}
-          className={`w-full h-full object-cover rounded-lg transition-opacity duration-300 ${
+          className={`w-full h-full rounded-lg transition-opacity duration-300 ${
             isLoading ? 'opacity-0' : 'opacity-100'
-          }`}
+          } ${imageClassName}`}
           onLoad={handleLoad}
           onError={handleError}
           width={width}

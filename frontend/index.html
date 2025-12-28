@@ -23,108 +23,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" /></noscript>
     
-    <!-- Google tag (gtag.js) - Deferido para não bloquear renderização -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-448210685">
+    </script>
     <script>
-      // Inicializar dataLayer antes do script assíncrono
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      
-      // Função de conversão disponível imediatamente
-      function gtag_report_conversion(url) {
-        var callback = function () {
-          if (typeof(url) != 'undefined') {
-            window.location = url;
-          }
-        };
-        gtag('event', 'conversion', {
-          'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
-          'value': 1.0,
-          'currency': 'BRL',
-          'transaction_id': '',
-          'event_callback': callback
-        });
-        return false;
-      }
-      
-      // Carregar gtag.js APÓS LCP (Largest Contentful Paint) - não bloqueia renderização inicial
-      // Estratégia otimizada para evitar tarefas longas na thread principal
-      function loadGtag() {
-        // Usar setTimeout para quebrar tarefas longas em chunks menores
-        setTimeout(function() {
-          var script = document.createElement('script');
-          script.async = true;
-          script.defer = true;
-          script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
-          document.head.appendChild(script);
-          
-          script.onload = function() {
-            // Executar configuração em chunk separado para não bloquear
-            setTimeout(function() {
-              gtag('js', new Date());
-              gtag('config', 'AW-448210685', {
-                // Configurações para reduzir impacto na performance
-                'send_page_view': true,
-                'transport_type': 'beacon'
-              });
-            }, 0);
-          };
-        }, 0);
-      }
-      
-      // Carregar após LCP ou após 3 segundos (o que vier primeiro)
-      // Isso garante que recursos críticos sejam carregados primeiro
-      function scheduleGtagLoad() {
-        // Verificar se LCP já ocorreu
-        if (window.performance && window.performance.getEntriesByType) {
-          var paintEntries = window.performance.getEntriesByType('paint');
-          var lcpEntry = paintEntries.find(function(entry) {
-            return entry.name === 'largest-contentful-paint';
-          });
-          
-          // Se LCP já ocorreu, carregar imediatamente
-          if (lcpEntry) {
-            loadGtag();
-            return;
-          }
-        }
-        
-        // Usar PerformanceObserver para detectar LCP
-        if ('PerformanceObserver' in window) {
-          try {
-            var lcpObserver = new PerformanceObserver(function(list) {
-              var entries = list.getEntries();
-              if (entries.length > 0) {
-                loadGtag();
-                lcpObserver.disconnect();
-              }
-            });
-            lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-            
-            // Timeout de segurança: carregar após 3 segundos mesmo se LCP não for detectado
-            setTimeout(function() {
-              lcpObserver.disconnect();
-              loadGtag();
-            }, 3000);
-          } catch (e) {
-            // Fallback se PerformanceObserver falhar
-            loadGtag();
-          }
-        } else {
-          // Fallback: usar requestIdleCallback ou setTimeout
-          if ('requestIdleCallback' in window) {
-            requestIdleCallback(loadGtag, { timeout: 3000 });
-          } else {
-            setTimeout(loadGtag, 3000);
-          }
-        }
-      }
-      
-      // Iniciar carregamento após DOM estar pronto
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', scheduleGtagLoad);
-      } else {
-        scheduleGtagLoad();
-      }
+      gtag('js', new Date());
+
+      gtag('config', 'AW-448210685');
     </script>
     
     <!-- Primary Meta Tags -->
