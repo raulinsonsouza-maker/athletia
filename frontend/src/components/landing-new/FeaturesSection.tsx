@@ -60,13 +60,13 @@ export default function FeaturesSection() {
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
-            Funcionalidades que fazem{' '}
+            O que você terá{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              a diferença
+              acesso
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-3xl mx-auto">
-            Tudo que você precisa para transformar seu corpo em um único lugar
+            Recursos poderosos que vão acelerar seus resultados e transformar seu corpo de verdade
           </p>
         </div>
 

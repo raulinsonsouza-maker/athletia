@@ -36,13 +36,13 @@ export default function HowItWorksSection() {
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
-            Como{' '}
+            Como você vai{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              funciona
+              alcançar resultados
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-3xl mx-auto">
-            Em 4 passos simples, você terá um programa de treinos feito especialmente para você
+            Um processo simples que transforma seus objetivos em treinos personalizados que realmente funcionam
           </p>
         </div>
 

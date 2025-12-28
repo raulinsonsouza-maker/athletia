@@ -59,13 +59,13 @@ export default function TestimonialsSection() {
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
-            O que nossos{' '}
+            Resultados reais de{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              usuários dizem
+              pessoas reais
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-3xl mx-auto">
-            Milhares de pessoas já transformaram seus corpos com o AthletIA
+            Veja como o AthletIA está transformando corpos e vidas todos os dias
           </p>
         </div>
 

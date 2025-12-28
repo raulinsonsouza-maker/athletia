@@ -123,7 +123,7 @@ export default function StatisticsSection() {
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-2xl mx-auto mb-12">
-            Junte-se a milhares de pessoas que já transformaram seus corpos com o AthletIA
+            Milhares de pessoas já estão usando o AthletIA para alcançar resultados reais nos treinos
           </p>
           
           {/* Imagem de progresso com cards */}

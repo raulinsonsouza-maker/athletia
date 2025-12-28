@@ -38,47 +38,49 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
               transformar seu corpo?
             </span>
           </h2>
-          <p className="text-xl md:text-2xl text-light-muted mb-12 max-w-2xl mx-auto">
-            Junte-se a milhares de pessoas que já alcançaram seus objetivos com o AthletIA. Comece sua jornada hoje mesmo.
+          <p className="text-xl md:text-2xl text-light-muted mb-8 max-w-2xl mx-auto">
+            Acesse treinos personalizados, acompanhe seu progresso e alcance resultados reais. Tudo que você precisa em um só lugar.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          {/* Preço em destaque */}
+          <div className="mb-12">
+            <div className="inline-block bg-dark-lighter/50 backdrop-blur-xl rounded-2xl p-6 border border-primary/30">
+              <p className="text-light-muted text-lg mb-2">Acesso mensal</p>
+              <p className="text-5xl md:text-6xl font-display font-bold text-primary">
+                R$ 19,90<span className="text-2xl text-light-muted">/mês</span>
+              </p>
+              <p className="text-light-muted text-sm mt-2">Preço único • Cancele quando quiser</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
             <button
               onClick={handleCTA}
               className="btn-primary text-xl md:text-2xl px-12 md:px-16 py-6 md:py-7 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group w-full sm:w-auto"
             >
-              <span className="relative z-10">Começar Agora - É Grátis</span>
+              <span className="relative z-10">Começar Agora</span>
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </button>
-            <button
-              onClick={() => {
-                const element = document.getElementById('features')
-                element?.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="px-12 md:px-16 py-6 md:py-7 text-xl md:text-2xl font-semibold border-2 border-primary/50 text-primary hover:border-primary hover:bg-primary/10 rounded-xl transition-all duration-300 w-full sm:w-auto"
-            >
-              Ver Mais Detalhes
             </button>
           </div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm md:text-base text-light-muted">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm md:text-base text-light-muted">
+            <div className="flex flex-col items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span>Teste grátis por 7 dias</span>
+              <span className="text-center">Acesso imediato a todos os recursos</span>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span>Cancele quando quiser</span>
+              <span className="text-center">Cancele quando quiser</span>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center gap-2">
+              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span>Sem compromisso</span>
+              <span className="text-center">Resultados garantidos ou seu dinheiro de volta</span>
             </div>
           </div>
         </div>
@@ -86,4 +88,3 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
     </section>
   )
 }
-
