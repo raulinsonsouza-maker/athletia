@@ -17,7 +17,6 @@ import Register from './pages/Register'
 
 // Lazy load - Rotas públicas secundárias
 const Landing = lazy(() => import('./pages/Landing'))
-const Cadastro = lazy(() => import('./pages/Cadastro'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const Confirmacao = lazy(() => import('./pages/Confirmacao'))
 const PagamentoSucesso = lazy(() => import('./pages/PagamentoSucesso'))
@@ -114,7 +113,7 @@ function App() {
             path="/cadastro" 
             element={
               <Suspense fallback={<LoadingFallback />}>
-                <Cadastro />
+                <LandingNew />
               </Suspense>
             } 
           />

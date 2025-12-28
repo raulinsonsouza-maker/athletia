@@ -43,43 +43,57 @@ export default function HeroSection({ onStartOnboarding }: HeroSectionProps) {
             Treinos personalizados criados por IA que se adaptam ao seu corpo. Veja resultados reais em semanas.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
-            <button
-              onClick={handleCTA}
-              className="btn-primary text-lg md:text-xl px-8 md:px-12 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group"
-            >
-              <span className="relative z-10">Começar Agora - R$ 19,90/mês</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </button>
-            <button
-              onClick={() => {
-                const element = document.getElementById('features')
-                element?.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="px-8 md:px-12 py-5 md:py-6 text-lg md:text-xl font-semibold border-2 border-primary/30 text-primary hover:border-primary hover:bg-primary/10 rounded-xl transition-all duration-300"
-            >
-              Ver o que você terá acesso
-            </button>
-          </div>
+          <div className="space-y-6 pt-4">
+            {/* CTA Principal */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button
+                onClick={handleCTA}
+                className="btn-primary text-lg md:text-xl px-10 md:px-14 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group"
+              >
+                <span className="relative z-10">Começar Agora - R$ 19,90/mês</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </button>
+            </div>
 
-          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-4 text-sm md:text-base text-light-muted">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Resultados reais em semanas</span>
+            {/* Benefícios em destaque */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <div className="flex flex-col items-center lg:items-start gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
+                <div className="flex items-center gap-2 w-full justify-center lg:justify-start">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm md:text-base text-light font-semibold text-center lg:text-left">Resultados reais em semanas</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-center lg:items-start gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
+                <div className="flex items-center gap-2 w-full justify-center lg:justify-start">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm md:text-base text-light font-semibold text-center lg:text-left">Treinos que evoluem com você</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-center lg:items-start gap-2 bg-dark-lighter/30 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
+                <div className="flex items-center gap-2 w-full justify-center lg:justify-start">
+                  <svg className="w-5 h-5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-sm md:text-base text-light font-semibold text-center lg:text-left">Cancele quando quiser</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Treinos que evoluem com você</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span>Cancele quando quiser</span>
+
+            {/* Link para ver mais */}
+            <div className="flex justify-center lg:justify-start pt-2">
+              <button
+                onClick={() => {
+                  const element = document.getElementById('features')
+                  element?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="text-base md:text-lg text-primary hover:text-primary/80 font-medium underline underline-offset-4 transition-colors"
+              >
+                Ver o que você terá acesso →
+              </button>
             </div>
           </div>
         </div>

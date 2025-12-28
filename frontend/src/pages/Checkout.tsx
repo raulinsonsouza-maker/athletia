@@ -58,7 +58,7 @@ export default function Checkout() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { showToast, ToastContainer } = useToast()
-  const [planoSelecionado, setPlanoSelecionado] = useState<string>('TRIMESTRAL')
+  const [planoSelecionado, setPlanoSelecionado] = useState<string>('MENSAL')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 

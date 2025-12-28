@@ -949,6 +949,234 @@ export const cadastroPrePagamento = async (req: Request, res: Response) => {
   }
 };
 
+// Cadastro sem trial (cria usuário sem plano ativo, sem gerar treinos, sem trial)
+export const cadastroSemTrial = async (req: Request, res: Response) => {
+  try {
+    // Log dos dados recebidos para debug (sem senha)
+    console.log('[CADASTRO-SEM-TRIAL] Dados recebidos:', {
+      nome: req.body.nome,
+      email: req.body.email,
+      telefone: req.body.telefone,
+      temSenha: !!req.body.senha,
+      temOnboarding: !!req.body.onboarding,
+      onboardingKeys: req.body.onboarding ? Object.keys(req.body.onboarding) : []
+    });
+    
+    const { nome, telefone, email, senha, onboarding } = req.body;
+
+    // Validações
+    if (!nome || !email || !telefone || !senha) {
+      return res.status(400).json({
+        error: 'Nome, e-mail, telefone e senha são obrigatórios'
+      });
+    }
+
+    if (!onboarding) {
+      return res.status(400).json({
+        error: 'Dados do onboarding são obrigatórios'
+      });
+    }
+
+    const emailNormalizado = email.toLowerCase().trim();
+
+    // Verificar se email já existe
+    const existingUser = await prisma.user.findUnique({
+      where: { email: emailNormalizado }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: 'E-mail já cadastrado'
+      });
+    }
+
+    // Hash da senha
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    // Normalizar telefone para formato E.164 (se fornecido)
+    let whatsappPhoneNumber: string | null = null;
+    if (telefone) {
+      // Remove caracteres não numéricos
+      const cleaned = telefone.replace(/\D/g, '');
+      // Adiciona código do país se não tiver
+      if (cleaned.length > 0) {
+        if (!cleaned.startsWith('55')) {
+          whatsappPhoneNumber = '+55' + cleaned;
+        } else {
+          whatsappPhoneNumber = '+' + cleaned;
+        }
+      }
+    }
+
+    // Verificar se número de WhatsApp já existe (se fornecido)
+    if (whatsappPhoneNumber) {
+      const existingUserByPhone = await prisma.user.findUnique({
+        where: { whatsappPhoneNumber }
+      });
+
+      if (existingUserByPhone) {
+        // Se o número pertence ao mesmo email, permitir (pode ser atualização)
+        if (existingUserByPhone.email === emailNormalizado) {
+          // Mesmo usuário tentando recadastrar - retornar erro apropriado
+          return res.status(400).json({
+            error: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.'
+          });
+        } else {
+          // Número já usado por outro usuário
+          return res.status(400).json({
+            error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+          });
+        }
+      }
+    }
+
+    // Sanitizar nome (remover "teste", "test", etc.)
+    let nomeSanitizado = nome ? nome.trim() : null;
+    if (nomeSanitizado) {
+      const nomeLower = nomeSanitizado.toLowerCase();
+      const palavrasTeste = ['teste', 'test', 'demo', 'trial', 'temp', 'temporary'];
+      if (palavrasTeste.some(palavra => nomeLower.includes(palavra))) {
+        // Se contém palavra de teste, usar apenas primeiro nome ou email
+        const primeiroNome = nomeSanitizado.split(' ')[0];
+        nomeSanitizado = primeiroNome.length > 2 ? primeiroNome : emailNormalizado.split('@')[0];
+      }
+    }
+
+    // Criar usuário com planoAtivo = false, SEM trial
+    const user = await prisma.user.create({
+      data: {
+        email: emailNormalizado,
+        senhaHash,
+        nome: nomeSanitizado,
+        telefone: telefone.trim(),
+        whatsappPhoneNumber,
+        planoAtivo: false, // Ainda não pagou
+        role: 'USER',
+        // NÃO criar trial - campos permanecem null
+        dataInicioTrial: null,
+        dataFimTrial: null,
+        trialUtilizado: false
+      }
+    });
+
+    // Criar perfil com dados do onboarding
+    const onboardingData = normalizeOnboardingData(onboarding);
+    if (!onboardingData) {
+      return res.status(400).json({
+        error: 'Dados do onboarding são inválidos'
+      });
+    }
+
+    await prisma.perfil.create({
+      data: {
+        userId: user.id,
+        idade: onboardingData?.idade ?? null,
+        sexo: onboardingData?.sexo ?? null,
+        tipoCorpo: onboardingData?.tipoCorpo ?? null,
+        altura: onboardingData?.altura ?? null,
+        pesoAtual: onboardingData?.pesoAtual ?? null,
+        percentualGordura: onboardingData?.percentualGordura ?? null,
+        aguaDiaria: onboardingData?.aguaDiaria ?? null,
+        experiencia: onboardingData?.experiencia ?? null,
+        objetivo: onboardingData?.objetivo ?? null,
+        frequenciaSemanal: onboardingData?.frequenciaSemanal ?? null,
+        tempoDisponivel: onboardingData?.tempoDisponivel ?? null,
+        localTreino: onboardingData?.localTreino ?? null,
+        problemasAnteriores: onboardingData?.problemasAnteriores ?? [],
+        objetivosAdicionais: onboardingData?.objetivosAdicionais ?? [],
+        lesoes: onboardingData?.lesoes ?? [],
+        preferencias: onboardingData?.preferencias ?? [],
+        rpePreferido: onboardingData?.rpePreferido ?? null
+      }
+    });
+
+    // Se peso foi informado, criar registro no histórico
+    if (onboardingData.pesoAtual !== null) {
+      await prisma.historicoPeso.create({
+        data: {
+          userId: user.id,
+          peso: onboardingData.pesoAtual
+        }
+      });
+    }
+
+    // Enviar mensagem WhatsApp de boas-vindas (assíncrono, não bloqueia resposta)
+    // Nota: Pode precisar de template diferente se não for mais sobre trial
+    if (whatsappPhoneNumber) {
+      enviarMensagemBoasVindasWhatsApp(user.id, whatsappPhoneNumber, user.nome || nome.trim()).catch((error: any) => {
+        console.error('Erro ao enviar mensagem WhatsApp de boas-vindas:', error);
+        // Não falhar o cadastro se WhatsApp falhar
+      });
+    }
+
+    // Registrar evento de onboarding completo (não bloqueia se falhar)
+    try {
+      const { registrarEventoAsync } = await import('../services/analytics.service');
+      registrarEventoAsync(user.id, 'onboarding_completed', {
+        goal: onboardingData?.objetivo || null,
+        experience_level: onboardingData?.experiencia || null
+      });
+    } catch (error) {
+      console.error('Erro ao registrar evento de onboarding:', error);
+    }
+
+    // NÃO gerar treinos - apenas após pagamento
+
+    // Gerar tokens para login automático (cadastro sempre usa rememberMe = true)
+    const { accessToken, refreshToken } = generateTokens(user.id, true);
+    await saveRefreshToken(user.id, refreshToken);
+
+    console.log('✅ Cadastro sem trial realizado com sucesso. Usuário será redirecionado para checkout.');
+
+    res.status(201).json({
+      message: 'Cadastro realizado com sucesso. Complete o pagamento para acessar seu plano.',
+      user: {
+        id: user.id,
+        email: user.email,
+        nome: user.nome,
+        planoAtivo: user.planoAtivo
+      },
+      accessToken,
+      refreshToken
+    });
+  } catch (error: any) {
+    console.error('Erro no cadastro sem trial:', error);
+    console.error('Stack trace:', error.stack);
+    console.error('Detalhes do erro:', {
+      message: error.message,
+      name: error.name,
+      code: error.code
+    });
+    
+    // Verificar se é erro de constraint única do Prisma
+    if (error.code === 'P2002') {
+      const target = error.meta?.target || [];
+      
+      // Verificar qual campo causou o erro
+      if (target.includes('email')) {
+        return res.status(400).json({
+          error: 'E-mail já cadastrado'
+        });
+      } else if (target.includes('whatsapp_phone_number')) {
+        return res.status(400).json({
+          error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+        });
+      } else {
+        return res.status(400).json({
+          error: 'Dados já cadastrados. Verifique as informações e tente novamente.'
+        });
+      }
+    }
+    
+    res.status(500).json({
+      error: 'Erro ao realizar cadastro',
+      message: process.env.NODE_ENV === 'production' 
+        ? 'Erro interno do servidor. Tente novamente mais tarde.' 
+        : error.message
+    });
+  }
+};
+
 // Cadastro completo com onboarding e perfil
 export const cadastroCompleto = async (req: Request, res: Response) => {
   try {

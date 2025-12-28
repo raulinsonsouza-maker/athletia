@@ -20,6 +20,7 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
   return (
     <section
       ref={ref as React.RefObject<HTMLElement>}
+      id="cta"
       className="py-20 md:py-32 px-4 md:px-6 relative overflow-hidden"
     >
       {/* Background com gradiente animado */}
@@ -63,7 +64,7 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm md:text-base text-light-muted">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm md:text-base text-light-muted max-w-2xl mx-auto">
             <div className="flex flex-col items-center gap-2">
               <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -75,12 +76,6 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               <span className="text-center">Cancele quando quiser</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <span className="text-center">Resultados garantidos ou seu dinheiro de volta</span>
             </div>
           </div>
         </div>

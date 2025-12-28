@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, ativarPlanoAposPagamento, requestPasswordReset, resetPassword, obterStatusTrial, obterProgressoTrial, obterUsuario } from '../controllers/auth.controller';
+import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, cadastroSemTrial, ativarPlanoAposPagamento, requestPasswordReset, resetPassword, obterStatusTrial, obterProgressoTrial, obterUsuario } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
 import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 import { authenticate } from '../middleware/auth.middleware';
@@ -181,6 +181,7 @@ router.get('/trial-status', authenticate, obterStatusTrial);
 router.get('/trial-progress', authenticate, obterProgressoTrial);
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
+router.post('/cadastro-sem-trial', cadastroPrePagamentoValidation, validateRequest, cadastroSemTrial);
 /**
  * ATENÇÃO: Este endpoint requer autenticação obrigatória e validação de pagamento.
  * 

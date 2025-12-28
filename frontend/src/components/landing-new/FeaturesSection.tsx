@@ -46,8 +46,22 @@ const features: Feature[] = [
   }
 ]
 
-export default function FeaturesSection() {
+interface FeaturesSectionProps {
+  onStartOnboarding?: () => void
+}
+
+export default function FeaturesSection({ onStartOnboarding }: FeaturesSectionProps) {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 })
+  
+  const handleCTA = () => {
+    // Sempre fazer scroll para o formulário
+    const element = document.getElementById('formulario-cadastro')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else if (onStartOnboarding) {
+      onStartOnboarding()
+    }
+  }
 
   return (
     <section
@@ -89,6 +103,17 @@ export default function FeaturesSection() {
                 <p className="text-xl md:text-2xl text-light-muted leading-relaxed">
                   {feature.description}
                 </p>
+                {/* CTA intermediário - aparece em features alternadas */}
+                {index % 2 === 0 && (
+                  <div className="pt-4">
+                    <button
+                      onClick={handleCTA}
+                      className="btn-primary text-base md:text-lg px-8 md:px-10 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all duration-300"
+                    >
+                      Começar Agora - R$ 19,90/mês
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Imagem - estilo Productive */}

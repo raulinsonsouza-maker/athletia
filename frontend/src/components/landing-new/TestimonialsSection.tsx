@@ -142,6 +142,23 @@ export default function TestimonialsSection() {
             </svg>
           </button>
         </div>
+
+        {/* CTA intermediário após depoimentos */}
+        <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}>
+          <button
+            onClick={() => {
+              const element = document.getElementById('formulario-cadastro')
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }}
+            className="btn-primary text-lg md:text-xl px-10 md:px-14 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300"
+          >
+            Quero Resultados Assim - R$ 19,90/mês
+          </button>
+        </div>
       </div>
     </section>
   )
