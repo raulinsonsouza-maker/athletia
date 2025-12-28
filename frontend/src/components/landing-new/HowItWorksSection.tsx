@@ -1,42 +1,41 @@
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
 
-const steps = [
-  {
-    number: 1,
-    title: 'Responda perguntas rápidas',
-    description: 'Nosso questionário inteligente leva apenas 2 minutos e coleta informações sobre seus objetivos, nível de experiência e preferências.'
-  },
-  {
-    number: 2,
-    title: 'A IA analisa seu perfil',
-    description: 'Nossa inteligência artificial processa suas respostas e cria um plano personalizado exclusivo para você.'
-  },
-  {
-    number: 3,
-    title: 'Receba seu treino completo',
-    description: 'Em segundos, você terá acesso a um programa de treinos completo, com exercícios, séries, repetições e descansos otimizados.'
-  },
-  {
-    number: 4,
-    title: 'Evolua automaticamente',
-    description: 'A cada treino, o sistema ajusta automaticamente peso, repetições e volume baseado no seu desempenho real.'
-  }
-]
-
 interface HowItWorksSectionProps {
   onStartOnboarding?: () => void
 }
 
+const steps = [
+  {
+    number: 1,
+    title: 'Receba seu treino completo',
+    description: 'Em segundos, você terá acesso a um programa de treinos completo, com exercícios, séries, repetições e descansos otimizados para você.'
+  },
+  {
+    number: 2,
+    title: 'Evolua automaticamente',
+    description: 'A cada treino, o sistema ajusta automaticamente peso, repetições e volume baseado no seu desempenho real, garantindo progressão constante.'
+  },
+  {
+    number: 3,
+    title: 'Acompanhe seu progresso',
+    description: 'Visualize gráficos detalhados de frequência, métricas de treinos e evolução ao longo do tempo para manter a motivação em alta.'
+  },
+  {
+    number: 4,
+    title: 'Alcance seus objetivos',
+    description: 'Com treinos personalizados que se adaptam ao seu corpo, você terá tudo que precisa para transformar seus resultados em realidade.'
+  }
+]
+
 export default function HowItWorksSection({ onStartOnboarding }: HowItWorksSectionProps) {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 })
-  
+
   const handleCTA = () => {
-    // Sempre fazer scroll para o formulário
-    const element = document.getElementById('formulario-cadastro')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    } else if (onStartOnboarding) {
+    if (onStartOnboarding) {
       onStartOnboarding()
+    } else {
+      const element = document.getElementById('cta')
+      element?.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -56,7 +55,7 @@ export default function HowItWorksSection({ onStartOnboarding }: HowItWorksSecti
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-3xl mx-auto">
-            Um processo simples que transforma seus objetivos em treinos personalizados que realmente funcionam
+            Agora que conhecemos seu perfil, vamos juntos nesta jornada de transformação
           </p>
         </div>
 
@@ -112,4 +111,3 @@ export default function HowItWorksSection({ onStartOnboarding }: HowItWorksSecti
     </section>
   )
 }
-
