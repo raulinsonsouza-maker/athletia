@@ -27,6 +27,7 @@ const Cookies = lazy(() => import('./pages/Cookies'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const TrialExpirado = lazy(() => import('./pages/TrialExpirado'))
 const OnePage = lazy(() => import('./pages/OnePage'))
+const LandingNew = lazy(() => import('./pages/LandingNew'))
 
 // Lazy load - Rotas protegidas
 const Treinos = lazy(() => import('./pages/Treinos'))
@@ -98,6 +99,14 @@ function App() {
             element={
               <Suspense fallback={<LoadingFallback />}>
                 <OnePage />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/home" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <LandingNew />
               </Suspense>
             } 
           />
