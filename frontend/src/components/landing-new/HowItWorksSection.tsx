@@ -7,23 +7,23 @@ interface HowItWorksSectionProps {
 const steps = [
   {
     number: 1,
-    title: 'Responda perguntas rápidas',
-    description: 'Nosso questionário inteligente leva apenas 2 minutos e coleta informações sobre seus objetivos, nível de experiência e preferências.'
+    title: 'Seu treino está pronto',
+    description: 'Baseado nas suas respostas, nossa IA já criou um plano de treinos personalizado exclusivo para você, com exercícios, séries, repetições e descansos otimizados.'
   },
   {
     number: 2,
-    title: 'A IA analisa seu perfil',
-    description: 'Nossa inteligência artificial processa suas respostas e cria um plano personalizado exclusivo para você.'
+    title: 'Finalize sua assinatura',
+    description: 'Assim que você finalizar o pagamento, terá acesso imediato ao seu programa completo de treinos personalizados.'
   },
   {
     number: 3,
-    title: 'Receba seu treino completo',
-    description: 'Em segundos, você terá acesso a um programa de treinos completo, com exercícios, séries, repetições e descansos otimizados.'
+    title: 'Comece a treinar',
+    description: 'Acesse seu treino completo em segundos e comece sua jornada de transformação com exercícios adaptados ao seu perfil.'
   },
   {
     number: 4,
     title: 'Evolua automaticamente',
-    description: 'A cada treino, o sistema ajusta automaticamente peso, repetições e volume baseado no seu desempenho real.'
+    description: 'A cada treino, o sistema ajusta automaticamente peso, repetições e volume baseado no seu desempenho real, garantindo progressão constante.'
   }
 ]
 
@@ -49,13 +49,13 @@ export default function HowItWorksSection({ onStartOnboarding }: HowItWorksSecti
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
-            Como você vai{' '}
+            Seu treino está{' '}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              alcançar resultados
+              pronto
             </span>
           </h2>
           <p className="text-xl text-light-muted max-w-3xl mx-auto">
-            Um processo simples que transforma seus objetivos em treinos personalizados que realmente funcionam
+            Nossa IA já analisou seu perfil e criou um plano personalizado. Finalize sua assinatura e comece a treinar agora mesmo.
           </p>
         </div>
 

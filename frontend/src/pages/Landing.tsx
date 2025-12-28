@@ -663,11 +663,11 @@ export default function Landing() {
                       aria-label={`Selecionar tipo de corpo: ${tipo.label}`}
                       aria-pressed={selected}
                     >
-                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none">
+                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none overflow-hidden">
                         <ImageSkeleton
                           src={tipo.image}
                           alt={`Treino personalizado para ${tipo.label} - Sistema inteligente de treinos adaptativos`}
-                          className="w-full h-full object-cover object-center"
+                          className="w-full h-full object-cover object-top sm:object-center"
                           width={300}
                           height={400}
                         />
@@ -844,11 +844,11 @@ export default function Landing() {
                           : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                     >
-                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none">
+                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none overflow-hidden">
                         <ImageSkeleton
                           src={obj.image}
                           alt={`Treino personalizado para objetivo: ${obj.title} - Sistema inteligente de treinos com IA`}
-                          className="w-full h-full object-cover object-center"
+                          className="w-full h-full object-cover object-top sm:object-center"
                           width={300}
                           height={400}
                         />
