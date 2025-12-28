@@ -99,14 +99,14 @@ export default function HeroSection({ onStartOnboarding, nomeUsuario }: HeroSect
             {/* Imagem Hero - nova versão */}
             <div className="relative">
               <img
-                src="/images/app-preview/Editadas/hero-left.png"
+                src="/images/app-preview/Editadas/Hero_nova.png"
                 alt="Interface do AthletIA mostrando treinos personalizados"
                 className="w-full h-auto drop-shadow-2xl"
                 loading="eager"
                 onError={(e) => {
-                  // Fallback para Hero_nova.png se imagem não existir
+                  // Fallback para versão anterior se imagem não existir
                   const target = e.target as HTMLImageElement
-                  target.src = '/images/app-preview/Editadas/Hero_nova.png'
+                  target.src = '/images/app-preview/Editadas/hero-left.png'
                 }}
               />
             </div>
