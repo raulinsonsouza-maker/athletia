@@ -62,25 +62,24 @@ export default function BottomTabs({ active }: BottomTabsProps) {
           // Botão central especial para Treinos
           if (isCentral) {
             return (
-              <div key={tab.id} className="flex flex-col items-center -mt-3 relative z-10">
+              <div key={tab.id} className="flex flex-col items-center -mt-6 relative z-10">
                 <button
                   onClick={() => navigate(tab.path)}
                   className={`
-                    w-14 h-14 rounded-full flex items-center justify-center
-                    transition-all duration-300 shadow-lg
+                    w-16 h-16 rounded-full flex flex-col items-center justify-center gap-0.5
+                    transition-all duration-300 shadow-xl
+                    bg-[#F9A620]
                     ${isActive 
-                      ? 'bg-gradient-to-br from-primary to-primary/80 shadow-primary/50 scale-105' 
-                      : 'bg-gradient-to-br from-primary/90 to-primary/70 shadow-primary/30 hover:scale-105'
+                      ? 'shadow-primary/60 scale-105' 
+                      : 'shadow-primary/40 hover:scale-105'
                     }
                   `}
                 >
-                  <AppLogo className="w-7 h-7" />
+                  <AppLogo className="w-6 h-6" />
+                  <span className="text-[9px] font-bold text-black leading-none">
+                    {tab.label}
+                  </span>
                 </button>
-                <span className={`text-[10px] mt-1 font-semibold transition ${
-                  isActive ? 'text-primary' : 'text-white/70'
-                }`}>
-                  {tab.label}
-                </span>
               </div>
             )
           }
