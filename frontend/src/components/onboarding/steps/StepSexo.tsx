@@ -10,17 +10,14 @@ interface StepSexoProps {
 export default function StepSexo({ onboardingData, onSelect }: StepSexoProps) {
   return (
     <div className="text-center animate-fade-in">
-      <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+      <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
         Qual é o seu sexo?
       </h2>
-      <p className="text-light-muted mb-2 text-lg">
-        Homens e mulheres têm diferenças hormonais e estruturais importantes
-      </p>
-      <p className="text-sm text-light-muted mb-8">
-        Isso afeta ganho de massa muscular, perda de gordura e distribuição de força
+      <p className="text-light-muted mb-4 text-sm md:text-base">
+        Homens e mulheres têm diferenças hormonais e estruturais importantes que afetam ganho de massa muscular, perda de gordura e distribuição de força.
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 max-w-3xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 max-w-sm md:max-w-3xl mx-auto">
         {SEXO_OPCOES.map((sexo) => {
           const selected = onboardingData.sexo === sexo.value
           return (
@@ -37,12 +34,12 @@ export default function StepSexo({ onboardingData, onSelect }: StepSexoProps) {
               ariaLabel={`Selecionar ${sexo.value}`}
               ariaPressed={selected}
             >
-              <div className="w-full aspect-[3/4] bg-dark-lighter overflow-hidden">
+              <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter overflow-hidden max-h-[240px] sm:max-h-none">
                 {'image' in sexo && sexo.image ? (
                   <img 
                     src={sexo.image} 
                     alt={`Treino personalizado inteligente para ${sexo.value} - Sistema adaptativo com IA`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-center"
                     loading="lazy"
                     width="300"
                     height="400"

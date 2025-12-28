@@ -27,7 +27,7 @@ export default function OnboardingHeader({ step = 0 }: OnboardingHeaderProps) {
   const progresso = step > 0 ? (step / TOTAL_STEPS) * 100 : 0
 
   return (
-    <div className="w-full py-4 md:py-5 px-4 md:px-6 border-b border-grey/30 bg-dark/95 backdrop-blur-md">
+    <div className="w-full py-3 md:py-4 px-4 md:px-6 border-b border-grey/30 bg-dark/95 backdrop-blur-md sticky top-0 z-50">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 md:gap-3">
@@ -45,7 +45,7 @@ export default function OnboardingHeader({ step = 0 }: OnboardingHeaderProps) {
           {step > 0 && tempoRestante && (
             <div className="text-right">
               <div className="text-xs md:text-sm text-light-muted">
-                Faltam apenas <span className="font-semibold text-primary">{tempoRestante}</span>
+                <span className="font-semibold text-primary">Passo {step}</span> de {TOTAL_STEPS} • <span className="font-semibold text-primary">{tempoRestante}</span>
               </div>
               <div className="w-32 md:w-48 h-1.5 bg-grey/20 rounded-full mt-1.5 overflow-hidden">
                 <div 

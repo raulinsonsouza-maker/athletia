@@ -10,17 +10,14 @@ interface StepIdadeProps {
 export default function StepIdade({ onboardingData, onSelect }: StepIdadeProps) {
   return (
     <div className="text-center animate-fade-in">
-      <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+      <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
         Qual é a sua idade?
       </h2>
-      <p className="text-light-muted mb-2 text-lg">
-        A idade influencia diretamente no metabolismo e capacidade de recuperação
-      </p>
-      <p className="text-sm text-light-muted mb-8">
-        Treinos personalizados por idade garantem resultados mais seguros e eficazes
+      <p className="text-light-muted mb-4 text-sm md:text-base">
+        A idade influencia diretamente no metabolismo e capacidade de recuperação. Treinos personalizados por idade garantem resultados mais seguros e eficazes.
       </p>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4 max-w-sm sm:max-w-2xl md:max-w-full mx-auto">
         {IDADE_OPCOES.map((faixa) => {
           const selected = onboardingData.idade ? 
             (faixa.label === '18-29' && onboardingData.idade >= 18 && onboardingData.idade <= 29) ||
@@ -42,11 +39,11 @@ export default function StepIdade({ onboardingData, onSelect }: StepIdadeProps) 
               ariaLabel={`Selecionar idade ${faixa.label}`}
               ariaPressed={selected}
             >
-              <div className="w-full aspect-[3/4] bg-dark-lighter overflow-hidden">
+              <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter overflow-hidden max-h-[240px] sm:max-h-none">
                 <img 
                   src={faixa.image} 
                   alt={`Pessoa na faixa etária ${faixa.label} anos - Treino personalizado inteligente para sua idade`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   loading="lazy"
                   width="300"
                   height="400"

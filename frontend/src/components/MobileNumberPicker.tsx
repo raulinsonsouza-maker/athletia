@@ -115,16 +115,16 @@ export default function MobileNumberPicker({
         <div className="w-full h-12 bg-light/5 rounded-full border border-light/10" />
       </div>
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-center gap-3 sm:gap-4">
         <div
           ref={containerRef}
           onScroll={handleScroll}
           onWheel={handleWheel}
           onDoubleClick={handleDoubleClick}
-          className="relative flex-1 h-40 overflow-y-auto hide-scrollbar scroll-smooth snap-y snap-mandatory py-14 cursor-pointer"
+          className="relative flex-1 h-32 sm:h-40 overflow-y-auto hide-scrollbar scroll-smooth snap-y snap-mandatory py-10 sm:py-14 cursor-pointer"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-12 pointer-events-none rounded-full border border-light/20 bg-white/5" />
+          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 sm:h-12 pointer-events-none rounded-full border border-light/20 bg-white/5" />
           <div className="flex flex-col items-center">
             {options.map((option) => {
               const display = Number.isInteger(option) ? option.toString() : option.toFixed(1)
@@ -132,8 +132,8 @@ export default function MobileNumberPicker({
               return (
                 <div
                   key={option}
-                  className={`flex items-center justify-center h-12 snap-center transition-all duration-150 ${
-                    isSelected ? 'text-light text-2xl font-bold' : 'text-light-muted text-lg'
+                  className={`flex items-center justify-center h-10 sm:h-12 snap-center transition-all duration-150 ${
+                    isSelected ? 'text-light text-xl sm:text-2xl font-bold' : 'text-light-muted text-base sm:text-lg'
                   }`}
                   style={{ minHeight: ITEM_HEIGHT }}
                 >
@@ -145,7 +145,7 @@ export default function MobileNumberPicker({
         </div>
 
         {unit && (
-          <div className="text-light text-lg font-semibold w-14 text-right">
+          <div className="text-light text-base sm:text-lg font-semibold w-12 sm:w-14 text-right">
             {unit}
           </div>
         )}

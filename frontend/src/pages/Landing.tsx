@@ -634,17 +634,14 @@ export default function Landing() {
           {/* Passo 3: Tipo de Corpo */}
           {step === 3 && (
             <div className="text-center animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 {genderContent.tipoCorpo.title}
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                {genderContent.tipoCorpo.subtitle}
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                {genderContent.tipoCorpo.desc}
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                {genderContent.tipoCorpo.subtitle}. {genderContent.tipoCorpo.desc}
               </p>
               
-              <div className={`grid grid-cols-1 ${onboardingData.sexo === 'Feminino' ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-2 lg:grid-cols-4'} gap-6 mt-8`}>
+              <div className={`grid grid-cols-1 ${onboardingData.sexo === 'Feminino' ? 'sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4'} gap-3 mt-4 max-w-sm sm:max-w-2xl md:max-w-full mx-auto`}>
                 {(onboardingData.sexo === 'Feminino' ? TIPO_CORPO_FEMININO : TIPO_CORPO_MASCULINO).map((tipo) => {
                   const selected = onboardingData.tipoCorpo === tipo.value
                   return (
@@ -660,28 +657,28 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
                         selected
-                          ? 'ring-4 ring-primary scale-105'
+                          ? 'ring-2 sm:ring-4 ring-primary'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                       aria-label={`Selecionar tipo de corpo: ${tipo.label}`}
                       aria-pressed={selected}
                     >
-                      <div className="w-full aspect-[3/4] bg-dark-lighter">
+                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none">
                         <ImageSkeleton
                           src={tipo.image}
                           alt={`Treino personalizado para ${tipo.label} - Sistema inteligente de treinos adaptativos`}
-                          className="w-full h-full"
+                          className="w-full h-full object-cover object-center"
                           width={300}
                           height={400}
                         />
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
-                        <div className="text-white font-bold text-xl mb-1">{tipo.label}</div>
-                        <div className="text-white/80 text-sm">{tipo.desc}</div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-3 sm:p-4">
+                        <div className="text-white font-bold text-base sm:text-xl mb-1">{tipo.label}</div>
+                        <div className="text-white/80 text-xs sm:text-sm">{tipo.desc}</div>
                       </div>
                       {selected && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute top-2 right-2 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center z-10">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -696,14 +693,14 @@ export default function Landing() {
           {/* Passo 4: Altura */}
           {step === 4 && (
             <div className="text-center animate-fade-in max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-8">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Qual é a sua altura?
               </h2>
-              <p className="text-light-muted mb-6 text-lg">
+              <p className="text-light-muted mb-4 text-sm md:text-base">
                 Ajuste deslizando — selecionamos a altura exata para montar seus treinos.
               </p>
 
-              <div className="max-w-xs mx-auto mt-8">
+              <div className="max-w-xs mx-auto mt-4">
                 <MobileNumberPicker
                   min={120}
                   max={230}
@@ -711,7 +708,7 @@ export default function Landing() {
                   onChange={(valor) => handleChange('altura', valor)}
                   unit="cm"
                 />
-                <p className="text-xs text-light-muted mt-4">Arraste para cima ou para baixo para ajustar.</p>
+                <p className="text-xs text-light-muted mt-3">Arraste para cima ou para baixo para ajustar.</p>
               </div>
             </div>
           )}
@@ -719,14 +716,14 @@ export default function Landing() {
           {/* Passo 4.5: Peso */}
           {step === 4.5 && (
             <div className="text-center animate-fade-in max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-8">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Qual é o seu peso atual?
               </h2>
-              <p className="text-light-muted mb-6 text-lg">
+              <p className="text-light-muted mb-4 text-sm md:text-base">
                 Use o seletor para informar o peso atual. Ajustamos automaticamente conforme sua evolução.
               </p>
 
-              <div className="max-w-xs mx-auto mt-8 space-y-6">
+              <div className="max-w-xs mx-auto mt-4 space-y-4">
                 <MobileNumberPicker
                   min={35}
                   max={250}
@@ -736,9 +733,9 @@ export default function Landing() {
                 />
 
                 {onboardingData.altura && onboardingData.pesoAtual && (
-                  <div className="bg-primary/15 border border-primary/40 rounded-lg p-4">
+                  <div className="bg-primary/15 border border-primary/40 rounded-lg p-3 sm:p-4">
                     <p className="text-xs text-light-muted uppercase tracking-wide">Seu IMC estimado</p>
-                    <p className="text-3xl font-bold text-primary mt-1">
+                    <p className="text-2xl sm:text-3xl font-bold text-primary mt-1">
                       {(() => {
                         const alturaMetros = (onboardingData.altura ?? 170) / 100
                         if (alturaMetros <= 0) return '—'
@@ -746,7 +743,7 @@ export default function Landing() {
                         return imcValor.toFixed(1)
                       })()}
                     </p>
-                    <p className="text-xs text-light-muted mt-2">
+                    <p className="text-xs text-light-muted mt-1 sm:mt-2">
                       {(() => {
                         const alturaMetros = (onboardingData.altura ?? 170) / 100
                         if (alturaMetros <= 0) return '—'
@@ -766,17 +763,14 @@ export default function Landing() {
           {/* Passo 5: Consumo de Água */}
           {step === 5 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Quanta água você bebe diariamente?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                A hidratação adequada é fundamental para o desempenho e recuperação
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Isso nos ajuda a personalizar recomendações de hidratação para seus treinos
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                A hidratação adequada é fundamental para o desempenho e recuperação. Isso nos ajuda a personalizar recomendações de hidratação para seus treinos.
               </p>
               
-              <div className="grid grid-cols-1 gap-4 mt-8 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 gap-3 mt-4 max-w-2xl mx-auto">
                 {AGUA_OPCOES.map((agua) => {
                   const selected = onboardingData.aguaDiaria === agua.value
                   return (
@@ -792,7 +786,7 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-lg transition-all p-4 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter'
+                          ? 'ring-2 sm:ring-4 ring-primary bg-dark-lighter'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-dark-lighter'
                       }`}
                     >
@@ -829,17 +823,14 @@ export default function Landing() {
           {/* Passo 6: Objetivo */}
           {step === 6 && (
             <div className="text-center animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 {genderContent.objetivos.title}
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                {genderContent.objetivos.subtitle}
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                {genderContent.objetivos.desc}
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                {genderContent.objetivos.subtitle}. {genderContent.objetivos.desc}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4 max-w-sm sm:max-w-2xl md:max-w-full mx-auto">
                 {(onboardingData.sexo === 'Feminino' ? OBJETIVO_OPCOES_FEMININO : OBJETIVO_OPCOES_MASCULINO).map((obj) => {
                   const selected = onboardingData.objetivo === obj.value
                   return (
@@ -849,26 +840,26 @@ export default function Landing() {
                       onClick={() => handleChangeAndAdvance('objetivo', obj.value)}
                       className={`relative overflow-hidden rounded-lg transition-all ${
                         selected
-                          ? 'ring-4 ring-primary scale-105'
+                          ? 'ring-2 sm:ring-4 ring-primary'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                     >
-                      <div className="w-full aspect-[3/4] bg-dark-lighter">
+                      <div className="w-full aspect-[4/3] sm:aspect-[3/4] bg-dark-lighter max-h-[240px] sm:max-h-none">
                         <ImageSkeleton
                           src={obj.image}
                           alt={`Treino personalizado para objetivo: ${obj.title} - Sistema inteligente de treinos com IA`}
-                          className="w-full h-full"
+                          className="w-full h-full object-cover object-center"
                           width={300}
                           height={400}
                         />
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-4">
-                        <div className="text-white font-bold text-xl mb-1">{obj.title}</div>
-                        <div className="text-white/80 text-sm">{obj.desc}</div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900/90 to-transparent p-3 sm:p-4">
+                        <div className="text-white font-bold text-base sm:text-xl mb-1">{obj.title}</div>
+                        <div className="text-white/80 text-xs sm:text-sm">{obj.desc}</div>
                       </div>
                       {selected && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="absolute top-2 right-2 w-5 h-5 sm:w-6 sm:h-6 bg-primary rounded-full flex items-center justify-center z-10">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
@@ -883,17 +874,14 @@ export default function Landing() {
           {/* Passo 7: Nível de Condicionamento Físico */}
           {step === 7 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Qual é o seu nível de condicionamento físico?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Isso nos ajuda a criar treinos adequados ao seu nível
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Seja honesto para receber treinos personalizados e seguros
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Isso nos ajuda a criar treinos adequados ao seu nível. Seja honesto para receber treinos personalizados e seguros.
               </p>
 
-              <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto mt-8">
+              <div className="grid grid-cols-1 gap-3 max-w-2xl mx-auto mt-4">
                 {EXPERIENCIA_OPCOES.map((exp) => {
                   const icon = exp.value === 'Iniciante' ? (
                     <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -922,9 +910,9 @@ export default function Landing() {
                           setStep(7.5)
                         }, 600)
                       }}
-                      className={`relative overflow-hidden rounded-lg transition-all p-6 text-left ${
+                      className={`relative overflow-hidden rounded-lg transition-all p-4 sm:p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter border-2 border-primary/50'
+                          ? 'ring-2 sm:ring-4 ring-primary bg-dark-lighter border-2 border-primary/50'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-dark-lighter hover:border-primary/30 border-2 border-transparent'
                       }`}
                     >
@@ -959,17 +947,14 @@ export default function Landing() {
           {/* Passo 8: Frequência Semanal */}
           {step === 8 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Quantas vezes por semana você quer treinar?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Vamos ajustar os treinos ao seu ritmo
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Escolha a frequência ideal para seus treinos
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Vamos ajustar os treinos ao seu ritmo. Escolha a frequência ideal para seus treinos.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto mt-4">
                 {FREQUENCIA_OPCOES.map((freq) => {
                   const icon = freq.value === 2 ? (
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1038,17 +1023,14 @@ export default function Landing() {
           {/* Passo 9: Tempo de Treino */}
           {step === 9 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Quanto tempo você quer que seus treinos durem?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Selecione a duração ideal para seus treinos
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Isso nos ajuda a criar treinos que se encaixam na sua rotina
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Selecione a duração ideal para seus treinos. Isso nos ajuda a criar treinos que se encaixam na sua rotina.
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto mt-4">
                 {TEMPO_OPCOES.map((tempo) => {
                   const selected = onboardingData.tempoDisponivel === tempo.value
                   return (
@@ -1096,17 +1078,14 @@ export default function Landing() {
           {/* Passo 10: Local do Treino */}
           {step === 10 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Escolha o local do seu treino
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Onde você prefere treinar?
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Isso nos ajuda a criar treinos adequados ao seu ambiente
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Onde você prefere treinar? Isso nos ajuda a criar treinos adequados ao seu ambiente.
               </p>
 
-              <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto mt-8">
+              <div className="grid grid-cols-1 gap-3 max-w-2xl mx-auto mt-4">
                 {LOCAL_TREINO_OPCOES.map((local) => {
                   const selected = onboardingData.localTreino === local.value
                   return (
@@ -1114,9 +1093,9 @@ export default function Landing() {
                       key={local.value}
                       type="button"
                       onClick={() => handleChangeAndAdvance('localTreino', local.value)}
-                      className={`relative overflow-hidden rounded-lg transition-all p-6 text-left ${
+                      className={`relative overflow-hidden rounded-lg transition-all p-4 sm:p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter'
+                          ? 'ring-2 sm:ring-4 ring-primary bg-dark-lighter'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-dark-lighter'
                       }`}
                     >
@@ -1148,17 +1127,14 @@ export default function Landing() {
           {/* Passo 11: Problemas em Tentativas Anteriores */}
           {step === 11 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Problemas em suas tentativas anteriores de condicionamento físico?
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Conte-nos o que dificultou seus treinos anteriores
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Isso nos ajuda a criar uma experiência melhor e evitar os mesmos problemas
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Conte-nos o que dificultou seus treinos anteriores. Isso nos ajuda a criar uma experiência melhor e evitar os mesmos problemas.
               </p>
 
-              <div className="grid grid-cols-1 gap-3 max-w-2xl mx-auto mt-8">
+              <div className="grid grid-cols-1 gap-3 max-w-2xl mx-auto mt-4">
                 {PROBLEMAS_ANTERIORES_OPCOES.map((problema) => {
                   const selected = onboardingData.problemasAnteriores?.includes(problema.value) || false
                   return (
@@ -1175,7 +1151,7 @@ export default function Landing() {
                       }}
                       className={`relative overflow-hidden rounded-lg transition-all p-4 text-left flex items-center justify-between ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter'
+                          ? 'ring-2 sm:ring-4 ring-primary bg-dark-lighter'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-dark-lighter'
                       }`}
                     >
@@ -1217,17 +1193,14 @@ export default function Landing() {
           {/* Passo 12: Objetivos Adicionais */}
           {step === 12 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-4">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Marque seus objetivos adicionais abaixo:
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Temos certeza de que você deseja não apenas um corpo melhor, mas também melhorar seu estilo de vida.
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Selecione todos os benefícios que você deseja alcançar
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Temos certeza de que você deseja não apenas um corpo melhor, mas também melhorar seu estilo de vida. Selecione todos os benefícios que você deseja alcançar.
               </p>
 
-              <div className="grid grid-cols-1 gap-4 max-w-3xl mx-auto mt-8">
+              <div className="grid grid-cols-1 gap-3 max-w-3xl mx-auto mt-4">
                 {OBJETIVOS_ADICIONAIS_OPCOES.map((objetivo) => {
                   const icon = objetivo.value === 'Melhorar o sono' ? (
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1265,33 +1238,33 @@ export default function Landing() {
                           handleChange('objetivosAdicionais', [...current, objetivo.value])
                         }
                       }}
-                      className={`relative overflow-hidden rounded-xl transition-all p-6 text-left ${
+                      className={`relative overflow-hidden rounded-xl transition-all p-4 sm:p-6 text-left ${
                         selected
-                          ? 'ring-4 ring-primary scale-105 bg-dark-lighter border-2 border-primary/50'
+                          ? 'ring-2 sm:ring-4 ring-primary bg-dark-lighter border-2 border-primary/50'
                           : 'ring-2 ring-slate-300 hover:ring-primary/50 bg-dark-lighter hover:border-primary/30 border-2 border-transparent'
                       }`}
                     >
                       <div className="flex items-start gap-4">
-                        <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center ${
+                        <div className={`flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center ${
                           selected ? 'bg-primary text-dark' : 'bg-primary/20 text-primary'
                         }`}>
                           {objetivo.icon}
                         </div>
                         <div className="flex-1">
-                          <div className={`font-bold text-xl mb-2 ${selected ? 'text-primary' : 'text-light'}`}>
+                          <div className={`font-bold text-base sm:text-xl mb-2 ${selected ? 'text-primary' : 'text-light'}`}>
                             {objetivo.value}
                           </div>
-                          <div className={`text-sm leading-relaxed ${selected ? 'text-light/90' : 'text-light-muted'}`}>
+                          <div className={`text-xs sm:text-sm leading-relaxed ${selected ? 'text-light/90' : 'text-light-muted'}`}>
                             {objetivo.desc}
                           </div>
                         </div>
-                        <div className={`flex-shrink-0 w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                        <div className={`flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
                           selected
                             ? 'bg-primary border-primary'
                             : 'border-slate-300 bg-transparent'
                         }`}>
                           {selected && (
-                            <svg className="w-4 h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3 h-3 sm:w-4 sm:h-4 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           )}
@@ -1303,7 +1276,7 @@ export default function Landing() {
               </div>
 
               {onboardingData.objetivosAdicionais && onboardingData.objetivosAdicionais.length > 0 && (
-                <div className="mt-6 text-sm text-light-muted">
+                <div className="mt-4 text-sm text-light-muted">
                   <p>Você selecionou {onboardingData.objetivosAdicionais.length} {onboardingData.objetivosAdicionais.length === 1 ? 'objetivo' : 'objetivos'}</p>
                 </div>
               )}
@@ -1313,17 +1286,14 @@ export default function Landing() {
           {/* Passo 13: Limitações Físicas */}
           {step === 13 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Lesões ou Limitações Físicas
               </h2>
-              <p className="text-light-muted mb-2 text-lg">
-                Informar lesões garante treinos seguros e adaptados
-              </p>
-              <p className="text-sm text-light-muted mb-8">
-                Adaptamos exercícios para suas condições, mantendo a eficácia do treino
+              <p className="text-light-muted mb-4 text-sm md:text-base">
+                Informar lesões garante treinos seguros e adaptados. Adaptamos exercícios para suas condições, mantendo a eficácia do treino.
               </p>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl mx-auto mt-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-w-2xl mx-auto mt-4">
                 {LESOES_OPCOES.map((lesao) => {
                   const selected = onboardingData.lesoes?.includes(lesao) || 
                     (lesao === 'Nenhuma' && (!onboardingData.lesoes || onboardingData.lesoes.length === 0))
@@ -1338,9 +1308,9 @@ export default function Landing() {
                           handleArrayChange('lesoes', lesao)
                         }
                       }}
-                      className={`py-4 rounded-lg font-semibold transition-all text-lg ${
+                      className={`py-3 sm:py-4 rounded-lg font-semibold transition-all text-sm sm:text-lg ${
                         selected
-                          ? 'bg-primary text-dark ring-4 ring-primary/50 scale-105'
+                          ? 'bg-primary text-dark ring-2 sm:ring-4 ring-primary/50'
                           : 'bg-dark-lighter text-light ring-2 ring-slate-300 hover:ring-primary/50'
                       }`}
                     >
@@ -1355,14 +1325,14 @@ export default function Landing() {
           {/* Passo 14: Idade */}
           {step === 14 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Qual é a sua idade?
               </h2>
-              <p className="text-light-muted mb-8 text-lg">
+              <p className="text-light-muted mb-4 text-sm md:text-base">
                 A idade nos ajuda a ajustar o volume e a intensidade dos treinos para você.
               </p>
 
-              <div className="max-w-xs mx-auto mt-8">
+              <div className="max-w-xs mx-auto mt-4">
                 <MobileNumberPicker
                   min={14}
                   max={80}
@@ -1380,26 +1350,26 @@ export default function Landing() {
           {/* Passo 15: Nome */}
           {step === 15 && (
             <div className="text-center animate-fade-in max-w-3xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-light mb-3">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-light mb-2">
                 Para finalizar, como podemos te chamar?
               </h2>
-              <p className="text-light-muted mb-8 text-lg">
+              <p className="text-light-muted mb-4 text-sm md:text-base">
                 Queremos que tudo seja personalizado para você.
               </p>
 
-              <div className="max-w-md mx-auto mt-8">
+              <div className="max-w-md mx-auto mt-4">
                 <input
                   type="text"
                   value={onboardingData.nome || ''}
                   onChange={(e) => handleChange('nome', e.target.value)}
-                  className="w-full bg-transparent border-b-2 border-slate-300 text-center text-2xl md:text-4xl font-bold text-light focus:border-primary focus:outline-none py-4 transition-colors"
+                  className="w-full bg-transparent border-b-2 border-slate-300 text-center text-xl sm:text-2xl md:text-4xl font-bold text-light focus:border-primary focus:outline-none py-3 sm:py-4 transition-colors"
                   placeholder="Seu nome"
                   autoFocus
                   aria-label="Digite seu nome completo"
                   aria-required="true"
                 />
                 {onboardingData.nome && onboardingData.nome.trim().length < 2 && (
-                  <p className="text-error text-sm mt-2">Nome deve ter pelo menos 2 caracteres</p>
+                  <p className="text-error text-xs sm:text-sm mt-2">Nome deve ter pelo menos 2 caracteres</p>
                 )}
               </div>
             </div>
