@@ -20,8 +20,7 @@ export default function OnboardingStepCard({
   className = '',
   ariaLabel,
   ariaPressed,
-  variant,
-  imageFit = 'cover'
+  variant
 }: OnboardingStepCardProps) {
   // Detectar mobile automaticamente se variant não for especificado
   const isCompact = variant === 'compact' || (variant === undefined && typeof window !== 'undefined' && window.innerWidth < 640)
