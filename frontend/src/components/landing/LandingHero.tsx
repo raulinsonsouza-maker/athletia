@@ -36,7 +36,11 @@ export default function LandingHero({ onStartOnboarding }: LandingHeroProps) {
 
         {/* Preview do app com imagem real */}
         <div className="relative mt-8 lg:mt-0 flex justify-center lg:justify-end overflow-visible">
-          <AppPreview className="transform hover:scale-105 transition-transform duration-500" imagemApp="/images/app-preview/treinos-screen.png" />
+          <AppPreview
+            className="transform hover:scale-105 transition-transform duration-500"
+            imagemApp="/images/app-preview/Editadas/Hero_nova.png"
+            optimizeImage={false}
+          />
         </div>
       </div>
     </section>

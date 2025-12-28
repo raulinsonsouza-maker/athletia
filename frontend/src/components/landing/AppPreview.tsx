@@ -6,11 +6,14 @@
 interface AppPreviewProps {
   className?: string
   imagemApp?: string // URL da imagem real do app (opcional)
+  optimizeImage?: boolean // Permite desativar otimizações caso não existam variações da imagem
 }
 
-export default function AppPreview({ className = '', imagemApp }: AppPreviewProps) {
-  // Se uma imagem real for fornecida, usar ela
-  if (imagemApp) {
+export default function AppPreview({ className = '', imagemApp, optimizeImage = true }: AppPreviewProps) {
+  const shouldOptimize = Boolean(imagemApp && optimizeImage)
+
+  // Se uma imagem real for fornecida e puder ser otimizada, usar ela
+  if (shouldOptimize && imagemApp) {
     return (
       <div className={`relative ${className}`}>
         <div className="relative mx-auto max-w-sm">
@@ -55,6 +58,32 @@ export default function AppPreview({ className = '', imagemApp }: AppPreviewProp
           </div>
           
           {/* Efeitos de brilho decorativos */}
+          <div className="absolute -right-12 -top-12 w-32 h-32 rounded-full bg-primary/10 blur-3xl -z-10" />
+          <div className="absolute -left-12 -bottom-12 w-32 h-32 rounded-full bg-primary/5 blur-3xl -z-10" />
+        </div>
+      </div>
+    )
+  }
+
+  // Imagem real sem otimizações (quando não há versões responsivas disponíveis)
+  if (imagemApp) {
+    return (
+      <div className={`relative ${className}`}>
+        <div className="relative mx-auto max-w-sm">
+          <div className="absolute inset-0 rounded-[3rem] bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-2xl -z-10 scale-110" />
+          <div className="relative rounded-[2.5rem] shadow-2xl overflow-visible w-full max-w-[400px] min-h-[600px] md:min-h-[800px] flex items-center justify-center">
+            <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
+            <img
+              src={imagemApp}
+              alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
+              className="w-full h-auto object-contain rounded-[2.5rem] block max-w-[400px] mx-auto"
+              loading="eager"
+              fetchPriority="high"
+              width="665"
+              height="1182"
+              style={{ minHeight: '600px' }}
+            />
+          </div>
           <div className="absolute -right-12 -top-12 w-32 h-32 rounded-full bg-primary/10 blur-3xl -z-10" />
           <div className="absolute -left-12 -bottom-12 w-32 h-32 rounded-full bg-primary/5 blur-3xl -z-10" />
         </div>
