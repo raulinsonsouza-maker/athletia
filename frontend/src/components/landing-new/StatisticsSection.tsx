@@ -132,9 +132,9 @@ export default function StatisticsSection() {
           }`}>
             <div className="flex justify-center">
               <img
-                src="/images/app-preview/Editadas/Progresso_com_cards.svg"
+                src="/images/app-preview/Editadas/Progresso_com_Cards.png"
                 alt="Tela de progresso do AthletIA com cards e estatísticas"
-                className="w-full max-w-4xl h-auto drop-shadow-2xl"
+                className="w-full max-w-4xl h-auto drop-shadow-2xl rounded-2xl"
                 loading="lazy"
               />
             </div>

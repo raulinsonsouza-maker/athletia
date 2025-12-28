@@ -26,7 +26,7 @@ const features: Feature[] = [
   {
     title: 'Exercícios Detalhados',
     description: 'Guias completos com ilustrações e instruções de execução para cada exercício, garantindo a forma correta e maximizando seus resultados com segurança.',
-    image: '/images/app-preview/novas/4.svg',
+    image: '/images/app-preview/Editadas/Exercicios.png',
     imageAlt: 'Detalhes de exercícios do AthletIA',
     reverse: false
   },
@@ -91,21 +91,21 @@ export default function FeaturesSection() {
                 </p>
               </div>
 
-              {/* Imagem SVG - estilo Productive */}
+              {/* Imagem - estilo Productive */}
               <div className={`relative ${feature.reverse ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
                 <div className="relative w-full flex justify-center">
                   <img
                     src={feature.image}
                     alt={feature.imageAlt}
-                    className="w-full max-w-lg h-auto drop-shadow-2xl"
+                    className="w-full max-w-lg h-auto drop-shadow-2xl rounded-2xl"
                     loading="lazy"
                     onError={(e) => {
-                      // Fallback para imagens antigas se SVG não existir
+                      // Fallback para imagens antigas se não existir
                       const target = e.target as HTMLImageElement
                       const fallbacks: Record<string, string> = {
                         '/images/app-preview/novas/2.svg': '/images/app-preview/feature-treinos.webp',
                         '/images/app-preview/novas/3.svg': '/images/app-preview/feature-progresso.webp',
-                        '/images/app-preview/novas/4.svg': '/images/app-preview/feature-exercicios.webp',
+                        '/images/app-preview/Editadas/Exercicios.png': '/images/app-preview/feature-exercicios.webp',
                         '/images/app-preview/novas/5.svg': '/images/app-preview/feature-historico.webp',
                         '/images/app-preview/novas/6.svg': '/images/app-preview/feature-perfil.webp'
                       }
