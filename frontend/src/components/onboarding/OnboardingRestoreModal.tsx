@@ -62,12 +62,17 @@ export default function OnboardingRestoreModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
       onClick={onClose}
+      style={{ pointerEvents: 'auto' }}
     >
       <div
-        className="relative w-full max-w-md bg-dark rounded-2xl border border-grey/30 shadow-2xl overflow-hidden animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md bg-dark rounded-2xl border border-grey/30 shadow-2xl overflow-hidden"
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+        }}
+        style={{ pointerEvents: 'auto' }}
       >
         {/* Header */}
         <div className="p-6 border-b border-grey/20 bg-dark-lighter/50">
