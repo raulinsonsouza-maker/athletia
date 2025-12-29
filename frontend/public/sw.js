@@ -2,22 +2,32 @@
 const CACHE_VERSION = 'v2.0.0';
 const CACHE_NAME = `athletia-${CACHE_VERSION}`;
 
-// Arquivos críticos para cache
+// Arquivos críticos para cache (apenas os que existem)
 const CRITICAL_ASSETS = [
   '/',
   '/manifest.json',
-  '/favicon.svg',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/apple-touch-icon.png'
+  '/favicon.svg'
+  // Nota: icon-192x192.png, icon-512x512.png e apple-touch-icon.png 
+  // não existem no diretório public, então foram removidos do cache
+  // Se forem criados no futuro, adicionar aqui
 ];
 
-// Instalação - cache apenas arquivos críticos
+// Instalação - cache apenas arquivos críticos (com tratamento de erro individual)
 self.addEventListener('install', (event) => {
   console.log('[SW] Instalando service worker...', CACHE_VERSION);
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(CRITICAL_ASSETS.map(url => `${url}?v=${CACHE_VERSION}`));
+      // Adicionar arquivos individualmente para evitar falha se algum não existir
+      return Promise.allSettled(
+        CRITICAL_ASSETS.map(url => {
+          const fullUrl = `${url}?v=${CACHE_VERSION}`;
+          return cache.add(fullUrl).catch((error) => {
+            console.warn(`[SW] Não foi possível fazer cache de ${fullUrl}:`, error);
+            // Não propagar o erro - continuar com outros arquivos
+            return null;
+          });
+        })
+      );
     })
   );
   // Força ativação imediata
