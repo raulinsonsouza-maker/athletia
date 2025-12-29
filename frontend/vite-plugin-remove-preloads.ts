@@ -43,16 +43,11 @@ export function removeNonCriticalPreloads(): Plugin {
           })
         })
         
-        // Remover TODOS os modulepreload que não são do chunk principal (index/main)
-        // O Vite gera modulepreload para todos os chunks, mas só precisamos do principal
+        // Remover TODOS os modulepreload (Vite não deve gerar com modulePreload: false, mas garantir)
+        // Manter apenas preloads explícitos do index.html
         modifiedHtml = modifiedHtml.replace(
           /<link[^>]*rel=["']modulepreload["'][^>]*>/gi,
-          (match) => {
-            // Manter apenas se for o chunk principal (index.js ou main chunk)
-            const href = match.match(/href=["']([^"']+)["']/)?.[1] || ''
-            const isMainChunk = href.includes('index-') || href.includes('main-') || href.match(/\/assets\/index-[^"']+\.js/)
-            return isMainChunk ? match : ''
-          }
+          ''
         )
         
         // Remover preloads de script que não são críticos

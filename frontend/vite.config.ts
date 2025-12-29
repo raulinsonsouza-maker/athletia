@@ -42,9 +42,9 @@ export default defineConfig({
     sourcemap: false, // Desabilitar sourcemaps em produção para reduzir tamanho
     reportCompressedSize: false, // Desabilitar relatório de tamanho comprimido (acelera build)
     target: 'es2015', // Suportar navegadores modernos (melhor otimização)
-    // Desabilitar modulePreload automático para reduzir warnings de preload não usado
-    // Usaremos apenas preloads explícitos do index.html (fontes, imagens críticas)
-    // Isso evita que chunks não críticos (admin, chart) sejam pré-carregados na landing
+    // Desabilitar modulePreload automático completamente
+    // O plugin removeNonCriticalPreloads remove preloads de chunks não críticos
+    // Isso evita que chunks admin, chart, blog sejam pré-carregados na landing
     modulePreload: false,
     // Vite já minifica automaticamente com esbuild (mais rápido que terser)
     rollupOptions: {

@@ -25,11 +25,11 @@ export default function AppPreview({ className = '', imagemApp, optimizeImage = 
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <picture className="block w-full">
               {/* AVIF - formato mais moderno e eficiente (suporte limitado, mas melhor compressão) */}
+              {/* Removida versão 800x1600 para reduzir tamanho - usar apenas 400x800 e 665x1310 */}
               <source 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.avif')} 400w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.avif')} 665w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.avif')} 800w
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.avif')} 665w
                 `}
                 type="image/avif"
                 sizes="(max-width: 768px) 400px, 665px"
@@ -38,21 +38,20 @@ export default function AppPreview({ className = '', imagemApp, optimizeImage = 
               <source 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w
                 `}
                 type="image/webp"
                 sizes="(max-width: 768px) 400px, 665px"
               />
               {/* Fallback WebP - versão otimizada se disponível */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Fallback final - usar versão otimizada WebP ou PNG original como último recurso */}
+              {/* Fallback final - usar versão menor (400x800) como src padrão para melhor LCP */}
+              {/* O navegador escolherá a versão correta baseado no srcset e sizes */}
               <img 
                 src={imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp') || imagemApp?.replace(/\.png$/i, '.webp') || imagemApp} 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w
                 `}
                 alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
                 className="w-full h-auto object-contain rounded-[2.5rem] block max-w-[400px] mx-auto"
