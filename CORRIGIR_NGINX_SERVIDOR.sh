@@ -16,15 +16,19 @@ echo "🗑️  Removendo arquivos antigos..."
 sudo rm -f /etc/nginx/sites-enabled/athletia
 sudo rm -f /etc/nginx/sites-enabled/athletia.backup.*
 
-# 4. Criar link simbólico correto
+# 4. Atualizar arquivo de configuração (já corrigido - sem map directive)
+echo "📝 Atualizando arquivo de configuração..."
+sudo cp /opt/athletia/nginx-athletia-site.conf /etc/nginx/sites-available/athletia.site
+
+# 5. Criar link simbólico correto
 echo "🔗 Criando link simbólico correto..."
 sudo ln -sf /etc/nginx/sites-available/athletia.site /etc/nginx/sites-enabled/athletia.site
 
-# 5. Verificar se há outros arquivos conflitantes
+# 6. Verificar se há outros arquivos conflitantes
 echo "🔍 Verificando conflitos..."
 sudo grep -r "server_name.*athletia.site" /etc/nginx/sites-enabled/ 2>/dev/null
 
-# 6. Testar configuração
+# 7. Testar configuração
 echo "✅ Testando configuração..."
 sudo nginx -t
 
@@ -33,7 +37,7 @@ if [ $? -eq 0 ]; then
     sudo systemctl reload nginx
     echo "✅ Nginx recarregado!"
     
-    # 7. Verificar headers
+    # 8. Verificar headers
     echo ""
     echo "🔍 Verificando headers de cache..."
     curl -I https://athletia.site/assets/index.js 2>/dev/null | grep -i "cache\|expires\|content-type"
