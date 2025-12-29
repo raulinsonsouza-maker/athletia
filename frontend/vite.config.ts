@@ -44,6 +44,7 @@ export default defineConfig({
     target: 'es2015', // Suportar navegadores modernos (melhor otimização)
     // Desabilitar modulePreload automático para reduzir warnings de preload não usado
     // Usaremos apenas preloads explícitos do index.html (fontes, imagens críticas)
+    // Isso evita que chunks não críticos (admin, chart) sejam pré-carregados na landing
     modulePreload: false,
     // Vite já minifica automaticamente com esbuild (mais rápido que terser)
     rollupOptions: {

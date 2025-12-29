@@ -44,11 +44,11 @@ export default function AppPreview({ className = '', imagemApp, optimizeImage = 
                 type="image/webp"
                 sizes="(max-width: 768px) 400px, 665px"
               />
-              {/* Fallback PNG otimizado - apenas se WebP/AVIF não estiverem disponíveis */}
+              {/* Fallback WebP - versão otimizada se disponível */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Imagem otimizada - Priorizar 400x800 para melhor LCP em mobile */}
+              {/* Fallback final - usar versão otimizada WebP ou PNG original como último recurso */}
               <img 
-                src={imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp') || imagemApp} 
+                src={imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp') || imagemApp?.replace(/\.png$/i, '.webp') || imagemApp} 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w,
@@ -62,6 +62,13 @@ export default function AppPreview({ className = '', imagemApp, optimizeImage = 
                 height="1310"
                 sizes="(max-width: 768px) 400px, 665px"
                 style={{ minHeight: '600px' }}
+                onError={(e) => {
+                  // Se WebP falhar, tentar PNG original
+                  const target = e.target as HTMLImageElement
+                  if (!target.src.endsWith('.png')) {
+                    target.src = imagemApp || ''
+                  }
+                }}
               />
             </picture>
           </div>

@@ -39,7 +39,7 @@ export default function LandingHero({ onStartOnboarding }: LandingHeroProps) {
           <AppPreview
             className="transform hover:scale-105 transition-transform duration-500"
             imagemApp="/images/app-preview/Editadas/Hero_nova.png"
-            optimizeImage={false}
+            optimizeImage={true}
           />
         </div>
       </div>
