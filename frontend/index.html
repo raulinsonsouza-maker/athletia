@@ -146,12 +146,9 @@
       }
     </style>
     
-    <!-- Prefetch imagens do onboarding (carregadas em background, não bloqueiam renderização) -->
-    <!-- Prefetch é mais apropriado aqui pois não são recursos críticos para LCP -->
-    <link rel="prefetch" as="image" href="/images/onboarding/18 aos 29.webp" />
-    <link rel="prefetch" as="image" href="/images/onboarding/30 aos 39.webp" />
-    <link rel="prefetch" as="image" href="/images/onboarding/40 aos 49.webp" />
-    <link rel="prefetch" as="image" href="/images/onboarding/50+.webp" />
+    <!-- Prefetch imagens do onboarding REMOVIDO da landing page -->
+    <!-- Essas imagens serão carregadas apenas quando o usuário iniciar o onboarding -->
+    <!-- Prefetch aqui causava requests desnecessários e possíveis 404s -->
     
     <!-- Structured Data (Schema.org) -->
     <script type="application/ld+json">
