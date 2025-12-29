@@ -157,19 +157,27 @@ export default function Landing() {
 
   // Função para iniciar o onboarding com tracking de conversão
   const iniciarOnboarding = useCallback(() => {
+    console.log('[Landing] iniciarOnboarding chamado', { hasDraft, draftStep })
+    
     // Disparar evento de conversão do Google Ads
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'conversion', {
-        'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
-        'value': 1.0,
-        'currency': 'BRL'
-      })
+      try {
+        (window as any).gtag('event', 'conversion', {
+          'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+          'value': 1.0,
+          'currency': 'BRL'
+        })
+      } catch (error) {
+        console.warn('[Landing] Erro ao disparar evento de conversão:', error)
+      }
     }
     
     // Verificar se há draft antes de iniciar
     if (hasDraft && draftStep !== null && draftStep > 0) {
+      console.log('[Landing] Mostrando modal de restore')
       setShowRestoreModal(true)
     } else {
+      console.log('[Landing] Iniciando onboarding do zero')
       setStep(1)
     }
   }, [hasDraft, draftStep])
@@ -248,7 +256,12 @@ export default function Landing() {
               </p>
               <div className="pt-6">
                 <button
-                  onClick={iniciarOnboarding}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    iniciarOnboarding()
+                  }}
                   className="btn-primary text-base md:text-lg px-10 md:px-14 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                   aria-label="Criar meu treino personalizado agora"
                 >
@@ -382,7 +395,12 @@ export default function Landing() {
 
               <div className="pt-8">
                 <button
-                  onClick={iniciarOnboarding}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    iniciarOnboarding()
+                  }}
                   className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
                   aria-label="Criar meu treino personalizado em 2 minutos"
                 >
@@ -537,7 +555,12 @@ export default function Landing() {
               </h2>
               <div className="pt-6">
                 <button
-                  onClick={iniciarOnboarding}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    iniciarOnboarding()
+                  }}
                   className="bg-dark text-primary text-xl md:text-2xl px-12 md:px-20 py-6 md:py-8 font-black shadow-2xl shadow-dark/50 hover:scale-[1.05] active:scale-[0.95] transition-all duration-200 rounded-2xl border-4 border-dark/20 hover:border-dark/40"
                   aria-label="Começar a criar meu treino personalizado agora"
                 >
