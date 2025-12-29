@@ -72,6 +72,7 @@ export default defineConfig({
           }
           
           // Chart.js e componentes relacionados - chunk separado (usado apenas em Progresso/Perfil)
+          // IMPORTANTE: Verificar antes de qualquer outra lógica de node_modules
           if (id.includes('chart.js') || 
               id.includes('react-chartjs') || 
               id.includes('chartjs') ||
@@ -87,6 +88,11 @@ export default defineConfig({
           
           // Separar node_modules em chunks específicos
           if (id.includes('node_modules')) {
+            // Chart.js - verificar novamente aqui para garantir (já tratado acima, mas garantir)
+            if (id.includes('chart.js') || id.includes('react-chartjs') || id.includes('chartjs')) {
+              return 'chart-vendor'
+            }
+            
             // React core (necessário desde o início)
             if (id.includes('react') && !id.includes('react-router') && !id.includes('react-chartjs') && !id.includes('react-dom')) {
               return 'react-vendor'
@@ -102,18 +108,23 @@ export default defineConfig({
               return 'router-vendor'
             }
             
-            // Chart.js já foi tratado acima, mas garantir aqui também
-            if (id.includes('chart.js') || id.includes('react-chartjs') || id.includes('chartjs')) {
-              return 'chart-vendor'
+            // Socket.io (usado apenas em algumas páginas, não na landing)
+            if (id.includes('socket.io')) {
+              return 'socket-vendor'
             }
             
-            // Axios (utilitário HTTP - usado em várias páginas)
+            // Axios (utilitário HTTP - usado em várias páginas, mas pode ser lazy loaded)
             if (id.includes('axios')) {
               return 'utils'
             }
             
             // React Input Mask (usado apenas em algumas páginas)
             if (id.includes('react-input-mask')) {
+              return 'utils'
+            }
+            
+            // js-cookie (usado em várias páginas, mas pequeno)
+            if (id.includes('js-cookie')) {
               return 'utils'
             }
             
@@ -126,10 +137,33 @@ export default defineConfig({
             return 'blog-pages'
           }
           
-          // Landing page e onboarding - manter separado (chunk próprio)
-          if (id.includes('/pages/Landing') || id.includes('/components/landing') || id.includes('/components/onboarding')) {
-            return undefined // Deixa Vite decidir, mas não agrupa com admin/chart
+          // Separar páginas protegidas que não são críticas para landing
+          if (id.includes('/pages/Treinos') && !id.includes('/pages/Landing')) {
+            return 'treinos-page'
           }
+          
+          if (id.includes('/pages/TreinoAtual')) {
+            return 'treino-atual-page'
+          }
+          
+          if (id.includes('/pages/Historico')) {
+            return 'historico-page'
+          }
+          
+          if (id.includes('/pages/Perfil')) {
+            return 'perfil-page'
+          }
+          
+          // Landing page e onboarding - chunk próprio (não agrupar com outros)
+          // Deixar undefined para Vite criar chunk separado automaticamente
+          if (id.includes('/pages/Landing') || 
+              id.includes('/components/landing') || 
+              id.includes('/components/onboarding')) {
+            return undefined
+          }
+          
+          // Retornar undefined para outros arquivos (Vite decide automaticamente)
+          return undefined
         },
         // Organizar assets por tipo
         assetFileNames: (assetInfo) => {

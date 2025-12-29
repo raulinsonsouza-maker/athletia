@@ -24,25 +24,34 @@ export default function AppPreview({ className = '', imagemApp, optimizeImage = 
           <div className="relative rounded-[2.5rem] shadow-2xl overflow-visible w-full max-w-[400px] min-h-[600px] md:min-h-[800px] flex items-center justify-center">
             <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-primary/5 blur-xl -z-10"></div>
             <picture className="block w-full">
-              {/* Versões responsivas WebP otimizadas - priorizar versão menor para melhor LCP */}
-              {/* Mobile: 400px width, Desktop: 665px width - usar 400x800 para ambos inicialmente */}
+              {/* AVIF - formato mais moderno e eficiente (suporte limitado, mas melhor compressão) */}
+              <source 
+                srcSet={`
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.avif')} 400w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.avif')} 665w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.avif')} 800w
+                `}
+                type="image/avif"
+                sizes="(max-width: 768px) 400px, 665px"
+              />
+              {/* WebP - fallback para navegadores modernos */}
               <source 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 665w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w,
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
                 `}
                 type="image/webp"
                 sizes="(max-width: 768px) 400px, 665px"
               />
-              {/* Fallback para versão original WebP se srcset não funcionar */}
+              {/* Fallback PNG otimizado - apenas se WebP/AVIF não estiverem disponíveis */}
               <source srcSet={imagemApp?.replace(/\.png$/i, '.webp')} type="image/webp" />
-              {/* Imagem otimizada - Priorizar 400x800 para melhor LCP, usar 800x1600 apenas se necessário */}
+              {/* Imagem otimizada - Priorizar 400x800 para melhor LCP em mobile */}
               <img 
                 src={imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp') || imagemApp} 
                 srcSet={`
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 400w,
-                  ${imagemApp?.replace(/\.(png|webp)$/i, '-400x800.webp')} 665w,
+                  ${imagemApp?.replace(/\.(png|webp)$/i, '-665x1310.webp')} 665w,
                   ${imagemApp?.replace(/\.(png|webp)$/i, '-800x1600.webp')} 800w
                 `}
                 alt="Interface do aplicativo AthletIA mostrando treinos, progresso e funcionalidades"
@@ -50,7 +59,7 @@ export default function AppPreview({ className = '', imagemApp, optimizeImage = 
                 loading="eager"
                 fetchPriority="high"
                 width="665"
-                height="1182"
+                height="1310"
                 sizes="(max-width: 768px) 400px, 665px"
                 style={{ minHeight: '600px' }}
               />

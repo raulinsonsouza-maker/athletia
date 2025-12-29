@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "gerar-icones": "node scripts/gerar-icones-pwa.js",
+    "otimizar-hero": "node scripts/otimizar-hero-image.js",
     "test:performance": "node scripts/test-performance.js",
     "security:audit": "npm audit",
     "security:fix": "npm audit fix"

@@ -23,16 +23,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" /></noscript>
     
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-448210685">
-    </script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'AW-448210685');
-    </script>
+    <!-- Preload imagem LCP (Hero_nova) - versão mobile otimizada para melhor performance -->
+    <link rel="preload" as="image" href="/images/app-preview/Editadas/Hero_nova-400x800.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preload" as="image" href="/images/app-preview/Editadas/Hero_nova-400x800.avif" type="image/avif" fetchpriority="high" />
     
     <!-- Primary Meta Tags -->
     <title>AthletIA - Treino Personalizado Inteligente com IA | Personal Trainer Online</title>
@@ -344,6 +337,55 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Google Tag Manager - Carregado após LCP para não bloquear renderização -->
+    <script>
+      // Carregar GTM apenas após LCP ou após 2.5s (tempo máximo ideal de LCP)
+      (function() {
+        function loadGTM() {
+          // Carregar script do GTM
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=AW-448210685';
+          document.head.appendChild(script);
+          
+          // Inicializar dataLayer e gtag
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'AW-448210685');
+        }
+        
+        // Tentar carregar após LCP usando PerformanceObserver
+        if ('PerformanceObserver' in window) {
+          try {
+            var observer = new PerformanceObserver(function(list) {
+              var entries = list.getEntries();
+              var lcpEntry = entries[entries.length - 1];
+              if (lcpEntry && lcpEntry.entryType === 'largest-contentful-paint') {
+                // LCP detectado, aguardar um pouco mais e carregar GTM
+                setTimeout(loadGTM, 500);
+                observer.disconnect();
+              }
+            });
+            observer.observe({ entryTypes: ['largest-contentful-paint'] });
+            
+            // Timeout de segurança: carregar após 3s mesmo se LCP não for detectado
+            setTimeout(function() {
+              observer.disconnect();
+              loadGTM();
+            }, 3000);
+          } catch (e) {
+            // Fallback se PerformanceObserver falhar
+            setTimeout(loadGTM, 2500);
+          }
+        } else {
+          // Fallback para navegadores sem PerformanceObserver
+          setTimeout(loadGTM, 2500);
+        }
+      })();
+    </script>
   </body>
 </html>
 

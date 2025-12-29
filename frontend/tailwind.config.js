@@ -4,6 +4,12 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Otimizações de build para reduzir CSS não usado
+  safelist: [], // Não adicionar classes aqui - deixar purge funcionar
+  corePlugins: {
+    // Desabilitar plugins não usados para reduzir tamanho do CSS
+    preflight: true, // Manter preflight (reset CSS)
+  },
   theme: {
     extend: {
       colors: {
