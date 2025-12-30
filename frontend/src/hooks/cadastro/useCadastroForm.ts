@@ -55,7 +55,7 @@ export function useCadastroForm() {
 
       case 'senha':
         if (!value) return 'Senha é obrigatória'
-        if (value.length < 6) return 'Senha deve ter no mínimo 6 caracteres'
+        if (value.length < 8) return 'Senha deve ter no mínimo 8 caracteres'
         return undefined
 
       case 'confirmarSenha':
@@ -70,7 +70,7 @@ export function useCadastroForm() {
 
   const validateSenhaStrength = useCallback((senha: string): SenhaStrength => {
     if (!senha) return null
-    if (senha.length < 6) return 'weak'
+    if (senha.length < 8) return 'weak'
     if (senha.length < 10) return 'medium'
     
     const temMaiuscula = /[A-Z]/.test(senha)

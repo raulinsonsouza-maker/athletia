@@ -100,6 +100,8 @@ export default function Landing() {
 
   const finalizarOnboarding = useCallback(() => {
     try {
+      console.log('[Landing] Finalizando onboarding - Início', { step, onboardingData })
+      
       // Garantir que arrays existam antes de salvar
       const dataToSave: OnboardingData = {
         ...onboardingData,
@@ -123,18 +125,32 @@ export default function Landing() {
       }
       
       localStorage.setItem('onboardingData', jsonData)
-      console.log('[Landing] Dados do onboarding salvos com sucesso:', dataToSave)
+      console.log('[Landing] Dados do onboarding salvos com sucesso no localStorage')
+      console.log('[Landing] Navegando para /cadastro')
+      
+      // Disparar evento de analytics
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        try {
+          (window as any).gtag('event', 'onboarding_completed', {
+            'event_category': 'Onboarding',
+            'event_label': 'Onboarding Finalizado'
+          })
+        } catch (error) {
+          console.warn('[Landing] Erro ao disparar evento de analytics:', error)
+        }
+      }
       
       navigate('/cadastro')
     } catch (error: any) {
       console.error('[Landing] Erro ao salvar dados do onboarding:', {
         error,
         message: error?.message,
+        stack: error?.stack,
         onboardingData
       })
       alert('Erro ao salvar dados do onboarding. Por favor, tente novamente.')
     }
-  }, [onboardingData, navigate])
+  }, [onboardingData, navigate, step])
 
   // Sinalizar quando deve mostrar o popup de instalação PWA
   // Mostrar quando estiver no último passo (step 15) e nome estiver preenchido
@@ -157,13 +173,19 @@ export default function Landing() {
 
   // Função para iniciar o onboarding com tracking de conversão
   const iniciarOnboarding = useCallback(() => {
+    console.log('[Landing] iniciarOnboarding chamado', { 
+      hasDraft, 
+      draftStep, 
+      showRestoreModal,
+      currentStep: step,
+      timestamp: new Date().toISOString()
+    })
+    
     // Evitar múltiplas chamadas simultâneas
     if (showRestoreModal) {
       console.log('[Landing] Modal já está aberto, ignorando chamada')
       return
     }
-    
-    console.log('[Landing] iniciarOnboarding chamado', { hasDraft, draftStep, showRestoreModal })
     
     // Disparar evento de conversão do Google Ads
     if (typeof window !== 'undefined' && (window as any).gtag) {

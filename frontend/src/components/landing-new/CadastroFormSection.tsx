@@ -43,11 +43,14 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('[CadastroFormSection] Submit do formulário iniciado')
     
     if (!validateAll()) {
+      console.warn('[CadastroFormSection] Validação falhou:', errors)
       return
     }
 
+    console.log('[CadastroFormSection] Validação passou, enviando dados')
     await onSubmit({
       nomeCompleto: formData.nomeCompleto,
       telefone: formData.telefone,
@@ -196,7 +199,7 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
                         ? 'border-primary'
                         : 'border-grey/30'
                     }`}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                 />
                 <button
                   type="button"

@@ -24,9 +24,10 @@ export default function LandingNew() {
 
   // Carregar dados do onboarding do localStorage
   useEffect(() => {
+    console.log('[LandingNew] Carregando dados do onboarding do localStorage')
     const data = localStorage.getItem('onboardingData')
     if (!data) {
-      console.warn('[LandingNew] Nenhum dado de onboarding encontrado no localStorage')
+      console.warn('[LandingNew] Nenhum dado de onboarding encontrado no localStorage - redirecionando para /')
       // Se não tem dados, voltar para landing (onboarding)
       navigate('/')
       return
@@ -34,6 +35,10 @@ export default function LandingNew() {
     
     try {
       const parsedData = JSON.parse(data)
+      console.log('[LandingNew] Dados parseados do localStorage:', { 
+        hasData: !!parsedData,
+        keys: parsedData ? Object.keys(parsedData) : []
+      })
       
       // Validar se é um objeto válido
       if (!parsedData || typeof parsedData !== 'object' || Array.isArray(parsedData)) {
@@ -49,7 +54,7 @@ export default function LandingNew() {
         objetivosAdicionais: Array.isArray(parsedData.objetivosAdicionais) ? parsedData.objetivosAdicionais : [],
       }
       
-      console.log('[LandingNew] Dados do onboarding carregados com sucesso:', validatedData)
+      console.log('[LandingNew] Dados do onboarding carregados e validados com sucesso')
       setOnboardingData(validatedData)
     } catch (parseError: any) {
       console.error('[LandingNew] Erro ao carregar dados do onboarding:', {
@@ -63,6 +68,7 @@ export default function LandingNew() {
       localStorage.removeItem('onboardingData')
       
       // Redirecionar para onboarding
+      console.log('[LandingNew] Redirecionando para / devido a erro')
       navigate('/')
     }
   }, [navigate])
@@ -115,17 +121,31 @@ export default function LandingNew() {
     email: string
     senha: string
   }) => {
+    console.log('[LandingNew] Iniciando submit do formulário de cadastro', {
+      email: formData.email,
+      temNome: !!formData.nomeCompleto,
+      temTelefone: !!formData.telefone,
+      temSenha: !!formData.senha,
+      temOnboarding: !!onboardingData
+    })
+    
     setError('')
     setLoading(true)
 
     try {
       // Criar usuário com cadastro sem trial
+      console.log('[LandingNew] Enviando requisição para /auth/cadastro-sem-trial')
       const response = await api.post('/auth/cadastro-sem-trial', {
         nome: formData.nomeCompleto,
         telefone: formData.telefone,
         email: formData.email,
         senha: formData.senha,
         onboarding: onboardingData,
+      })
+      
+      console.log('[LandingNew] Resposta recebida do backend:', {
+        hasUser: !!response.data?.user,
+        hasTokens: !!(response.data?.accessToken && response.data?.refreshToken)
       })
 
       // Verificar se a resposta contém todos os dados necessários
@@ -143,6 +163,7 @@ export default function LandingNew() {
       setUserFromResponse(user, accessToken, refreshToken)
 
       // Limpar dados do onboarding do localStorage após cadastro bem-sucedido
+      console.log('[LandingNew] Limpando dados do onboarding do localStorage')
       localStorage.removeItem('onboardingData')
       
       // Limpar também dados temporários de sessão se existirem
@@ -155,23 +176,27 @@ export default function LandingNew() {
           }
         }
         keysToRemove.forEach(key => localStorage.removeItem(key))
+        console.log('[LandingNew] Dados temporários limpos:', keysToRemove)
       } catch (error) {
-        console.warn('Erro ao limpar localStorage:', error)
+        console.warn('[LandingNew] Erro ao limpar localStorage:', error)
       }
 
+      console.log('[LandingNew] Redirecionando para checkout')
       const redirecionado = await redirecionarParaCheckoutCakto(user)
       if (redirecionado) {
+        console.log('[LandingNew] Redirecionamento para checkout bem-sucedido')
         return
       }
     } catch (err: unknown) {
-      console.error('Erro no cadastro:', err)
+      console.error('[LandingNew] Erro no cadastro:', err)
       const errorMessage = getErrorMessage(err)
       const status = getErrorStatus(err)
       
-      console.error('Detalhes do erro:', {
+      console.error('[LandingNew] Detalhes do erro:', {
         message: errorMessage,
         status,
-        isAxiosError: isAxiosError(err)
+        isAxiosError: isAxiosError(err),
+        response: isAxiosError(err) ? err.response?.data : null
       })
       
       // Tratamento específico de erros
@@ -187,14 +212,14 @@ export default function LandingNew() {
             finalErrorMessage = firstError?.msg || firstError?.message || err.response.data.error || 'Dados inválidos. Verifique as informações e tente novamente.'
             
             // Log detalhado para debug
-            console.error('Erros de validação:', err.response.data.details)
+            console.error('[LandingNew] Erros de validação:', err.response.data.details)
           } else {
             finalErrorMessage = err.response.data?.error || err.response.data?.message || 'Dados inválidos. Verifique as informações e tente novamente.'
           }
           
           // Log completo da resposta para debug
-          console.error('Resposta completa do servidor (400):', JSON.stringify(err.response.data, null, 2))
-        } else if (status === 409 || err.response.data?.error?.includes('já cadastrado')) {
+          console.error('[LandingNew] Resposta completa do servidor (400):', JSON.stringify(err.response.data, null, 2))
+        } else if (status === 409 || err.response.data?.error?.includes('já cadastrado') || err.response.data?.error?.includes('já está cadastrado')) {
           finalErrorMessage = 'Este e-mail já está cadastrado. Você pode fazer login ou usar outro e-mail.'
         } else if (status && status >= 500) {
           finalErrorMessage = err.response.data?.error || err.response.data?.message || 'Erro no servidor. Tente novamente em alguns instantes.'
@@ -203,12 +228,15 @@ export default function LandingNew() {
         }
       } else if (isAxiosError(err) && err.request) {
         // Erro de rede
+        console.error('[LandingNew] Erro de rede - requisição não chegou ao servidor')
         finalErrorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.'
       } else {
         // Erro de validação local
+        console.error('[LandingNew] Erro de validação local:', errorMessage)
         finalErrorMessage = errorMessage
       }
       
+      console.error('[LandingNew] Mensagem de erro final para o usuário:', finalErrorMessage)
       setError(finalErrorMessage)
     } finally {
       setLoading(false)
