@@ -28,6 +28,7 @@
     "refatorar-treinos-intercalacao": "tsx src/scripts/refatorar-treinos-intercalacao.ts",
     "refatorar-nomes-treinos": "tsx src/scripts/refatorar-nomes-treinos.ts",
     "refatorar-nomes-treinos-nao-concluidos": "tsx src/scripts/refatorar-nomes-treinos-nao-concluidos.ts",
+    "refatorar-treinos-nao-realizados": "tsx scripts/refatorar-treinos-nao-realizados.ts",
     "marcar-sem-equipamento": "tsx src/scripts/marcar-exercicios-sem-equipamento.ts",
     "gerar-vapid-keys": "tsx scripts/gerar-vapid-keys.ts",
     "backup:db": "bash scripts/backup-db.sh",
