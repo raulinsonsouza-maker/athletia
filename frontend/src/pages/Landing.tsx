@@ -181,9 +181,9 @@ export default function Landing() {
       timestamp: new Date().toISOString()
     })
     
-    // Evitar múltiplas chamadas simultâneas
-    if (showRestoreModal) {
-      console.log('[Landing] Modal já está aberto, ignorando chamada')
+    // Se já estamos no onboarding (step > 0), não fazer nada
+    if (step > 0) {
+      console.log('[Landing] Já está no onboarding, ignorando chamada')
       return
     }
     
@@ -212,15 +212,29 @@ export default function Landing() {
       return
     }
     
+    // Se o modal já está aberto E há um draft válido, descartar o draft e iniciar
+    // Isso evita que o usuário fique travado se o modal não estiver visível
+    if (showRestoreModal && hasDraft && draftStep !== null && draftStep > 0 && draftStep < 15) {
+      console.log('[Landing] Modal já está aberto, descartando draft e iniciando do zero')
+      clearDraft()
+      setShowRestoreModal(false)
+      setTimeout(() => {
+        setStep(1)
+      }, 100)
+      return
+    }
+    
     // Verificar se há draft antes de iniciar (mas não no último passo)
     if (hasDraft && draftStep !== null && draftStep > 0 && draftStep < 15) {
       console.log('[Landing] Mostrando modal de restore')
       setShowRestoreModal(true)
     } else {
       console.log('[Landing] Iniciando onboarding do zero')
+      // Se não há draft ou o modal não está aberto, iniciar normalmente
+      setShowRestoreModal(false)
       setStep(1)
     }
-  }, [hasDraft, draftStep, draftData, finalizarOnboarding, clearDraft, showRestoreModal])
+  }, [hasDraft, draftStep, draftData, finalizarOnboarding, clearDraft, showRestoreModal, step])
 
   // Restaurar draft
   const handleRestoreDraft = useCallback(() => {
@@ -238,8 +252,9 @@ export default function Landing() {
     setShowRestoreModal(false)
     // Pequeno delay para garantir que o modal feche antes de iniciar
     setTimeout(() => {
+      console.log('[Landing] Iniciando onboarding após descartar draft')
       setStep(1)
-    }, 100)
+    }, 150)
   }, [clearDraft])
 
   // Detectar parâmetro start=true na URL e iniciar onboarding automaticamente
@@ -1464,6 +1479,11 @@ export default function Landing() {
           onClose={() => {
             console.log('[Landing] Fechando modal de restore')
             setShowRestoreModal(false)
+            // Se fechar sem escolher, descartar o draft e iniciar do zero
+            clearDraft()
+            setTimeout(() => {
+              setStep(1)
+            }, 100)
           }}
           onRestore={handleRestoreDraft}
           onDiscard={handleDiscardDraft}
