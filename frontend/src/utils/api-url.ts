@@ -71,14 +71,26 @@ export function getApiUrl(): string {
 /**
  * Constrói uma URL absoluta para recursos servidos pela API (ex.: uploads)
  * Aceita caminhos relativos iniciando (ou não) por /api e preserva URLs absolutas.
+ * 
+ * Valida URLs inválidas (como nomes genéricos A.jpg, B.jpg, etc.) e retorna null
  */
 export function resolveApiPath(path?: string | null): string | null {
   if (!path) {
     return null
   }
 
+  // Validar se é uma URL absoluta válida
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path
+  }
+
+  // Validar se não é um nome genérico inválido (ex: A.jpg, B.jpg, C.jpeg, D.jpg, E.png)
+  // Esses nomes indicam dados corrompidos ou inválidos no banco
+  // Apenas rejeitar se for EXATAMENTE um nome genérico sem caminho
+  const invalidPattern = /^[A-E]\.(jpg|jpeg|png|webp)$/i
+  if (invalidPattern.test(path.trim())) {
+    console.warn(`[resolveApiPath] URL inválida detectada (nome genérico): ${path}`)
+    return null
   }
 
   const baseUrl = getApiBaseUrl().replace(/\/$/, '')
