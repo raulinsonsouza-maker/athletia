@@ -212,28 +212,20 @@ export default function Landing() {
       return
     }
     
-    // Se o modal já está aberto E há um draft válido, descartar o draft e iniciar
-    // Isso evita que o usuário fique travado se o modal não estiver visível
-    if (showRestoreModal && hasDraft && draftStep !== null && draftStep > 0 && draftStep < 15) {
-      console.log('[Landing] Modal já está aberto, descartando draft e iniciando do zero')
+    // Se há draft mas não está completo, descartar automaticamente e iniciar do zero
+    // Isso evita que o usuário precise clicar duas vezes e melhora a UX
+    if (hasDraft && draftStep !== null && draftStep > 0 && draftStep < 15) {
+      console.log('[Landing] Draft encontrado, descartando automaticamente e iniciando do zero')
       clearDraft()
       setShowRestoreModal(false)
-      setTimeout(() => {
-        setStep(1)
-      }, 100)
+      setStep(1)
       return
     }
     
-    // Verificar se há draft antes de iniciar (mas não no último passo)
-    if (hasDraft && draftStep !== null && draftStep > 0 && draftStep < 15) {
-      console.log('[Landing] Mostrando modal de restore')
-      setShowRestoreModal(true)
-    } else {
-      console.log('[Landing] Iniciando onboarding do zero')
-      // Se não há draft ou o modal não está aberto, iniciar normalmente
-      setShowRestoreModal(false)
-      setStep(1)
-    }
+    // Iniciar onboarding do zero
+    console.log('[Landing] Iniciando onboarding do zero')
+    setShowRestoreModal(false)
+    setStep(1)
   }, [hasDraft, draftStep, draftData, finalizarOnboarding, clearDraft, showRestoreModal, step])
 
   // Restaurar draft
