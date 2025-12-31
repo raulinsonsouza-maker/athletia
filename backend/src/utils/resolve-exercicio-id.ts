@@ -30,7 +30,8 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
   // Verificar se é UUID
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmedId);
 
-  // Tentar buscar pelo ID diretamente (seja UUID ou legado)
+  // IMPORTANTE: Tentar buscar pelo ID diretamente PRIMEIRO (seja UUID ou slug legado)
+  // Alguns exercícios foram criados com slug como ID (ex: "crucifixo-declinado-halteres")
   try {
     const exercicio = await prisma.exercicio.findUnique({
       where: { id: trimmedId },
@@ -41,10 +42,12 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
     }
   } catch (error) {
     // Ignorar erro se ID for inválido para o banco (ex: muito longo)
+    // Mas continuar tentando outras estratégias
   }
 
+  // Se era UUID e não achou, retorna null (não tenta buscar por nome)
+  // UUIDs devem ser exatos
   if (isUuid) {
-    // Se era pra ser UUID e não achou, retorna null (não tenta buscar por nome)
     return null;
   }
 
@@ -61,9 +64,24 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
     return exercicio.id;
   }
 
-  // Estratégia 2: Se tem hífen, converter slug para nome
-  // Ex: "abdominal-bicicleta" -> "Abdominal Bicicleta"
+  // Estratégia 2: Se tem hífen, tentar buscar diretamente pelo ID (pode ser slug antigo)
+  // Alguns exercícios foram criados com slug como ID
   if (trimmedId.includes('-')) {
+    try {
+      exercicio = await prisma.exercicio.findUnique({
+        where: { id: trimmedId },
+        select: { id: true }
+      });
+      if (exercicio) {
+        return exercicio.id;
+      }
+    } catch (error) {
+      // Ignorar erro se ID não for válido
+    }
+
+    // Estratégia 2b: Converter slug para nome
+    // Ex: "abdominal-bicicleta" -> "Abdominal Bicicleta"
+    // Ex: "crucifixo-declinado-halteres" -> "Crucifixo Declinado Halteres"
     const nomeAproximado = trimmedId
       .split('-')
       .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
@@ -78,6 +96,24 @@ export async function resolveExercicioId(exercicioId: string): Promise<string | 
 
     if (exercicio) {
       return exercicio.id;
+    }
+
+    // Estratégia 2c: Busca parcial com palavras do slug
+    // Útil para casos como "crucifixo-declinado-halteres" vs "Crucifixo Declinado com Halteres"
+    const palavrasSlug = trimmedId.split('-').filter(p => p.length > 2);
+    if (palavrasSlug.length > 0) {
+      exercicio = await prisma.exercicio.findFirst({
+        where: {
+          AND: palavrasSlug.map(palavra => ({
+            nome: { contains: palavra, mode: 'insensitive' as const }
+          }))
+        },
+        select: { id: true }
+      });
+
+      if (exercicio) {
+        return exercicio.id;
+      }
     }
   }
 

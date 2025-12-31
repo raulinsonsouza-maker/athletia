@@ -11,25 +11,34 @@ import { logger } from '../lib/logger';
 export async function getMediaFilePath(exercicioId: string, extension?: string, alternativeId?: string): Promise<string | null> {
   const basePath = getUploadExerciciosPath();
   
-  // Tentar primeiro pelo ID (UUID)
-  let exercicioPath = path.join(basePath, exercicioId);
+  // Lista de IDs para tentar (prioridade: exercicioId > alternativeId)
+  const idsToTry = [exercicioId];
+  if (alternativeId && alternativeId !== exercicioId) {
+    idsToTry.push(alternativeId);
+  }
+  
+  let exercicioPath: string | null = null;
   let foundPath = false;
   
-  // Verificar se o diretório do exercício existe pelo ID
-  if (fs.existsSync(exercicioPath)) {
-    foundPath = true;
-  } else if (alternativeId) {
-    // Se não encontrou pelo ID, tentar pelo ID alternativo (slug/nome antigo)
-    const altPath = path.join(basePath, alternativeId);
-    if (fs.existsSync(altPath)) {
-      exercicioPath = altPath;
+  // Tentar cada ID até encontrar o diretório
+  for (const id of idsToTry) {
+    const candidatePath = path.join(basePath, id);
+    if (fs.existsSync(candidatePath) && fs.statSync(candidatePath).isDirectory()) {
+      exercicioPath = candidatePath;
       foundPath = true;
-      logger.debug(`Diretório encontrado pelo ID alternativo: ${alternativeId}`, 'exercicio-media.service');
+      if (id !== exercicioId) {
+        logger.debug(`Diretório encontrado pelo ID alternativo: ${id} (original: ${exercicioId})`, 'exercicio-media.service');
+      }
+      break;
     }
   }
   
-  if (!foundPath) {
-    logger.warn(`Diretório do exercício não existe: ${exercicioId} (alt: ${alternativeId})`, 'exercicio-media.service');
+  if (!foundPath || !exercicioPath) {
+    logger.warn(`Diretório do exercício não existe: ${exercicioId} (alt: ${alternativeId})`, 'exercicio-media.service', {
+      basePath,
+      tentouIds: idsToTry,
+      diretoriosExistentes: fs.existsSync(basePath) ? fs.readdirSync(basePath).slice(0, 5) : []
+    });
     return null;
   }
   
