@@ -25,21 +25,23 @@ const prisma = new PrismaClient();
  */
 export const serveMedia = async (req: AuthRequest, res: Response) => {
   try {
-    const { exercicioId } = req.params;
+    const { exercicioId, extension } = req.params;
     
-    // Extrair extensão do path ou URL
-    // O path será algo como "/crucifixo-declinado-halteres/media.gif"
-    let fileExtension: string | undefined;
+    // Prioridade: parâmetro da rota > extração do path > extração da URL
+    let fileExtension: string | undefined = extension;
     
-    // Tentar extrair do path primeiro
-    const pathMatch = req.path.match(/\.([a-z0-9]+)$/i);
-    if (pathMatch) {
-      fileExtension = pathMatch[1];
-    } else {
-      // Tentar extrair da URL completa
-      const urlMatch = req.url.match(/\.([a-z0-9]+)(\?|$)/i);
-      if (urlMatch) {
-        fileExtension = urlMatch[1];
+    // Se não veio nos params, tentar extrair do path ou URL
+    if (!fileExtension) {
+      // Tentar extrair do path primeiro (ex: "/crucifixo-declinado-halteres/media.gif")
+      const pathMatch = req.path.match(/media\.([a-z0-9]+)$/i);
+      if (pathMatch) {
+        fileExtension = pathMatch[1];
+      } else {
+        // Tentar extrair da URL completa
+        const urlMatch = req.url.match(/media\.([a-z0-9]+)(\?|$)/i);
+        if (urlMatch) {
+          fileExtension = urlMatch[1];
+        }
       }
     }
 

@@ -177,6 +177,7 @@ console.log(`[CONFIG] Mapeamento: /api/uploads/exercicios -> ${uploadExerciciosP
 
 // NOVA ROTA DE MÍDIA DE EXERCÍCIOS (Versão 2 - Implementação limpa)
 // Estrutura: /api/exercicios/:exercicioId/media.*
+// IMPORTANTE: Deve vir ANTES de exercicioRoutes para ter prioridade sobre /:id
 app.use('/api/exercicios', exercicioMediaRoutes);
 
 // Rota dinâmica para servir imagens de grupos musculares (suporta subdiretórios por ID)
