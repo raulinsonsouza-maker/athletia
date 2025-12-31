@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { PrismaClient } from '@prisma/client';
 import { getMediaFilePath, saveMediaFile, deleteMediaFile, getContentType } from '../services/exercicio-media.service';
 import { resolveExercicioId, resolveExercicio } from '../utils/resolve-exercicio-id';
+import { getUploadExerciciosPath } from '../utils/upload-paths';
 import { logger } from '../lib/logger';
 import fs from 'fs';
 import path from 'path';
@@ -25,15 +26,36 @@ const prisma = new PrismaClient();
 export const serveMedia = async (req: AuthRequest, res: Response) => {
   try {
     const { exercicioId } = req.params;
-    const extension = req.path.split('.').pop() || undefined;
+    
+    // Extrair extensão do path ou URL
+    // O path será algo como "/crucifixo-declinado-halteres/media.gif"
+    let fileExtension: string | undefined;
+    
+    // Tentar extrair do path primeiro
+    const pathMatch = req.path.match(/\.([a-z0-9]+)$/i);
+    if (pathMatch) {
+      fileExtension = pathMatch[1];
+    } else {
+      // Tentar extrair da URL completa
+      const urlMatch = req.url.match(/\.([a-z0-9]+)(\?|$)/i);
+      if (urlMatch) {
+        fileExtension = urlMatch[1];
+      }
+    }
 
-    logger.debug(`Requisição: exercicioId=${exercicioId}, ext=${extension}`, 'exercicio-media.controller');
+    logger.debug(`Requisição: exercicioId=${exercicioId}, ext=${fileExtension}, path=${req.path}, url=${req.url}`, 'exercicio-media.controller');
 
-    if (!extension) {
-      logger.warn(`Extensão não especificada`, 'exercicio-media.controller');
+    if (!fileExtension) {
+      logger.warn(`Extensão não especificada`, 'exercicio-media.controller', {
+        exercicioId,
+        path: req.path,
+        url: req.url,
+        params: req.params
+      });
       return res.status(400).json({
         error: 'Extensão do arquivo não especificada',
-        exercicioId
+        exercicioId,
+        path: req.path
       });
     }
 
@@ -42,22 +64,35 @@ export const serveMedia = async (req: AuthRequest, res: Response) => {
 
     // SEGURANÇA: Remover fallback inseguro - retornar 404 se exercício não for encontrado no banco
     if (!realExercicioId) {
-      logger.warn(`Exercício não encontrado no banco: ${exercicioId}`, 'exercicio-media.controller');
+      logger.warn(`Exercício não encontrado no banco: ${exercicioId}`, 'exercicio-media.controller', {
+        exercicioId,
+        extension: fileExtension,
+        path: req.path,
+        url: req.url
+      });
       return res.status(404).json({
         error: 'Exercício não encontrado',
-        exercicioId
+        exercicioId,
+        message: `Não foi possível encontrar o exercício com identificador: ${exercicioId}`
       });
     }
 
-    const filePath = await getMediaFilePath(realExercicioId, `.${extension}`, exercicioId);
+    logger.debug(`Exercício resolvido: ${exercicioId} -> ${realExercicioId}`, 'exercicio-media.controller');
+
+    const filePath = await getMediaFilePath(realExercicioId, `.${fileExtension}`, exercicioId);
 
     if (!filePath) {
-      logger.warn(`Mídia não encontrada: exercicioId=${exercicioId}, realId=${realExercicioId}`, 'exercicio-media.controller');
+      logger.warn(`Mídia não encontrada: exercicioId=${exercicioId}, realId=${realExercicioId}`, 'exercicio-media.controller', {
+        exercicioId,
+        realExercicioId,
+        extension: fileExtension,
+        basePath: getUploadExerciciosPath()
+      });
       return res.status(404).json({
         error: 'Mídia não encontrada',
         exercicioId,
         realExercicioId,
-        extension
+        extension: fileExtension
       });
     }
 
