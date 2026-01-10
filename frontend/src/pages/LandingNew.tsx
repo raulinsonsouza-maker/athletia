@@ -291,11 +291,11 @@ export default function LandingNew() {
         {/* 3. Bloco de Tensão/Loss Aversion */}
         <TensionSection onStartOnboarding={handleScrollToForm} />
         
-        {/* 4. Bloco de Valor Real */}
-        <ValorRealSection />
-        
-        {/* 5. Bloco de Comparação Simples */}
+        {/* 4. Bloco de Comparação Simples */}
         <ComparacaoSimplesSection onStartOnboarding={handleScrollToForm} />
+        
+        {/* 5. Bloco de Valor Real */}
+        <ValorRealSection />
         
         {/* 6. Bloco de Prova Social Curta */}
         <TestimonialsSection onStartOnboarding={handleScrollToForm} />

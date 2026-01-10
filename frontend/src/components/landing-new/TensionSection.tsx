@@ -37,7 +37,7 @@ export default function TensionSection({ onStartOnboarding }: TensionSectionProp
                 <svg className="w-6 h-6 text-error flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                <span className="text-base md:text-lg text-light">seu treino não ficará salvo</span>
+                <span className="text-base md:text-lg text-light">seu treino será descartado</span>
               </li>
               <li className="flex items-start gap-3">
                 <svg className="w-6 h-6 text-error flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,10 +54,10 @@ export default function TensionSection({ onStartOnboarding }: TensionSectionProp
             </ul>
 
             <p className="text-lg md:text-xl font-semibold text-light text-center mb-6">
-              Você já deu o primeiro passo.
+              Você já investiu tempo.
             </p>
             <p className="text-lg md:text-xl font-semibold text-primary text-center mb-8">
-              Não interrompa sua evolução agora.
+              Não jogue isso fora agora.
             </p>
 
             <div className="text-center">
@@ -65,7 +65,7 @@ export default function TensionSection({ onStartOnboarding }: TensionSectionProp
                 onClick={handleCTA}
                 className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:w-auto"
               >
-                Liberar meu plano completo agora
+                Começar a treinar agora
               </button>
             </div>
           </div>

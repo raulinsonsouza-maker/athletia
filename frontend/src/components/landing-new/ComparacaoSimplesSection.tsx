@@ -52,7 +52,7 @@ export default function ComparacaoSimplesSection({ onStartOnboarding }: Comparac
               onClick={handleCTA}
               className="btn-primary text-base md:text-lg px-8 md:px-12 py-4 md:py-5 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:w-auto"
             >
-              Acessar meu treino inteligente
+              Começar a treinar agora
             </button>
           </div>
         </div>

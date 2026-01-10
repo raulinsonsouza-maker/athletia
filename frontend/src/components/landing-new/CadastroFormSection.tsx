@@ -90,7 +90,7 @@ export default function CadastroFormSection({ onSubmit, loading = false, error, 
             </span>
           </h2>
           <p className="text-base md:text-lg text-light-muted max-w-xl mx-auto">
-            Complete seus dados e comece a transformar seu corpo hoje mesmo
+            Crie seu acesso para liberar seu treino personalizado.
           </p>
         </div>
 

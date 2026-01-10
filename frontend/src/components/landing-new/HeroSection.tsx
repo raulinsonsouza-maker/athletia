@@ -58,7 +58,7 @@ export default function HeroSection({ onStartOnboarding, nomeUsuario }: HeroSect
               onClick={handleCTA}
               className="btn-primary text-lg md:text-xl px-8 md:px-12 py-4 md:py-5 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group w-full sm:w-auto"
             >
-              <span className="relative z-10">Desbloquear meu treino personalizado</span>
+              <span className="relative z-10">Começar a treinar agora</span>
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <p className="text-sm md:text-base text-light-muted mt-3">
