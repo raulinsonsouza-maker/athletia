@@ -24,7 +24,7 @@ interface TestimonialsSectionProps {
   onStartOnboarding?: () => void
 }
 
-export default function TestimonialsSection({ onStartOnboarding }: TestimonialsSectionProps) {
+export default function TestimonialsSection({ onStartOnboarding: _onStartOnboarding }: TestimonialsSectionProps) {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 })
 
   return (
