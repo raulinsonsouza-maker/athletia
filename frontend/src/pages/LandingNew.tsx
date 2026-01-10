@@ -5,14 +5,14 @@ import { useAuth } from '../contexts/AuthContext'
 import { isAxiosError, getErrorMessage, getErrorStatus } from '../types/errors'
 import { OnboardingData } from '../types/onboarding.types'
 import HeroSection from '../components/landing-new/HeroSection'
-import StatisticsSection from '../components/landing-new/StatisticsSection'
-import FeaturesSection from '../components/landing-new/FeaturesSection'
-import ResumoOnboardingSection from '../components/landing-new/ResumoOnboardingSection'
-import HowItWorksSection from '../components/landing-new/HowItWorksSection'
+import PerfilConfirmacaoSection from '../components/landing-new/PerfilConfirmacaoSection'
+import TensionSection from '../components/landing-new/TensionSection'
+import ValorRealSection from '../components/landing-new/ValorRealSection'
+import ComparacaoSimplesSection from '../components/landing-new/ComparacaoSimplesSection'
 import TestimonialsSection from '../components/landing-new/TestimonialsSection'
-import CadastroFormSection from '../components/landing-new/CadastroFormSection'
-import FAQSection from '../components/landing-new/FAQSection'
+import GarantiaSection from '../components/landing-new/GarantiaSection'
 import CTASection from '../components/landing-new/CTASection'
+import CadastroFormSection from '../components/landing-new/CadastroFormSection'
 
 export default function LandingNew() {
   const navigate = useNavigate()
@@ -282,26 +282,37 @@ export default function LandingNew() {
       </header>
 
       <main role="main" id="main-content" aria-label="Conteúdo principal da landing page">
-        {/* Hero com nome do usuário - primeiro */}
+        {/* 1. Hero Otimizado */}
         <HeroSection onStartOnboarding={handleScrollToForm} nomeUsuario={onboardingData.nome} />
         
-        {/* Análise do onboarding logo após hero - foco em jornada */}
-        <ResumoOnboardingSection onboardingData={onboardingData} />
+        {/* 2. Bloco de Confirmação de Perfil */}
+        <PerfilConfirmacaoSection onboardingData={onboardingData} />
         
-        {/* Jornada em passos pós-análise */}
-        <HowItWorksSection onStartOnboarding={handleScrollToForm} />
+        {/* 3. Bloco de Tensão/Loss Aversion */}
+        <TensionSection onStartOnboarding={handleScrollToForm} />
         
-        <StatisticsSection />
-        <FeaturesSection onStartOnboarding={handleScrollToForm} />
+        {/* 4. Bloco de Valor Real */}
+        <ValorRealSection />
+        
+        {/* 5. Bloco de Comparação Simples */}
+        <ComparacaoSimplesSection onStartOnboarding={handleScrollToForm} />
+        
+        {/* 6. Bloco de Prova Social Curta */}
         <TestimonialsSection onStartOnboarding={handleScrollToForm} />
+        
+        {/* 7. Bloco de Garantia */}
+        <GarantiaSection />
+        
+        {/* 8. Bloco Final - Decisão */}
+        <CTASection onStartOnboarding={handleScrollToForm} />
+        
+        {/* 9. Formulário de Cadastro */}
         <CadastroFormSection 
           onSubmit={handleSubmit}
           loading={loading}
           error={error}
           onScrollIntoView={showForm}
         />
-        <FAQSection />
-        <CTASection onStartOnboarding={handleScrollToForm} />
       </main>
 
       {/* Footer minimalista - foco em conversão */}
