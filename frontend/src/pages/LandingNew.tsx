@@ -283,7 +283,7 @@ export default function LandingNew() {
 
       <main role="main" id="main-content" aria-label="Conteúdo principal da landing page">
         {/* 1. Hero Otimizado */}
-        <HeroSection onStartOnboarding={handleScrollToForm} nomeUsuario={onboardingData.nome} />
+        <HeroSection onStartOnboarding={handleScrollToForm} nomeUsuario={onboardingData.nome} objetivo={onboardingData.objetivo} />
         
         {/* 2. Bloco de Confirmação de Perfil */}
         <PerfilConfirmacaoSection onboardingData={onboardingData} />

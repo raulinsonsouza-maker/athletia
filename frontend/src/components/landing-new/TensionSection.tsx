@@ -31,7 +31,7 @@ export default function TensionSection({ onStartOnboarding }: TensionSectionProp
             Se você sair agora:
           </h2>
 
-          <div className="bg-dark-lighter/60 backdrop-blur-xl rounded-xl p-6 md:p-8 border border-error/30 mb-8">
+          <div className="bg-error/10 backdrop-blur-xl rounded-xl p-6 md:p-8 border-2 border-error/40 mb-8 shadow-xl shadow-error/20">
             <ul className="space-y-4 text-left mb-6">
               <li className="flex items-start gap-3">
                 <svg className="w-6 h-6 text-error flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

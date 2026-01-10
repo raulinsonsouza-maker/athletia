@@ -1,11 +1,13 @@
 import { useScrollAnimation } from '../../hooks/useScrollAnimation'
+import { formatarObjetivo } from '../../utils/onboardingFormatters'
 
 interface HeroSectionProps {
   onStartOnboarding?: () => void
   nomeUsuario?: string
+  objetivo?: string
 }
 
-export default function HeroSection({ onStartOnboarding, nomeUsuario }: HeroSectionProps) {
+export default function HeroSection({ onStartOnboarding, nomeUsuario, objetivo }: HeroSectionProps) {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.2 })
 
   const handleCTA = () => {
@@ -38,7 +40,17 @@ export default function HeroSection({ onStartOnboarding, nomeUsuario }: HeroSect
                 <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   {nomeUsuario}
                 </span>
-                {', seu treino personalizado está pronto'}
+                {objetivo ? (
+                  <>
+                    {', seu treino personalizado para '}
+                    <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                      {formatarObjetivo(objetivo).toLowerCase()}
+                    </span>
+                    {' está pronto'}
+                  </>
+                ) : (
+                  ', seu treino personalizado está pronto'
+                )}
               </>
             ) : (
               'Seu treino personalizado está pronto'
@@ -46,11 +58,7 @@ export default function HeroSection({ onStartOnboarding, nomeUsuario }: HeroSect
           </h1>
 
           <p className="text-lg md:text-xl text-light-muted leading-relaxed max-w-2xl mx-auto">
-            Nossa IA analisou seu perfil e criou um plano de treinos inteligente que evolui automaticamente conforme seu desempenho.
-          </p>
-
-          <p className="text-xl md:text-2xl font-semibold text-light">
-            Desbloqueie agora e comece a treinar hoje.
+            Nossa IA analisou seu perfil e criou um plano de treinos que evolui automaticamente a cada sessão.
           </p>
 
           <div className="pt-4">
