@@ -20,6 +20,7 @@ const Landing = lazy(() => import('./pages/Landing'))
 const Checkout = lazy(() => import('./pages/Checkout'))
 const Confirmacao = lazy(() => import('./pages/Confirmacao'))
 const PagamentoSucesso = lazy(() => import('./pages/PagamentoSucesso'))
+const AssinaturaConfirmada = lazy(() => import('./pages/AssinaturaConfirmada'))
 const Termos = lazy(() => import('./pages/Termos'))
 const Privacidade = lazy(() => import('./pages/Privacidade'))
 const Cookies = lazy(() => import('./pages/Cookies'))
@@ -138,6 +139,14 @@ function App() {
             element={
               <Suspense fallback={<LoadingFallback />}>
                 <PagamentoSucesso />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/assinatura-confirmada" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <AssinaturaConfirmada />
               </Suspense>
             } 
           />

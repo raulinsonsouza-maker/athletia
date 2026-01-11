@@ -58,6 +58,12 @@ export default function Confirmacao() {
           'currency': 'BRL',
           'transaction_id': ''
         })
+        
+        // Disparar evento manual de assinatura paga
+        ;(window as any).gtag('event', 'manual_event_SUBSCRIBE_PAID', {
+          // Event parameters
+        })
+        
         console.log('✅ Evento de conversão do Google Ads disparado')
       }
     } else {

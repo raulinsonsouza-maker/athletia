@@ -64,6 +64,11 @@ export default function PagamentoSucesso() {
               'currency': 'BRL',
               'transaction_id': ''
             })
+            
+            // Disparar evento manual de assinatura paga
+            ;(window as any).gtag('event', 'manual_event_SUBSCRIBE_PAID', {
+              // Event parameters
+            })
           }
 
           // Se plano ainda não está ativo e ainda temos tentativas, tentar novamente

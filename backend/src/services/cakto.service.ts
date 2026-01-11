@@ -572,7 +572,7 @@ export function generateCheckoutUrl(plano: 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL'
 
   // Obter URL do frontend para redirecionamento após pagamento
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const successUrl = `${frontendUrl}/pagamento-sucesso`;
+  const successUrl = `${frontendUrl}/assinatura-confirmada`;
 
   const params = new URLSearchParams({
     email: userEmail,
