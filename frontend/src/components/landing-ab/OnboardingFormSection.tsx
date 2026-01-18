@@ -3,8 +3,6 @@ import InputMask from 'react-input-mask'
 import { OnboardingData } from '../../types/onboarding.types'
 import MobileNumberPicker from '../MobileNumberPicker'
 import OnboardingStepCard from '../onboarding/OnboardingStepCard'
-import StepIdade from '../onboarding/steps/StepIdade'
-import StepSexo from '../onboarding/steps/StepSexo'
 import { useCadastroForm } from '../../hooks/cadastro/useCadastroForm'
 import { DEFAULT_VALUES } from '../../constants/onboarding.constants'
 import {
@@ -19,11 +17,8 @@ import {
   FREQUENCIA_OPCOES,
   TEMPO_OPCOES,
   LOCAL_TREINO_OPCOES,
-  LESOES_OPCOES,
-  PROBLEMAS_ANTERIORES_OPCOES,
-  OBJETIVOS_ADICIONAIS_OPCOES
+  LESOES_OPCOES
 } from '../../constants/onboarding.constants'
-import { useGenderContent } from '../../hooks/onboarding/useGenderContent'
 
 interface OnboardingFormSectionProps {
   onboardingData: OnboardingData
@@ -35,7 +30,6 @@ interface OnboardingFormSectionProps {
     email: string
     senha: string
   }) => Promise<void>
-  loading?: boolean
   error?: string
 }
 
@@ -44,13 +38,11 @@ export default function OnboardingFormSection({
   onFormChange,
   onFormDataChange,
   onSubmit,
-  loading = false,
   error
 }: OnboardingFormSectionProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [showSenha, setShowSenha] = useState(false)
   const [showConfirmarSenha, setShowConfirmarSenha] = useState(false)
-  const genderContent = useGenderContent(onboardingData)
   const {
     formData,
     errors,
@@ -149,7 +141,6 @@ export default function OnboardingFormSection({
 
   return (
     <section
-      ref={formRef as React.RefObject<HTMLElement>}
       id="formulario-onboarding"
       className="py-20 md:py-32 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/30 to-dark relative overflow-hidden"
     >

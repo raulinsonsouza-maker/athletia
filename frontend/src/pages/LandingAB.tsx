@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/auth.service'
 import { useAuth } from '../contexts/AuthContext'
@@ -20,7 +20,6 @@ export default function LandingAB() {
     objetivosAdicionais: []
   })
   const [selectedPlan, setSelectedPlan] = useState<'MENSAL' | 'TRIMESTRAL'>('TRIMESTRAL')
-  const formRef = useRef<HTMLDivElement>(null)
 
   const handleScrollToForm = useCallback(() => {
     setTimeout(() => {
@@ -153,7 +152,7 @@ export default function LandingAB() {
             event_category: 'AB_Test',
             event_label: 'LandingAB_FormSubmitted'
           })
-          (window as any).gtag('event', 'plan_selected', {
+          ;(window as any).gtag('event', 'plan_selected', {
             event_category: 'AB_Test',
             event_label: `LandingAB_Plan_${selectedPlan}`
           })
@@ -290,7 +289,6 @@ export default function LandingAB() {
           onFormChange={handleOnboardingChange}
           onFormDataChange={setFormDataReady}
           onSubmit={handleSubmit}
-          loading={loading}
           error={error}
         />
 
