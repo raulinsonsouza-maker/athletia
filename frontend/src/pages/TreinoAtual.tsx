@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTreinoAtual } from '../hooks/useTreinoAtual'
-import { useCronometro } from '../hooks/useCronometro'
 import { useModal } from '../hooks/useModal'
 import { useExercicioMediaChain } from '../hooks/useExercicioMediaChain'
 import { IconeCheck, IconeTrofeu, IconeSeta, IconeDumbbell, IconeVoltar, IconeMenu, IconeFechar } from '../components/icons/TreinoIcons'
@@ -40,7 +39,6 @@ export default function TreinoAtual() {
     isExercicioConcluido
   } = useTreinoAtual()
 
-  const cronometro = useCronometro(true)
   const checklistModal = useModal(false)
   const imagemModal = useModal(false)
 
@@ -80,8 +78,6 @@ export default function TreinoAtual() {
     try {
       const resultado = await finalizarTreino()
       if (resultado.success) {
-        cronometro.pausar()
-        
         // Se for primeiro treino, mostrar modal
         if (resultado.isFirstTraining && resultado.nextTrainingData) {
           setNextTrainingData(resultado.nextTrainingData)
@@ -95,14 +91,13 @@ export default function TreinoAtual() {
     } finally {
       setConcluindoTreino(false)
     }
-  }, [finalizarTreino, navigate, cronometro, concluindoTreino])
+  }, [finalizarTreino, navigate, concluindoTreino])
 
   const handleAbandonar = useCallback(() => {
     if (window.confirm('Deseja abandonar este treino?')) {
-      cronometro.pausar()
       navigate('/treinos')
     }
-  }, [navigate, cronometro])
+  }, [navigate])
 
   // Loading
   if (loading) {
@@ -148,20 +143,6 @@ export default function TreinoAtual() {
           >
             <IconeVoltar />
           </button>
-          
-          <div className="flex items-center gap-4 flex-1 justify-center">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-mono font-bold text-primary">{cronometro.formatado}</span>
-              <button 
-                onClick={cronometro.toggle}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
-                  cronometro.ativo ? 'bg-white/10 text-white/70' : 'bg-primary text-black'
-                }`}
-              >
-                {cronometro.ativo ? 'Pausar' : 'Iniciar'}
-              </button>
-            </div>
-          </div>
           
           <button 
             onClick={checklistModal.toggle}
