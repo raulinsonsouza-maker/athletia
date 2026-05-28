@@ -1,11 +1,11 @@
 #!/bin/bash
 # =============================================================================
-# Deploy AthletIA — produção (VPS)  [v2.2]
+# Deploy AthletIA — produção (VPS)  [v2.3]
 # Uso:  cd /opt/athletia && bash deploy.sh
 # =============================================================================
 set -euo pipefail
 
-DEPLOY_VERSION="2.2"
+DEPLOY_VERSION="2.3"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 DUAL_REPO=false
@@ -102,7 +102,9 @@ npx prisma migrate deploy
 ok "Prisma OK"
 
 step "4/8 Backend — build"
+rm -rf dist
 npm run build
+[ -f dist/index.js ] || fail "dist/index.js não gerado — verifique tsconfig (rootDir: src)"
 ok "Build do backend OK"
 
 step "5/8 Backend — PM2"
