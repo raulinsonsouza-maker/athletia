@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
+import { PLANOS_CHECKOUT } from '../constants/planos-precos'
 
 // Registrar evento de analytics (não bloqueia se falhar)
 const registrarEventoAnalytics = (eventType: string, properties?: any) => {
@@ -17,42 +18,9 @@ const registrarEventoAnalytics = (eventType: string, properties?: any) => {
   }
 }
 
-interface Planos {
-  id: string
-  nome: string
-  preco: number
-  precoMensal: number
-  periodo: string
-  economia?: string
-  popular?: boolean
-}
+type PlanoCheckout = (typeof PLANOS_CHECKOUT)[number]
 
-const PLANOS: Planos[] = [
-  {
-    id: 'MENSAL',
-    nome: 'Mensal',
-    preco: 19.90,
-    precoMensal: 19.90,
-    periodo: 'por mês',
-  },
-  {
-    id: 'TRIMESTRAL',
-    nome: 'Trimestral',
-    preco: 49.90,
-    precoMensal: 16.63,
-    periodo: 'a cada 3 meses',
-    economia: 'Economize R$ 9,80',
-    popular: true,
-  },
-  {
-    id: 'SEMESTRAL',
-    nome: 'Semestral',
-    preco: 89.90,
-    precoMensal: 14.98,
-    periodo: 'a cada 6 meses',
-    economia: 'Economize R$ 29,50',
-  },
-]
+const PLANOS: PlanoCheckout[] = [...PLANOS_CHECKOUT]
 
 export default function Checkout() {
   const navigate = useNavigate()

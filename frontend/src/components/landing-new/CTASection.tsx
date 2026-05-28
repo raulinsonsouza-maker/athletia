@@ -46,7 +46,7 @@ export default function CTASection({ onStartOnboarding }: CTASectionProps) {
           </div>
 
           <p className="text-sm md:text-base text-light-muted">
-            R$ 19,90/mês • Acesso imediato • Cancele quando quiser
+            R$ 29,90/mês • Acesso imediato • Cancele quando quiser
           </p>
         </div>
       </div>

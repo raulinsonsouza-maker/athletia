@@ -6,7 +6,7 @@ export default function PlanosSection({ onScrollToForm }: PlanosSectionProps) {
   const planos = [
     {
       nome: 'Mensal',
-      preco: 'R$ 19,90',
+      preco: 'R$ 29,90',
       periodo: 'por mês',
       economia: null
     },
@@ -14,14 +14,14 @@ export default function PlanosSection({ onScrollToForm }: PlanosSectionProps) {
       nome: 'Trimestral',
       preco: 'R$ 49,90',
       periodo: 'a cada 3 meses',
-      economia: 'Economize R$ 9,80',
+      economia: 'Economize R$ 39,80',
       popular: true
     },
     {
       nome: 'Semestral',
       preco: 'R$ 89,90',
       periodo: 'a cada 6 meses',
-      economia: 'Economize R$ 29,50'
+      economia: 'Economize R$ 89,50'
     }
   ]
 

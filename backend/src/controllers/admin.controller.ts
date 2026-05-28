@@ -955,7 +955,7 @@ export const simularPagamentoUsuario = async (req: AuthRequest, res: Response) =
       data: {
         id: `test_${Date.now()}_${id}`,
         transaction_id: `test_${Date.now()}_${id}`,
-        amount: plano === 'MENSAL' ? 19.90 : plano === 'TRIMESTRAL' ? 49.90 : 89.90,
+        amount: plano === 'MENSAL' ? 29.90 : plano === 'TRIMESTRAL' ? 49.90 : 89.90,
         status: 'approved',
         paymentMethod: 'admin_simulation',
         customer: {
@@ -1292,7 +1292,7 @@ export const obterEstatisticas = async (req: AuthRequest, res: Response) => {
   try {
     // Preços dos planos
     const PRECOS = {
-      MENSAL: 19.90,
+      MENSAL: 29.90,
       TRIMESTRAL: 39.90,
       SEMESTRAL: 79.90
     };

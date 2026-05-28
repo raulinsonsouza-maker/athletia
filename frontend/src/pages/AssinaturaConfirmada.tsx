@@ -79,7 +79,7 @@ export default function AssinaturaConfirmada() {
               console.log('✅ Disparando evento de conversão do Google Ads na página de assinatura confirmada')
               ;(window as any).gtag('event', 'conversion', {
                 'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
-                'value': 19.90,
+                'value': 29.90,
                 'currency': 'BRL'
               })
               

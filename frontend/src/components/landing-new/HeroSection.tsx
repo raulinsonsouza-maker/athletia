@@ -70,7 +70,7 @@ export default function HeroSection({ onStartOnboarding, nomeUsuario, objetivo }
               <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
             <p className="text-sm md:text-base text-light-muted mt-3">
-              R$ 19,90/mês • Cancele quando quiser
+              R$ 29,90/mês • Cancele quando quiser
             </p>
           </div>
         </div>

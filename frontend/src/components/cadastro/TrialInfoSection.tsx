@@ -113,7 +113,7 @@ export default function TrialInfoSection({ onScrollToForm }: TrialInfoSectionPro
             <div className="bg-dark-lighter border-2 border-grey/30 rounded-2xl p-6 hover:border-primary/50 transition-all duration-300">
               <h3 className="text-xl font-bold text-light mb-3">Mensal</h3>
               <div className="mb-4">
-                <p className="text-3xl font-extrabold text-primary mb-1">R$ 19,90</p>
+                <p className="text-3xl font-extrabold text-primary mb-1">R$ 29,90</p>
                 <p className="text-sm text-light-muted">por mês</p>
               </div>
             </div>
@@ -132,7 +132,7 @@ export default function TrialInfoSection({ onScrollToForm }: TrialInfoSectionPro
               <div className="mb-4">
                 <p className="text-3xl font-extrabold text-primary mb-1">R$ 49,90</p>
                 <p className="text-sm text-light-muted mb-2">a cada 3 meses</p>
-                <p className="text-sm font-semibold text-primary">Economize R$ 9,80</p>
+                <p className="text-sm font-semibold text-primary">Economize R$ 39,80</p>
               </div>
             </div>
 
@@ -142,7 +142,7 @@ export default function TrialInfoSection({ onScrollToForm }: TrialInfoSectionPro
               <div className="mb-4">
                 <p className="text-3xl font-extrabold text-primary mb-1">R$ 89,90</p>
                 <p className="text-sm text-light-muted mb-2">a cada 6 meses</p>
-                <p className="text-sm font-semibold text-primary">Economize R$ 29,50</p>
+                <p className="text-sm font-semibold text-primary">Economize R$ 89,50</p>
               </div>
             </div>
           </div>

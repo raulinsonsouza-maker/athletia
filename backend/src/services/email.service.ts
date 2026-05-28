@@ -492,7 +492,7 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                   <!-- Plano Mensal -->
                   <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
                     <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Mensal</h3>
-                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 19,90</p>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 29,90</p>
                     <p style="margin: 0; color: #E0E0E8; font-size: 12px;">por mês</p>
                   </div>
                   <!-- Plano Trimestral -->
@@ -501,14 +501,14 @@ function generateTrialWelcomeEmailHTML(data: TrialWelcomeEmailData): string {
                     <h3 style="margin: 10px 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Trimestral</h3>
                     <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 49,90</p>
                     <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 3 meses</p>
-                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 9,80</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 39,80</p>
                   </div>
                   <!-- Plano Semestral -->
                   <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
                     <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Semestral</h3>
                     <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 89,90</p>
                     <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 6 meses</p>
-                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 29,50</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 89,50</p>
                   </div>
                 </div>
                 <div style="margin-top: 20px; text-align: center;">
@@ -1411,7 +1411,7 @@ function generateTrialExpirationWarningEmailHTML(data: TrialExpirationWarningEma
                   <!-- Plano Mensal -->
                   <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
                     <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Mensal</h3>
-                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 19,90</p>
+                    <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 29,90</p>
                     <p style="margin: 0; color: #E0E0E8; font-size: 12px;">por mês</p>
                   </div>
                   <!-- Plano Trimestral -->
@@ -1420,14 +1420,14 @@ function generateTrialExpirationWarningEmailHTML(data: TrialExpirationWarningEma
                     <h3 style="margin: 10px 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Trimestral</h3>
                     <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 49,90</p>
                     <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 3 meses</p>
-                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 9,80</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 39,80</p>
                   </div>
                   <!-- Plano Semestral -->
                   <div style="background-color: #0F0E0A; border: 1px solid #4A4946; border-radius: 8px; padding: 20px;">
                     <h3 style="margin: 0 0 10px 0; color: #F7F7FF; font-size: 18px; font-weight: bold;">Semestral</h3>
                     <p style="margin: 0 0 5px 0; color: #F9A620; font-size: 24px; font-weight: bold;">R$ 89,90</p>
                     <p style="margin: 0 0 5px 0; color: #E0E0E8; font-size: 12px;">a cada 6 meses</p>
-                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 29,50</p>
+                    <p style="margin: 0; color: #F9A620; font-size: 12px; font-weight: 600;">Economize R$ 89,50</p>
                   </div>
                 </div>
               </div>

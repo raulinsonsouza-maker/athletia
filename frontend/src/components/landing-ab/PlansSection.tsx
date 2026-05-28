@@ -1,27 +1,12 @@
+import { PLANOS_CHECKOUT } from '../../constants/planos-precos'
+
 interface PlansSectionProps {
   selectedPlan: 'MENSAL' | 'TRIMESTRAL'
   onPlanSelect: (plano: 'MENSAL' | 'TRIMESTRAL') => void
   formReady: boolean
 }
 
-const PLANOS = [
-  {
-    id: 'MENSAL' as const,
-    nome: 'Mensal',
-    preco: 19.90,
-    precoMensal: 19.90,
-    periodo: 'por mês',
-  },
-  {
-    id: 'TRIMESTRAL' as const,
-    nome: 'Trimestral',
-    preco: 49.90,
-    precoMensal: 16.63,
-    periodo: 'a cada 3 meses',
-    economia: 'Economize R$ 9,80',
-    popular: true,
-  },
-]
+const PLANOS = PLANOS_CHECKOUT.filter((p) => p.id === 'MENSAL' || p.id === 'TRIMESTRAL')
 
 export default function PlansSection({ selectedPlan, onPlanSelect, formReady }: PlansSectionProps) {
   if (!formReady) {

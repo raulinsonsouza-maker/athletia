@@ -181,7 +181,7 @@ export async function processPaymentApproved(webhookData: any) {
       console.log('⚠️  Webhook de teste detectado (EXAMPLE). Tentando identificar plano pelo valor...');
       
       // Valores aproximados dos planos (em reais)
-      // MENSAL: ~19.90, TRIMESTRAL: ~49.90, SEMESTRAL: ~89.90
+      // MENSAL: ~29.90, TRIMESTRAL: ~49.90, SEMESTRAL: ~89.90
       const valor = amount || transaction.baseAmount || 0;
       
       if (valor >= 80 && valor <= 100) {

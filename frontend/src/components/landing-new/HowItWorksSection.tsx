@@ -104,7 +104,7 @@ export default function HowItWorksSection({ onStartOnboarding }: HowItWorksSecti
             onClick={handleCTA}
             className="btn-primary text-base md:text-lg px-6 md:px-10 py-4 md:py-5 font-bold shadow-2xl shadow-primary/50 hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:w-auto"
           >
-            Quero Meus Treinos Personalizados - R$ 19,90/mês
+            Quero Meus Treinos Personalizados - R$ 29,90/mês
           </button>
         </div>
       </div>

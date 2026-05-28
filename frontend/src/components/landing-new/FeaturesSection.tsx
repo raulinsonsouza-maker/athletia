@@ -110,7 +110,7 @@ export default function FeaturesSection({ onStartOnboarding }: FeaturesSectionPr
                       onClick={handleCTA}
                       className="btn-primary text-base md:text-lg px-6 md:px-10 py-4 md:py-5 font-bold shadow-xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all duration-300 w-full sm:w-auto"
                     >
-                      Começar Agora - R$ 19,90/mês
+                      Começar Agora - R$ 29,90/mês
                     </button>
                   </div>
                 )}
