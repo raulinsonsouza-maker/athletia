@@ -1,13 +1,14 @@
 #!/bin/bash
 # =============================================================================
-# Deploy AthletIA — produção (VPS)
-# Execute na raiz do repositório:  cd /opt/athletia && bash deploy.sh
+# Deploy AthletIA — produção (VPS)  [v2.1]
+# Uso:  cd /opt/athletia && bash deploy.sh
 # =============================================================================
 set -euo pipefail
 
+DEPLOY_VERSION="2.1"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
-LEGACY_LAYOUT=false
+DUAL_REPO=false
 
 BACKEND_PROCESS="athletia-backend"
 FRONTEND_PROCESS="athletia-frontend"
@@ -24,143 +25,139 @@ ok()   { echo -e "${GREEN}✓ $1${NC}"; }
 warn() { echo -e "${YELLOW}⚠ $1${NC}"; }
 fail() { echo -e "${RED}✗ $1${NC}"; exit 1; }
 
-# Layout padrão: /opt/athletia/{backend,frontend,deploy.sh}
+# --- Detectar layout ---
 if [ -d "$SCRIPT_DIR/backend" ] && [ -d "$SCRIPT_DIR/frontend" ]; then
-  ROOT_DIR="$SCRIPT_DIR"
-  BACKEND_DIR="$ROOT_DIR/backend"
-  FRONTEND_DIR="$ROOT_DIR/frontend"
-elif [ -d "$SCRIPT_DIR/../frontend" ] && [ -f "$SCRIPT_DIR/package.json" ]; then
-  LEGACY_LAYOUT=true
-  BACKEND_DIR="$SCRIPT_DIR"
-  FRONTEND_DIR="$(cd "$SCRIPT_DIR/../frontend" && pwd)"
-  ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-else
   BACKEND_DIR="$SCRIPT_DIR/backend"
   FRONTEND_DIR="$SCRIPT_DIR/frontend"
+  if [ -d "$BACKEND_DIR/.git" ] && [ -d "$FRONTEND_DIR/.git" ]; then
+    DUAL_REPO=true
+  fi
+else
+  fail "Pastas backend/ e frontend/ não encontradas em $SCRIPT_DIR"
 fi
-
-require_dir() {
-  [ -d "$1" ] || fail "Diretório não encontrado: $1"
-}
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "Comando obrigatório não encontrado: $1"
 }
 
-# --- Pré-checagens ---
 require_cmd git
 require_cmd npm
 require_cmd pm2
-require_dir "$BACKEND_DIR"
-require_dir "$FRONTEND_DIR"
+[ -d "$BACKEND_DIR" ] || fail "Backend não encontrado: $BACKEND_DIR"
+[ -d "$FRONTEND_DIR" ] || fail "Frontend não encontrado: $FRONTEND_DIR"
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
-echo "  Deploy AthletIA — branch: $BRANCH"
-echo "  Raiz: $ROOT_DIR"
+echo "  Deploy AthletIA v${DEPLOY_VERSION} — branch: $BRANCH"
+echo "  Backend:  $BACKEND_DIR"
+echo "  Frontend: $FRONTEND_DIR"
+if [ "$DUAL_REPO" = true ]; then
+  echo "  Git: repositórios separados (backend + frontend)"
+else
+  echo "  Git: monorepo em $ROOT_DIR"
+fi
 echo "═══════════════════════════════════════════════════════════════"
+
+# Se ainda aparecer só "==== Atualizando /opt/athletia/backend" sem este cabeçalho,
+# o deploy.sh no servidor está desatualizado — rode: git pull origin main
 
 git_pull_dir() {
   local dir="$1"
   local label="$2"
+  [ -d "$dir/.git" ] || fail "[$label] Não é repositório git: $dir"
+
   cd "$dir"
   if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-    warn "[$label] Alterações locais — stash automático..."
-    git stash push -m "deploy-auto-stash $(date +%Y-%m-%d_%H-%M-%S)" || true
+    warn "[$label] Alterações locais detectadas — stash automático (não commite no servidor)"
+    git stash push -u -m "deploy-v${DEPLOY_VERSION}-$(date +%Y-%m-%d_%H-%M-%S)" || true
   fi
   git fetch origin "$BRANCH"
-  git pull origin "$BRANCH"
+  # Evita erro "cannot pull with rebase: You have unstaged changes"
+  git -c pull.rebase=false pull origin "$BRANCH"
   ok "[$label] $(git rev-parse --short HEAD) — $(git log -1 --pretty=%s)"
 }
 
 # --- 1. Git ---
-step "1/8 Atualizando código (git pull origin $BRANCH)"
+step "1/8 Atualizando código"
 
-if [ "$LEGACY_LAYOUT" = true ]; then
-  warn "Layout legado (dois repositórios). Ideal: um monorepo em $ROOT_DIR com deploy.sh na raiz."
+if [ "$DUAL_REPO" = true ]; then
   git_pull_dir "$BACKEND_DIR" "backend"
   git_pull_dir "$FRONTEND_DIR" "frontend"
-else
+elif [ -d "$ROOT_DIR/.git" ]; then
   git_pull_dir "$ROOT_DIR" "monorepo"
+else
+  fail "Nenhum .git encontrado. Clone o repositório em $ROOT_DIR ou em backend/ e frontend/"
 fi
 
-# --- 2. Backend: dependências (lock file = versões fixas) ---
-step "2/8 Backend — instalando dependências (npm ci)"
+# --- 2. Backend ---
+step "2/8 Backend — npm ci"
 cd "$BACKEND_DIR"
-[ -f package-lock.json ] || fail "package-lock.json ausente no backend. Commit o lock no Git."
-
-# npm ci = mesmas versões do lock (evita vulnerabilidades “voltarem” por npm install solto)
+[ -f package-lock.json ] || fail "Commit package-lock.json do backend no Git"
 npm ci
-ok "Dependências do backend instaladas"
+ok "Dependências do backend"
 
-# --- 3. Backend: Prisma ---
-step "3/8 Backend — Prisma generate + migrations"
+step "3/8 Backend — Prisma"
 npm run prisma:generate
 npx prisma migrate deploy
 ok "Prisma OK"
 
-# --- 4. Backend: build ---
 step "4/8 Backend — build"
 npm run build
 ok "Build do backend OK"
 
-# --- 5. Backend: PM2 ---
-step "5/8 Backend — reiniciar PM2"
+step "5/8 Backend — PM2"
 if pm2 describe "$BACKEND_PROCESS" >/dev/null 2>&1; then
-  pm2 restart "$BACKEND_PROCESS"
+  pm2 restart "$BACKEND_PROCESS" --update-env
 else
-  warn "Processo $BACKEND_PROCESS não existe; criando..."
+  warn "Criando processo PM2 do backend..."
   pm2 start npm --name "$BACKEND_PROCESS" --cwd "$BACKEND_DIR" -- start
 fi
-ok "Backend PM2: $BACKEND_PROCESS"
+ok "PM2: $BACKEND_PROCESS"
 
-# --- 6. Frontend: dependências + build ---
-step "6/8 Frontend — instalando dependências (npm ci)"
+# --- 3. Frontend ---
+step "6/8 Frontend — npm ci"
 cd "$FRONTEND_DIR"
-[ -f package-lock.json ] || fail "package-lock.json ausente no frontend. Commit o lock no Git."
-
+[ -f package-lock.json ] || fail "Commit package-lock.json do frontend no Git"
 npm ci
-ok "Dependências do frontend instaladas"
+ok "Dependências do frontend"
 
 step "7/8 Frontend — build"
 npm run build
-[ -d dist ] || fail "Pasta frontend/dist não foi gerada."
-ok "Build do frontend OK ($(du -sh dist 2>/dev/null | cut -f1 || echo 'dist'))"
+[ -d dist ] || fail "dist/ não gerado"
+ok "Build do frontend OK"
 
-# Frontend em produção costuma ser servido pelo Nginx (arquivos estáticos em dist/).
-# Só reinicia PM2 do frontend se o processo já existir (ex.: vite preview).
+# Frontend: Nginx serve /opt/athletia/frontend/dist — NÃO usar "npm start" (não existe)
+step "7b/8 Frontend — PM2 (opcional)"
 if pm2 describe "$FRONTEND_PROCESS" >/dev/null 2>&1; then
-  pm2 restart "$FRONTEND_PROCESS"
-  ok "Frontend PM2: $FRONTEND_PROCESS"
+  if npm pkg get scripts.start 2>/dev/null | grep -q null; then
+    warn "Removendo PM2 '$FRONTEND_PROCESS' (sem script 'start'; use Nginx para o dist/)"
+    pm2 delete "$FRONTEND_PROCESS" || true
+    pm2 save || true
+  else
+    pm2 restart "$FRONTEND_PROCESS" --update-env
+    ok "PM2 frontend reiniciado"
+  fi
 else
-  warn "PM2 '$FRONTEND_PROCESS' não configurado — normal se o Nginx serve só o dist/"
+  ok "Sem PM2 no frontend — correto se o Nginx aponta para frontend/dist"
 fi
 
-# --- 8. Nginx ---
-step "8/8 Recarregar Nginx"
+# --- 4. Nginx ---
+step "8/8 Nginx reload"
 if command -v systemctl >/dev/null 2>&1; then
-  sudo systemctl reload nginx && ok "Nginx recarregado" || warn "Falha ao recarregar Nginx (rode: sudo systemctl reload nginx)"
+  sudo systemctl reload nginx && ok "Nginx recarregado" || warn "Execute: sudo systemctl reload nginx"
 else
-  warn "systemctl não disponível — recarregue o Nginx manualmente se necessário"
+  warn "Recarregue o Nginx manualmente"
 fi
 
-# --- Auditoria (informativo; NÃO altera o servidor) ---
 echo ""
-step "Auditoria de dependências (somente leitura)"
-cd "$BACKEND_DIR"
-BE_AUDIT=$(npm audit --audit-level=high 2>&1 | tail -3 || true)
-cd "$FRONTEND_DIR"
-FE_AUDIT=$(npm audit --audit-level=high 2>&1 | tail -3 || true)
-echo "Backend:  $BE_AUDIT"
-echo "Frontend: $FE_AUDIT"
-warn "Corrija CVEs no seu PC com 'npm audit fix', commit package-lock.json e faça deploy de novo."
-warn "Não rode 'npm audit fix' no servidor — isso altera o lock fora do Git e o problema volta."
+step "Auditoria (somente leitura — corrija no PC e commit o lock)"
+(cd "$BACKEND_DIR" && npm audit --audit-level=high 2>&1 | tail -2) || true
+(cd "$FRONTEND_DIR" && npm audit --audit-level=high 2>&1 | tail -2) || true
 
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
-echo -e "  ${GREEN}Deploy concluído com sucesso${NC}"
+echo -e "  ${GREEN}Deploy v${DEPLOY_VERSION} concluído${NC}"
 echo "═══════════════════════════════════════════════════════════════"
-echo ""
 echo "  pm2 status"
 echo "  pm2 logs $BACKEND_PROCESS --lines 30"
 echo ""
