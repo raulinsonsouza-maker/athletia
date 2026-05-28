@@ -1,11 +1,11 @@
 #!/bin/bash
 # =============================================================================
-# Deploy AthletIA — produção (VPS)  [v2.1]
+# Deploy AthletIA — produção (VPS)  [v2.2]
 # Uso:  cd /opt/athletia && bash deploy.sh
 # =============================================================================
 set -euo pipefail
 
-DEPLOY_VERSION="2.1"
+DEPLOY_VERSION="2.2"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 DUAL_REPO=false
@@ -106,13 +106,27 @@ npm run build
 ok "Build do backend OK"
 
 step "5/8 Backend — PM2"
+[ -f "$BACKEND_DIR/dist/index.js" ] || fail "dist/index.js não existe — build falhou?"
+
+# Corrige PM2 antigo que apontava para dist/src/index.js (gera 502 no Nginx)
 if pm2 describe "$BACKEND_PROCESS" >/dev/null 2>&1; then
-  pm2 restart "$BACKEND_PROCESS" --update-env
-else
-  warn "Criando processo PM2 do backend..."
-  pm2 start npm --name "$BACKEND_PROCESS" --cwd "$BACKEND_DIR" -- start
+  CURRENT_SCRIPT=$(pm2 describe "$BACKEND_PROCESS" 2>/dev/null | grep -E 'script path' | head -1 || true)
+  if echo "$CURRENT_SCRIPT" | grep -q 'dist/src/index'; then
+    warn "PM2 com entrypoint errado — recriando com ecosystem.config.cjs"
+    pm2 delete "$BACKEND_PROCESS" || true
+  fi
 fi
-ok "PM2: $BACKEND_PROCESS"
+
+pm2 startOrReload "$BACKEND_DIR/ecosystem.config.cjs" --update-env
+pm2 save
+
+sleep 2
+if curl -sf "http://127.0.0.1:3001/health" >/dev/null; then
+  ok "API respondendo em :3001/health"
+else
+  warn "API não respondeu em :3001/health — veja: pm2 logs $BACKEND_PROCESS --lines 40"
+fi
+ok "PM2: $BACKEND_PROCESS (dist/index.js)"
 
 # --- 3. Frontend ---
 step "6/8 Frontend — npm ci"
