@@ -75,6 +75,20 @@ function notificationUrl(): string | undefined {
   return undefined;
 }
 
+function recursoNaoEncontrado(error: any): boolean {
+  return error?.response?.status === 404;
+}
+
+async function obterRecurso<T>(url: string): Promise<T | null> {
+  try {
+    const response = await axios.get<T>(url, { headers: headers() });
+    return response.data;
+  } catch (error: any) {
+    if (recursoNaoEncontrado(error)) return null;
+    throw error;
+  }
+}
+
 function logMpError(context: string, error: any) {
   const status = error?.response?.status;
   const message = error?.response?.data?.message || error?.message;
@@ -619,8 +633,8 @@ async function desativarPorEstorno(userId: string, transactionId: string, amount
 }
 
 async function processarPagamento(paymentId: string) {
-  const response = await axios.get(`${MP_API}/v1/payments/${paymentId}`, { headers: headers() });
-  const payment = response.data;
+  const payment = await obterRecurso<any>(`${MP_API}/v1/payments/${paymentId}`);
+  if (!payment) return;
   const ref = lerReferencia(payment.external_reference);
   if (!ref) return;
 
@@ -652,8 +666,8 @@ async function processarPagamento(paymentId: string) {
 }
 
 async function processarPreapproval(preapprovalId: string) {
-  const response = await axios.get(`${MP_API}/preapproval/${preapprovalId}`, { headers: headers() });
-  const preapproval = response.data;
+  const preapproval = await obterRecurso<any>(`${MP_API}/preapproval/${preapprovalId}`);
+  if (!preapproval) return;
   const ref = lerReferencia(preapproval.external_reference);
   if (!ref) return;
 
@@ -666,8 +680,8 @@ async function processarPreapproval(preapprovalId: string) {
 }
 
 async function processarPagamentoAutorizado(authorizedPaymentId: string) {
-  const response = await axios.get(`${MP_API}/authorized_payments/${authorizedPaymentId}`, { headers: headers() });
-  const authorized = response.data;
+  const authorized = await obterRecurso<any>(`${MP_API}/authorized_payments/${authorizedPaymentId}`);
+  if (!authorized) return;
   const paymentId = authorized.payment?.id || authorized.payment_id;
   if (paymentId) {
     await processarPagamento(String(paymentId));
@@ -677,8 +691,8 @@ async function processarPagamentoAutorizado(authorizedPaymentId: string) {
   const preapprovalId = authorized.preapproval_id;
   if (!preapprovalId || authorized.status !== 'approved' && authorized.status !== 'processed') return;
 
-  const preapproval = await axios.get(`${MP_API}/preapproval/${preapprovalId}`, { headers: headers() });
-  const ref = lerReferencia(preapproval.data?.external_reference);
+  const preapproval = await obterRecurso<any>(`${MP_API}/preapproval/${preapprovalId}`);
+  const ref = lerReferencia(preapproval?.external_reference);
   if (!ref?.plano) return;
 
   await ativarPlano({
