@@ -3,6 +3,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import * as caktoService from '../services/cakto.service';
+import * as mercadoPagoService from '../services/mercadopago.service';
 import { validateWhatsAppWebhook, validateWebhookVerifyToken } from '../services/whatsapp-webhook-validator.service';
 import { processIncomingMessage } from '../services/whatsapp-chatbot.service';
 import { updateMessageStatus, normalizePhoneNumber } from '../services/whatsapp.service';
@@ -18,6 +19,51 @@ const webhookLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req: any) => req.method === 'OPTIONS'
+});
+
+/**
+ * Webhook do Mercado Pago.
+ * POST /api/webhooks/mercadopago
+ * O corpo chega cru porque o parse JSON global ignora esta rota.
+ */
+router.post('/mercadopago', webhookLimiter, express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+  try {
+    const bodyString = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {});
+    let payload: any = {};
+    try {
+      payload = bodyString ? JSON.parse(bodyString) : {};
+    } catch {
+      return res.status(400).json({ error: 'JSON inválido' });
+    }
+
+    const dataIdQuery = new URL(req.originalUrl, 'http://localhost').searchParams.get('data.id');
+    const dataId = String(dataIdQuery || payload?.data?.id || '');
+    const tipo = String(req.query.type || payload?.type || payload?.action || '');
+    const signatureHeader = req.headers['x-signature'];
+    const requestIdHeader = req.headers['x-request-id'];
+    const xSignature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
+    const xRequestId = Array.isArray(requestIdHeader) ? requestIdHeader[0] : requestIdHeader;
+
+    const assinaturaOk = mercadoPagoService.validarAssinaturaWebhook({
+      xSignature,
+      xRequestId,
+      dataId
+    });
+
+    if (!assinaturaOk) {
+      console.error('[MP] Assinatura do webhook recusada');
+      return res.status(401).json({ error: 'Assinatura inválida' });
+    }
+
+    if (dataId && tipo) {
+      await mercadoPagoService.processarNotificacao(tipo, dataId);
+    }
+
+    return res.status(200).json({ received: true });
+  } catch (error: any) {
+    console.error('[MP] Erro ao processar webhook:', error?.message);
+    return res.status(500).json({ error: 'Erro ao processar webhook' });
+  }
 });
 
 /**

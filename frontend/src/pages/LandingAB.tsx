@@ -34,37 +34,15 @@ export default function LandingAB() {
     setOnboardingData(data)
   }, [])
 
-  const redirecionarParaCheckoutCakto = useCallback(async (novoUsuario: { id: string; email: string }) => {
+  const redirecionarParaCheckout = useCallback((novoUsuario: { id: string; email: string }) => {
     if (!novoUsuario?.email) {
       setError('Não conseguimos identificar seu e-mail para o pagamento. Tente novamente.')
       return false
     }
 
-    try {
-      const checkoutResponse = await api.post('/payment/checkout', {
-        plano: selectedPlan,
-        email: novoUsuario.email,
-        userId: novoUsuario.id,
-        source: 'landing_ab_test'
-      })
-
-      if (!checkoutResponse.data?.checkoutUrl) {
-        throw new Error('URL de checkout não recebida')
-      }
-
-      window.location.href = checkoutResponse.data.checkoutUrl
-      return true
-    } catch (checkoutError: any) {
-      console.error('[LandingAB] Erro ao gerar checkout do Cakto:', checkoutError)
-      const errorMessage =
-        checkoutError.response?.data?.error ||
-        checkoutError.response?.data?.message ||
-        'Não foi possível abrir a tela de pagamento agora. Tente novamente em instantes.'
-
-      setError(errorMessage)
-      return false
-    }
-  }, [selectedPlan])
+    navigate(`/checkout?plano=${selectedPlan}`)
+    return true
+  }, [navigate, selectedPlan])
 
   const handleSubmit = useCallback(async (formData: {
     nomeCompleto: string
@@ -162,7 +140,7 @@ export default function LandingAB() {
       }
 
       console.log('[LandingAB] Redirecionando para checkout')
-      const redirecionado = await redirecionarParaCheckoutCakto(user)
+      const redirecionado = redirecionarParaCheckout(user)
       if (redirecionado) {
         console.log('[LandingAB] Redirecionamento para checkout bem-sucedido')
         return
@@ -210,7 +188,7 @@ export default function LandingAB() {
     } finally {
       setLoading(false)
     }
-  }, [onboardingData, setUserFromResponse, redirecionarParaCheckoutCakto, selectedPlan])
+  }, [onboardingData, setUserFromResponse, redirecionarParaCheckout, selectedPlan])
 
   // Estado para rastrear dados do formulário de cadastro (para calcular formReady)
   const [formDataReady, setFormDataReady] = useState<{

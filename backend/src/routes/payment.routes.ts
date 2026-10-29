@@ -1,12 +1,20 @@
 import { Router } from 'express';
-import { body, query } from 'express-validator';
-import { gerarCheckoutUrl, verificarStatusAssinatura, obterHistoricoPagamentos } from '../controllers/payment.controller';
+import { body } from 'express-validator';
+import {
+  gerarCheckoutUrl,
+  verificarStatusAssinatura,
+  obterHistoricoPagamentos,
+  obterConfigPagamento,
+  assinarComCartao,
+  criarPix,
+  consultarPix,
+  cancelarAssinatura
+} from '../controllers/payment.controller';
 import { validateRequest } from '../middleware/validate.middleware';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
 
-// Validações
 const checkoutValidation = [
   body('plano')
     .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'])
@@ -17,19 +25,13 @@ const checkoutValidation = [
     .normalizeEmail()
 ];
 
-const statusValidation = [
-  query('email')
-    .optional()
-    .isEmail()
-    .withMessage('Email inválido')
-    .normalizeEmail()
-];
-
-// Rotas
+router.get('/config', obterConfigPagamento);
 router.post('/checkout', checkoutValidation, validateRequest, gerarCheckoutUrl);
-// Rotas autenticadas - podem usar email do usuário logado ou query param
+router.post('/subscribe', authenticate, assinarComCartao);
+router.post('/pix', authenticate, criarPix);
+router.get('/pix/:paymentId', authenticate, consultarPix);
+router.post('/cancel', authenticate, cancelarAssinatura);
 router.get('/status', authenticate, verificarStatusAssinatura);
 router.get('/historico', authenticate, obterHistoricoPagamentos);
 
 export default router;
-

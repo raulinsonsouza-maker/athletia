@@ -1594,3 +1594,44 @@ export async function sendTrialExpirationWarningEmail(data: TrialExpirationWarni
   }
 }
 
+export async function sendPixRenewalEmail(data: {
+  nome: string;
+  email: string;
+  plano: string;
+  dataExpiracao: Date;
+  qrCode: string;
+}): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    if (!process.env.RESEND_API_KEY) {
+      return { success: false, error: 'RESEND_API_KEY não configurado' };
+    }
+
+    const dataFormatada = formatarData(data.dataExpiracao);
+    const codigo = data.qrCode.replace(/[&<>]/g, (char) => (
+      char === '&' ? '&amp;' : char === '<' ? '&lt;' : '&gt;'
+    ));
+    const html = `
+      <p>Olá, ${data.nome}.</p>
+      <p>Sua assinatura ${data.plano} do AthletIA vence em ${dataFormatada}. Pague o Pix abaixo para continuar com o plano ativo.</p>
+      <p style="word-break: break-all; font-family: monospace;">${codigo}</p>
+      <p>Você também pode pagar em <a href="${FRONTEND_URL}/meu-plano">Meu Plano</a>.</p>
+    `.trim();
+
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.email,
+      subject: 'Seu Pix de renovação do AthletIA',
+      html
+    });
+
+    if (result.error || !result.data?.id) {
+      return { success: false, error: result.error?.message || 'Falha ao enviar e-mail' };
+    }
+
+    return { success: true, messageId: result.data.id };
+  } catch (error: any) {
+    console.error('[MP] Exceção ao enviar Pix de renovação:', error?.message);
+    return { success: false, error: error?.message || 'Erro ao enviar e-mail' };
+  }
+}
+

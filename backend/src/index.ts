@@ -24,7 +24,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import webhookRoutes from './routes/webhook.routes';
 import paymentRoutes from './routes/payment.routes';
 import blogRoutes from './routes/blog.routes';
-import sitemapRoutes from './routes/sitemap.routes';
+import publicSeoRoutes from './routes/public-seo.routes';
 import testRoutes from './routes/test-routes';
 import whatsappRoutes from './routes/whatsapp.routes';
 import chatRoutes from './routes/chat.routes';
@@ -175,10 +175,16 @@ app.use((req, res, next) => {
     // Não parsear como JSON se for multipart - multer vai processar
     return next();
   }
+  if (req.originalUrl.startsWith('/api/webhooks/mercadopago')) {
+    return next();
+  }
   // Parsear como JSON normalmente
   express.json({ limit: '10mb' })(req, res, next);
 });
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Sitemap, feed e HTML público ficam fora do limite para os rastreadores
+app.use('/api', publicSeoRoutes);
 
 // Aplicar rate limiting geral em todas as rotas
 app.use('/api/', generalLimiter);
@@ -436,7 +442,6 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/blog', blogRoutes);
-app.use('/api', sitemapRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/chat', chatRoutes);
@@ -562,6 +567,21 @@ server.listen(PORT, () => {
   });
 
   console.log('📧 Job de aviso de expiração do trial configurado para executar a cada hora');
+
+  cron.schedule('10 9 * * *', async () => {
+    try {
+      const { renovarPixProximosDoVencimento, expirarPlanosVencidos } = await import('./services/mercadopago.service');
+      console.log('[CRON] Renovação Pix e expiração de planos...');
+      await renovarPixProximosDoVencimento();
+      await expirarPlanosVencidos();
+    } catch (error: any) {
+      console.error('[CRON] Erro na rotina do Mercado Pago:', error?.message);
+    }
+  }, {
+    timezone: 'America/Sao_Paulo'
+  });
+
+  console.log('💳 Rotina do Mercado Pago configurada para executar diariamente às 9h10');
 
   // Configurar job de notificações push diárias (executa diariamente às 8h)
   if (pushInitialized) {

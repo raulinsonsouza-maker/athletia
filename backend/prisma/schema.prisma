@@ -29,6 +29,10 @@ model User {
   whatsappPhoneNumber   String?   @unique @map("whatsapp_phone_number") // Número WhatsApp (E.164 format)
   caktoCustomerId       String?   @map("cakto_customer_id") // ID do cliente no Cakto
   caktoTransactionId    String?   @map("cakto_transaction_id") // ID da última transação
+  mpPreapprovalId       String?   @map("mp_preapproval_id") // Assinatura de cartão no Mercado Pago
+  meioPagamento         String?   @map("meio_pagamento") // cartao ou pix
+  cancelamentoAgendado  Boolean   @default(false) @map("cancelamento_agendado")
+  cpf                   String? // CPF da renovação Pix; nunca registrar em log
   modoTreino            String?   @default("IA") @map("modo_treino") // "IA" ou "MANUAL"
   currentTrainingSource String?   @map("current_training_source") // "IA" ou "MANUAL"
   currentTrainingId     String?   @map("current_training_id") // UUID do treino ativo
@@ -351,6 +355,7 @@ model PaymentHistory {
   paymentMethod String?  @map("payment_method")
   caktoData     Json?    @map("cakto_data") // Dados completos do webhook
   plano         String? // MENSAL, TRIMESTRAL, SEMESTRAL
+  gateway       String   @default("cakto")
   eventType     String   @map("event_type") // purchase_approved, refund, subscription_cancelled
   createdAt     DateTime @default(now()) @map("created_at")
 

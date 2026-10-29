@@ -1,4 +1,24 @@
 User-agent: *
 Allow: /
-Sitemap: https://athletia.site/sitemap.xml
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /cadastro
+Disallow: /checkout
+Disallow: /meu-plano
+Disallow: /treinos
+Disallow: /treino
+Disallow: /treino-rapido
+Disallow: /historico
+Disallow: /progresso
+Disallow: /perfil
+Disallow: /landing-test
+Disallow: /one-page
+Disallow: /home
+Disallow: /reset-password
+Disallow: /pagamento-sucesso
+Disallow: /confirmacao
+Disallow: /assinatura-confirmada
+Disallow: /trial-expirado
 
+Sitemap: https://athletia.site/sitemap.xml
