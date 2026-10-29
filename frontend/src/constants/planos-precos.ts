@@ -3,7 +3,17 @@ export const PRECO_MENSAL = 29.9
 export const PRECO_MENSAL_FORMATADO = 'R$ 29,90'
 export const PRECO_MENSAL_POR_MES = 'R$ 29,90/mês'
 
-export const PLANOS_CHECKOUT = [
+export type PlanoCheckout = {
+  id: 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL'
+  nome: string
+  preco: number
+  precoMensal: number
+  periodo: string
+  economia?: string
+  popular?: boolean
+}
+
+export const PLANOS_CHECKOUT: readonly PlanoCheckout[] = [
   {
     id: 'MENSAL',
     nome: 'Mensal',
@@ -28,4 +38,4 @@ export const PLANOS_CHECKOUT = [
     periodo: 'a cada 6 meses',
     economia: 'Economize R$ 89,50',
   },
-] as const
+]

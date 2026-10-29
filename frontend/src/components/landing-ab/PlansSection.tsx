@@ -1,4 +1,4 @@
-import { PLANOS_CHECKOUT } from '../../constants/planos-precos'
+import { PLANOS_CHECKOUT, type PlanoCheckout } from '../../constants/planos-precos'
 
 interface PlansSectionProps {
   selectedPlan: 'MENSAL' | 'TRIMESTRAL'
@@ -6,7 +6,9 @@ interface PlansSectionProps {
   formReady: boolean
 }
 
-const PLANOS = PLANOS_CHECKOUT.filter((p) => p.id === 'MENSAL' || p.id === 'TRIMESTRAL')
+const PLANOS = PLANOS_CHECKOUT.filter(
+  (p): p is PlanoCheckout & { id: 'MENSAL' | 'TRIMESTRAL' } => p.id === 'MENSAL' || p.id === 'TRIMESTRAL'
+)
 
 export default function PlansSection({ selectedPlan, onPlanSelect, formReady }: PlansSectionProps) {
   if (!formReady) {
