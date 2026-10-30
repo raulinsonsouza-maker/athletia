@@ -51,8 +51,40 @@ export async function obterTodosGruposAtivos(): Promise<string[]> {
 /**
  * Mapeia nome/slug para grupo visual válido
  */
+const ALIAS_VISUAL: Record<string, string> = {
+  peito: 'Peito',
+  costas: 'Costas',
+  ombros: 'Ombros',
+  triceps: 'Tríceps',
+  biceps: 'Bíceps',
+  quadriceps: 'Quadríceps',
+  posterior_coxa: 'Posteriores de coxa',
+  'posteriores de coxa': 'Posteriores de coxa',
+  posteriores: 'Posteriores de coxa',
+  gluteos: 'Glúteos',
+  panturrilha: 'Panturrilhas',
+  panturrilhas: 'Panturrilhas',
+  core: 'Core',
+  lombar: 'Lombar',
+  trapezio: 'Trapézio',
+  cardio: 'Cardio',
+  adutores: 'Adutores',
+  antebracos: 'Antebraços',
+};
+
 export async function mapearGrupoParaVisual(nomeOuSlug: string): Promise<string | null> {
   const grupos = await obterGruposVisuaisAtivos();
+  const chave = nomeOuSlug
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+  const alias = ALIAS_VISUAL[chave.replace(/ /g, '_')] || ALIAS_VISUAL[chave];
+  if (alias) {
+    const porAlias = grupos.find((grupo) => grupo.nome.toLowerCase() === alias.toLowerCase());
+    if (porAlias) return porAlias.nome;
+  }
   
   // Buscar por nome exato
   const porNome = grupos.find(g => 
@@ -154,6 +186,8 @@ const MAPEAMENTO_NORMALIZACAO: Record<string, GrupoCanonico> = {
   'Posterior Coxa': 'POSTERIOR_COXA',
   'Posteriores': 'POSTERIOR_COXA',
   'posteriores': 'POSTERIOR_COXA',
+  'Posteriores de coxa': 'POSTERIOR_COXA',
+  'posteriores de coxa': 'POSTERIOR_COXA',
   'Posterior': 'POSTERIOR_COXA',
   'posterior': 'POSTERIOR_COXA',
   'Isquiotibiais': 'POSTERIOR_COXA',
