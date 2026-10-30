@@ -62,8 +62,10 @@ export default function Checkout() {
   const cardFormRef = useRef<any>(null)
   const planoRef = useRef(planoSelecionado)
   const userIdRef = useRef(user?.id)
+  const assinanteRef = useRef(Boolean(user?.planoAtivo))
   planoRef.current = planoSelecionado
   userIdRef.current = user?.id
+  assinanteRef.current = Boolean(user?.planoAtivo)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -104,8 +106,15 @@ export default function Checkout() {
   }, [])
 
   const concluirAssinatura = async (transactionId?: string) => {
+    const plano = PLANOS.find((item) => item.id === planoRef.current)
+    const novoCliente = !assinanteRef.current
     await refreshUser()
-    dispararConversaoAssinatura(transactionId)
+    dispararConversaoAssinatura({
+      transactionId,
+      plano: planoRef.current,
+      value: plano?.preco,
+      newCustomer: novoCliente
+    })
     registrarEventoAnalytics('subscription_started', {
       plan: planoRef.current,
       source: 'checkout'

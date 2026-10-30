@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/auth.service'
+import { dispararConversaoAssinatura } from '../utils/ads-conversion'
 
 const IconeCheck = ({ className = 'w-12 h-12 text-success' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
@@ -74,20 +75,7 @@ export default function AssinaturaConfirmada() {
           if (userData.planoAtivo) {
             setPaymentValidated(true)
             
-            // Disparar evento de conversão do Google Ads quando plano estiver ativo
-            if (typeof window !== 'undefined' && (window as any).gtag) {
-              console.log('✅ Disparando evento de conversão do Google Ads na página de assinatura confirmada')
-              ;(window as any).gtag('event', 'conversion', {
-                'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
-                'value': 29.90,
-                'currency': 'BRL'
-              })
-              
-              // Disparar evento manual de assinatura paga
-              ;(window as any).gtag('event', 'manual_event_SUBSCRIBE_PAID', {
-                // Event parameters
-              })
-            }
+            dispararConversaoAssinatura({ plano: userData.plano })
             
             setLoading(false)
           } else if (attempt < maxRetries) {

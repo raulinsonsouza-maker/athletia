@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/auth.service'
+import { dispararConversaoAssinatura } from '../utils/ads-conversion'
 
 const IconeCheck = ({ className = 'w-12 h-12 text-success' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className}>
@@ -55,20 +56,8 @@ export default function PagamentoSucesso() {
             // Não bloquear o fluxo se refresh falhar, mas logar o erro
           }
 
-          // Disparar evento de conversão do Google Ads quando plano estiver ativo
-          if (userData.planoAtivo && typeof window !== 'undefined' && (window as any).gtag) {
-            console.log('✅ Disparando evento de conversão do Google Ads na página de pagamento sucesso')
-            ;(window as any).gtag('event', 'conversion', {
-              'send_to': 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
-              'value': 1.0,
-              'currency': 'BRL',
-              'transaction_id': ''
-            })
-            
-            // Disparar evento manual de assinatura paga
-            ;(window as any).gtag('event', 'manual_event_SUBSCRIBE_PAID', {
-              // Event parameters
-            })
+          if (userData.planoAtivo) {
+            dispararConversaoAssinatura({ plano: userData.plano })
           }
 
           // Se plano ainda não está ativo e ainda temos tentativas, tentar novamente
