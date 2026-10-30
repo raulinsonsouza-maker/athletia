@@ -10,6 +10,7 @@ import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
 // AvisoTrialAcabando removido - TrialProgressHeader já cobre isso
 import { usePushNotification } from '../hooks/usePushNotification'
 import { useAuth } from '../contexts/AuthContext'
+import { DesafioResumo, listarDesafios } from '../services/desafio.service'
 
 const InfoChip = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
   <div className="flex items-center gap-3 bg-gradient-to-br from-white/8 to-white/3 border border-white/10 rounded-2xl px-4 py-4 flex-1 min-w-[30%]">
@@ -31,6 +32,7 @@ export default function MeuPlano() {
   const { user, isTrialAtivo } = useAuth()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
+  const [desafios, setDesafios] = useState<DesafioResumo[]>([])
   const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
   
   // Obter primeiro nome do usuário
@@ -56,8 +58,17 @@ export default function MeuPlano() {
       }
     }
 
+    const carregarDesafios = async () => {
+      try {
+        setDesafios(await listarDesafios())
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
     carregarHome()
     carregarPlano()
+    carregarDesafios()
   }, [showToast])
 
   const insights = homeData?.insights
@@ -184,6 +195,27 @@ export default function MeuPlano() {
       >
         {/* AvisoTrialAcabando removido - TrialProgressHeader já cobre isso */}
         <AvisoExpiracaoPlano />
+        {desafios.length > 0 && (
+          <section className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.3em] text-white/50 font-medium">Desafios de 20 dias</p>
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+              {desafios.map((desafio) => (
+                <button
+                  key={desafio.slug}
+                  disabled={!desafio.disponivel}
+                  onClick={() => desafio.disponivel && navigate(`/desafios/${desafio.slug}`)}
+                  className="min-w-[220px] flex-1 text-left rounded-3xl border border-white/10 bg-gradient-to-br from-primary/20 via-white/5 to-white/5 p-5 space-y-3 disabled:opacity-70"
+                >
+                  <p className="text-xs uppercase tracking-[0.25em] text-primary">
+                    {desafio.disponivel ? `${desafio.diasConcluidos}/${desafio.totalDias} dias` : 'Em breve'}
+                  </p>
+                  <h3 className="text-lg font-bold leading-tight">{desafio.titulo.replace('Desafio ', '')}</h3>
+                  <p className="text-sm text-white/70 line-clamp-2">{desafio.descricao}</p>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         <section className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl">
           {/* Efeito de brilho sutil */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />

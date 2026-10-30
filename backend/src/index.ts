@@ -14,6 +14,7 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes';
 import perfilRoutes from './routes/perfil.routes';
 import treinoRoutes from './routes/treino.routes';
+import desafioRoutes from './routes/desafio.routes';
 import pesoRoutes from './routes/peso.routes';
 import aiRoutes from './routes/ai.routes';
 import adminRoutes from './routes/admin.routes';
@@ -145,7 +146,7 @@ app.use(helmet({
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
-      frameSrc: ["https://www.googletagmanager.com"],
+      frameSrc: ["https://www.googletagmanager.com", "https://www.youtube-nocookie.com", "https://www.youtube.com"],
     },
   },
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -432,6 +433,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/perfil', perfilRoutes);
 app.use('/api/treino', treinoRoutes);
+app.use('/api/desafios', desafioRoutes);
 app.use('/api/peso', pesoRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/admin', adminRoutes);

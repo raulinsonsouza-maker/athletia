@@ -61,6 +61,7 @@ model User {
   chatSessions                   ChatSession[]
   assignedChatSessions           ChatSession[] @relation("AssignedAdmin")
   pushSubscriptions              PushSubscription[]
+  desafiosProgresso              DesafioProgresso[]
 
   @@map("users")
 }
@@ -135,6 +136,21 @@ model Treino {
   @@index([userId, data, concluido])
   @@index([criadoPor])
   @@map("treinos")
+}
+
+model DesafioProgresso {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  desafioSlug String   @map("desafio_slug")
+  dia         Int
+  concluidoEm DateTime @map("concluido_em")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, desafioSlug, dia])
+  @@index([userId, desafioSlug])
+  @@map("desafio_progresso")
 }
 
 model Exercicio {

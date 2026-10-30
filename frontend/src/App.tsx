@@ -34,6 +34,7 @@ const LandingAB = lazy(() => import('./pages/LandingAB'))
 const Treinos = lazy(() => import('./pages/Treinos'))
 const TreinoAtual = lazy(() => import('./pages/TreinoAtual'))
 const MeuPlano = lazy(() => import('./pages/MeuPlano'))
+const Desafio = lazy(() => import('./pages/Desafio'))
 const Historico = lazy(() => import('./pages/Historico'))
 const Perfil = lazy(() => import('./pages/Perfil'))
 const TreinoRapidoSelecaoGrupos = lazy(() => import('./pages/TreinoRapidoSelecaoGrupos'))
@@ -242,6 +243,16 @@ function App() {
               <ProtectedRoute>
                 <Suspense fallback={<LoadingFallback />}>
                   <MeuPlano />
+                </Suspense>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/desafios/:slug"
+            element={
+              <ProtectedRoute>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Desafio />
                 </Suspense>
               </ProtectedRoute>
             }
