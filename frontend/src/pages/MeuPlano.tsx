@@ -10,7 +10,6 @@ import AvisoExpiracaoPlano from '../components/AvisoExpiracaoPlano'
 // AvisoTrialAcabando removido - TrialProgressHeader já cobre isso
 import { usePushNotification } from '../hooks/usePushNotification'
 import { useAuth } from '../contexts/AuthContext'
-import api from '../services/auth.service'
 
 const InfoChip = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
   <div className="flex items-center gap-3 bg-gradient-to-br from-white/8 to-white/3 border border-white/10 rounded-2xl px-4 py-4 flex-1 min-w-[30%]">
@@ -29,16 +28,7 @@ const InfoChip = ({ label, value, icon }: { label: string; value: string; icon?:
 export default function MeuPlano() {
   const navigate = useNavigate()
   const { showToast, ToastContainer } = useToast()
-  const { user, isTrialAtivo, refreshUser } = useAuth()
-  const [assinatura, setAssinatura] = useState<{
-    plano?: string
-    planoAtivo?: boolean
-    dataExpiracao?: string | null
-    meioPagamento?: string | null
-    cancelamentoAgendado?: boolean
-  } | null>(null)
-  const [cancelando, setCancelando] = useState(false)
-  const [confirmarCancelamento, setConfirmarCancelamento] = useState(false)
+  const { user, isTrialAtivo } = useAuth()
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
   const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
@@ -66,35 +56,9 @@ export default function MeuPlano() {
       }
     }
 
-    const carregarAssinatura = async () => {
-      try {
-        const response = await api.get('/payment/status')
-        setAssinatura(response.data?.user || null)
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
     carregarHome()
     carregarPlano()
-    carregarAssinatura()
   }, [showToast])
-
-  const cancelarAssinatura = async () => {
-    setCancelando(true)
-    try {
-      await api.post('/payment/cancel')
-      await refreshUser()
-      const response = await api.get('/payment/status')
-      setAssinatura(response.data?.user || null)
-      setConfirmarCancelamento(false)
-      showToast('Renovação cancelada. O acesso segue até o fim do período pago.', 'success')
-    } catch (error: any) {
-      showToast(error.response?.data?.error || 'Não foi possível cancelar a assinatura.', 'error')
-    } finally {
-      setCancelando(false)
-    }
-  }
 
   const insights = homeData?.insights
   const semanaStats = (homeData?.semana || []).reduce(
@@ -220,50 +184,6 @@ export default function MeuPlano() {
       >
         {/* AvisoTrialAcabando removido - TrialProgressHeader já cobre isso */}
         <AvisoExpiracaoPlano />
-        {assinatura?.planoAtivo && (
-          <section className="bg-white/5 border border-white/10 rounded-3xl p-5 space-y-3">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/50">Assinatura</p>
-            <p className="text-lg font-bold text-white">
-              {assinatura.plano || 'Plano ativo'}
-              {assinatura.meioPagamento === 'cartao' ? ' · cartão' : assinatura.meioPagamento === 'pix' ? ' · Pix' : ''}
-            </p>
-            {assinatura.dataExpiracao && (
-              <p className="text-sm text-white/70">
-                Acesso até {new Date(assinatura.dataExpiracao).toLocaleDateString('pt-BR')}
-                {assinatura.cancelamentoAgendado ? '. A renovação já foi cancelada.' : '.'}
-              </p>
-            )}
-            {!assinatura.cancelamentoAgendado && (
-              confirmarCancelamento ? (
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => void cancelarAssinatura()}
-                    disabled={cancelando}
-                    className="flex-1 rounded-2xl bg-error/80 text-white font-bold py-3 disabled:opacity-50"
-                  >
-                    {cancelando ? 'Cancelando...' : 'Confirmar cancelamento'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmarCancelamento(false)}
-                    className="flex-1 rounded-2xl border border-white/20 text-white py-3"
-                  >
-                    Voltar
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setConfirmarCancelamento(true)}
-                  className="text-sm text-white/70 underline"
-                >
-                  Cancelar renovação
-                </button>
-              )
-            )}
-          </section>
-        )}
         <section className="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/8 to-white/3 backdrop-blur-xl">
           {/* Efeito de brilho sutil */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
