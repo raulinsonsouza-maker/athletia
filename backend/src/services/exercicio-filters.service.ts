@@ -41,6 +41,28 @@ export function somentePesoCorporal(equipamentos?: string[]): boolean {
   return !!equipamentos?.length && equipamentos.every((item) => ehPesoCorporal(item));
 }
 
+function nomeExigeAcademia(nome: string): boolean {
+  const texto = normalizarTexto(nome || '');
+  if (!texto) return false;
+  if (
+    texto.includes('peso corporal')
+    || texto.includes('sem equipamento')
+    || texto.includes('no chao')
+    || texto.includes('na parede')
+    || texto.includes('no solo')
+  ) {
+    return false;
+  }
+  return /cabo|polia|maquina|halter|barra|smith|leg press|peck|pulley|banco|anilha|aparelho|crossover|scott|leg curl|remada|supino|rosca|puxada|crucifixo|desenvolvimento|mergulho|cadeira|extensora|flexora/.test(texto);
+}
+
+export function temEquipamentoDeAcademia(equipamentos?: string[]): boolean {
+  return !!equipamentos?.some((item) => {
+    const texto = normalizarTexto(item);
+    return !ehPesoCorporal(texto) && !texto.includes('elast');
+  });
+}
+
 function equipamentoAtendido(necessario: string, disponiveis: string[]): boolean {
   const pedido = normalizarTexto(necessario);
   if (ehPesoCorporal(pedido)) return true;
@@ -50,7 +72,7 @@ function equipamentoAtendido(necessario: string, disponiveis: string[]): boolean
     return pedido.includes(tem) || tem.includes(pedido)
       || (tem.includes('halter') && pedido.includes('halter'))
       || (tem.includes('maquina') && (pedido.includes('maquina') || pedido.includes('aparelho')))
-      || (tem.includes('elast') && pedido.includes('elast'))
+      || (tem.includes('elast') && (pedido.includes('elast') || pedido.includes('faixa')))
       || (tem.includes('kettle') && pedido.includes('kettle'))
       || (tem.includes('anilha') && pedido.includes('anilha'))
       || (tem.includes('cabo') && (pedido.includes('cabo') || pedido.includes('polia')))
@@ -61,11 +83,15 @@ function equipamentoAtendido(necessario: string, disponiveis: string[]): boolean
 export function exercicioCompativelComEquipamentos(exercicio: any, disponiveis?: string[]): boolean {
   if (!disponiveis || disponiveis.length === 0) return true;
   const necessarios: string[] = exercicio.equipamentoNecessario || [];
-  const corporal = exercicio.semEquipamento === true
+  const corporal = (
+    exercicio.semEquipamento === true
     || necessarios.length === 0
-    || necessarios.every((item) => ehPesoCorporal(item));
+    || necessarios.every((item) => ehPesoCorporal(item))
+  ) && !nomeExigeAcademia(exercicio.nome || '');
   if (corporal) return true;
-  if (somentePesoCorporal(disponiveis)) return false;
+  if (!temEquipamentoDeAcademia(disponiveis)) {
+    return necessarios.length > 0 && necessarios.every((item) => equipamentoAtendido(item, disponiveis));
+  }
   return necessarios.every((item) => equipamentoAtendido(item, disponiveis));
 }
 

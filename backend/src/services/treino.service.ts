@@ -188,8 +188,10 @@ export async function buscarOuCriarExercicioAlongamento(): Promise<any> {
  * Seleciona exercício aeróbico variado baseado no dia
  */
 export async function selecionarExercicioAerobicoDoDia(data: Date, equipamentos?: string[]): Promise<any> {
-  const { somentePesoCorporal } = await import('./exercicio-filters.service');
-  const lista = somentePesoCorporal(equipamentos) ? EXERCICIOS_AEROBICOS_CORPO : EXERCICIOS_AEROBICOS;
+  const { temEquipamentoDeAcademia } = await import('./exercicio-filters.service');
+  const lista = equipamentos?.length && !temEquipamentoDeAcademia(equipamentos)
+    ? EXERCICIOS_AEROBICOS_CORPO
+    : EXERCICIOS_AEROBICOS;
   // Usar o dia do ano para garantir rotação consistente
   const diaDoAno = Math.floor((data.getTime() - new Date(data.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
   const indice = diaDoAno % lista.length;
