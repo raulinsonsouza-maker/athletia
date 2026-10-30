@@ -40,6 +40,7 @@ export default function MeuPlano() {
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
   const [desafios, setDesafios] = useState<DesafioResumo[]>([])
   const [bannerAtivo, setBannerAtivo] = useState(0)
+  const [bannerPausado, setBannerPausado] = useState(false)
   const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
   
   // Obter primeiro nome do usuário
@@ -79,12 +80,12 @@ export default function MeuPlano() {
   }, [showToast])
 
   useEffect(() => {
-    if (desafios.length < 2) return
+    if (bannerPausado || desafios.length < 2) return
     const timer = window.setInterval(() => {
       setBannerAtivo((atual) => (atual + 1) % desafios.length)
     }, 4500)
     return () => window.clearInterval(timer)
-  }, [desafios.length])
+  }, [bannerPausado, desafios.length])
 
   const insights = homeData?.insights
   const semanaStats = (homeData?.semana || []).reduce(
@@ -211,7 +212,11 @@ export default function MeuPlano() {
         {/* AvisoTrialAcabando removido - TrialProgressHeader já cobre isso */}
         <AvisoExpiracaoPlano />
         {desafios.length > 0 && (
-          <section className="relative h-56 overflow-hidden rounded-3xl border border-white/10 sm:h-64">
+          <section
+            className="relative h-56 overflow-hidden rounded-3xl border border-white/10 sm:h-64"
+            onMouseEnter={() => setBannerPausado(true)}
+            onMouseLeave={() => setBannerPausado(false)}
+          >
             {desafios.map((desafio, indice) => (
               <button
                 key={desafio.slug}
@@ -219,7 +224,7 @@ export default function MeuPlano() {
                 disabled={!desafio.disponivel}
                 onClick={() => desafio.disponivel && navigate(`/desafios/${desafio.slug}`)}
                 className={`absolute inset-0 text-left transition-opacity duration-700 ${
-                  indice === bannerAtivo ? 'z-10 opacity-100' : 'z-0 opacity-0'
+                  indice === bannerAtivo ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0'
                 }`}
                 aria-hidden={indice !== bannerAtivo}
               >
