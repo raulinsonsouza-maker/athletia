@@ -40,6 +40,7 @@ export function dispararConversaoAssinatura(transactionIdOrOptions?: string | Co
   }
 
   const gtag = (window as any).gtag
+  gtag('event', 'conversion_event_purchase', purchase)
   gtag('event', 'purchase', purchase)
   gtag('event', 'conversion', {
     send_to: 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
