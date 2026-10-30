@@ -12,6 +12,12 @@ import { usePushNotification } from '../hooks/usePushNotification'
 import { useAuth } from '../contexts/AuthContext'
 import { DesafioResumo, listarDesafios } from '../services/desafio.service'
 
+const IMAGENS_DESAFIO: Record<string, string> = {
+  'queima-de-gordura': '/images/desafios/queima-de-gordura.jpg',
+  'condicionamento': '/images/desafios/condicionamento.jpg',
+  'forca-e-definicao': '/images/desafios/forca-e-definicao.jpg'
+}
+
 const InfoChip = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
   <div className="flex items-center gap-3 bg-gradient-to-br from-white/8 to-white/3 border border-white/10 rounded-2xl px-4 py-4 flex-1 min-w-[30%]">
     {icon && (
@@ -33,6 +39,7 @@ export default function MeuPlano() {
   const [homeData, setHomeData] = useState<TreinoHomeResponse | null>(null)
   const [planoAtual, setPlanoAtual] = useState<PlanoAtualResponse | null>(null)
   const [desafios, setDesafios] = useState<DesafioResumo[]>([])
+  const [bannerAtivo, setBannerAtivo] = useState(0)
   const { isSupported, isSubscribed, isLoading, solicitarPermissao, removerSubscription } = usePushNotification()
   
   // Obter primeiro nome do usuário
@@ -70,6 +77,14 @@ export default function MeuPlano() {
     carregarPlano()
     carregarDesafios()
   }, [showToast])
+
+  useEffect(() => {
+    if (desafios.length < 2) return
+    const timer = window.setInterval(() => {
+      setBannerAtivo((atual) => (atual + 1) % desafios.length)
+    }, 4500)
+    return () => window.clearInterval(timer)
+  }, [desafios.length])
 
   const insights = homeData?.insights
   const semanaStats = (homeData?.semana || []).reduce(
@@ -196,22 +211,46 @@ export default function MeuPlano() {
         {/* AvisoTrialAcabando removido - TrialProgressHeader já cobre isso */}
         <AvisoExpiracaoPlano />
         {desafios.length > 0 && (
-          <section className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/50 font-medium">Desafios de 20 dias</p>
-            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
-              {desafios.map((desafio) => (
-                <button
-                  key={desafio.slug}
-                  disabled={!desafio.disponivel}
-                  onClick={() => desafio.disponivel && navigate(`/desafios/${desafio.slug}`)}
-                  className="min-w-[220px] flex-1 text-left rounded-3xl border border-white/10 bg-gradient-to-br from-primary/20 via-white/5 to-white/5 p-5 space-y-3 disabled:opacity-70"
-                >
-                  <p className="text-xs uppercase tracking-[0.25em] text-primary">
+          <section className="relative h-56 overflow-hidden rounded-3xl border border-white/10 sm:h-64">
+            {desafios.map((desafio, indice) => (
+              <button
+                key={desafio.slug}
+                type="button"
+                disabled={!desafio.disponivel}
+                onClick={() => desafio.disponivel && navigate(`/desafios/${desafio.slug}`)}
+                className={`absolute inset-0 text-left transition-opacity duration-700 ${
+                  indice === bannerAtivo ? 'z-10 opacity-100' : 'z-0 opacity-0'
+                }`}
+                aria-hidden={indice !== bannerAtivo}
+              >
+                <img
+                  src={IMAGENS_DESAFIO[desafio.slug]}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/10" />
+                <div className="absolute inset-x-0 bottom-0 p-5 pr-24">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-primary">Desafio de 20 dias</p>
+                  <h3 className="mt-1 text-2xl font-bold leading-tight text-white">
+                    {desafio.titulo.replace('Desafio ', '')}
+                  </h3>
+                  <p className="mt-1 text-sm text-white/80">
                     {desafio.disponivel ? `${desafio.diasConcluidos}/${desafio.totalDias} dias` : 'Em breve'}
                   </p>
-                  <h3 className="text-lg font-bold leading-tight">{desafio.titulo.replace('Desafio ', '')}</h3>
-                  <p className="text-sm text-white/70 line-clamp-2">{desafio.descricao}</p>
-                </button>
+                </div>
+              </button>
+            ))}
+            <div className="absolute bottom-5 right-4 z-20 flex items-center gap-1.5">
+              {desafios.map((desafio, indice) => (
+                <button
+                  key={desafio.slug}
+                  type="button"
+                  aria-label={desafio.titulo}
+                  onClick={() => setBannerAtivo(indice)}
+                  className={`h-1.5 rounded-full transition-all ${
+                    indice === bannerAtivo ? 'w-6 bg-primary' : 'w-1.5 bg-white/60'
+                  }`}
+                />
               ))}
             </div>
           </section>
