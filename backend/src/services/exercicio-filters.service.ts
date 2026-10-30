@@ -22,6 +22,7 @@ export interface FiltrosExercicio {
   historico?: Set<string>;
   problemasAnteriores?: string[];
   preferencias?: string[];
+  evitarAltoImpacto?: boolean;
 }
 
 function normalizarTexto(valor: string): string {
@@ -169,11 +170,65 @@ export function filtrarPorLocalTreino(exercicios: any[], localTreino?: string | 
   }
 
   // Customizado: sem filtro (usuário escolhe)
-  if (localLower.includes('customizado')) {
+  if (localLower.includes('customizado') || localLower.includes('misto')) {
     return exercicios;
   }
 
   return exercicios;
+}
+
+function equipamentoBasico(exercicio: any): boolean {
+  const itens: string[] = exercicio.equipamentoNecessario || [];
+  if (exercicio.semEquipamento === true || itens.length === 0) return true;
+  const texto = normalizarTexto(itens.join(' '));
+  if (/maquina|cabo|polia|smith|kettle|elastico|faixa/.test(texto)) return false;
+  return itens.every((item) => {
+    const nome = normalizarTexto(item);
+    return ehPesoCorporal(nome) || nome.includes('halter') || nome.includes('barra') || nome.includes('anilha');
+  });
+}
+
+export function filtrarMistoBasico(exercicios: any[]): any[] {
+  return exercicios.filter((exercicio) => equipamentoBasico(exercicio));
+}
+
+export function exercicioCabeNoLocal(exercicio: any, localTreino?: string | null, equipamentos?: string[]): boolean {
+  const local = (localTreino || '').toLowerCase();
+  const temLista = !!equipamentos?.length;
+  if (!local || local.includes('academia') || local.includes('comercial')) {
+    return exercicioCompativelComEquipamentos(exercicio, equipamentos);
+  }
+  if (local.includes('misto')) {
+    return temLista ? exercicioCompativelComEquipamentos(exercicio, equipamentos) : equipamentoBasico(exercicio);
+  }
+  if (local.includes('casa') || local.includes('domic')) {
+    if (temLista) return exercicioCompativelComEquipamentos(exercicio, equipamentos);
+    return exercicio.semEquipamento === true || (exercicio.equipamentoNecessario || []).length === 0;
+  }
+  return true;
+}
+
+const PADROES_LESAO: Record<string, RegExp> = {
+  joelho: /agachamento|afundo|leg press|hack|salto|passada|bulgaro/,
+  ombro: /desenvolvimento|elevacao lateral|elevacao frontal|supino|remada vertical|mergulho/,
+  coluna: /levantamento terra|stiff|bom dia|good morning|remada curvada|hiperextens|agachamento livre/,
+  pulso: /rosca|flexao|barra fixa/,
+  tornozelo: /panturrilha|salto|polichinelo|corrida|montanhista|escada|afundo/,
+};
+
+export function exercicioIncompativelComLesao(nome: string, lesoes?: string[]): boolean {
+  if (!nome || !lesoes?.length) return false;
+  const texto = normalizarTexto(nome);
+  return lesoes.some((lesao) => {
+    const chave = normalizarTexto(lesao);
+    if (!chave || chave === 'nenhuma' || chave === 'outras') return false;
+    const regra = PADROES_LESAO[chave] || Object.entries(PADROES_LESAO).find(([nomeLesao]) => chave.includes(nomeLesao))?.[1];
+    return regra ? regra.test(texto) : false;
+  });
+}
+
+export function ehAltoImpacto(nome: string): boolean {
+  return /burpee|polichinelo|salto|jump|montanhista|pliometr/.test(normalizarTexto(nome || ''));
 }
 
 /**
@@ -209,7 +264,8 @@ export function filtrarPorHistorico(
 }
 
 /**
- * Filtra exercícios por problemas anteriores
+ * Frases do onboarding (treino duro, falta de tempo, motivação) não entram
+ * nesta lista. Elas ajustam RPE, nível e duração.
  */
 export function filtrarPorProblemasAnteriores(
   exercicios: any[],
@@ -284,7 +340,13 @@ export function aplicarFiltrosExercicios(
     filtrados = filtrados.filter(ex => !filtros.exerciciosEvitar!.has(ex.id));
   }
   
-  if (filtros.localTreino) {
+  const local = (filtros.localTreino || '').toLowerCase();
+  const temLista = (filtros.equipamentosDisponiveis || []).length > 0;
+  if (local.includes('misto') && !temLista) {
+    filtrados = filtrarMistoBasico(filtrados);
+  } else if (local.includes('casa') && temLista) {
+    // A lista do perfil decide o equipamento. Casa sozinha continua só peso corporal.
+  } else if (filtros.localTreino) {
     filtrados = filtrarPorLocalTreino(filtrados, filtros.localTreino);
   }
 
@@ -296,6 +358,14 @@ export function aplicarFiltrosExercicios(
     filtrados = filtrarPorDificuldade(filtrados, filtros.dificuldade);
   }
   
+  if (filtros.lesoes && filtros.lesoes.length > 0) {
+    filtrados = filtrados.filter((exercicio) => !exercicioIncompativelComLesao(exercicio.nome || '', filtros.lesoes));
+  }
+
+  if (filtros.evitarAltoImpacto) {
+    filtrados = filtrados.filter((exercicio) => !ehAltoImpacto(exercicio.nome || ''));
+  }
+
   if (filtros.problemasAnteriores) {
     filtrados = filtrarPorProblemasAnteriores(filtrados, filtros.problemasAnteriores);
   }

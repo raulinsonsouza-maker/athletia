@@ -8,6 +8,8 @@
 import { prisma } from '../lib/prisma';
 import { PerfilCompleto } from './treino-core.service';
 import { distribuirDiasSemana } from './split-generator.service';
+import { exercicioCabeNoLocal, exercicioIncompativelComLesao } from './exercicio-filters.service';
+import { experienciaEfetiva } from './onboarding-adapter.service';
 
 // ============================================================================
 // TIPOS DE VALIDAÇÃO
@@ -370,26 +372,18 @@ export async function validarDadosOnboarding(
     for (const exercicioTreino of treino.exercicios) {
       const exercicio = exercicioTreino.exercicio;
 
-      // Validar local de treino
-      if (perfil.localTreino && perfil.localTreino !== 'Academia') {
-        const equipamentos = exercicio.equipamentoNecessario || [];
-        if (perfil.localTreino === 'Casa') {
-          const equipamentosPermitidos = ['Halteres', 'Peso Corporal', 'Barra', 'Banco'];
-          const temEquipamentoIncompativel = equipamentos.some(eq => 
-            !equipamentosPermitidos.includes(eq)
-          );
-          if (temEquipamentoIncompativel && !exercicio.semEquipamento) {
-            todosExerciciosCompativeis = false;
-            exerciciosIncompativeis.push(`${exercicio.nome} (${equipamentos.join(', ')})`);
-          }
+      if (perfil.localTreino && !['Cardio', 'Flexibilidade', 'Alongamento'].includes(exercicio.grupoMuscularPrincipal || '')) {
+        if (!exercicioCabeNoLocal(exercicio, perfil.localTreino, perfil.equipamentos)) {
+          todosExerciciosCompativeis = false;
+          exerciciosIncompativeis.push(`${exercicio.nome} (${(exercicio.equipamentoNecessario || []).join(', ')})`);
         }
       }
 
-      // Validar nível de dificuldade (experiência)
-      if (perfil.experiencia && exercicio.nivelDificuldade) {
+      const nivelEsperado = experienciaEfetiva(perfil) || perfil.experiencia;
+      if (nivelEsperado && exercicio.nivelDificuldade && exercicio.grupoMuscularPrincipal !== 'Cardio') {
         const niveisPermitidos = 
-          perfil.experiencia === 'Iniciante' ? ['Iniciante'] :
-          perfil.experiencia === 'Intermediário' ? ['Iniciante', 'Intermediário'] :
+          nivelEsperado === 'Iniciante' ? ['Iniciante'] :
+          nivelEsperado === 'Intermediário' ? ['Iniciante', 'Intermediário'] :
           ['Iniciante', 'Intermediário', 'Avançado'];
         
         if (!niveisPermitidos.includes(exercicio.nivelDificuldade)) {
@@ -419,17 +413,14 @@ export async function validarDadosOnboarding(
     );
   }
 
-  // Validar lesões (grupos musculares afetados)
+  // Validar lesões pelo movimento, não pelo grupo inteiro
   if (perfil.lesoes && perfil.lesoes.length > 0) {
-    const { mapearLesoesParaGrupos } = await import('./onboarding-adapter.service');
-    const gruposEvitar = mapearLesoesParaGrupos(perfil.lesoes);
-    
     const gruposComLesoes: string[] = [];
     for (const treino of treinos) {
       for (const exercicioTreino of treino.exercicios) {
-        const grupo = exercicioTreino.exercicio?.grupoMuscularPrincipal;
-        if (grupo && gruposEvitar.includes(grupo)) {
-          gruposComLesoes.push(`${treino.nome}: ${exercicioTreino.exercicio.nome} (${grupo})`);
+        const nome = exercicioTreino.exercicio?.nome;
+        if (nome && exercicioIncompativelComLesao(nome, perfil.lesoes)) {
+          gruposComLesoes.push(`${treino.nome}: ${nome}`);
         }
       }
     }
@@ -529,13 +520,10 @@ export async function validarTreinoIndividual(
   // Validar lesões
   const gruposComLesoes: string[] = [];
   if (perfil.lesoes && perfil.lesoes.length > 0) {
-    const { mapearLesoesParaGrupos } = await import('./onboarding-adapter.service');
-    const gruposEvitar = mapearLesoesParaGrupos(perfil.lesoes);
-    
     for (const exercicioTreino of treino.exercicios) {
-      const grupo = exercicioTreino.exercicio?.grupoMuscularPrincipal;
-      if (grupo && gruposEvitar.includes(grupo)) {
-        gruposComLesoes.push(`${exercicioTreino.exercicio.nome} (${grupo})`);
+      const nome = exercicioTreino.exercicio?.nome;
+      if (nome && exercicioIncompativelComLesao(nome, perfil.lesoes)) {
+        gruposComLesoes.push(nome);
       }
     }
 
@@ -552,27 +540,19 @@ export async function validarTreinoIndividual(
   for (const exercicioTreino of treino.exercicios) {
     const exercicio = exercicioTreino.exercicio;
 
-    // Local de treino
-    if (perfil.localTreino && perfil.localTreino !== 'Academia') {
-      const equipamentos = exercicio.equipamentoNecessario || [];
-      if (perfil.localTreino === 'Casa' && !exercicio.semEquipamento) {
-        const equipamentosPermitidos = ['Halteres', 'Peso Corporal', 'Barra', 'Banco'];
-        const temEquipamentoIncompativel = equipamentos.some(eq => 
-          !equipamentosPermitidos.includes(eq)
+    if (perfil.localTreino && exercicio.grupoMuscularPrincipal !== 'Cardio') {
+      if (!exercicioCabeNoLocal(exercicio, perfil.localTreino, perfil.equipamentos)) {
+        exerciciosIncompativeis.push(
+          `${exercicio.nome} não cabe no local ${perfil.localTreino}`
         );
-        if (temEquipamentoIncompativel) {
-          exerciciosIncompativeis.push(
-            `${exercicio.nome} requer equipamentos incompatíveis com treino em casa: ${equipamentos.join(', ')}`
-          );
-        }
       }
     }
 
-    // Experiência
-    if (perfil.experiencia && exercicio.nivelDificuldade) {
+    const nivelEsperado = experienciaEfetiva(perfil) || perfil.experiencia;
+    if (nivelEsperado && exercicio.nivelDificuldade && exercicio.grupoMuscularPrincipal !== 'Cardio') {
       const niveisPermitidos = 
-        perfil.experiencia === 'Iniciante' ? ['Iniciante'] :
-        perfil.experiencia === 'Intermediário' ? ['Iniciante', 'Intermediário'] :
+        nivelEsperado === 'Iniciante' ? ['Iniciante'] :
+        nivelEsperado === 'Intermediário' ? ['Iniciante', 'Intermediário'] :
         ['Iniciante', 'Intermediário', 'Avançado'];
       
       if (!niveisPermitidos.includes(exercicio.nivelDificuldade)) {

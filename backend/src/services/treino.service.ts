@@ -187,15 +187,26 @@ export async function buscarOuCriarExercicioAlongamento(): Promise<any> {
 /**
  * Seleciona exercício aeróbico variado baseado no dia
  */
-export async function selecionarExercicioAerobicoDoDia(data: Date, equipamentos?: string[]): Promise<any> {
-  const { temEquipamentoDeAcademia } = await import('./exercicio-filters.service');
-  const lista = equipamentos?.length && !temEquipamentoDeAcademia(equipamentos)
-    ? EXERCICIOS_AEROBICOS_CORPO
-    : EXERCICIOS_AEROBICOS;
+export async function selecionarExercicioAerobicoDoDia(
+  data: Date,
+  equipamentos?: string[],
+  baixoImpacto?: boolean,
+  lesoes?: string[]
+): Promise<any> {
+  const { temEquipamentoDeAcademia, exercicioIncompativelComLesao } = await import('./exercicio-filters.service');
+  const pesoCorporal = !!equipamentos?.length && !temEquipamentoDeAcademia(equipamentos);
+  const listaBase = pesoCorporal ? EXERCICIOS_AEROBICOS_CORPO : EXERCICIOS_AEROBICOS;
+  const listaLeve = baixoImpacto
+    ? listaBase.filter((nome) => !/polichinelo|montanhista|escada|burpee|salto/i.test(nome))
+    : listaBase;
+  const lista = (listaLeve.length > 0 ? listaLeve : listaBase).filter(
+    (nome) => !exercicioIncompativelComLesao(nome, lesoes)
+  );
+  const usada = lista.length > 0 ? lista : (listaLeve.length > 0 ? listaLeve : listaBase);
   // Usar o dia do ano para garantir rotação consistente
   const diaDoAno = Math.floor((data.getTime() - new Date(data.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const indice = diaDoAno % lista.length;
-  const nomeExercicio = lista[indice];
+  const indice = diaDoAno % usada.length;
+  const nomeExercicio = usada[indice];
   
   logger.debug(`🏃 Selecionando exercício aeróbico para ${data.toLocaleDateString('pt-BR')}: ${nomeExercicio}`, 'treino.service');
   

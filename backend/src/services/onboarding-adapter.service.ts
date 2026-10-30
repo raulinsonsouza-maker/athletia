@@ -1,61 +1,44 @@
 /**
  * ONBOARDING ADAPTER SERVICE
- * 
- * Adapta dados do onboarding para opções de treino
- * Ajusta objetivo, tempo e parâmetros baseado em perfil completo
+ *
+ * Repassa o que a pessoa escolheu no onboarding.
+ * Objetivo e tempo não são reescritos. Lesão, problemas e objetivos
+ * adicionais ajustam intensidade e a escolha do movimento.
  */
 
 import { PerfilCompleto, TreinoOptions } from './treino-core.service';
 
-// ============================================================================
-// AJUSTES DE OBJETIVO
-// ============================================================================
+const NIVEIS = ['Iniciante', 'Intermediário', 'Avançado'] as const;
 
-/**
- * Ajusta objetivo baseado em composição corporal
- */
-function ajustarObjetivoPorGordura(
-  objetivo: string,
-  percentualGordura?: number | null,
-  sexo?: string | null
-): string {
-  if (!percentualGordura) return objetivo;
-  
-  const limites = sexo === 'Feminino' 
-    ? { alto: 30, baixo: 18 }
-    : { alto: 20, baixo: 10 };
-  
-  if (percentualGordura > limites.alto && objetivo !== 'Emagrecimento') {
-    return 'Emagrecimento';
-  }
-  
-  if (percentualGordura < limites.baixo && objetivo === 'Emagrecimento') {
-    return 'Hipertrofia';
-  }
-  
-  return objetivo;
+function normalizar(valor: string): string {
+  return valor.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
-/**
- * Ajusta tempo baseado em tipo de corpo e objetivo
- */
-function ajustarTempoPorTipoCorpo(
-  tempoDisponivel?: number | null,
-  tipoCorpo?: string | null,
-  objetivo?: string | null
-): number {
-  if (!tempoDisponivel) return 60;
-  
-  if (tipoCorpo) {
-    const tipoLower = tipoCorpo.toLowerCase();
-    if (tipoLower.includes('ectomorfo') || tipoLower.includes('magro')) {
-      return Math.min(90, tempoDisponivel + 10);
-    } else if (tipoLower.includes('endomorfo') || tipoLower.includes('sobrepeso')) {
-      return Math.max(45, tempoDisponivel);
-    }
-  }
-  
-  return tempoDisponivel;
+export function experienciaEfetiva(perfil?: Pick<PerfilCompleto, 'experiencia' | 'problemasAnteriores'> | null): string | undefined {
+  const atual = perfil?.experiencia || undefined;
+  if (!atual) return undefined;
+  const duros = (perfil?.problemasAnteriores || []).some((item) => normalizar(item).includes('muito duro'));
+  if (!duros) return atual;
+  const indice = NIVEIS.indexOf(atual as typeof NIVEIS[number]);
+  if (indice <= 0) return 'Iniciante';
+  return NIVEIS[indice - 1];
+}
+
+export function ajusteRpe(perfil?: Pick<PerfilCompleto, 'problemasAnteriores' | 'objetivosAdicionais'> | null): { delta: number; teto?: number } {
+  const problemas = perfil?.problemasAnteriores || [];
+  const objetivos = perfil?.objetivosAdicionais || [];
+  const delta = problemas.some((item) => normalizar(item).includes('muito duro')) ? -1 : 0;
+  const teto = objetivos.some((item) => /sono|estresse/.test(normalizar(item))) ? 7 : undefined;
+  return { delta, teto };
+}
+
+export function cardioCurto(perfil?: Pick<PerfilCompleto, 'problemasAnteriores'> | null): boolean {
+  return (perfil?.problemasAnteriores || []).some((item) => normalizar(item).includes('falta de tempo'));
+}
+
+export function evitarAltoImpacto(perfil?: Pick<PerfilCompleto, 'tipoCorpo'> | null): boolean {
+  const tipo = normalizar(perfil?.tipoCorpo || '');
+  return tipo.includes('obesidade') || tipo.includes('acima do peso') || tipo.includes('endomorfo');
 }
 
 // ============================================================================
@@ -110,36 +93,11 @@ export function mapearLesoesParaGrupos(lesoes: string[]): string[] {
 }
 
 /**
- * Filtra grupos musculares baseado em lesões do usuário
+ * A lesão não apaga o grupo do dia. O movimento que sobrecarrega a região
+ * sai na hora de escolher o exercício.
  */
-export function filtrarGruposPorLesoes(grupos: string[], lesoes: string[]): string[] {
-  if (!lesoes || lesoes.length === 0) {
-    return grupos;
-  }
-  
-  const gruposEvitar = mapearLesoesParaGrupos(lesoes);
-  
-  if (gruposEvitar.length === 0) {
-    return grupos;
-  }
-  
-  const gruposFiltrados = grupos.filter(grupo => !gruposEvitar.includes(grupo));
-  
-  // Se todos os grupos foram filtrados, garantir pelo menos 2 grupos
-  if (gruposFiltrados.length === 0) {
-    console.log(`[WARN] Todos os grupos foram filtrados por lesões. Selecionando grupos menos críticos.`);
-    const gruposPrioritarios = grupos.filter(grupo => !gruposEvitar.includes(grupo));
-    return gruposPrioritarios.length >= 2 
-      ? gruposPrioritarios.slice(0, 2) 
-      : grupos.slice(0, Math.min(2, grupos.length));
-  }
-  
-  if (gruposFiltrados.length < grupos.length) {
-    console.log(`[INFO] Grupos filtrados por lesões: ${gruposEvitar.join(', ')}`);
-    console.log(`[INFO] Grupos mantidos: ${gruposFiltrados.join(', ')}`);
-  }
-  
-  return gruposFiltrados;
+export function filtrarGruposPorLesoes(grupos: string[], _lesoes: string[]): string[] {
+  return grupos;
 }
 
 // ============================================================================
@@ -153,25 +111,11 @@ export function aplicarDadosOnboarding(
   perfil: PerfilCompleto,
   opcoesTreino: TreinoOptions
 ): TreinoOptions {
-  // Ajustar objetivo baseado em percentual de gordura
-  const objetivoAjustado = ajustarObjetivoPorGordura(
-    perfil.objetivo || opcoesTreino.objetivo || 'Hipertrofia',
-    perfil.percentualGordura,
-    perfil.sexo
-  );
-  
-  // Ajustar tempo baseado em tipo de corpo
-  const tempoAjustado = ajustarTempoPorTipoCorpo(
-    perfil.tempoDisponivel || opcoesTreino.tempoDisponivel,
-    perfil.tipoCorpo,
-    objetivoAjustado
-  );
-  
   return {
     ...opcoesTreino,
-    objetivo: objetivoAjustado,
-    experiencia: perfil.experiencia || opcoesTreino.experiencia,
-    tempoDisponivel: tempoAjustado,
+    objetivo: perfil.objetivo || opcoesTreino.objetivo,
+    experiencia: experienciaEfetiva(perfil) || opcoesTreino.experiencia,
+    tempoDisponivel: perfil.tempoDisponivel || opcoesTreino.tempoDisponivel,
     localTreino: perfil.localTreino || opcoesTreino.localTreino,
     frequenciaSemanal: perfil.frequenciaSemanal || opcoesTreino.frequenciaSemanal,
     perfil

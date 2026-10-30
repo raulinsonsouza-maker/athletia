@@ -11,10 +11,10 @@ import { prisma } from '../lib/prisma';
 import { selecionarExercicioAerobicoDoDia } from './treino.service';
 import { obterTodosGruposAtivos, validarEMapearGrupos, normalizarGrupoParaCanonico } from './grupo-muscular.service';
 import { obterGruposDoDia, distribuirDiasSemana, NOMES_SPLITS, LETRAS_TREINO, gerarSplitsInteligentes } from './split-generator.service';
-import { calcularParametrosTreino, calcularConfiguracaoTempo, calcularTempoEstimado, calcularMaxExerciciosPorTempo } from './treino-parameters.service';
+import { calcularParametrosTreino, calcularConfiguracaoTempo, calcularTempoEstimado, calcularMaxExerciciosPorTempo, caberTreinoNoTempo } from './treino-parameters.service';
 import { FiltrosExercicio } from './exercicio-filters.service';
 import { selecionarExerciciosParaGrupos, balancearExerciciosPorGrupo, buscarHistoricoExercicios, selecionar4ExerciciosPorGrupo } from './exercicio-selector.service';
-import { aplicarDadosOnboarding, filtrarGruposPorLesoes } from './onboarding-adapter.service';
+import { aplicarDadosOnboarding, filtrarGruposPorLesoes, experienciaEfetiva, ajusteRpe, cardioCurto, evitarAltoImpacto } from './onboarding-adapter.service';
 import { obterGruposCanonicosDoDia } from './canonical-workout-generator.service';
 import { validarTreinoCanonico } from './canonical-workout-validator.service';
 import { GrupoCanonico } from './muscle-group-canonical.service';
@@ -359,35 +359,45 @@ export async function gerarTreinoUnificado(
   
   // Calcular parâmetros de treino
   const objetivo = perfil?.objetivo || opcoesAjustadas.objetivo || 'Hipertrofia';
-  const experiencia = perfil?.experiencia || opcoesAjustadas.experiencia || 'Intermediário';
+  const experiencia = experienciaEfetiva(perfil) || opcoesAjustadas.experiencia || perfil?.experiencia || 'Intermediário';
+  const rpeAjustado = ajusteRpe(perfil);
   const parametros = calcularParametrosTreino(
     objetivo,
     experiencia,
     perfil?.idade,
     perfil?.sexo,
-    perfil?.rpePreferido
+    perfil?.rpePreferido,
+    rpeAjustado
   );
   
   // Obter configuração de tempo
   const configTempo = calcularConfiguracaoTempo(objetivo, parametros);
+  const tempoTeto = Math.max(20, Math.min(perfil?.tempoDisponivel || opcoesAjustadas.tempoDisponivel || 60, 120));
+  const encaixe = caberTreinoNoTempo({
+    tempoDisponivel: tempoTeto,
+    tempoPorExercicio: configTempo.tempoPorExercicio,
+    cardioDesejado: configTempo.cardio,
+    cardioCurto: cardioCurto(perfil),
+    reduzirVolume: (perfil?.idade || 0) > 50
+  });
+  configTempo.cardio = encaixe.cardioMinutos;
+  configTempo.alongamento = 0;
   
   // Calcular número de exercícios
-  // Em modo canônico: exatamente 8 exercícios (4 por grupo)
   let maxExercicios: number;
+  let porGrupo = 4;
   if (isModoCanonico) {
-    maxExercicios = 8; // 4 por grupo, 2 grupos
+    maxExercicios = encaixe.exerciciosForca;
+    porGrupo = Math.max(1, Math.min(4, Math.floor(maxExercicios / 2)));
+    maxExercicios = porGrupo * 2;
   } else {
     const minimoExercicios = calcularMinimoExercicios(gruposFiltrados);
-    const tempoDisponivel = Math.max(30, Math.min(
-      perfil?.tempoDisponivel || opcoesAjustadas.tempoDisponivel || 60,
-      120
-    ));
     const calculado = calcularMaxExerciciosPorTempo(
-      tempoDisponivel,
+      tempoTeto,
       configTempo,
       minimoExercicios
     );
-    maxExercicios = calculado.maxExercicios;
+    maxExercicios = Math.min(calculado.maxExercicios, encaixe.exerciciosForca);
   }
   
   // Preparar filtros
@@ -405,7 +415,9 @@ export async function gerarTreinoUnificado(
     equipamentosDisponiveis: perfil?.equipamentos,
     dificuldade: opcoesAjustadas.dificuldade || experiencia,
     problemasAnteriores: perfil?.problemasAnteriores,
-    preferencias: perfil?.preferencias
+    preferencias: perfil?.preferencias,
+    lesoes: perfil?.lesoes,
+    evitarAltoImpacto: evitarAltoImpacto(perfil)
   };
   
   // Selecionar exercícios (modo canônico vs legado)
@@ -414,20 +426,19 @@ export async function gerarTreinoUnificado(
   let exerciciosPorGrupoCanonico: any[][] | null = null;
   
   if (isModoCanonico && gruposFiltrados.length === 2) {
-    // MODO CANÔNICO: Selecionar exatamente 4 exercícios por grupo
     const [grupo1, grupo2] = gruposFiltrados;
     const exerciciosJaUsadosNoTreino = new Set<string>();
+    const alvo = porGrupo * 2;
     
-    // Buscar exercícios do grupo 1 (4 exercícios)
-    // Passar grupo2 como outroGrupoDoPar para excluir exercícios onde grupo2 é principal
     const exerciciosGrupo1 = await selecionar4ExerciciosPorGrupo(
       grupo1,
       opcoesAjustadas.userId,
       opcoesAjustadas.data,
       exerciciosJaUsadosNoTreino,
-      new Set<string>(), // Histórico adicional vazio (função busca internamente)
+      new Set<string>(),
       filtros,
-      grupo2 // Excluir exercícios onde grupo2 é principal
+      grupo2,
+      porGrupo
     );
     
     // Adicionar exercícios do grupo 1 aos usados para evitar duplicação no mesmo treino
@@ -440,9 +451,10 @@ export async function gerarTreinoUnificado(
       opcoesAjustadas.userId,
       opcoesAjustadas.data,
       exerciciosJaUsadosNoTreino,
-      new Set<string>(), // Histórico adicional vazio (função busca internamente)
+      new Set<string>(),
       filtros,
-      grupo1 // Excluir exercícios onde grupo1 é principal
+      grupo1,
+      porGrupo
     );
     
     // Remover duplicatas de cada grupo individualmente
@@ -471,8 +483,8 @@ export async function gerarTreinoUnificado(
     }
     
     // Se temos menos de 8 devido a duplicatas, tentar buscar mais exercícios para o grupo2
-    if (exerciciosGrupo1Limpos.length + exerciciosGrupo2Limpos.length < 8 && exerciciosGrupo2Limpos.length < 4) {
-      const faltam = 8 - (exerciciosGrupo1Limpos.length + exerciciosGrupo2Limpos.length);
+    if (exerciciosGrupo1Limpos.length + exerciciosGrupo2Limpos.length < alvo && exerciciosGrupo2Limpos.length < porGrupo) {
+      const faltam = alvo - (exerciciosGrupo1Limpos.length + exerciciosGrupo2Limpos.length);
       console.warn(`[WARN] Tentando buscar mais ${faltam} exercício(s) para completar o treino...`);
       
       // Buscar exercícios adicionais para o grupo2 (já excluindo os já usados)
@@ -483,12 +495,13 @@ export async function gerarTreinoUnificado(
         idsJaAdicionados, // Usar IDs já adicionados como histórico
         new Set<string>(),
         filtros,
-        grupo1
+        grupo1,
+        porGrupo
       );
       
       // Adicionar apenas os que faltam
       for (const ex of exerciciosAdicionais.slice(0, faltam)) {
-        if (!idsJaAdicionados.has(ex.id) && exerciciosGrupo2Limpos.length < 4) {
+        if (!idsJaAdicionados.has(ex.id) && exerciciosGrupo2Limpos.length < porGrupo) {
           exerciciosGrupo2Limpos.push(ex);
           idsJaAdicionados.add(ex.id);
         }
@@ -502,9 +515,9 @@ export async function gerarTreinoUnificado(
     exerciciosFinais = [...exerciciosGrupo1Limpos, ...exerciciosGrupo2Limpos];
     
     // Verificação final de integridade
-    if (exerciciosFinais.length !== 8) {
+    if (exerciciosFinais.length !== alvo) {
       console.warn(
-        `[WARN] Treino canônico tem ${exerciciosFinais.length} exercícios ao invés de 8. ` +
+        `[WARN] Treino canônico tem ${exerciciosFinais.length} exercícios ao invés de ${alvo}. ` +
         `Grupo1: ${exerciciosGrupo1Limpos.length}, Grupo2: ${exerciciosGrupo2Limpos.length}. ` +
         `Duplicatas removidas: ${exerciciosGrupo1.length + exerciciosGrupo2.length - exerciciosFinais.length}`
       );
@@ -564,10 +577,14 @@ export async function gerarTreinoUnificado(
     
     // Preparar exercícios
     // REGRA DEFINITIVA: Cardio SEMPRE no final, Flexibilidade/Alongamento REMOVIDO completamente
-    const exercicioCardio = await selecionarExercicioAerobicoDoDia(opcoesAjustadas.data, perfil?.equipamentos);
+    const exercicioCardio = await selecionarExercicioAerobicoDoDia(
+      opcoesAjustadas.data,
+      perfil?.equipamentos,
+      evitarAltoImpacto(perfil),
+      perfil?.lesoes
+    );
     
-    // SEMPRE incluir cardio (padrão), mas pode ser desabilitado explicitamente
-    const incluirCardio = opcoesAjustadas.incluirCardio !== false;
+    const incluirCardio = true;
     // SEMPRE desabilitar alongamento/flexibilidade
     const incluirAlongamento = false;
     
@@ -1107,9 +1124,14 @@ export async function corrigirEstruturaTreino(treinoId: string): Promise<{
     // Se não tem cardio, adicionar no final
     const perfilTreino = await prisma.perfil.findUnique({
       where: { userId: treino.userId },
-      select: { equipamentos: true }
+      select: { equipamentos: true, tipoCorpo: true, lesoes: true }
     });
-    const exercicioCardioNovo = await selecionarExercicioAerobicoDoDia(treino.data, perfilTreino?.equipamentos || []);
+    const exercicioCardioNovo = await selecionarExercicioAerobicoDoDia(
+      treino.data,
+      perfilTreino?.equipamentos || [],
+      evitarAltoImpacto(perfilTreino),
+      perfilTreino?.lesoes
+    );
     const configTempo = calcularConfiguracaoTempo('Hipertrofia', {
       series: 3,
       repeticoes: '8-12',

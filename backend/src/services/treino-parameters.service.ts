@@ -37,7 +37,8 @@ export function calcularParametrosTreino(
   experiencia: string,
   idade?: number | null,
   sexo?: string | null,
-  rpePreferido?: number | null
+  rpePreferido?: number | null,
+  ajustes?: { delta?: number; teto?: number }
 ): ParametrosTreino {
   let parametros = getObjectiveParameters(objetivo, experiencia || 'Intermediário', rpePreferido);
   
@@ -56,8 +57,38 @@ export function calcularParametrosTreino(
   if (sexo === 'Feminino') {
     parametros.descanso = Math.max(60, parametros.descanso - 15);
   }
+
+  if (ajustes?.delta) {
+    parametros.rpe = Math.max(5, parametros.rpe + ajustes.delta);
+  }
+  if (ajustes?.teto) {
+    parametros.rpe = Math.min(ajustes.teto, parametros.rpe);
+  }
   
   return parametros;
+}
+
+/**
+ * Encaixa a força no tempo marcado. O cardio permanece, no mínimo 5 minutos.
+ */
+export function caberTreinoNoTempo(opcoes: {
+  tempoDisponivel: number;
+  tempoPorExercicio: number;
+  cardioDesejado: number;
+  cardioCurto?: boolean;
+  reduzirVolume?: boolean;
+}): { exerciciosForca: number; cardioMinutos: number } {
+  const teto = Math.max(20, opcoes.tempoDisponivel || 45);
+  const tempoEx = Math.max(1, opcoes.tempoPorExercicio || 4);
+  let cardio = opcoes.cardioCurto ? Math.min(opcoes.cardioDesejado, 10) : opcoes.cardioDesejado;
+  cardio = Math.max(5, cardio);
+  let forca = Math.min(8, Math.floor((teto - 5) / tempoEx));
+  if (opcoes.reduzirVolume) forca -= 2;
+  forca = Math.max(2, forca);
+  while (forca * tempoEx + cardio > teto && forca > 2) forca -= 1;
+  const restante = teto - forca * tempoEx;
+  cardio = Math.max(5, Math.min(cardio, Math.floor(restante)));
+  return { exerciciosForca: forca, cardioMinutos: cardio };
 }
 
 /**

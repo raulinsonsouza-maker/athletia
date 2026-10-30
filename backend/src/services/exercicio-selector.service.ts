@@ -445,9 +445,10 @@ export async function selecionar4ExerciciosPorGrupo(
   exerciciosJaUsadosNoTreino: Set<string>,
   exerciciosUsadosNoGrupoEstaSemana: Set<string>,
   filtros: FiltrosExercicio,
-  outroGrupoDoPar?: string // Grupo sinérgico do par (para excluir exercícios onde esse é o principal)
+  outroGrupoDoPar?: string, // Grupo sinérgico do par (para excluir exercícios onde esse é o principal)
+  quantidade?: number
 ): Promise<any[]> {
-  const QUANTIDADE_CANONICA = 4;
+  const QUANTIDADE_CANONICA = Math.max(1, Math.min(4, quantidade || 4));
 
   // Normalizar grupo para garantir busca correta
   const grupoCanonico = normalizarGrupoParaCanonico(grupo);
