@@ -263,7 +263,7 @@ export function gerarConteudo(nome: string, grupo: string): ConteudoExercicio {
     );
   }
 
-  if (/stiff|levantamento terra|bom dia|good morning|deslize de calcanhar/.test(n)) {
+  if (/stiff|levantamento terra|bom dia|good morning|deslize de calcanhar|flexao de joelho/.test(n)) {
     return passos(
       `${nome} trabalha a parte de trás da coxa e o glúteo, com a coluna neutra.`,
       [

@@ -75,6 +75,7 @@ const NOVOS: Array<{ nome: string; grupo: string; equipamento: string[]; semEqui
   { nome: 'Cadeira flexora', grupo: 'Posteriores de coxa', equipamento: ['Máquinas'], semEquipamento: false },
   { nome: 'Flexora em pé na máquina', grupo: 'Posteriores de coxa', equipamento: ['Máquinas'], semEquipamento: false },
   { nome: 'Deslize de calcanhar no chão', grupo: 'Posteriores de coxa', equipamento: ['Peso Corporal'], semEquipamento: true },
+  { nome: 'Flexão de joelho deitado no chão', grupo: 'Posteriores de coxa', equipamento: ['Peso Corporal'], semEquipamento: true },
   { nome: 'Superman lombar no chão', grupo: 'Lombar', equipamento: ['Peso Corporal'], semEquipamento: true },
   { nome: 'Hiperextensão no banco romano', grupo: 'Lombar', equipamento: ['Máquinas'], semEquipamento: false },
   { nome: 'Extensão lombar na máquina', grupo: 'Lombar', equipamento: ['Máquinas'], semEquipamento: false },
@@ -234,9 +235,16 @@ async function main() {
   for (const item of NOVOS) {
     const existente = await prisma.exercicio.findFirst({ where: { nome: item.nome } });
     if (existente) {
-      if (!existente.ativo) {
-        await prisma.exercicio.update({ where: { id: existente.id }, data: { ativo: true } });
-      }
+      await prisma.exercicio.update({
+        where: { id: existente.id },
+        data: {
+          ativo: true,
+          grupoMuscularPrincipal: item.grupo,
+          nivelDificuldade: 'Iniciante',
+          equipamentoNecessario: item.equipamento,
+          semEquipamento: item.semEquipamento,
+        },
+      });
       await sincronizarGruposDoExercicio(existente.id, item.grupo, SINERGISTAS[item.grupo] || []);
       continue;
     }
