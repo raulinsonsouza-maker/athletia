@@ -37,6 +37,10 @@ export default function Login() {
       const userData = JSON.parse(
         localStorage.getItem('user') || sessionStorage.getItem('user') || '{}'
       )
+      if (userData.role === 'ADMIN') {
+        navigate('/admin', { replace: true })
+        return
+      }
       const planoValido = userData.planoAtivo && (
         !userData.dataExpiracao || new Date(userData.dataExpiracao) > new Date()
       )
@@ -111,7 +115,7 @@ export default function Login() {
 
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-medium text-white/80">
-                    Email
+                    Email ou usuário
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
@@ -121,11 +125,13 @@ export default function Login() {
                     </div>
                     <input
                       id="email"
-                      type="email"
+                      type="text"
+                      inputMode="email"
+                      autoComplete="username"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-base text-white placeholder-white/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                      placeholder="seu@email.com"
+                      placeholder="seu@email.com ou usuário"
                       required
                       disabled={loading}
                     />
