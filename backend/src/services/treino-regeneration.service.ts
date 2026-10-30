@@ -43,6 +43,7 @@ export async function regenerarTreinosUsuarioCanonico(userId: string): Promise<v
     frequenciaSemanal: perfil.frequenciaSemanal,
     tempoDisponivel: perfil.tempoDisponivel,
     localTreino: perfil.localTreino,
+    equipamentos: perfil.equipamentos || [],
     preferencias: perfil.preferencias || [],
     aguaDiaria: perfil.aguaDiaria
   };
@@ -165,6 +166,7 @@ export async function regenerarSemanaEspecifica(
     frequenciaSemanal: perfil.frequenciaSemanal,
     tempoDisponivel: perfil.tempoDisponivel,
     localTreino: perfil.localTreino,
+    equipamentos: perfil.equipamentos || [],
     preferencias: perfil.preferencias || [],
     aguaDiaria: perfil.aguaDiaria
   };

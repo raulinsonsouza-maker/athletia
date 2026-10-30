@@ -142,6 +142,7 @@ async function testarGeracaoTreinos(userId: string, frequencias: number[] = [3, 
       frequenciaSemanal: frequencia,
       tempoDisponivel: perfilDb.tempoDisponivel,
       localTreino: perfilDb.localTreino,
+      equipamentos: perfilDb.equipamentos || [],
       preferencias: perfilDb.preferencias || [],
       aguaDiaria: perfilDb.aguaDiaria
     };
@@ -273,6 +274,7 @@ async function validarTreinoEspecifico(userId: string, treinoId?: string) {
     frequenciaSemanal: perfilDb.frequenciaSemanal,
     tempoDisponivel: perfilDb.tempoDisponivel,
     localTreino: perfilDb.localTreino,
+    equipamentos: perfilDb.equipamentos || [],
     preferencias: perfilDb.preferencias || [],
     aguaDiaria: perfilDb.aguaDiaria
   };

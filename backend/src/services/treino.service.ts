@@ -35,6 +35,22 @@ const EXERCICIOS_AEROBICOS = [
   'Escada'
 ];
 
+const EXERCICIOS_AEROBICOS_CORPO = [
+  'Polichinelo',
+  'Corrida no lugar',
+  'Montanhista'
+];
+
+function equipamentoDoCardio(nome: string): { equipamentoNecessario: string[]; semEquipamento: boolean } {
+  if (EXERCICIOS_AEROBICOS_CORPO.includes(nome)) {
+    return { equipamentoNecessario: ['Peso Corporal'], semEquipamento: true };
+  }
+  if (nome === 'Esteira') return { equipamentoNecessario: ['Esteira'], semEquipamento: false };
+  if (nome === 'Bicicleta Ergométrica') return { equipamentoNecessario: ['Bicicleta Ergométrica'], semEquipamento: false };
+  if (nome === 'Elíptico') return { equipamentoNecessario: ['Elíptico'], semEquipamento: false };
+  return { equipamentoNecessario: ['Escada'], semEquipamento: false };
+}
+
 /**
  * Busca ou cria exercício aeróbico no banco de dados
  */
@@ -56,7 +72,7 @@ export async function buscarOuCriarExercicioAerobico(nome: string): Promise<any>
         descricao: `Exercício aeróbico: ${nome}`,
         execucaoTecnica: `Realize ${nome} em ritmo moderado por 20-30 minutos`,
         errosComuns: [],
-        equipamentoNecessario: nome === 'Esteira' ? ['Esteira'] : nome === 'Bicicleta Ergométrica' ? ['Bicicleta Ergométrica'] : nome === 'Elíptico' ? ['Elíptico'] : ['Escada'],
+        ...equipamentoDoCardio(nome),
         nivelDificuldade: 'Iniciante',
         cargaInicialSugerida: 0,
         rpeSugerido: 5,
@@ -171,11 +187,13 @@ export async function buscarOuCriarExercicioAlongamento(): Promise<any> {
 /**
  * Seleciona exercício aeróbico variado baseado no dia
  */
-export async function selecionarExercicioAerobicoDoDia(data: Date): Promise<any> {
+export async function selecionarExercicioAerobicoDoDia(data: Date, equipamentos?: string[]): Promise<any> {
+  const { somentePesoCorporal } = await import('./exercicio-filters.service');
+  const lista = somentePesoCorporal(equipamentos) ? EXERCICIOS_AEROBICOS_CORPO : EXERCICIOS_AEROBICOS;
   // Usar o dia do ano para garantir rotação consistente
   const diaDoAno = Math.floor((data.getTime() - new Date(data.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-  const indice = diaDoAno % EXERCICIOS_AEROBICOS.length;
-  const nomeExercicio = EXERCICIOS_AEROBICOS[indice];
+  const indice = diaDoAno % lista.length;
+  const nomeExercicio = lista[indice];
   
   logger.debug(`🏃 Selecionando exercício aeróbico para ${data.toLocaleDateString('pt-BR')}: ${nomeExercicio}`, 'treino.service');
   
@@ -811,11 +829,11 @@ async function buscarExerciciosSimples(
       
       logger.debug(`  [INFO] Após filtro de equipamentos: ${exerciciosComEquipamento.length} exercícios`, 'treino.service');
       
-      // Se encontrou exercícios com equipamentos, usar esses
       if (exerciciosComEquipamento.length > 0) {
         exerciciosGrupo = exerciciosComEquipamento;
       } else {
-        logger.debug(`  ⚠️ Nenhum exercício com equipamentos disponíveis, usando todos (ignorando filtro de equipamento)`, 'treino.service');
+        exerciciosGrupo = [];
+        logger.debug(`  ⚠️ Nenhum exercício compatível com os equipamentos informados`, 'treino.service');
       }
     }
 
@@ -1032,6 +1050,7 @@ export async function gerarTreinos30Dias(userId: string): Promise<any[]> {
     frequenciaSemanal: perfil.frequenciaSemanal,
     tempoDisponivel: perfil.tempoDisponivel,
     localTreino: perfil.localTreino,
+    equipamentos: perfil.equipamentos || [],
     preferencias: perfil.preferencias || [],
     aguaDiaria: perfil.aguaDiaria
   };

@@ -17,10 +17,61 @@ export interface FiltrosExercicio {
   exerciciosEvitar?: Set<string>;
   lesoes?: string[];
   localTreino?: string;
+  equipamentosDisponiveis?: string[];
   dificuldade?: string;
   historico?: Set<string>;
   problemasAnteriores?: string[];
   preferencias?: string[];
+}
+
+function normalizarTexto(valor: string): string {
+  return valor
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+}
+
+function ehPesoCorporal(nome: string): boolean {
+  const texto = normalizarTexto(nome);
+  return texto.includes('peso corporal') || texto.includes('corporal') || texto.includes('sem equipamento') || texto === 'corpo';
+}
+
+export function somentePesoCorporal(equipamentos?: string[]): boolean {
+  return !!equipamentos?.length && equipamentos.every((item) => ehPesoCorporal(item));
+}
+
+function equipamentoAtendido(necessario: string, disponiveis: string[]): boolean {
+  const pedido = normalizarTexto(necessario);
+  if (ehPesoCorporal(pedido)) return true;
+  return disponiveis.some((disponivel) => {
+    const tem = normalizarTexto(disponivel);
+    if (ehPesoCorporal(tem)) return false;
+    return pedido.includes(tem) || tem.includes(pedido)
+      || (tem.includes('halter') && pedido.includes('halter'))
+      || (tem.includes('maquina') && (pedido.includes('maquina') || pedido.includes('aparelho')))
+      || (tem.includes('elast') && pedido.includes('elast'))
+      || (tem.includes('kettle') && pedido.includes('kettle'))
+      || (tem.includes('anilha') && pedido.includes('anilha'))
+      || (tem.includes('cabo') && (pedido.includes('cabo') || pedido.includes('polia')))
+      || (tem.includes('barra') && pedido.includes('barra'));
+  });
+}
+
+export function exercicioCompativelComEquipamentos(exercicio: any, disponiveis?: string[]): boolean {
+  if (!disponiveis || disponiveis.length === 0) return true;
+  const necessarios: string[] = exercicio.equipamentoNecessario || [];
+  const corporal = exercicio.semEquipamento === true
+    || necessarios.length === 0
+    || necessarios.every((item) => ehPesoCorporal(item));
+  if (corporal) return true;
+  if (somentePesoCorporal(disponiveis)) return false;
+  return necessarios.every((item) => equipamentoAtendido(item, disponiveis));
+}
+
+export function filtrarPorEquipamentosDisponiveis(exercicios: any[], disponiveis?: string[]): any[] {
+  if (!disponiveis || disponiveis.length === 0) return exercicios;
+  return exercicios.filter((exercicio) => exercicioCompativelComEquipamentos(exercicio, disponiveis));
 }
 
 const MAPEAMENTO_PROBLEMAS: Record<string, string[]> = {
@@ -209,6 +260,10 @@ export function aplicarFiltrosExercicios(
   
   if (filtros.localTreino) {
     filtrados = filtrarPorLocalTreino(filtrados, filtros.localTreino);
+  }
+
+  if (filtros.equipamentosDisponiveis && filtros.equipamentosDisponiveis.length > 0) {
+    filtrados = filtrarPorEquipamentosDisponiveis(filtrados, filtros.equipamentosDisponiveis);
   }
   
   if (filtros.dificuldade) {

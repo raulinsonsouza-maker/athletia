@@ -762,3 +762,12 @@
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
   }
 }
+
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #141414;
+  color: #ffffff;
+}

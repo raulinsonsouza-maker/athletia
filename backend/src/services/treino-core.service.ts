@@ -39,6 +39,7 @@ export interface PerfilCompleto {
   frequenciaSemanal: number | null;
   tempoDisponivel?: number | null;
   localTreino?: string | null;
+  equipamentos?: string[];
   preferencias: string[];
   aguaDiaria?: string | null;
 }
@@ -401,6 +402,7 @@ export async function gerarTreinoUnificado(
   const filtros: FiltrosExercicio = {
     historico: historicoGeral,
     localTreino: localTreino,
+    equipamentosDisponiveis: perfil?.equipamentos,
     dificuldade: opcoesAjustadas.dificuldade || experiencia,
     problemasAnteriores: perfil?.problemasAnteriores,
     preferencias: perfil?.preferencias
@@ -562,7 +564,7 @@ export async function gerarTreinoUnificado(
     
     // Preparar exercícios
     // REGRA DEFINITIVA: Cardio SEMPRE no final, Flexibilidade/Alongamento REMOVIDO completamente
-    const exercicioCardio = await selecionarExercicioAerobicoDoDia(opcoesAjustadas.data);
+    const exercicioCardio = await selecionarExercicioAerobicoDoDia(opcoesAjustadas.data, perfil?.equipamentos);
     
     // SEMPRE incluir cardio (padrão), mas pode ser desabilitado explicitamente
     const incluirCardio = opcoesAjustadas.incluirCardio !== false;
@@ -1103,7 +1105,11 @@ export async function corrigirEstruturaTreino(treinoId: string): Promise<{
     }
   } else {
     // Se não tem cardio, adicionar no final
-    const exercicioCardioNovo = await selecionarExercicioAerobicoDoDia(treino.data);
+    const perfilTreino = await prisma.perfil.findUnique({
+      where: { userId: treino.userId },
+      select: { equipamentos: true }
+    });
+    const exercicioCardioNovo = await selecionarExercicioAerobicoDoDia(treino.data, perfilTreino?.equipamentos || []);
     const configTempo = calcularConfiguracaoTempo('Hipertrofia', {
       series: 3,
       repeticoes: '8-12',

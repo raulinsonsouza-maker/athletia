@@ -169,9 +169,9 @@ export async function buscarExerciciosComFallback(
             },
             id: { notIn: Array.from(idsJaFiltrados) }
           },
-          take: quantidadeMinima - exercicios.length
+          take: quantidadeMinima * 4
         });
-        exercicios.push(...fallback);
+        exercicios.push(...aplicarFiltrosExercicios(fallback, filtros));
       }
     }
     
@@ -184,9 +184,9 @@ export async function buscarExerciciosComFallback(
           grupoMuscularPrincipal: grupo,
           id: { notIn: Array.from(idsAtuais) }
         },
-        take: quantidadeMinima - exercicios.length
+        take: quantidadeMinima * 4
       });
-      exercicios.push(...fallback);
+      exercicios.push(...aplicarFiltrosExercicios(fallback, filtros));
     }
   }
   

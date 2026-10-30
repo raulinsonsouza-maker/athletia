@@ -77,7 +77,7 @@ export default function Perfil() {
   const [imagemPerfilPadrao, _setImagemPerfilPadrao] = useState<string | null>(null)
 
   const inputBaseClass =
-    'w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none transition'
+    'w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-white placeholder-white/40 focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none transition [color-scheme:dark]'
   const inputErrorClass = 'border-error/60 focus:border-error focus:ring-error/30'
 
 
@@ -154,14 +154,19 @@ export default function Perfil() {
     }
   }
 
+  const lesoesOpcoes = ['Joelho', 'Ombro', 'Coluna', 'Pulso', 'Tornozelo', 'Outras']
+
   const handleToggleLesao = (lesao: string) => {
-    const lesoes = formData.lesoes || []
-    const index = lesoes.indexOf(lesao)
-    if (index > -1) {
-      setFormData({ ...formData, lesoes: lesoes.filter((l: string) => l !== lesao) })
-    } else {
-      setFormData({ ...formData, lesoes: [...lesoes, lesao] })
+    if (lesao === 'Nenhuma') {
+      setFormData({ ...formData, lesoes: [] })
+      return
     }
+    const lesoes = (formData.lesoes || []).filter((item: string) => lesoesOpcoes.includes(item) && item !== lesao)
+    const marcada = (formData.lesoes || []).includes(lesao)
+    setFormData({
+      ...formData,
+      lesoes: marcada ? lesoes : [...lesoes, lesao]
+    })
   }
 
   const handleToggleEquipamento = (equipamento: string) => {
@@ -886,7 +891,16 @@ export default function Perfil() {
               <div className="space-y-3">
                 <p className="text-sm text-white/60">Lesões / limitações</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {['Joelho', 'Ombro', 'Coluna', 'Pulso', 'Tornozelo', 'Outras'].map((lesao) => (
+                  <label className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 cursor-pointer sm:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={!(formData.lesoes || []).some((item: string) => lesoesOpcoes.includes(item))}
+                      onChange={() => handleToggleLesao('Nenhuma')}
+                      className="h-5 w-5 rounded border-white/30 bg-dark accent-primary"
+                    />
+                    <span className="text-sm">Nenhuma limitação</span>
+                  </label>
+                  {lesoesOpcoes.map((lesao) => (
                     <label
                       key={lesao}
                       className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 cursor-pointer"

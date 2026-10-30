@@ -28,6 +28,7 @@ function converterPerfilParaCompleto(perfil: any): PerfilCompleto {
     frequenciaSemanal: perfil.frequenciaSemanal,
     tempoDisponivel: perfil.tempoDisponivel,
     localTreino: perfil.localTreino,
+    equipamentos: perfil.equipamentos || [],
     preferencias: perfil.preferencias || [],
     aguaDiaria: perfil.aguaDiaria
   };
