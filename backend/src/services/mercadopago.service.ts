@@ -364,6 +364,18 @@ export async function assinarComCartao(params: {
     }
 
     if (status === 'pending' || status === 'in_process') {
+      await prisma.user.update({
+        where: { id: params.userId },
+        data: { mpPreapprovalId: preapprovalId, meioPagamento: 'cartao' }
+      });
+      await registrarPendente({
+        userId: params.userId,
+        plano: params.plano,
+        transactionId: `preapproval:${preapprovalId}`,
+        amount: config.preco,
+        paymentMethod: 'credit_card',
+        raw: { id: preapprovalId, status }
+      });
       return {
         success: true,
         status: 'pending',
@@ -662,10 +674,72 @@ async function processarPagamento(paymentId: string) {
       payment.status === 'charged_back' ? 'chargeback' : 'refund',
       { id: payment.id, status: payment.status }
     );
+    return;
+  }
+
+  if (payment.status === 'rejected' || payment.status === 'cancelled' || payment.status === 'canceled' || payment.status === 'expired') {
+    await prisma.paymentHistory.updateMany({
+      where: { transactionId: String(payment.id), status: 'pending' },
+      data: { status: payment.status === 'rejected' ? 'rejected' : 'cancelled' }
+    });
+  }
+}
+
+async function sincronizarPreapproval(preapprovalId: string) {
+  const preapproval = await obterRecurso<any>(`${MP_API}/preapproval/${preapprovalId}`);
+  if (!preapproval) return;
+  const ref = lerReferencia(preapproval.external_reference);
+  if (!ref?.plano) return;
+
+  if (preapproval.status === 'authorized') {
+    await ativarPlano({
+      userId: ref.userId,
+      plano: ref.plano,
+      transactionId: `preapproval:${preapprovalId}`,
+      amount: PLANOS[ref.plano].preco,
+      paymentMethod: 'credit_card',
+      meio: 'cartao',
+      preapprovalId,
+      raw: { id: preapprovalId, status: preapproval.status }
+    });
+    return;
+  }
+
+  if (preapproval.status === 'cancelled' || preapproval.status === 'canceled') {
+    await prisma.paymentHistory.updateMany({
+      where: { transactionId: `preapproval:${preapprovalId}`, status: 'pending' },
+      data: { status: 'cancelled' }
+    });
+  }
+}
+
+export async function reconciliarPagamentosPendentes() {
+  const desde = new Date(Date.now() - 48 * 60 * 60 * 1000);
+  const pendentes = await prisma.paymentHistory.findMany({
+    where: {
+      gateway: 'mercadopago',
+      status: 'pending',
+      createdAt: { gte: desde }
+    },
+    orderBy: { createdAt: 'asc' },
+    take: 30
+  });
+
+  for (const item of pendentes) {
+    try {
+      if (/^\d+$/.test(item.transactionId)) {
+        await processarPagamento(item.transactionId);
+      } else if (item.transactionId.startsWith('preapproval:')) {
+        await sincronizarPreapproval(item.transactionId.slice('preapproval:'.length));
+      }
+    } catch (error: any) {
+      logMpError('reconciliar pagamento', error);
+    }
   }
 }
 
 async function processarPreapproval(preapprovalId: string) {
+  await sincronizarPreapproval(preapprovalId);
   const preapproval = await obterRecurso<any>(`${MP_API}/preapproval/${preapprovalId}`);
   if (!preapproval) return;
   const ref = lerReferencia(preapproval.external_reference);
@@ -721,31 +795,58 @@ export async function processarNotificacao(tipo: string, dataId: string) {
   }
 }
 
+function manifestoWebhook(id: string | undefined, requestId: string | undefined, ts: string): string {
+  const partes: string[] = [];
+  if (id) {
+    const normalizado = /[a-z]/i.test(id) ? id.toLowerCase() : id;
+    partes.push(`id:${normalizado}`);
+  }
+  if (requestId) partes.push(`request-id:${requestId}`);
+  partes.push(`ts:${ts}`);
+  return `${partes.join(';')};`;
+}
+
+function assinaturaConfere(secret: string, manifesto: string, hash: string): boolean {
+  const esperado = crypto.createHmac('sha256', secret).update(manifesto).digest('hex');
+  const a = Buffer.from(esperado.toLowerCase());
+  const b = Buffer.from(hash.toLowerCase());
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 export function validarAssinaturaWebhook(params: {
   xSignature: string | undefined;
   xRequestId: string | undefined;
   dataId: string | undefined;
+  dataIdExtra?: string | undefined;
 }): boolean {
-  const secret = process.env.MERCADOPAGO_WEBHOOK_SECRET || '';
-  if (!secret || !params.xSignature || !params.dataId) return false;
+  const secret = (process.env.MERCADOPAGO_WEBHOOK_SECRET || '').trim();
+  if (!secret || !params.xSignature) return false;
 
   let ts = '';
   let hash = '';
   for (const part of params.xSignature.split(',')) {
-    const [key, value] = part.split('=').map((item) => item?.trim());
-    if (key === 'ts') ts = value || '';
-    if (key === 'v1') hash = value || '';
+    const igual = part.indexOf('=');
+    if (igual === -1) continue;
+    const key = part.slice(0, igual).trim();
+    const value = part.slice(igual + 1).trim();
+    if (key === 'ts') ts = value;
+    if (key === 'v1') hash = value;
   }
   if (!ts || !hash) return false;
 
-  const id = /[a-z]/i.test(params.dataId) ? params.dataId.toLowerCase() : params.dataId;
-  const manifest = `id:${id};request-id:${params.xRequestId || ''};ts:${ts};`;
-  const expected = crypto.createHmac('sha256', secret).update(manifest).digest('hex');
-
-  const expectedBuffer = Buffer.from(expected);
-  const hashBuffer = Buffer.from(hash);
-  if (expectedBuffer.length !== hashBuffer.length) return false;
-  return crypto.timingSafeEqual(expectedBuffer, hashBuffer);
+  const ids = Array.from(new Set(
+    [params.dataId, params.dataIdExtra]
+      .map((item) => (item || '').trim())
+      .filter(Boolean)
+  ));
+  const candidatos = ids.length > 0 ? ids : [undefined];
+  return candidatos.some((id) => {
+    const comPedido = assinaturaConfere(secret, manifestoWebhook(id, params.xRequestId, ts), hash);
+    if (comPedido) return true;
+    if (!params.xRequestId) return false;
+    return assinaturaConfere(secret, manifestoWebhook(id, undefined, ts), hash);
+  });
 }
 
 export async function obterStatus(userId: string) {

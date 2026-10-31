@@ -583,6 +583,15 @@ server.listen(PORT, () => {
     timezone: 'America/Sao_Paulo'
   });
 
+  cron.schedule('*/2 * * * *', async () => {
+    try {
+      const { reconciliarPagamentosPendentes } = await import('./services/mercadopago.service');
+      await reconciliarPagamentosPendentes();
+    } catch (error: any) {
+      console.error('[CRON] Erro ao conferir pagamentos pendentes:', error?.message);
+    }
+  });
+
   console.log('💳 Rotina do Mercado Pago configurada para executar diariamente às 9h10');
 
   // Configurar job de notificações push diárias (executa diariamente às 8h)

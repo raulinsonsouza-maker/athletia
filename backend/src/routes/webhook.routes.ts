@@ -36,9 +36,13 @@ router.post('/mercadopago', webhookLimiter, express.raw({ type: 'application/jso
       return res.status(400).json({ error: 'JSON inválido' });
     }
 
-    const dataIdQuery = new URL(req.originalUrl, 'http://localhost').searchParams.get('data.id');
-    const dataId = String(dataIdQuery || payload?.data?.id || '');
-    const tipo = String(req.query.type || payload?.type || payload?.action || '');
+    const consulta = req.query as { type?: string; data?: { id?: string }; 'data.id'?: string };
+    const dataIdQuery = new URL(req.originalUrl, 'http://localhost').searchParams.get('data.id')
+      || (typeof consulta['data.id'] === 'string' ? consulta['data.id'] : '')
+      || (consulta.data?.id ? String(consulta.data.id) : '');
+    const dataIdCorpo = payload?.data?.id ? String(payload.data.id) : '';
+    const dataId = dataIdQuery || dataIdCorpo;
+    const tipo = String(consulta.type || payload?.type || payload?.action || '');
     const signatureHeader = req.headers['x-signature'];
     const requestIdHeader = req.headers['x-request-id'];
     const xSignature = Array.isArray(signatureHeader) ? signatureHeader[0] : signatureHeader;
@@ -47,11 +51,16 @@ router.post('/mercadopago', webhookLimiter, express.raw({ type: 'application/jso
     const assinaturaOk = mercadoPagoService.validarAssinaturaWebhook({
       xSignature,
       xRequestId,
-      dataId
+      dataId: dataIdQuery || undefined,
+      dataIdExtra: dataIdCorpo || undefined
     });
 
     if (!assinaturaOk) {
-      console.error('[MP] Assinatura do webhook recusada');
+      console.error('[MP] Assinatura do webhook recusada', {
+        temAssinatura: Boolean(xSignature),
+        temId: Boolean(dataId),
+        temRequestId: Boolean(xRequestId)
+      });
       return res.status(401).json({ error: 'Assinatura inválida' });
     }
 
