@@ -350,6 +350,13 @@ export default function Checkout() {
       : (loading ? 'Gerando Pix...' : `Pagar R$ ${preco} com Pix`)
 
   const exercicios = previa?.treino?.exercicios || []
+  const nomePessoa = previa?.nome && !/^(ol[aá]|admin|administrador)$/i.test(previa.nome) ? previa.nome : ''
+  const frase = previa?.frase || 'Treino personalizado para a sua rotina'
+  const beneficios = [
+    'Treino montado para a sua rotina',
+    'Cardio em toda sessão',
+    'Cancele quando quiser'
+  ]
 
   if (authLoading || !user) {
     return (
@@ -360,173 +367,214 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
+    <div className="relative min-h-screen overflow-x-hidden bg-dark text-light">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,_rgba(249,166,32,0.22),_transparent_68%)]" />
       <ToastContainer />
 
-      <main className="mx-auto w-full max-w-lg px-4 pb-40 pt-6">
-        <h1 className="text-2xl font-display font-bold text-light">
-          {previa?.nome ? `${previa.nome}, seu plano está pronto` : 'Seu plano está pronto'}
-        </h1>
-        <p className="mt-2 text-base text-light-muted">
-          {previa?.frase || 'Treino personalizado para a sua rotina'}
-        </p>
+      <main className="relative mx-auto w-full max-w-lg px-4 pb-40 pt-5">
+        <div className="flex items-center gap-2.5">
+          <img src="/favicon.svg" alt="" className="h-9 w-9 rounded-2xl shadow-lg shadow-black/40" />
+          <span className="font-display text-lg font-bold tracking-tight">AthletIA</span>
+        </div>
 
-        {exercicios.length > 0 && (
-          <section className="mt-5 rounded-2xl border border-grey/30 bg-dark-lighter p-4">
-            <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-primary">Primeiro treino</h2>
-              {previa?.treino?.tempoEstimado ? (
-                <span className="text-sm text-light-muted">{previa.treino.tempoEstimado} min</span>
-              ) : null}
-            </div>
-            <ol className="space-y-2">
+        <p className="mt-6 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Seu plano</p>
+        <h1 className="mt-1 font-display text-[1.7rem] font-bold leading-[1.15]">
+          {nomePessoa ? `${nomePessoa}, seu treino está pronto` : 'Seu treino está pronto'}
+        </h1>
+        <p className="mt-2 text-[15px] leading-snug text-light-muted">{frase}</p>
+
+        <section className="mt-5 overflow-hidden rounded-[28px] border border-primary/35 bg-gradient-to-b from-[#2a2114] to-dark-lighter shadow-[0_20px_50px_-24px_rgba(249,166,32,0.7)]">
+          <div className="flex items-center justify-between gap-3 px-4 pb-1 pt-4">
+            <h2 className="text-sm font-bold text-light">Primeiro treino</h2>
+            {previa?.treino?.tempoEstimado ? (
+              <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">
+                {previa.treino.tempoEstimado} min
+              </span>
+            ) : (
+              <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-bold text-primary">Incluso</span>
+            )}
+          </div>
+
+          {exercicios.length > 0 ? (
+            <ol className="px-2 pb-2">
               {exercicios.map((exercicio, index) => (
-                <li key={`${exercicio.nome}-${index}`} className="flex items-start justify-between gap-3 text-sm">
-                  <span className="text-light">{exercicio.nome}</span>
-                  <span className="shrink-0 text-light-muted">
+                <li key={`${exercicio.nome}-${index}`} className="flex items-center gap-3 px-2 py-2.5">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black/30 text-xs font-bold text-primary">
+                    {index + 1}
+                  </span>
+                  <span className="min-w-0 flex-1 text-sm leading-snug text-light">{exercicio.nome}</span>
+                  <span className="shrink-0 text-xs font-medium text-light-muted">
                     {exercicio.cardio ? exercicio.repeticoes : `${exercicio.series}x ${exercicio.repeticoes}`}
                   </span>
                 </li>
               ))}
             </ol>
-          </section>
-        )}
+          ) : (
+            <ul className="space-y-2 px-4 pb-4 pt-1">
+              {beneficios.map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-sm text-light">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[11px] font-bold text-dark">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          )}
 
-        <button
-          type="button"
-          onClick={() => escolherPlano('MENSAL')}
-          className={`mt-5 w-full rounded-2xl border-2 p-4 text-left ${
-            planoSelecionado === 'MENSAL' ? 'border-primary bg-primary/15' : 'border-grey/30 bg-dark-lighter'
-          }`}
-        >
-          <p className="text-sm font-bold text-light">Mensal</p>
-          <p className="mt-1 text-4xl font-bold text-primary">R$ 29,90</p>
-          <p className="text-sm text-light-muted">por mês, cancele quando quiser</p>
-        </button>
+          <div className="space-y-2 border-t border-white/10 bg-black/25 p-3">
+            <button
+              type="button"
+              onClick={() => escolherPlano('MENSAL')}
+              className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3.5 py-3 text-left ${
+                planoSelecionado === 'MENSAL' ? 'bg-primary text-dark' : 'bg-white/5 text-light'
+              }`}
+            >
+              <span>
+                <span className="block text-sm font-bold">Mensal</span>
+                <span className={`block text-xs ${planoSelecionado === 'MENSAL' ? 'text-dark/70' : 'text-light-muted'}`}>
+                  Cancele quando quiser
+                </span>
+              </span>
+              <span className="text-right">
+                <span className="block font-display text-2xl font-bold leading-none">R$ 29,90</span>
+                <span className={`text-xs ${planoSelecionado === 'MENSAL' ? 'text-dark/70' : 'text-light-muted'}`}>por mês</span>
+              </span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => escolherPlano('SEMESTRAL')}
-          className={`mt-3 w-full rounded-2xl border px-4 py-3 text-left text-sm ${
-            planoSelecionado === 'SEMESTRAL' ? 'border-primary bg-primary/15 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'
-          }`}
-        >
-          Ou 6 meses por R$ 89,90 (R$ 14,98/mês)
-        </button>
-
-        <div className="mt-5 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => { setMeio('pix'); setError('') }}
-            className={`h-12 rounded-2xl border-2 text-sm font-bold ${meio === 'pix' ? 'border-primary bg-primary/20 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'}`}
-          >
-            Pix
-          </button>
-          <button
-            type="button"
-            onClick={() => { setMeio('cartao'); setPix(null); setError('') }}
-            className={`h-12 rounded-2xl border-2 text-sm font-bold ${meio === 'cartao' ? 'border-primary bg-primary/20 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'}`}
-          >
-            Cartão
-          </button>
-        </div>
-
-        {meio === 'pix' && (
-          <div className="mt-4 space-y-3">
-            {!pix ? (
-              <div>
-                <label className="mb-2 block text-sm text-light" htmlFor="cpf">CPF do pagador</label>
-                <input
-                  id="cpf"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  value={cpf}
-                  onChange={(event) => setCpf(mascararCpf(event.target.value))}
-                  placeholder="000.000.000-00"
-                  maxLength={14}
-                  className={inputClass}
-                />
-              </div>
-            ) : (
-              <div className="space-y-3 text-center">
-                {pix.qrCodeBase64 && (
-                  <img
-                    src={`data:image/png;base64,${pix.qrCodeBase64}`}
-                    alt="QR Code do Pix"
-                    className="mx-auto h-44 w-44 rounded-xl bg-white p-2"
-                  />
-                )}
-                <p className="text-sm text-light">
-                  O código vale 2 horas. Abra o app do banco e cole. Pode sair desta tela: se o Pix for pago, o plano entra sozinho.
-                </p>
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={() => escolherPlano('SEMESTRAL')}
+              className={`flex w-full items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 text-left ${
+                planoSelecionado === 'SEMESTRAL' ? 'border-primary bg-primary/15' : 'border-white/10 bg-transparent'
+              }`}
+            >
+              <span>
+                <span className="block text-sm font-bold text-light">6 meses</span>
+                <span className="block text-xs font-semibold text-primary">Economize R$ 89,50</span>
+              </span>
+              <span className="text-right">
+                <span className="block text-base font-bold text-light">R$ 14,98<span className="text-xs font-medium text-light-muted">/mês</span></span>
+                <span className="text-xs text-light-muted">R$ 89,90 hoje</span>
+              </span>
+            </button>
           </div>
-        )}
+        </section>
 
-        {meio === 'cartao' && (
-          <form id="form-checkout" key={planoSelecionado} className="mt-4 rounded-2xl border border-grey/30 bg-dark-lighter p-4">
-            <style>{`
-              #form-checkout .mp-field {
-                height: 48px;
-                min-height: 48px;
-                max-height: 48px;
-                overflow: hidden;
-                display: flex;
-                align-items: center;
-                padding: 0 12px;
-              }
-              #form-checkout .mp-field iframe {
-                height: 48px !important;
-                min-height: 48px !important;
-                max-height: 48px !important;
-                width: 100% !important;
-                border: 0 !important;
-                display: block;
-              }
-            `}</style>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
-              <div className="sm:col-span-6">
-                <label className="mb-1 block text-xs text-light-muted">Número do cartão</label>
-                <div id="form-checkout__cardNumber" className="mp-field rounded-xl border border-grey/40 bg-dark" />
-              </div>
-              <div className="sm:col-span-3">
-                <label className="mb-1 block text-xs text-light-muted">Validade</label>
-                <div id="form-checkout__expirationDate" className="mp-field rounded-xl border border-grey/40 bg-dark" />
-              </div>
-              <div className="sm:col-span-3">
-                <label className="mb-1 block text-xs text-light-muted">CVV</label>
-                <div id="form-checkout__securityCode" className="mp-field rounded-xl border border-grey/40 bg-dark" />
-              </div>
-              <div className="sm:col-span-6">
-                <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__cardholderName">Nome no cartão</label>
-                <input id="form-checkout__cardholderName" className={inputClass} placeholder="Nome impresso no cartão" />
-              </div>
-              <div className="sm:col-span-6">
-                <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__identificationNumber">CPF</label>
-                <input
-                  id="form-checkout__identificationNumber"
-                  className={inputClass}
-                  placeholder="000.000.000-00"
-                  inputMode="numeric"
-                  maxLength={14}
-                  onInput={(event) => {
-                    const campo = event.currentTarget
-                    const mascarado = mascararCpf(campo.value)
-                    if (campo.value !== mascarado) campo.value = mascarado
-                  }}
-                />
-              </div>
+        <section className="mt-4 rounded-[28px] border border-white/10 bg-dark-lighter p-4">
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-black/40 p-1">
+            <button
+              type="button"
+              onClick={() => { setMeio('pix'); setError('') }}
+              className={`h-11 rounded-xl text-sm font-bold ${meio === 'pix' ? 'bg-primary text-dark' : 'text-light-muted'}`}
+            >
+              Pix
+            </button>
+            <button
+              type="button"
+              onClick={() => { setMeio('cartao'); setPix(null); setError('') }}
+              className={`h-11 rounded-xl text-sm font-bold ${meio === 'cartao' ? 'bg-primary text-dark' : 'text-light-muted'}`}
+            >
+              Cartão
+            </button>
+          </div>
+
+          {meio === 'pix' && (
+            <div className="mt-4">
+              {!pix ? (
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-light" htmlFor="cpf">CPF do pagador</label>
+                  <input
+                    id="cpf"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={cpf}
+                    onChange={(event) => setCpf(mascararCpf(event.target.value))}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    className={inputClass}
+                  />
+                  <p className="mt-2 text-xs text-light-muted">Usado só para gerar o Pix.</p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  {pix.qrCodeBase64 && (
+                    <img
+                      src={`data:image/png;base64,${pix.qrCodeBase64}`}
+                      alt="QR Code do Pix"
+                      className="mx-auto h-44 w-44 rounded-2xl bg-white p-2"
+                    />
+                  )}
+                  <p className="mt-3 text-sm leading-relaxed text-light">
+                    Abra o app do banco e cole o código. Pode sair desta tela: o plano entra sozinho quando o Pix for pago.
+                  </p>
+                </div>
+              )}
             </div>
-            <select id="form-checkout__identificationType" className="hidden" aria-hidden="true" />
-            <select id="form-checkout__issuer" className="hidden" aria-hidden="true" />
-            <select id="form-checkout__installments" className="hidden" aria-hidden="true" />
-            <input id="form-checkout__cardholderEmail" type="email" className="hidden" defaultValue={user?.email || ''} />
-          </form>
-        )}
+          )}
+
+          {meio === 'cartao' && (
+            <form id="form-checkout" key={planoSelecionado} className="mt-4">
+              <style>{`
+                #form-checkout .mp-field {
+                  height: 48px;
+                  min-height: 48px;
+                  max-height: 48px;
+                  overflow: hidden;
+                  display: flex;
+                  align-items: center;
+                  padding: 0 12px;
+                }
+                #form-checkout .mp-field iframe {
+                  height: 48px !important;
+                  min-height: 48px !important;
+                  max-height: 48px !important;
+                  width: 100% !important;
+                  border: 0 !important;
+                  display: block;
+                }
+              `}</style>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+                <div className="sm:col-span-6">
+                  <label className="mb-1 block text-xs text-light-muted">Número do cartão</label>
+                  <div id="form-checkout__cardNumber" className="mp-field rounded-xl border border-grey/40 bg-dark" />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="mb-1 block text-xs text-light-muted">Validade</label>
+                  <div id="form-checkout__expirationDate" className="mp-field rounded-xl border border-grey/40 bg-dark" />
+                </div>
+                <div className="sm:col-span-3">
+                  <label className="mb-1 block text-xs text-light-muted">CVV</label>
+                  <div id="form-checkout__securityCode" className="mp-field rounded-xl border border-grey/40 bg-dark" />
+                </div>
+                <div className="sm:col-span-6">
+                  <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__cardholderName">Nome no cartão</label>
+                  <input id="form-checkout__cardholderName" className={inputClass} placeholder="Nome impresso no cartão" />
+                </div>
+                <div className="sm:col-span-6">
+                  <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__identificationNumber">CPF</label>
+                  <input
+                    id="form-checkout__identificationNumber"
+                    className={inputClass}
+                    placeholder="000.000.000-00"
+                    inputMode="numeric"
+                    maxLength={14}
+                    onInput={(event) => {
+                      const campo = event.currentTarget
+                      const mascarado = mascararCpf(campo.value)
+                      if (campo.value !== mascarado) campo.value = mascarado
+                    }}
+                  />
+                </div>
+              </div>
+              <select id="form-checkout__identificationType" className="hidden" aria-hidden="true" />
+              <select id="form-checkout__issuer" className="hidden" aria-hidden="true" />
+              <select id="form-checkout__installments" className="hidden" aria-hidden="true" />
+              <input id="form-checkout__cardholderEmail" type="email" className="hidden" defaultValue={user?.email || ''} />
+            </form>
+          )}
+        </section>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-grey/30 bg-dark/95 px-4 pt-3 backdrop-blur-md" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-dark/95 px-4 pt-3 shadow-[0_-16px_40px_rgba(0,0,0,0.45)] backdrop-blur-md" style={{ paddingBottom: 'max(0.85rem, env(safe-area-inset-bottom))' }}>
         <div className="mx-auto w-full max-w-lg">
           {error && <p className="mb-2 text-center text-sm font-semibold text-error">{error}</p>}
           {meio === 'cartao' ? (
@@ -534,7 +582,7 @@ export default function Checkout() {
               type="submit"
               form="form-checkout"
               disabled={loading || !sdkPronto}
-              className="h-12 w-full rounded-xl bg-primary text-base font-bold text-dark disabled:opacity-50"
+              className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark shadow-lg shadow-primary/30 disabled:opacity-50"
             >
               {textoBotao}
             </button>
@@ -543,15 +591,15 @@ export default function Checkout() {
               type="button"
               onClick={acaoPrincipal}
               disabled={loading}
-              className="h-12 w-full rounded-xl bg-primary text-base font-bold text-dark disabled:opacity-50"
+              className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark shadow-lg shadow-primary/30 disabled:opacity-50"
             >
               {textoBotao}
             </button>
           )}
-          <p className="mt-2 text-center text-xs text-light-muted">
+          <p className="mt-2 text-center text-[11px] text-light-muted">
             {meio === 'pix' && !pix
               ? 'O código vale 2 horas. Pode sair para o app do banco.'
-              : 'Feito pelo Mercado Pago'}
+              : 'Pagamento seguro pelo Mercado Pago'}
           </p>
         </div>
       </div>
