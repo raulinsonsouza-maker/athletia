@@ -857,6 +857,29 @@ export async function sendPasswordResetEmail(data: PasswordResetEmailData): Prom
 interface RemarketingEmailData {
   nome: string;
   email: string;
+  resumo?: string;
+  exercicios?: string[];
+}
+
+function escaparHtml(valor: string): string {
+  return valor
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function blocoPlanoEmail(data: RemarketingEmailData): string {
+  if (!data.resumo && !data.exercicios?.length) return '';
+  const itens = (data.exercicios || []).slice(0, 6).map((nome) =>
+    `<li style="margin: 4px 0; color: #E0E0E8; font-size: 14px;">${escaparHtml(nome)}</li>`
+  ).join('');
+  return `
+    <div style="background-color: #1A1814; border-left: 4px solid #F9A620; padding: 16px 18px; margin: 20px 0; border-radius: 4px;">
+      ${data.resumo ? `<p style="margin: 0; color: #F7F7FF; font-size: 16px; line-height: 1.5;"><strong>${escaparHtml(data.resumo)}</strong></p>` : ''}
+      ${itens ? `<p style="margin: 12px 0 6px; color: #F9A620; font-size: 13px; font-weight: bold;">Primeiro treino</p><ul style="margin: 0; padding-left: 18px;">${itens}</ul>` : ''}
+    </div>
+  `;
 }
 
 /**
@@ -865,7 +888,7 @@ interface RemarketingEmailData {
  */
 function generateRemarketingEmail1HTML(data: RemarketingEmailData): string {
   const { nome, email } = data;
-  const checkoutUrl = `${FRONTEND_URL}/checkout?utm_source=remarketing&utm_medium=email&utm_campaign=remarketing_10min`;
+  const checkoutUrl = `${FRONTEND_URL}/checkout?plano=MENSAL&utm_source=remarketing&utm_medium=email&utm_campaign=remarketing_10min`;
 
   // SVG para ícone de relógio (urgência)
   const clockIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
@@ -883,7 +906,7 @@ function generateRemarketingEmail1HTML(data: RemarketingEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seu treino personalizado está quase pronto!</title>
+  <title>Seu treino está pronto</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
@@ -895,7 +918,7 @@ function generateRemarketingEmail1HTML(data: RemarketingEmailData): string {
             <td style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); padding: 40px 30px; text-align: center;">
               <h1 style="margin: 0; color: #070600; font-size: 28px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center;">
                 ${clockIcon}
-                Seu treino personalizado está quase pronto!
+                Seu treino está pronto
               </h1>
             </td>
           </tr>
@@ -908,7 +931,7 @@ function generateRemarketingEmail1HTML(data: RemarketingEmailData): string {
               </p>
               
               <p style="margin: 0 0 20px 0; color: #F7F7FF; font-size: 16px; line-height: 1.6;">
-                Você já respondeu todas as perguntas e seu treino personalizado está <strong style="color: #F9A620;">quase pronto</strong>! Falta apenas um passo para você começar a transformar seu corpo.
+                Seu treino personalizado está <strong style="color: #F9A620;">pronto</strong>. Falta apenas o pagamento para você começar.
               </p>
               
               <!-- Destaque Personalização -->
@@ -934,12 +957,13 @@ function generateRemarketingEmail1HTML(data: RemarketingEmailData): string {
                 <strong style="color: #F9A620;">Agora é só finalizar e começar a treinar!</strong>
               </p>
               
+              ${blocoPlanoEmail(data)}
               <!-- CTA Button Principal -->
               <table role="presentation" style="width: 100%; margin: 30px 0;">
                 <tr>
                   <td style="text-align: center;">
                     <a href="${checkoutUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4);">
-                      Finalizar e Começar Agora
+                      Começar por R$ 29,90
                     </a>
                   </td>
                 </tr>
@@ -981,7 +1005,7 @@ function generateRemarketingEmail1HTML(data: RemarketingEmailData): string {
  */
 function generateRemarketingEmail2HTML(data: RemarketingEmailData): string {
   const { nome, email } = data;
-  const checkoutUrl = `${FRONTEND_URL}/checkout?utm_source=remarketing&utm_medium=email&utm_campaign=remarketing_24h`;
+  const checkoutUrl = `${FRONTEND_URL}/checkout?plano=MENSAL&utm_source=remarketing&utm_medium=email&utm_campaign=remarketing_24h`;
 
   // SVG para ícone de pessoas (prova social)
   const peopleIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
@@ -999,7 +1023,7 @@ function generateRemarketingEmail2HTML(data: RemarketingEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Última chance: Seu treino personalizado te espera</title>
+  <title>Seu treino ainda está pronto</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
@@ -1011,7 +1035,7 @@ function generateRemarketingEmail2HTML(data: RemarketingEmailData): string {
             <td style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); padding: 40px 30px; text-align: center;">
               <h1 style="margin: 0; color: #070600; font-size: 28px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center;">
                 ${peopleIcon}
-                Última chance: Seu treino personalizado te espera
+                Seu treino ainda está pronto
               </h1>
             </td>
           </tr>
@@ -1054,12 +1078,13 @@ function generateRemarketingEmail2HTML(data: RemarketingEmailData): string {
                 <strong style="color: #F9A620;">Não perca a oportunidade de transformar seu corpo!</strong>
               </p>
               
+              ${blocoPlanoEmail(data)}
               <!-- CTA Button Principal -->
               <table role="presentation" style="width: 100%; margin: 30px 0;">
                 <tr>
                   <td style="text-align: center;">
                     <a href="${checkoutUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4);">
-                      Finalizar Agora e Começar
+                      Começar por R$ 29,90
                     </a>
                   </td>
                 </tr>
@@ -1101,7 +1126,7 @@ function generateRemarketingEmail2HTML(data: RemarketingEmailData): string {
  */
 function generateRemarketingEmail3HTML(data: RemarketingEmailData): string {
   const { nome, email } = data;
-  const checkoutUrl = `${FRONTEND_URL}/checkout?utm_source=remarketing&utm_medium=email&utm_campaign=remarketing_48h`;
+  const checkoutUrl = `${FRONTEND_URL}/checkout?plano=MENSAL&utm_source=remarketing&utm_medium=email&utm_campaign=remarketing_48h`;
 
   // SVG para ícone de escudo (garantia)
   const shieldIcon = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
@@ -1120,7 +1145,7 @@ function generateRemarketingEmail3HTML(data: RemarketingEmailData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Não deixe seus objetivos para depois</title>
+  <title>Seu treino continua pronto</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #070600;">
   <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #070600;">
@@ -1132,7 +1157,7 @@ function generateRemarketingEmail3HTML(data: RemarketingEmailData): string {
             <td style="background: linear-gradient(135deg, #F9A620 0%, #E8940D 100%); padding: 40px 30px; text-align: center;">
               <h1 style="margin: 0; color: #070600; font-size: 28px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center;">
                 ${shieldIcon}
-                Não deixe seus objetivos para depois
+                Seu treino continua pronto
               </h1>
             </td>
           </tr>
@@ -1180,12 +1205,13 @@ function generateRemarketingEmail3HTML(data: RemarketingEmailData): string {
                 <strong style="color: #F9A620;">O melhor momento para começar é agora!</strong>
               </p>
               
+              ${blocoPlanoEmail(data)}
               <!-- CTA Button Principal -->
               <table role="presentation" style="width: 100%; margin: 30px 0;">
                 <tr>
                   <td style="text-align: center;">
                     <a href="${checkoutUrl}" style="display: inline-block; background-color: #F9A620; color: #070600; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 12px rgba(249, 166, 32, 0.4);">
-                      Finalizar Agora - Sem Riscos
+                      Começar por R$ 29,90
                     </a>
                   </td>
                 </tr>
@@ -1244,15 +1270,15 @@ export async function sendRemarketingEmail(
     switch (tipo) {
       case '10min':
         html = generateRemarketingEmail1HTML(data);
-        subject = 'Seu treino personalizado está quase pronto!';
+        subject = 'Seu treino está pronto. Comece por R$ 29,90';
         break;
       case '24h':
         html = generateRemarketingEmail2HTML(data);
-        subject = 'Última chance: Seu treino personalizado te espera';
+        subject = 'Seu treino ainda está pronto. Comece por R$ 29,90';
         break;
       case '48h':
         html = generateRemarketingEmail3HTML(data);
-        subject = 'Não deixe seus objetivos para depois';
+        subject = 'Seu treino continua pronto. Comece por R$ 29,90';
         break;
       default:
         throw new Error(`Tipo de e-mail de remarketing inválido: ${tipo}`);

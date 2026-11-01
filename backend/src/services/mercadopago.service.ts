@@ -412,7 +412,7 @@ export async function criarPagamentoPix(params: {
         gateway: 'mercadopago',
         status: 'pending',
         paymentMethod: 'pix',
-        createdAt: { gte: new Date(Date.now() - 30 * 60 * 1000) }
+        createdAt: { gte: new Date(Date.now() - 2 * 60 * 60 * 1000) }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -423,7 +423,7 @@ export async function criarPagamentoPix(params: {
     }
 
     const config = PLANOS[params.plano];
-    const expira = new Date(Date.now() + 30 * 60 * 1000);
+    const expira = new Date(Date.now() + 2 * 60 * 60 * 1000);
     const body: Record<string, unknown> = {
       transaction_amount: config.preco,
       description: `AthletIA ${config.nome}`,

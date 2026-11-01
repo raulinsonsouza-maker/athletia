@@ -74,6 +74,7 @@ export interface TreinoGerado {
   tempoEstimado: number;
   tipo: string;
   cardio?: CardioInfo;
+  exercicios?: { nome: string; series: number; repeticoes: string; cardio: boolean }[];
 }
 
 export interface TreinoOptions {
@@ -97,6 +98,7 @@ export interface TreinoOptions {
   letraTreino?: string;
   perfil?: PerfilCompleto;
   aplicarDadosOnboarding?: boolean;
+  persistir?: boolean;
 }
 
 // Re-exportar tipos usados por outros serviços
@@ -559,6 +561,48 @@ export async function gerarTreinoUnificado(
   // Usar gruposFiltrados que já foram determinados
   const nomeTreino = opcoesAjustadas.nome || gerarNomeTreino(frequencia, indiceDia, gruposFiltrados);
   const letraTreino = opcoesAjustadas.letraTreino || LETRAS_TREINO[indiceDia % LETRAS_TREINO.length];
+
+  if (opcoesAjustadas.persistir === false) {
+    const exercicioCardio = await selecionarExercicioAerobicoDoDia(
+      opcoesAjustadas.data,
+      perfil?.equipamentos,
+      evitarAltoImpacto(perfil),
+      perfil?.lesoes
+    );
+    const exerciciosParaTreino = isModoCanonico && exerciciosPorGrupoCanonico && exerciciosPorGrupoCanonico.length === 2
+      ? intercalarExerciciosPorGrupo(exerciciosPorGrupoCanonico)
+      : exerciciosFinais;
+    const lista = [
+      ...exerciciosParaTreino.map((exercicio) => ({
+        nome: String(exercicio.nome || 'Exercício'),
+        series: parametros.series,
+        repeticoes: parametros.repeticoes,
+        cardio: false
+      })),
+      ...(exercicioCardio ? [{
+        nome: String(exercicioCardio.nome || 'Cardio'),
+        series: 1,
+        repeticoes: `${configTempo.cardio} min`,
+        cardio: true
+      }] : [])
+    ];
+    return {
+      id: 'previa',
+      nome: nomeTreino,
+      data: opcoesAjustadas.data,
+      gruposPrincipais: gruposFiltrados.slice(0, isModoCanonico ? 2 : 3),
+      totalExercicios: lista.length,
+      tempoEstimado,
+      tipo: 'IA',
+      cardio: {
+        ativo: Boolean(exercicioCardio),
+        tempoMinutos: configTempo.cardio,
+        intensidade: 'moderada',
+        momento: 'final'
+      },
+      exercicios: lista
+    };
+  }
   
   // Criar treino no banco
   const treino = await prisma.$transaction(async (tx) => {
@@ -767,6 +811,88 @@ export async function gerarTreinoUnificado(
     tempoEstimado,
     tipo: treino.tipo,
     cardio
+  };
+}
+
+function fraseDoPlano(perfil: {
+  objetivo?: string | null;
+  localTreino?: string | null;
+  frequenciaSemanal?: number | null;
+  tempoDisponivel?: number | null;
+}): string {
+  const local = (perfil.localTreino || '').toLowerCase();
+  const onde = local === 'casa'
+    ? 'em casa'
+    : local === 'misto' || local === 'customizado'
+      ? 'em casa e na academia'
+      : 'na academia';
+  const vezes = perfil.frequenciaSemanal || 3;
+  const tempo = perfil.tempoDisponivel || 45;
+  return `${perfil.objetivo || 'Treino'} ${onde}, ${vezes} ${vezes === 1 ? 'vez' : 'vezes'} por semana, ${tempo} minutos`;
+}
+
+export async function obterPreviaCheckout(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      nome: true,
+      planoAtivo: true,
+      perfil: true
+    }
+  });
+  if (!user) return null;
+  if (user.planoAtivo) return { planoAtivo: true as const };
+
+  const perfil = user.perfil;
+  const frase = fraseDoPlano(perfil || {});
+  const primeiroNome = (user.nome || '').trim().split(/\s+/)[0] || 'Olá';
+  if (!perfil?.objetivo) {
+    return {
+      planoAtivo: false as const,
+      nome: primeiroNome,
+      frase,
+      treino: null
+    };
+  }
+
+  const treino = await gerarTreinoUnificado({
+    userId,
+    data: new Date(),
+    tipo: 'IA',
+    indiceDia: 0,
+    aplicarDadosOnboarding: true,
+    persistir: false,
+    perfil: {
+      idade: perfil.idade,
+      sexo: perfil.sexo,
+      altura: perfil.altura,
+      pesoAtual: perfil.pesoAtual,
+      percentualGordura: perfil.percentualGordura,
+      tipoCorpo: perfil.tipoCorpo,
+      experiencia: perfil.experiencia,
+      problemasAnteriores: perfil.problemasAnteriores || [],
+      lesoes: perfil.lesoes || [],
+      objetivo: perfil.objetivo,
+      objetivosAdicionais: perfil.objetivosAdicionais || [],
+      rpePreferido: perfil.rpePreferido,
+      frequenciaSemanal: perfil.frequenciaSemanal,
+      tempoDisponivel: perfil.tempoDisponivel,
+      localTreino: perfil.localTreino,
+      equipamentos: perfil.equipamentos || [],
+      preferencias: perfil.preferencias || [],
+      aguaDiaria: perfil.aguaDiaria
+    }
+  });
+
+  return {
+    planoAtivo: false as const,
+    nome: primeiroNome,
+    frase,
+    treino: treino ? {
+      nome: treino.nome,
+      tempoEstimado: treino.tempoEstimado,
+      exercicios: treino.exercicios || []
+    } : null
   };
 }
 

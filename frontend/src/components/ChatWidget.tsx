@@ -16,10 +16,10 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Verificar se deve mostrar o widget (em /meu-plano, /perfil e /checkout)
+  // O checkout precisa do botão de pagar livre. O chat fica nas telas do app.
   const shouldShowWidget = () => {
     const path = location.pathname;
-    return path === '/meu-plano' || path === '/perfil' || path.startsWith('/perfil/') || path === '/checkout';
+    return path === '/meu-plano' || path === '/perfil' || path.startsWith('/perfil/');
   };
 
   useEffect(() => {

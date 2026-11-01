@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { prisma } from '../lib/prisma';
 import * as caktoService from '../services/cakto.service';
 import * as mercadoPagoService from '../services/mercadopago.service';
+import { obterPreviaCheckout } from '../services/treino-core.service';
 
 function responderErro(res: Response, error: any, fallback: string) {
   const status = error?.statusCode || 500;
@@ -21,6 +22,17 @@ export const gerarCheckoutUrl = async (_req: Request, res: Response) => {
   return res.status(410).json({
     error: 'Assine na página de checkout com cartão ou Pix.'
   });
+};
+
+export const obterPreviaPagamento = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.userId) return res.status(401).json({ error: 'Autenticação obrigatória' });
+    const previa = await obterPreviaCheckout(req.userId);
+    if (!previa) return res.status(404).json({ error: 'Usuário não encontrado' });
+    return res.json(previa);
+  } catch (error: any) {
+    return responderErro(res, error, 'Erro ao montar a prévia do treino');
+  }
 };
 
 export const obterConfigPagamento = async (_req: Request, res: Response) => {

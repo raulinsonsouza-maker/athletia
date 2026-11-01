@@ -33,9 +33,27 @@ type PixPendente = {
   qrCodeBase64: string
 }
 
+type ExercicioPrevia = {
+  nome: string
+  series: number
+  repeticoes: string
+  cardio: boolean
+}
+
+type PreviaCheckout = {
+  planoAtivo: boolean
+  nome?: string
+  frase?: string
+  treino?: {
+    nome: string
+    tempoEstimado: number
+    exercicios: ExercicioPrevia[]
+  } | null
+}
+
 const PLANOS: PlanoCheckout[] = PLANOS_CHECKOUT.filter((plano) => plano.id !== 'TRIMESTRAL')
 
-const inputClass = 'h-11 w-full rounded-xl bg-dark border border-grey/40 px-3 text-sm text-light placeholder:text-light-muted focus:outline-none focus:border-primary'
+const inputClass = 'h-12 w-full rounded-xl bg-dark border border-grey/40 px-3 text-base text-light placeholder:text-light-muted focus:outline-none focus:border-primary'
 
 function mascararCpf(valor: string) {
   const digitos = valor.replace(/\D/g, '').slice(0, 11)
@@ -45,13 +63,17 @@ function mascararCpf(valor: string) {
   return `${digitos.slice(0, 3)}.${digitos.slice(3, 6)}.${digitos.slice(6, 9)}-${digitos.slice(9)}`
 }
 
+function precoTexto(valor: number) {
+  return valor.toFixed(2).replace('.', ',')
+}
+
 export default function Checkout() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { user, refreshUser } = useAuth()
+  const { user, refreshUser, loading: authLoading } = useAuth()
   const { showToast, ToastContainer } = useToast()
-  const [planoSelecionado, setPlanoSelecionado] = useState<string>('SEMESTRAL')
-  const [meio, setMeio] = useState<MeioPagamento>('cartao')
+  const [planoSelecionado, setPlanoSelecionado] = useState<string>('MENSAL')
+  const [meio, setMeio] = useState<MeioPagamento>('pix')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [publicKey, setPublicKey] = useState(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY || '')
@@ -59,6 +81,7 @@ export default function Checkout() {
   const [cpf, setCpf] = useState('')
   const [pix, setPix] = useState<PixPendente | null>(null)
   const [copiado, setCopiado] = useState(false)
+  const [previa, setPrevia] = useState<PreviaCheckout | null>(null)
   const cardFormRef = useRef<any>(null)
   const planoRef = useRef(planoSelecionado)
   const userIdRef = useRef(user?.id)
@@ -67,17 +90,45 @@ export default function Checkout() {
   userIdRef.current = user?.id
   assinanteRef.current = Boolean(user?.planoAtivo)
 
+  const plano = PLANOS.find((item) => item.id === planoSelecionado) || PLANOS[0]
+  const preco = precoTexto(plano.preco)
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!user) navigate('/login', { replace: true })
+  }, [authLoading, user, navigate])
+
   useEffect(() => {
     window.scrollTo(0, 0)
     registrarEventoAnalytics('paywall_viewed', {
       screen: 'checkout',
       reason: 'trial_expired'
     })
-    const plano = params.get('plano')?.toUpperCase()
-    if (plano === 'MENSAL' || plano === 'SEMESTRAL') {
-      setPlanoSelecionado(plano)
+    const planoUrl = params.get('plano')?.toUpperCase()
+    if (planoUrl === 'MENSAL' || planoUrl === 'SEMESTRAL') {
+      setPlanoSelecionado(planoUrl)
     }
   }, [params])
+
+  useEffect(() => {
+    if (!user?.id) return
+    let ativo = true
+    api.get('/payment/previa')
+      .then((response) => {
+        if (!ativo) return
+        if (response.data?.planoAtivo) {
+          navigate('/meu-plano', { replace: true })
+          return
+        }
+        setPrevia(response.data)
+      })
+      .catch(() => {
+        if (ativo) setPrevia(null)
+      })
+    return () => {
+      ativo = false
+    }
+  }, [user?.id, navigate])
 
   useEffect(() => {
     if (publicKey) return
@@ -106,13 +157,13 @@ export default function Checkout() {
   }, [])
 
   const concluirAssinatura = async (transactionId?: string) => {
-    const plano = PLANOS.find((item) => item.id === planoRef.current)
+    const planoAtual = PLANOS.find((item) => item.id === planoRef.current)
     const novoCliente = !assinanteRef.current
     await refreshUser()
     dispararConversaoAssinatura({
       transactionId,
       plano: planoRef.current,
-      value: plano?.preco,
+      value: planoAtual?.preco,
       newCustomer: novoCliente
     })
     registrarEventoAnalytics('subscription_started', {
@@ -151,14 +202,19 @@ export default function Checkout() {
   }
 
   useEffect(() => {
-    if (!publicKey || !sdkPronto || !window.MercadoPago || cardFormRef.current) return
+    if (meio !== 'cartao' || !publicKey || !sdkPronto || !window.MercadoPago) return
     let ativo = true
     const timer = window.setTimeout(() => {
-      if (!ativo || cardFormRef.current) return
-      const plano = PLANOS.find((item) => item.id === planoRef.current)
+      if (!ativo) return
+      try {
+        cardFormRef.current?.unmount?.()
+      } catch {
+        // O formulário anterior já saiu da tela.
+      }
+      const planoAtual = PLANOS.find((item) => item.id === planoRef.current)
       const mp = new window.MercadoPago(publicKey, { locale: 'pt-BR' })
       cardFormRef.current = mp.cardForm({
-        amount: (plano?.preco ?? 29.9).toFixed(2),
+        amount: (planoAtual?.preco ?? 29.9).toFixed(2),
         iframe: true,
         form: {
           id: 'form-checkout',
@@ -179,8 +235,8 @@ export default function Checkout() {
             if (parcelas && parcelas.options.length > 0) parcelas.selectedIndex = 0
             const documento = document.getElementById('form-checkout__identificationType') as HTMLSelectElement | null
             if (documento) {
-              const cpf = Array.from(documento.options).find((option) => option.value === 'CPF' || option.text === 'CPF')
-              if (cpf) documento.value = cpf.value
+              const cpfOption = Array.from(documento.options).find((option) => option.value === 'CPF' || option.text === 'CPF')
+              if (cpfOption) documento.value = cpfOption.value
             }
           },
           onSubmit: (event: Event) => {
@@ -199,8 +255,14 @@ export default function Checkout() {
     return () => {
       ativo = false
       window.clearTimeout(timer)
+      try {
+        cardFormRef.current?.unmount?.()
+      } catch {
+        // O formulário anterior já saiu da tela.
+      }
+      cardFormRef.current = null
     }
-  }, [publicKey, sdkPronto])
+  }, [publicKey, sdkPronto, meio, planoSelecionado])
 
   useEffect(() => {
     if (!pix?.paymentId) return
@@ -267,227 +329,232 @@ export default function Checkout() {
     window.setTimeout(() => setCopiado(false), 2000)
   }
 
+  const escolherPlano = (id: string) => {
+    setPlanoSelecionado(id)
+    setPix(null)
+    setError('')
+  }
+
+  const acaoPrincipal = () => {
+    if (meio === 'pix' && pix) {
+      void copiarPix()
+      return
+    }
+    if (meio === 'pix') void gerarPix()
+  }
+
+  const textoBotao = meio === 'cartao'
+    ? (loading ? 'Processando...' : `Assinar por R$ ${preco}`)
+    : pix
+      ? (copiado ? 'Código copiado' : 'Copiar código Pix')
+      : (loading ? 'Gerando Pix...' : `Pagar R$ ${preco} com Pix`)
+
+  const exercicios = previa?.treino?.exercicios || []
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-dark text-light">
+        Carregando...
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark">
       <ToastContainer />
 
-      <main className="container-custom section pb-20 pt-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-light mb-4">
-            Desbloquear Meu Plano
-          </h1>
-          <p className="text-lg md:text-xl text-light-muted max-w-2xl mx-auto">
-            Mantenha seu progresso e continue sua evolução
-          </p>
-        </div>
+      <main className="mx-auto w-full max-w-lg px-4 pb-40 pt-6">
+        <h1 className="text-2xl font-display font-bold text-light">
+          {previa?.nome ? `${previa.nome}, seu plano está pronto` : 'Seu plano está pronto'}
+        </h1>
+        <p className="mt-2 text-base text-light-muted">
+          {previa?.frase || 'Treino personalizado para a sua rotina'}
+        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto mb-8">
-          {PLANOS.map((plano) => {
-            const selected = planoSelecionado === plano.id
-            const destaque = plano.id === 'SEMESTRAL'
-            return (
-              <div key={plano.id} className={`relative ${destaque ? 'sm:scale-[1.04] z-10' : ''}`}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPlanoSelecionado(plano.id)
-                    setPix(null)
-                  }}
-                  className={`relative w-full p-6 rounded-2xl text-left transition-all duration-300 flex flex-col h-full ${
-                    selected
-                      ? 'border-2 border-primary bg-gradient-to-br from-primary/30 via-primary/15 to-primary/30 shadow-2xl shadow-primary/40'
-                      : destaque
-                      ? 'border-2 border-primary/60 bg-dark-lighter hover:border-primary hover:shadow-xl shadow-primary/20'
-                      : 'border-2 border-grey/30 bg-dark-lighter hover:border-primary/50 hover:shadow-lg'
-                  }`}
-                >
-                  {destaque && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
-                      <span className="bg-gradient-to-r from-primary to-primary/80 text-dark text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                        MELHOR ESCOLHA
-                      </span>
-                    </div>
-                  )}
-                  <div className="mb-4">
-                    <h3 className="text-2xl font-bold text-light mb-1">{plano.nome}</h3>
-                  </div>
-                  <div className="mb-4 pb-4 border-b border-grey/30">
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-lg font-semibold text-light-muted">R$</span>
-                      <span className={`text-4xl md:text-5xl font-bold ${selected ? 'text-primary' : 'text-primary/90'}`}>
-                        {plano.precoMensal.toFixed(2).replace('.', ',')}
-                      </span>
-                    </div>
-                    <p className="text-sm text-light-muted mb-3">/ mês</p>
-                    {plano.id !== 'MENSAL' && (
-                      <div className="bg-dark/50 rounded-lg p-2 mb-2">
-                        <p className="text-xs text-light-muted mb-1">Cobrança do período:</p>
-                        <p className="text-xl font-bold text-light">
-                          R$ {plano.preco.toFixed(2).replace('.', ',')}
-                        </p>
-                      </div>
-                    )}
-                    {plano.economia && (
-                      <div className="bg-success/20 border border-success/50 rounded-lg p-2">
-                        <p className="text-xs text-success font-bold">{plano.economia}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2 flex-1">
-                    {['Treino personalizado com IA', 'Ajustes automáticos', 'Histórico completo', 'Acompanhamento de progresso'].map((beneficio) => (
-                      <div key={beneficio} className="flex items-center gap-2">
-                        <span className="text-xs text-light-muted">{beneficio}</span>
-                      </div>
-                    ))}
-                  </div>
-                </button>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="max-w-2xl mx-auto mb-8">
-          {error && (
-            <div className="bg-error/20 border border-error/50 text-error px-6 py-4 rounded-xl mb-6 text-center">
-              <p className="font-semibold">{error}</p>
+        {exercicios.length > 0 && (
+          <section className="mt-5 rounded-2xl border border-grey/30 bg-dark-lighter p-4">
+            <div className="mb-3 flex items-baseline justify-between gap-3">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-primary">Primeiro treino</h2>
+              {previa?.treino?.tempoEstimado ? (
+                <span className="text-sm text-light-muted">{previa.treino.tempoEstimado} min</span>
+              ) : null}
             </div>
-          )}
+            <ol className="space-y-2">
+              {exercicios.map((exercicio, index) => (
+                <li key={`${exercicio.nome}-${index}`} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="text-light">{exercicio.nome}</span>
+                  <span className="shrink-0 text-light-muted">
+                    {exercicio.cardio ? exercicio.repeticoes : `${exercicio.series}x ${exercicio.repeticoes}`}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button
-              type="button"
-              onClick={() => { setMeio('cartao'); setPix(null) }}
-              className={`rounded-2xl border-2 px-4 py-4 font-bold ${meio === 'cartao' ? 'border-primary bg-primary/20 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'}`}
-            >
-              Cartão de crédito
-            </button>
-            <button
-              type="button"
-              onClick={() => setMeio('pix')}
-              className={`rounded-2xl border-2 px-4 py-4 font-bold ${meio === 'pix' ? 'border-primary bg-primary/20 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'}`}
-            >
-              Pix
-            </button>
-          </div>
+        <button
+          type="button"
+          onClick={() => escolherPlano('MENSAL')}
+          className={`mt-5 w-full rounded-2xl border-2 p-4 text-left ${
+            planoSelecionado === 'MENSAL' ? 'border-primary bg-primary/15' : 'border-grey/30 bg-dark-lighter'
+          }`}
+        >
+          <p className="text-sm font-bold text-light">Mensal</p>
+          <p className="mt-1 text-4xl font-bold text-primary">R$ 29,90</p>
+          <p className="text-sm text-light-muted">por mês, cancele quando quiser</p>
+        </button>
 
-          <form id="form-checkout" className={`bg-dark-lighter border border-grey/30 rounded-2xl p-4 sm:p-5 ${meio === 'cartao' ? '' : 'hidden'}`}>
-              <style>{`
-                #form-checkout .mp-field {
-                  height: 44px;
-                  min-height: 44px;
-                  max-height: 44px;
-                  overflow: hidden;
-                  display: flex;
-                  align-items: center;
-                  padding: 0 12px;
-                }
-                #form-checkout .mp-field iframe {
-                  height: 44px !important;
-                  min-height: 44px !important;
-                  max-height: 44px !important;
-                  width: 100% !important;
-                  border: 0 !important;
-                  display: block;
-                }
-              `}</style>
-              <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
-                <div className="sm:col-span-6">
-                  <label className="block text-xs text-light-muted mb-1">Número do cartão</label>
-                  <div id="form-checkout__cardNumber" className="mp-field rounded-xl bg-dark border border-grey/40" />
-                </div>
-                <div className="sm:col-span-3">
-                  <label className="block text-xs text-light-muted mb-1">Validade</label>
-                  <div id="form-checkout__expirationDate" className="mp-field rounded-xl bg-dark border border-grey/40" />
-                </div>
-                <div className="sm:col-span-3">
-                  <label className="block text-xs text-light-muted mb-1">CVV</label>
-                  <div id="form-checkout__securityCode" className="mp-field rounded-xl bg-dark border border-grey/40" />
-                </div>
-                <div className="sm:col-span-6">
-                  <label className="block text-xs text-light-muted mb-1" htmlFor="form-checkout__cardholderName">Nome no cartão</label>
-                  <input id="form-checkout__cardholderName" className={inputClass} placeholder="Nome impresso no cartão" />
-                </div>
-                <div className="sm:col-span-6">
-                  <label className="block text-xs text-light-muted mb-1" htmlFor="form-checkout__identificationNumber">CPF</label>
-                  <input
-                    id="form-checkout__identificationNumber"
-                    className={inputClass}
-                    placeholder="000.000.000-00"
-                    inputMode="numeric"
-                    maxLength={14}
-                    onInput={(event) => {
-                      const campo = event.currentTarget
-                      const mascarado = mascararCpf(campo.value)
-                      if (campo.value !== mascarado) campo.value = mascarado
-                    }}
+        <button
+          type="button"
+          onClick={() => escolherPlano('SEMESTRAL')}
+          className={`mt-3 w-full rounded-2xl border px-4 py-3 text-left text-sm ${
+            planoSelecionado === 'SEMESTRAL' ? 'border-primary bg-primary/15 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'
+          }`}
+        >
+          Ou 6 meses por R$ 89,90 (R$ 14,98/mês)
+        </button>
+
+        <div className="mt-5 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => { setMeio('pix'); setError('') }}
+            className={`h-12 rounded-2xl border-2 text-sm font-bold ${meio === 'pix' ? 'border-primary bg-primary/20 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'}`}
+          >
+            Pix
+          </button>
+          <button
+            type="button"
+            onClick={() => { setMeio('cartao'); setPix(null); setError('') }}
+            className={`h-12 rounded-2xl border-2 text-sm font-bold ${meio === 'cartao' ? 'border-primary bg-primary/20 text-light' : 'border-grey/30 bg-dark-lighter text-light-muted'}`}
+          >
+            Cartão
+          </button>
+        </div>
+
+        {meio === 'pix' && (
+          <div className="mt-4 space-y-3">
+            {!pix ? (
+              <div>
+                <label className="mb-2 block text-sm text-light" htmlFor="cpf">CPF do pagador</label>
+                <input
+                  id="cpf"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  value={cpf}
+                  onChange={(event) => setCpf(mascararCpf(event.target.value))}
+                  placeholder="000.000.000-00"
+                  maxLength={14}
+                  className={inputClass}
+                />
+              </div>
+            ) : (
+              <div className="space-y-3 text-center">
+                {pix.qrCodeBase64 && (
+                  <img
+                    src={`data:image/png;base64,${pix.qrCodeBase64}`}
+                    alt="QR Code do Pix"
+                    className="mx-auto h-44 w-44 rounded-xl bg-white p-2"
                   />
-                </div>
+                )}
+                <p className="text-sm text-light">
+                  O código vale 2 horas. Abra o app do banco e cole. Pode sair desta tela: se o Pix for pago, o plano entra sozinho.
+                </p>
               </div>
-              <select id="form-checkout__identificationType" className="hidden" aria-hidden="true" />
-              <select id="form-checkout__issuer" className="hidden" aria-hidden="true" />
-              <select id="form-checkout__installments" className="hidden" aria-hidden="true" />
-              <input id="form-checkout__cardholderEmail" type="email" className="hidden" defaultValue={user?.email || ''} />
-              <button
-                type="submit"
-                disabled={loading || !sdkPronto}
-                className="mt-4 w-full bg-primary text-dark text-base px-6 py-3 font-bold rounded-xl disabled:opacity-50"
-              >
-                {loading ? 'Processando...' : 'Assinar com cartão'}
-              </button>
-          </form>
-          {meio === 'pix' && (
-            <div className="space-y-3 bg-dark-lighter border border-grey/30 rounded-2xl p-4 sm:p-5">
-              {!pix ? (
-                <>
-                  <div>
-                    <label className="block text-sm text-light mb-2" htmlFor="cpf">CPF</label>
-                    <input
-                      id="cpf"
-                      inputMode="numeric"
-                      autoComplete="off"
-                      value={cpf}
-                      onChange={(event) => setCpf(mascararCpf(event.target.value))}
-                      placeholder="000.000.000-00"
-                      maxLength={14}
-                      className={inputClass}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => void gerarPix()}
-                    disabled={loading}
-                    className="w-full bg-primary text-dark text-base px-6 py-3 font-bold rounded-xl disabled:opacity-50"
-                  >
-                    {loading ? 'Gerando Pix...' : 'Gerar Pix'}
-                  </button>
-                </>
-              ) : (
-                <div className="space-y-4 text-center">
-                  {pix.qrCodeBase64 && (
-                    <img
-                      src={`data:image/png;base64,${pix.qrCodeBase64}`}
-                      alt="QR Code do Pix"
-                      className="mx-auto w-56 h-56 rounded-xl bg-white p-2"
-                    />
-                  )}
-                  <p className="text-sm text-light-muted break-all">{pix.qrCode}</p>
-                  <button type="button" onClick={() => void copiarPix()} className="w-full border border-primary text-primary font-bold rounded-2xl py-3">
-                    {copiado ? 'Código copiado' : 'Copiar código Pix'}
-                  </button>
-                  <p className="text-sm text-light">Aguardando a confirmação do pagamento. Você entra no app assim que ele aprovar.</p>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-          <p className="text-sm text-light-muted text-center mt-4 flex items-center justify-center gap-2">
-            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Feito pelo Mercado Pago
+        {meio === 'cartao' && (
+          <form id="form-checkout" key={planoSelecionado} className="mt-4 rounded-2xl border border-grey/30 bg-dark-lighter p-4">
+            <style>{`
+              #form-checkout .mp-field {
+                height: 48px;
+                min-height: 48px;
+                max-height: 48px;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                padding: 0 12px;
+              }
+              #form-checkout .mp-field iframe {
+                height: 48px !important;
+                min-height: 48px !important;
+                max-height: 48px !important;
+                width: 100% !important;
+                border: 0 !important;
+                display: block;
+              }
+            `}</style>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+              <div className="sm:col-span-6">
+                <label className="mb-1 block text-xs text-light-muted">Número do cartão</label>
+                <div id="form-checkout__cardNumber" className="mp-field rounded-xl border border-grey/40 bg-dark" />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="mb-1 block text-xs text-light-muted">Validade</label>
+                <div id="form-checkout__expirationDate" className="mp-field rounded-xl border border-grey/40 bg-dark" />
+              </div>
+              <div className="sm:col-span-3">
+                <label className="mb-1 block text-xs text-light-muted">CVV</label>
+                <div id="form-checkout__securityCode" className="mp-field rounded-xl border border-grey/40 bg-dark" />
+              </div>
+              <div className="sm:col-span-6">
+                <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__cardholderName">Nome no cartão</label>
+                <input id="form-checkout__cardholderName" className={inputClass} placeholder="Nome impresso no cartão" />
+              </div>
+              <div className="sm:col-span-6">
+                <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__identificationNumber">CPF</label>
+                <input
+                  id="form-checkout__identificationNumber"
+                  className={inputClass}
+                  placeholder="000.000.000-00"
+                  inputMode="numeric"
+                  maxLength={14}
+                  onInput={(event) => {
+                    const campo = event.currentTarget
+                    const mascarado = mascararCpf(campo.value)
+                    if (campo.value !== mascarado) campo.value = mascarado
+                  }}
+                />
+              </div>
+            </div>
+            <select id="form-checkout__identificationType" className="hidden" aria-hidden="true" />
+            <select id="form-checkout__issuer" className="hidden" aria-hidden="true" />
+            <select id="form-checkout__installments" className="hidden" aria-hidden="true" />
+            <input id="form-checkout__cardholderEmail" type="email" className="hidden" defaultValue={user?.email || ''} />
+          </form>
+        )}
+      </main>
+
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-grey/30 bg-dark/95 px-4 pt-3 backdrop-blur-md" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+        <div className="mx-auto w-full max-w-lg">
+          {error && <p className="mb-2 text-center text-sm font-semibold text-error">{error}</p>}
+          {meio === 'cartao' ? (
+            <button
+              type="submit"
+              form="form-checkout"
+              disabled={loading || !sdkPronto}
+              className="h-12 w-full rounded-xl bg-primary text-base font-bold text-dark disabled:opacity-50"
+            >
+              {textoBotao}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={acaoPrincipal}
+              disabled={loading}
+              className="h-12 w-full rounded-xl bg-primary text-base font-bold text-dark disabled:opacity-50"
+            >
+              {textoBotao}
+            </button>
+          )}
+          <p className="mt-2 text-center text-xs text-light-muted">
+            {meio === 'pix' && !pix
+              ? 'O código vale 2 horas. Pode sair para o app do banco.'
+              : 'Feito pelo Mercado Pago'}
           </p>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

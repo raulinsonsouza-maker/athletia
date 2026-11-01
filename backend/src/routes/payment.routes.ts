@@ -5,6 +5,7 @@ import {
   verificarStatusAssinatura,
   obterHistoricoPagamentos,
   obterConfigPagamento,
+  obterPreviaPagamento,
   assinarComCartao,
   criarPix,
   consultarPix,
@@ -26,6 +27,7 @@ const checkoutValidation = [
 ];
 
 router.get('/config', obterConfigPagamento);
+router.get('/previa', authenticate, obterPreviaPagamento);
 router.post('/checkout', checkoutValidation, validateRequest, gerarCheckoutUrl);
 router.post('/subscribe', authenticate, assinarComCartao);
 router.post('/pix', authenticate, criarPix);

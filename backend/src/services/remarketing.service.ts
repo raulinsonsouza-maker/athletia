@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma';
 import { sendRemarketingEmail } from './email.service';
+import { obterPreviaCheckout } from './treino-core.service';
 
 /**
  * Tipos de e-mail de remarketing
@@ -169,10 +170,25 @@ async function enviarEmailRemarketing(
       return { success: true };
     }
 
-    // Enviar e-mail
+    let resumo: string | undefined;
+    let exercicios: string[] | undefined;
+    try {
+      const previa = await obterPreviaCheckout(usuario.id);
+      if (previa && !previa.planoAtivo) {
+        resumo = previa.frase;
+        exercicios = previa.treino?.exercicios?.map((item) =>
+          item.cardio ? `${item.nome} (${item.repeticoes})` : item.nome
+        );
+      }
+    } catch (error: any) {
+      console.error(`[REMARKETING] Prévia indisponível para ${usuario.id}:`, error?.message);
+    }
+
     const resultado = await sendRemarketingEmail(tipo, {
-      nome: usuario.nome || 'Treinador',
-      email: usuario.email
+      nome: usuario.nome || 'Olá',
+      email: usuario.email,
+      resumo,
+      exercicios
     });
 
     if (resultado.success) {
