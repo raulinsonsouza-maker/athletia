@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   // Verificar se precisa de plano ativo (exceto para /checkout, /perfil e /trial-expirado)
-  const rotasPermitidasSemPlano = ['/checkout', '/perfil', '/trial-expirado', '/oferta', '/montar-treino']
+  const rotasPermitidasSemPlano = ['/checkout', '/perfil', '/trial-expirado', '/oferta', '/onboarding', '/montar-treino']
   const precisaPlanoAtivo = !rotasPermitidasSemPlano.includes(location.pathname)
 
   if (precisaPlanoAtivo && user) {

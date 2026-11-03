@@ -94,6 +94,18 @@ function App() {
             path="/" 
             element={
               <Suspense fallback={<LoadingFallback />}>
+                <Oferta />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/oferta" 
+            element={<Navigate to="/" replace />}
+          />
+          <Route 
+            path="/onboarding" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
                 <Landing />
               </Suspense>
             } 
@@ -135,14 +147,6 @@ function App() {
             element={
               <Suspense fallback={<LoadingFallback />}>
                 <Checkout />
-              </Suspense>
-            } 
-          />
-          <Route 
-            path="/oferta" 
-            element={
-              <Suspense fallback={<LoadingFallback />}>
-                <Oferta />
               </Suspense>
             } 
           />

@@ -40,10 +40,22 @@ export default function Oferta() {
     window.scrollTo(0, 0)
     try {
       window.dispatchEvent(new CustomEvent('analytics:event', {
-        detail: { eventType: 'oferta_viewed', properties: { plano: 'SEMESTRAL' } }
+        detail: { eventType: 'oferta_viewed', properties: { plano: 'SEMESTRAL', path: '/' } }
       }))
     } catch {
       // analytics opcional
+    }
+    // Page view / config já vem do gtag no index.html; reforça evento de landing
+    try {
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        ;(window as any).gtag('event', 'page_view', {
+          page_title: 'AthletIA - Index',
+          page_path: '/',
+          page_location: window.location.href
+        })
+      }
+    } catch {
+      // gtag opcional
     }
   }, [])
 
@@ -65,6 +77,18 @@ export default function Oferta() {
   }, [authLoading, user, navigate])
 
   const scrollComprar = () => {
+    // Mesma conversão de engajamento da index antiga (Google Ads)
+    try {
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        ;(window as any).gtag('event', 'conversion', {
+          send_to: 'AW-448210685/2_AoCMyDkM8bEP3N3NUB',
+          value: 1.0,
+          currency: 'BRL'
+        })
+      }
+    } catch {
+      // gtag opcional
+    }
     document.getElementById('comprar')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -96,6 +120,9 @@ export default function Oferta() {
         window.dispatchEvent(new CustomEvent('analytics:event', {
           detail: { eventType: 'oferta_signup', properties: { plano } }
         }))
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+          ;(window as any).gtag('event', 'sign_up', { method: 'oferta', plan: plano })
+        }
       } catch {
         // analytics opcional
       }

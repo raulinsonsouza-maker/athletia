@@ -18,7 +18,7 @@ export default function MontarTreino() {
       if (loading) return
       if (!isAuthenticated || !user) {
         if (ativo) {
-          setDestino('/oferta')
+          setDestino('/')
           setChecking(false)
         }
         return
@@ -32,7 +32,7 @@ export default function MontarTreino() {
       const raw = localStorage.getItem('user') || sessionStorage.getItem('user')
       const dados = raw ? JSON.parse(raw) : user
       if (!dados.planoAtivo) {
-        setDestino('/oferta')
+        setDestino('/')
       } else if (dados.precisaOnboarding === false) {
         setDestino('/meu-plano')
       } else {

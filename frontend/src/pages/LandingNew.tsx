@@ -27,9 +27,8 @@ export default function LandingNew() {
     console.log('[LandingNew] Carregando dados do onboarding do localStorage')
     const data = localStorage.getItem('onboardingData')
     if (!data) {
-      console.warn('[LandingNew] Nenhum dado de onboarding encontrado no localStorage - redirecionando para /')
-      // Se não tem dados, voltar para landing (onboarding)
-      navigate('/')
+      console.warn('[LandingNew] Nenhum dado de onboarding encontrado no localStorage - redirecionando para /onboarding')
+      navigate('/onboarding')
       return
     }
     
@@ -67,9 +66,8 @@ export default function LandingNew() {
       // Limpar dados corrompidos
       localStorage.removeItem('onboardingData')
       
-      // Redirecionar para onboarding
-      console.log('[LandingNew] Redirecionando para / devido a erro')
-      navigate('/')
+      console.log('[LandingNew] Redirecionando para /onboarding devido a erro')
+      navigate('/onboarding')
     }
   }, [navigate])
 
