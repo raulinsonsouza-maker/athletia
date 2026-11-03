@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   // Verificar se precisa de plano ativo (exceto para /checkout, /perfil e /trial-expirado)
-  const rotasPermitidasSemPlano = ['/checkout', '/perfil', '/trial-expirado']
+  const rotasPermitidasSemPlano = ['/checkout', '/perfil', '/trial-expirado', '/oferta', '/montar-treino']
   const precisaPlanoAtivo = !rotasPermitidasSemPlano.includes(location.pathname)
 
   if (precisaPlanoAtivo && user) {
@@ -35,6 +35,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const planoValido = user.planoAtivo && (
       !user.dataExpiracao || new Date(user.dataExpiracao) > agora
     )
+
+    // Pago mas ainda sem onboarding → montar treino antes do app
+    if (planoValido && user.precisaOnboarding && location.pathname !== '/montar-treino') {
+      return <Navigate to="/montar-treino" replace />
+    }
 
     // Se plano está válido, permitir acesso
     if (planoValido) {

@@ -170,7 +170,9 @@ export default function Checkout() {
       plan: planoRef.current,
       source: 'checkout'
     })
-    navigate('/treinos')
+    const raw = localStorage.getItem('user') || sessionStorage.getItem('user')
+    const dados = raw ? JSON.parse(raw) : null
+    navigate(dados?.precisaOnboarding ? '/montar-treino' : '/treinos')
   }
 
   const confirmarCartao = async (cardTokenId: string) => {

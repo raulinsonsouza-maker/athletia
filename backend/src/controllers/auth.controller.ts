@@ -159,6 +159,16 @@ const normalizeArray = (value: any): string[] => {
   return unico ? [unico] : [];
 };
 
+/** Plano pago sem objetivo/experiência/frequência = precisa montar o treino. */
+export function calcularPrecisaOnboarding(
+  planoAtivo: boolean,
+  perfil: { objetivo?: string | null; experiencia?: string | null; frequenciaSemanal?: number | null } | null | undefined
+): boolean {
+  if (!planoAtivo) return false;
+  if (!perfil) return true;
+  return !perfil.objetivo || !perfil.experiencia || perfil.frequenciaSemanal == null;
+}
+
 const normalizeOnboardingData = (data: OnboardingPayload | undefined) => {
   if (!data) return null;
   return {
@@ -401,6 +411,12 @@ export const login = async (req: Request, res: Response) => {
     const trialAtivo = await verificarTrialAtivo(user.id);
     const diasRestantesTrial = await obterDiasRestantesTrial(user.id);
 
+    const perfilLogin = await prisma.perfil.findUnique({
+      where: { userId: user.id },
+      select: { objetivo: true, experiencia: true, frequenciaSemanal: true }
+    });
+    const precisaOnboarding = calcularPrecisaOnboarding(Boolean(user.planoAtivo), perfilLogin);
+
     res.json({
       message: 'Login realizado com sucesso',
       user: {
@@ -413,7 +429,8 @@ export const login = async (req: Request, res: Response) => {
         dataExpiracao: user.dataExpiracao,
         dataInicioTrial: user.dataInicioTrial,
         dataFimTrial: user.dataFimTrial,
-        trialUtilizado: user.trialUtilizado
+        trialUtilizado: user.trialUtilizado,
+        precisaOnboarding
       },
       trialStatus: {
         ativo: trialAtivo,
@@ -468,6 +485,12 @@ export const obterUsuario = async (req: any, res: Response) => {
     const trialAtivo = await verificarTrialAtivo(userId);
     const diasRestantesTrial = await obterDiasRestantesTrial(userId);
 
+    const perfilMe = await prisma.perfil.findUnique({
+      where: { userId },
+      select: { objetivo: true, experiencia: true, frequenciaSemanal: true }
+    });
+    const precisaOnboarding = calcularPrecisaOnboarding(Boolean(user.planoAtivo), perfilMe);
+
     res.json({
       user: {
         ...user,
@@ -475,7 +498,8 @@ export const obterUsuario = async (req: any, res: Response) => {
         dataExpiracao: user.dataExpiracao?.toISOString() || null,
         dataInicioTrial: user.dataInicioTrial?.toISOString() || null,
         dataFimTrial: user.dataFimTrial?.toISOString() || null,
-        createdAt: user.createdAt.toISOString()
+        createdAt: user.createdAt.toISOString(),
+        precisaOnboarding
       },
       trialStatus: {
         ativo: trialAtivo,
@@ -1172,6 +1196,133 @@ export const cadastroSemTrial = async (req: Request, res: Response) => {
       error: 'Erro ao realizar cadastro',
       message: process.env.NODE_ENV === 'production' 
         ? 'Erro interno do servidor. Tente novamente mais tarde.' 
+        : error.message
+    });
+  }
+};
+
+/** Cadastro mínimo da LP /oferta: conta sem onboarding, sem trial. */
+export const cadastroOferta = async (req: Request, res: Response) => {
+  try {
+    const { nome, telefone, email, senha } = req.body;
+
+    if (!nome || !email || !telefone || !senha) {
+      return res.status(400).json({
+        error: 'Nome, e-mail, telefone e senha são obrigatórios'
+      });
+    }
+
+    const emailNormalizado = email.toLowerCase().trim();
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: emailNormalizado }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        error: 'E-mail já cadastrado'
+      });
+    }
+
+    const senhaHash = await bcrypt.hash(senha, 10);
+
+    let whatsappPhoneNumber: string | null = null;
+    if (telefone) {
+      const cleaned = telefone.replace(/\D/g, '');
+      if (cleaned.length > 0) {
+        whatsappPhoneNumber = cleaned.startsWith('55') ? `+${cleaned}` : `+55${cleaned}`;
+      }
+    }
+
+    if (whatsappPhoneNumber) {
+      const existingUserByPhone = await prisma.user.findUnique({
+        where: { whatsappPhoneNumber }
+      });
+      if (existingUserByPhone) {
+        return res.status(400).json({
+          error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+        });
+      }
+    }
+
+    let nomeSanitizado = nome ? nome.trim() : null;
+    if (nomeSanitizado) {
+      const nomeLower = nomeSanitizado.toLowerCase();
+      const palavrasTeste = ['teste', 'test', 'demo', 'trial', 'temp', 'temporary'];
+      if (palavrasTeste.some((palavra) => nomeLower.includes(palavra))) {
+        const primeiroNome = nomeSanitizado.split(' ')[0];
+        nomeSanitizado = primeiroNome.length > 2 ? primeiroNome : emailNormalizado.split('@')[0];
+      }
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        email: emailNormalizado,
+        senhaHash,
+        nome: nomeSanitizado,
+        telefone: telefone.trim(),
+        whatsappPhoneNumber,
+        planoAtivo: false,
+        role: 'USER',
+        dataInicioTrial: null,
+        dataFimTrial: null,
+        trialUtilizado: false
+      }
+    });
+
+    await prisma.perfil.create({
+      data: {
+        userId: user.id,
+        lesoes: [],
+        preferencias: [],
+        problemasAnteriores: [],
+        objetivosAdicionais: [],
+        equipamentos: []
+      }
+    });
+
+    try {
+      const { registrarEventoAsync } = await import('../services/analytics.service');
+      registrarEventoAsync(user.id, 'oferta_signup', { source: 'oferta' });
+    } catch (error) {
+      console.error('Erro ao registrar evento oferta_signup:', error);
+    }
+
+    const { accessToken, refreshToken } = generateTokens(user.id, true);
+    await saveRefreshToken(user.id, refreshToken);
+
+    res.status(201).json({
+      message: 'Conta criada. Complete o pagamento para liberar o acesso.',
+      user: {
+        id: user.id,
+        email: user.email,
+        nome: user.nome,
+        planoAtivo: user.planoAtivo,
+        precisaOnboarding: false
+      },
+      accessToken,
+      refreshToken
+    });
+  } catch (error: any) {
+    console.error('Erro no cadastro oferta:', error);
+    if (error.code === 'P2002') {
+      const target = error.meta?.target || [];
+      if (target.includes('email')) {
+        return res.status(400).json({ error: 'E-mail já cadastrado' });
+      }
+      if (target.includes('whatsapp_phone_number')) {
+        return res.status(400).json({
+          error: 'Este número de telefone já está cadastrado. Use outro número ou faça login.'
+        });
+      }
+      return res.status(400).json({
+        error: 'Dados já cadastrados. Verifique as informações e tente novamente.'
+      });
+    }
+    res.status(500).json({
+      error: 'Erro ao realizar cadastro',
+      message: process.env.NODE_ENV === 'production'
+        ? 'Erro interno do servidor. Tente novamente mais tarde.'
         : error.message
     });
   }

@@ -10,6 +10,8 @@ import { useOnboardingNavigation } from '../hooks/onboarding/useOnboardingNaviga
 import { useOnboardingAnalytics } from '../hooks/onboarding/useOnboardingAnalytics'
 import { useGenderContent } from '../hooks/onboarding/useGenderContent'
 import { useOnboardingPersistence } from '../hooks/onboarding/useOnboardingPersistence'
+import { useAuth } from '../contexts/AuthContext'
+import api from '../services/auth.service'
 import OnboardingHeader from '../components/onboarding/OnboardingHeader'
 import OnboardingFooter from '../components/onboarding/OnboardingFooter'
 import FeedbackCard from '../components/onboarding/FeedbackCard'
@@ -35,16 +37,24 @@ import {
   TIPO_CORPO_MASCULINO
 } from '../constants/onboarding.constants'
 
-export default function Landing() {
+type LandingProps = {
+  /** Fluxo pós-pagamento: monta o treino e vai para o app. */
+  posPagamento?: boolean
+}
+
+export default function Landing({ posPagamento = false }: LandingProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [step, setStep] = useState<OnboardingStep>(0)
+  const { user, refreshUser } = useAuth()
+  const [step, setStep] = useState<OnboardingStep>(posPagamento ? 1 : 0)
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     lesoes: [],
     preferencias: [],
     problemasAnteriores: [],
-    objetivosAdicionais: []
+    objetivosAdicionais: [],
+    ...(posPagamento && user?.nome ? { nome: user.nome } : {})
   })
+  const [salvandoPos, setSalvandoPos] = useState(false)
   
   // Estados para modais legais
   const [modalTermos, setModalTermos] = useState(false)
@@ -98,9 +108,19 @@ export default function Landing() {
     }
   }, [step, onboardingData.altura, onboardingData.pesoAtual, onboardingData.idade])
 
-  const finalizarOnboarding = useCallback(() => {
+  useEffect(() => {
+    if (posPagamento && step === 0) setStep(1)
+  }, [posPagamento, step])
+
+  useEffect(() => {
+    if (posPagamento && user?.nome && !onboardingData.nome) {
+      setOnboardingData((prev) => ({ ...prev, nome: user.nome || undefined }))
+    }
+  }, [posPagamento, user?.nome, onboardingData.nome])
+
+  const finalizarOnboarding = useCallback(async () => {
     try {
-      console.log('[Landing] Finalizando onboarding - Início', { step, onboardingData })
+      console.log('[Landing] Finalizando onboarding - Início', { step, onboardingData, posPagamento })
       
       // Garantir que arrays existam antes de salvar
       const dataToSave: OnboardingData = {
@@ -122,6 +142,16 @@ export default function Landing() {
       const parsed = JSON.parse(jsonData)
       if (!parsed || typeof parsed !== 'object') {
         throw new Error('Dados do onboarding inválidos após serialização')
+      }
+
+      if (posPagamento) {
+        setSalvandoPos(true)
+        await api.post('/perfil/completar-pos-pagamento', { onboarding: dataToSave })
+        clearDraft()
+        localStorage.removeItem('onboardingData')
+        await refreshUser()
+        navigate('/meu-plano', { replace: true })
+        return
       }
       
       localStorage.setItem('onboardingData', jsonData)
@@ -148,9 +178,11 @@ export default function Landing() {
         stack: error?.stack,
         onboardingData
       })
-      alert('Erro ao salvar dados do onboarding. Por favor, tente novamente.')
+      alert(error?.response?.data?.message || error?.response?.data?.error || 'Erro ao salvar dados do onboarding. Por favor, tente novamente.')
+    } finally {
+      setSalvandoPos(false)
     }
-  }, [onboardingData, navigate, step])
+  }, [onboardingData, navigate, step, posPagamento, clearDraft, refreshUser])
 
   // Sinalizar quando deve mostrar o popup de instalação PWA
   // Mostrar quando estiver no último passo (step 15) e nome estiver preenchido
@@ -687,6 +719,18 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-dark via-dark-lighter to-dark">
+      {posPagamento && (
+        <div className="border-b border-primary/30 bg-primary/10 px-4 py-3 text-center">
+          <p className="text-sm font-semibold text-primary">
+            Pagamento confirmado. Agora vamos montar o seu treino.
+          </p>
+        </div>
+      )}
+      {salvandoPos && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/80 text-light">
+          Montando seu treino...
+        </div>
+      )}
       {/* Header com progresso */}
       <OnboardingHeader step={step} />
 

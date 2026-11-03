@@ -12,6 +12,7 @@ interface User {
   dataInicioTrial?: string
   dataFimTrial?: string
   trialUtilizado?: boolean
+  precisaOnboarding?: boolean
 }
 
 interface AuthContextType {
@@ -270,7 +271,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           dataExpiracao: response.user.dataExpiracao || undefined,
           dataInicioTrial: response.user.dataInicioTrial || undefined,
           dataFimTrial: response.user.dataFimTrial || undefined,
-          trialUtilizado: response.user.trialUtilizado || false
+          trialUtilizado: response.user.trialUtilizado || false,
+          precisaOnboarding: Boolean(response.user.precisaOnboarding)
         }
         // Usar o mesmo storage onde o token foi encontrado
         const storage = localStorage.getItem('accessToken') ? localStorage : sessionStorage

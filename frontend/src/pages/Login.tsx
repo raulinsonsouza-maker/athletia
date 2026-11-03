@@ -56,7 +56,9 @@ export default function Login() {
         trialExpirado = !userData.planoAtivo && dataFimTrial <= agora
       }
 
-      if (planoValido || trialAtivo) {
+      if (planoValido && userData.precisaOnboarding) {
+        navigate('/montar-treino', { replace: true })
+      } else if (planoValido || trialAtivo) {
         navigate('/meu-plano', { replace: true })
       } else if (trialExpirado) {
         // Trial expirado: redirecionar direto para checkout para escolher plano

@@ -468,6 +468,130 @@ export const atualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/** Completa o onboarding após pagamento (LP /oferta) e gera treinos. */
+export const completarPosPagamento = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId!;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, planoAtivo: true, nome: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    if (!user.planoAtivo) {
+      return res.status(403).json({
+        error: 'Pagamento necessário',
+        message: 'Conclua o pagamento antes de montar o treino.'
+      });
+    }
+
+    const onboarding = req.body?.onboarding || req.body;
+    if (!onboarding || typeof onboarding !== 'object') {
+      return res.status(400).json({ error: 'Dados do onboarding são obrigatórios' });
+    }
+
+    const parseNum = (value: any): number | null => {
+      if (value === null || value === undefined || value === '') return null;
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    };
+    const asArray = (value: any): string[] => {
+      if (!value) return [];
+      if (Array.isArray(value)) {
+        return value.map((item) => String(item).trim()).filter(Boolean).slice(0, 20);
+      }
+      const unico = String(value).trim();
+      return unico ? [unico] : [];
+    };
+
+    const dados = {
+      idade: parseNum(onboarding.idade),
+      sexo: onboarding.sexo ? String(onboarding.sexo).trim() : null,
+      tipoCorpo: onboarding.tipoCorpo ? String(onboarding.tipoCorpo).trim() : null,
+      altura: parseNum(onboarding.altura),
+      pesoAtual: parseNum(onboarding.pesoAtual),
+      percentualGordura: parseNum(onboarding.percentualGordura),
+      aguaDiaria:
+        onboarding.aguaDiaria !== undefined && onboarding.aguaDiaria !== null && onboarding.aguaDiaria !== ''
+          ? String(onboarding.aguaDiaria).trim()
+          : null,
+      experiencia: onboarding.experiencia ? String(onboarding.experiencia).trim() : null,
+      objetivo: onboarding.objetivo ? String(onboarding.objetivo).trim() : null,
+      frequenciaSemanal: parseNum(onboarding.frequenciaSemanal),
+      tempoDisponivel: parseNum(onboarding.tempoDisponivel),
+      localTreino: onboarding.localTreino ? String(onboarding.localTreino).trim() : null,
+      problemasAnteriores: asArray(onboarding.problemasAnteriores),
+      objetivosAdicionais: asArray(onboarding.objetivosAdicionais),
+      lesoes: asArray(onboarding.lesoes),
+      preferencias: asArray(onboarding.preferencias),
+      rpePreferido: parseNum(onboarding.rpePreferido),
+      ultimaAtualizacaoPeriodica: new Date()
+    };
+
+    if (!dados.objetivo || !dados.experiencia || dados.frequenciaSemanal == null) {
+      return res.status(400).json({
+        error: 'Perfil incompleto',
+        message: 'Objetivo, experiência e frequência semanal são obrigatórios.'
+      });
+    }
+
+    const perfilExistente = await prisma.perfil.findUnique({ where: { userId } });
+    const perfil = perfilExistente
+      ? await prisma.perfil.update({ where: { userId }, data: dados })
+      : await prisma.perfil.create({ data: { userId, ...dados, equipamentos: [] } });
+
+    if (dados.pesoAtual != null) {
+      await prisma.historicoPeso.create({
+        data: { userId, peso: dados.pesoAtual }
+      });
+    }
+
+    if (onboarding.nome && typeof onboarding.nome === 'string' && onboarding.nome.trim()) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { nome: onboarding.nome.trim() }
+      });
+    }
+
+    try {
+      const { registrarEventoAsync } = await import('../services/analytics.service');
+      registrarEventoAsync(userId, 'onboarding_completed', {
+        goal: dados.objetivo,
+        experience_level: dados.experiencia,
+        source: 'pos_pagamento'
+      });
+    } catch (error) {
+      console.error('Erro ao registrar onboarding_completed:', error);
+    }
+
+    let treinosGerados = 0;
+    try {
+      const { gerarTreinos30Dias } = await import('../services/treino.service');
+      const treinos = await gerarTreinos30Dias(userId);
+      treinosGerados = treinos.length;
+    } catch (error: any) {
+      console.error('Erro ao gerar treinos pós-pagamento:', error);
+    }
+
+    res.json({
+      message: 'Treino montado com sucesso.',
+      perfil,
+      treinosGerados,
+      precisaOnboarding: false
+    });
+  } catch (error: any) {
+    console.error('Erro em completarPosPagamento:', error);
+    res.status(500).json({
+      error: 'Erro ao montar o treino',
+      message: error.message
+    });
+  }
+};
+
 // Verificar se precisa de atualização periódica
 export const verificarAtualizacaoPeriodica = async (req: AuthRequest, res: Response) => {
   try {

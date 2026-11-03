@@ -5,7 +5,8 @@ import {
   getPerfil, 
   updatePerfil, 
   atualizacaoPeriodica,
-  verificarAtualizacaoPeriodica
+  verificarAtualizacaoPeriodica,
+  completarPosPagamento
 } from '../controllers/perfil.controller';
 import { authenticate } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validate.middleware';
@@ -139,6 +140,7 @@ const atualizacaoPeriodicaValidation = [
 router.get('/', getPerfil);
 router.post('/', perfilValidation, validateRequest, createPerfil);
 router.put('/', perfilValidation, validateRequest, updatePerfil);
+router.post('/completar-pos-pagamento', completarPosPagamento);
 router.get('/atualizacao-periodica', verificarAtualizacaoPeriodica);
 router.post('/atualizacao-periodica', atualizacaoPeriodicaValidation, validateRequest, atualizacaoPeriodica);
 

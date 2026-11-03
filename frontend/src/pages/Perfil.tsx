@@ -92,8 +92,10 @@ export default function Perfil() {
       }
     } catch (error: any) {
       if (error.response?.status === 404) {
-        // Se não tem perfil, redirecionar para Landing (onboarding)
-        navigate('/')
+        // Sem perfil: quem já pagou monta o treino; demais vão ao onboarding clássico
+        const raw = localStorage.getItem('user') || sessionStorage.getItem('user')
+        const dados = raw ? JSON.parse(raw) : null
+        navigate(dados?.planoAtivo ? '/montar-treino' : '/', { replace: true })
       }
     } finally {
       setLoading(false)

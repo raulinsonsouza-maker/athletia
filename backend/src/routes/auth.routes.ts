@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, cadastroSemTrial, ativarPlanoAposPagamento, requestPasswordReset, resetPassword, obterStatusTrial, obterProgressoTrial, obterUsuario } from '../controllers/auth.controller';
+import { register, login, refreshToken, cadastroCompleto, cadastroPrePagamento, cadastroSemTrial, cadastroOferta, ativarPlanoAposPagamento, requestPasswordReset, resetPassword, obterStatusTrial, obterProgressoTrial, obterUsuario } from '../controllers/auth.controller';
 import { validateRequest } from '../middleware/validate.middleware';
 import { optionalAuthenticate } from '../middleware/optional-auth.middleware';
 import { authenticate } from '../middleware/auth.middleware';
@@ -133,6 +133,31 @@ const cadastroPrePagamentoValidation = [
     .withMessage('Dados do onboarding são obrigatórios')
 ];
 
+const cadastroOfertaValidation = [
+  body('nome')
+    .notEmpty()
+    .withMessage('Nome é obrigatório')
+    .trim()
+    .isLength({ min: 2 })
+    .withMessage('Nome deve ter no mínimo 2 caracteres'),
+  body('email')
+    .notEmpty()
+    .withMessage('Email é obrigatório')
+    .trim()
+    .isEmail()
+    .withMessage('Email inválido')
+    .customSanitizer((value) => value.toLowerCase()),
+  body('telefone')
+    .notEmpty()
+    .withMessage('Telefone é obrigatório')
+    .trim(),
+  body('senha')
+    .notEmpty()
+    .withMessage('Senha é obrigatória')
+    .isLength({ min: 8 })
+    .withMessage('Senha deve ter no mínimo 8 caracteres')
+];
+
 const ativarPlanoValidation = [
   body('userId')
     .notEmpty()
@@ -182,6 +207,7 @@ router.get('/trial-progress', authenticate, obterProgressoTrial);
 router.post('/cadastro-completo', cadastroCompletoValidation, validateRequest, cadastroCompleto);
 router.post('/cadastro-pre-pagamento', cadastroPrePagamentoValidation, validateRequest, cadastroPrePagamento);
 router.post('/cadastro-sem-trial', cadastroPrePagamentoValidation, validateRequest, cadastroSemTrial);
+router.post('/cadastro-oferta', cadastroOfertaValidation, validateRequest, cadastroOferta);
 /**
  * ATENÇÃO: Este endpoint requer autenticação obrigatória e validação de pagamento.
  * 

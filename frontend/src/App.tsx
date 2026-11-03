@@ -29,6 +29,8 @@ const TrialExpirado = lazy(() => import('./pages/TrialExpirado'))
 const OnePage = lazy(() => import('./pages/OnePage'))
 const LandingNew = lazy(() => import('./pages/LandingNew'))
 const LandingAB = lazy(() => import('./pages/LandingAB'))
+const Oferta = lazy(() => import('./pages/Oferta'))
+const MontarTreino = lazy(() => import('./pages/MontarTreino'))
 
 // Lazy load - Rotas protegidas
 const Treinos = lazy(() => import('./pages/Treinos'))
@@ -133,6 +135,22 @@ function App() {
             element={
               <Suspense fallback={<LoadingFallback />}>
                 <Checkout />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/oferta" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Oferta />
+              </Suspense>
+            } 
+          />
+          <Route 
+            path="/montar-treino" 
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <MontarTreino />
               </Suspense>
             } 
           />
