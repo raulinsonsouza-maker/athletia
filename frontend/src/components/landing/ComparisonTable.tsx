@@ -1,8 +1,14 @@
 interface ComparisonTableProps {
   onStartOnboarding: () => void
+  showCta?: boolean
+  ctaLabel?: string
 }
 
-export default function ComparisonTable({ onStartOnboarding }: ComparisonTableProps) {
+export default function ComparisonTable({
+  onStartOnboarding,
+  showCta = true,
+  ctaLabel = 'Criar meu treino agora'
+}: ComparisonTableProps) {
   return (
     <section aria-label="A comparação que importa" className="py-16 md:py-20 px-4 md:px-6 bg-gradient-to-b from-dark via-dark-lighter/50 to-dark">
       <div className="max-w-5xl mx-auto space-y-8 text-center">
@@ -30,20 +36,22 @@ export default function ComparisonTable({ onStartOnboarding }: ComparisonTablePr
           </div>
         </div>
 
-        <div className="pt-8">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              onStartOnboarding()
-            }}
-            className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
-            aria-label="Criar meu treino personalizado agora"
-          >
-            Criar meu treino agora
-          </button>
-        </div>
+        {showCta && (
+          <div className="pt-8">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onStartOnboarding()
+              }}
+              className="btn-primary text-lg md:text-xl px-10 md:px-16 py-5 md:py-6 font-bold shadow-2xl shadow-primary/50 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200"
+              aria-label={ctaLabel}
+            >
+              {ctaLabel}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )
