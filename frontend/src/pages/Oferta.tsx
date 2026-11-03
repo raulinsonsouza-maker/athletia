@@ -134,7 +134,7 @@ export default function Oferta() {
         <LandingHero
           onStartOnboarding={scrollComprar}
           headline="Seu treino personalizado, pronto para começar hoje."
-          subtitle="Pague em 1 minuto. Depois a gente monta o plano do seu jeito. Sai por R$ 14,98/mês no plano de 6 meses."
+          subtitle="Treino certo para o seu corpo, que evolui sozinho a cada sessão. No plano de 6 meses sai por R$ 14,98/mês."
           ctaLabel="Quero começar agora"
           microcopy="Acesso imediato · Cancele quando quiser · Garantia de 7 dias"
         />
@@ -155,7 +155,7 @@ export default function Oferta() {
         <section className="py-14 md:py-16 px-4 md:px-6 bg-dark-lighter/40 border-y border-grey/20">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-center text-2xl md:text-3xl font-display font-bold text-light mb-8">
-              O que você libera ao assinar
+              O que muda no seu treino
             </h2>
             <ul className="space-y-5 text-left">
               {[
@@ -183,9 +183,9 @@ export default function Oferta() {
             </h2>
             <ol className="grid sm:grid-cols-3 gap-6 text-left sm:text-center">
               {[
-                { n: '1', t: 'Crie o acesso', d: 'Nome, e-mail e senha.' },
-                { n: '2', t: 'Pague no Pix', d: 'Plano libera na hora.' },
-                { n: '3', t: 'Monte o treino', d: 'Perguntas rápidas depois.' }
+                { n: '1', t: 'Conta o seu objetivo', d: 'Corpo, rotina e meta.' },
+                { n: '2', t: 'A IA monta o treino', d: 'Exercícios, séries e cardio.' },
+                { n: '3', t: 'O plano evolui com você', d: 'Ajuste a cada sessão.' }
               ].map((p) => (
                 <li key={p.n} className="space-y-2">
                   <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary sm:mx-auto">
@@ -232,7 +232,7 @@ export default function Oferta() {
             onClick={scrollComprar}
             className="btn-primary mt-6 text-base md:text-lg px-10 py-4 font-bold shadow-xl shadow-primary/30"
           >
-            Ver planos e pagar
+            Quero meu treino
           </button>
         </section>
 
@@ -290,8 +290,8 @@ export default function Oferta() {
               </button>
             </div>
 
-            <h3 className="mt-8 text-lg font-bold">Crie o acesso e pague</h3>
-            <p className="mt-1 text-sm text-light-muted">Sem questionário agora. O treino vem depois do Pix.</p>
+            <h3 className="mt-8 text-lg font-bold">Crie o seu acesso</h3>
+            <p className="mt-1 text-sm text-light-muted">Sem questionário agora. Depois do acesso, montamos o seu treino.</p>
 
             {!contaPronta ? (
               <form onSubmit={criarConta} className="mt-4 space-y-3">
@@ -301,7 +301,7 @@ export default function Oferta() {
                 <input id="oferta-senha" type="password" required minLength={8} value={senha} onChange={(e) => setSenha(e.target.value)} className={inputClass} placeholder="Senha (mín. 8 caracteres)" autoComplete="new-password" aria-label="Senha" />
                 {erroConta && <p className="text-sm font-semibold text-error">{erroConta}</p>}
                 <button type="submit" disabled={loadingConta} className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark disabled:opacity-50">
-                  {loadingConta ? 'Criando...' : 'Continuar para o Pix'}
+                  {loadingConta ? 'Criando...' : 'Continuar'}
                 </button>
                 <p className="text-center text-xs text-light-muted">
                   Já tem conta? <Link to="/login" className="text-primary underline">Entrar</Link>
