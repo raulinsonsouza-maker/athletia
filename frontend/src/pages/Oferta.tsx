@@ -161,7 +161,7 @@ export default function Oferta() {
         <LandingHero
           onStartOnboarding={scrollComprar}
           headline="Seu treino personalizado, pronto para começar hoje."
-          subtitle="Treino certo para o seu corpo, que evolui sozinho a cada sessão. No plano de 6 meses sai por R$ 14,98/mês."
+          subtitle="A IA monta o plano certo para o seu corpo e ajusta carga, séries e volume a cada sessão. Academia ou casa — você só treina."
           ctaLabel="Quero começar agora"
           microcopy=""
         />
@@ -264,92 +264,109 @@ export default function Oferta() {
         </section>
 
         {/* Checkout */}
-        <section id="comprar" className="scroll-mt-24 py-14 md:py-16 px-4 md:px-6 bg-dark border-t border-primary/20">
-          <div className="mx-auto w-full max-w-lg pb-28">
-            <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Assinar agora</p>
-            <h2 className="mt-2 text-center font-display text-2xl md:text-3xl font-bold leading-tight">
-              6 meses pelo preço de 3
-            </h2>
-            <p className="mt-2 text-center text-sm text-light-muted">
-              R$ 14,98/mês · R$ 89,90 hoje · economize R$ 89,50
-            </p>
+        <section id="comprar" className="scroll-mt-24 py-14 md:py-20 px-4 md:px-6 bg-dark border-t border-primary/20">
+          <div className="mx-auto w-full max-w-lg">
+            <div className="text-center">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Assinar agora</p>
+              <h2 className="mt-3 font-display text-2xl md:text-3xl font-bold leading-tight text-light">
+                Escolha o plano e libere seu treino
+              </h2>
+              <p className="mt-2 text-sm text-light-muted">
+                Acesso na hora · Garantia de 7 dias · Cancele quando quiser
+              </p>
+            </div>
 
-            <div className="mt-6 space-y-2">
+            <div className="mt-8 space-y-3">
               <button
                 type="button"
                 onClick={() => setPlano('SEMESTRAL')}
-                className={`w-full rounded-2xl border px-4 py-3.5 text-left transition-colors ${
+                className={`w-full rounded-2xl border px-4 py-4 text-left transition-colors ${
                   plano === 'SEMESTRAL'
-                    ? 'border-primary bg-primary text-dark'
-                    : 'border-white/10 bg-white/5 text-light'
+                    ? 'border-primary bg-primary text-dark shadow-lg shadow-primary/25'
+                    : 'border-white/10 bg-white/[0.04] text-light hover:border-white/20'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-start justify-between gap-3">
                   <span>
-                    <span className="block text-sm font-bold">6 meses</span>
-                    <span className={`block text-xs ${plano === 'SEMESTRAL' ? 'text-dark/70' : 'text-primary'}`}>
-                      Melhor escolha · economize R$ 89,50
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-sm font-bold">6 meses</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                        plano === 'SEMESTRAL' ? 'bg-dark/15 text-dark' : 'bg-primary/15 text-primary'
+                      }`}>
+                        Melhor escolha
+                      </span>
+                    </span>
+                    <span className={`mt-1 block text-xs ${plano === 'SEMESTRAL' ? 'text-dark/70' : 'text-light-muted'}`}>
+                      Economize R$ 89,50 · equivalente a R$ 14,98/mês
                     </span>
                   </span>
-                  <span className="text-right">
-                    <span className="block text-base font-bold">R$ 14,98<span className="text-xs font-medium opacity-70">/mês</span></span>
-                    <span className="text-xs opacity-70">R$ 89,90 hoje</span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-xl font-bold tracking-tight">R$ 89,90</span>
+                    <span className="text-xs opacity-70">pagamento único</span>
                   </span>
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => setPlano('MENSAL')}
-                className={`w-full rounded-2xl border px-4 py-3.5 text-left transition-colors ${
-                  plano === 'MENSAL' ? 'border-primary/40 bg-white/5' : 'border-white/10 bg-transparent'
+                className={`w-full rounded-2xl border px-4 py-4 text-left transition-colors ${
+                  plano === 'MENSAL'
+                    ? 'border-primary/50 bg-white/[0.06] text-light'
+                    : 'border-white/10 bg-transparent text-light hover:border-white/20'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-start justify-between gap-3">
                   <span>
-                    <span className="block text-sm font-bold text-light">Mensal</span>
-                    <span className="block text-xs text-light-muted">R$ 179,40 em 6 meses</span>
+                    <span className="block text-sm font-bold">Mensal</span>
+                    <span className="mt-1 block text-xs text-light-muted">Flexível · renova todo mês</span>
                   </span>
-                  <span className="text-right text-light">
-                    <span className="block text-sm font-bold">R$ 29,90</span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-xl font-bold tracking-tight">R$ 29,90</span>
                     <span className="text-xs text-light-muted">por mês</span>
                   </span>
                 </div>
               </button>
             </div>
 
-            <h3 className="mt-8 text-lg font-bold">Crie o seu acesso</h3>
+            <div className="mt-10 border-t border-white/10 pt-8">
+              <h3 className="text-lg font-bold text-light">
+                {contaPronta ? 'Finalize o pagamento' : 'Crie o seu acesso'}
+              </h3>
+              <p className="mt-1 text-sm text-light-muted">
+                {contaPronta
+                  ? `Conta pronta${user?.email ? ` · ${user.email}` : ''}.`
+                  : 'Dados básicos para liberar o treino depois do pagamento.'}
+              </p>
 
-            {!contaPronta ? (
-              <form onSubmit={criarConta} className="mt-4 space-y-3">
-                <input id="oferta-nome" required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} placeholder="Nome completo" autoComplete="name" aria-label="Nome" />
-                <input id="oferta-tel" required value={telefone} onChange={(e) => setTelefone(mascararTelefone(e.target.value))} className={inputClass} placeholder="Telefone com DDD" inputMode="tel" autoComplete="tel" aria-label="Telefone" />
-                <input id="oferta-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="E-mail" autoComplete="email" aria-label="E-mail" />
-                <input id="oferta-senha" type="password" required minLength={8} value={senha} onChange={(e) => setSenha(e.target.value)} className={inputClass} placeholder="Senha (mín. 8 caracteres)" autoComplete="new-password" aria-label="Senha" />
-                {erroConta && <p className="text-sm font-semibold text-error">{erroConta}</p>}
-                <button type="submit" disabled={loadingConta} className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark disabled:opacity-50">
-                  {loadingConta ? 'Criando...' : 'Continuar'}
-                </button>
-                <p className="text-center text-xs text-light-muted">
-                  Já tem conta? <Link to="/login" className="text-primary underline">Entrar</Link>
-                </p>
-              </form>
-            ) : (
-              <div className="mt-4">
-                <p className="mb-3 text-sm text-light-muted">
-                  Conta pronta{user?.email ? ` · ${user.email}` : ''}. Finalize o pagamento.
-                </p>
-                <CheckoutPagamento
-                  planoInicial={plano}
-                  planoControlado={plano}
-                  onPlanoChange={(id) => setPlano(id as 'MENSAL' | 'SEMESTRAL')}
-                  destacarSemestral
-                  source="oferta"
-                  onSuccessNavigateTo="/montar-treino"
-                  mostrarSeletorPlano={false}
-                  sticky
-                />
-              </div>
-            )}
+              {!contaPronta ? (
+                <form onSubmit={criarConta} className="mt-5 space-y-3">
+                  <input id="oferta-nome" required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} placeholder="Nome completo" autoComplete="name" aria-label="Nome" />
+                  <input id="oferta-tel" required value={telefone} onChange={(e) => setTelefone(mascararTelefone(e.target.value))} className={inputClass} placeholder="Telefone com DDD" inputMode="tel" autoComplete="tel" aria-label="Telefone" />
+                  <input id="oferta-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="E-mail" autoComplete="email" aria-label="E-mail" />
+                  <input id="oferta-senha" type="password" required minLength={8} value={senha} onChange={(e) => setSenha(e.target.value)} className={inputClass} placeholder="Senha (mín. 8 caracteres)" autoComplete="new-password" aria-label="Senha" />
+                  {erroConta && <p className="text-sm font-semibold text-error">{erroConta}</p>}
+                  <button type="submit" disabled={loadingConta} className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark shadow-lg shadow-primary/30 disabled:opacity-50">
+                    {loadingConta ? 'Criando...' : 'Continuar para o pagamento'}
+                  </button>
+                  <p className="text-center text-xs text-light-muted">
+                    Já tem conta? <Link to="/login" className="text-primary underline">Entrar</Link>
+                  </p>
+                </form>
+              ) : (
+                <div className="mt-5">
+                  <CheckoutPagamento
+                    planoInicial={plano}
+                    planoControlado={plano}
+                    onPlanoChange={(id) => setPlano(id as 'MENSAL' | 'SEMESTRAL')}
+                    destacarSemestral
+                    source="oferta"
+                    onSuccessNavigateTo="/montar-treino"
+                    mostrarSeletorPlano={false}
+                    sticky={false}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </section>
       </main>
