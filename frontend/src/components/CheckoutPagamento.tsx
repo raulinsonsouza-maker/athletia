@@ -506,11 +506,6 @@ export default function CheckoutPagamento({
             {textoBotao}
           </button>
         )}
-        <p className="mt-2 text-center text-[11px] text-light-muted">
-          {meio === 'pix' && !pix
-            ? 'Pix em segundos. Seu acesso libera na hora. O código vale 2 horas.'
-            : 'Pagamento seguro pelo Mercado Pago'}
-        </p>
       </div>
     </div>
   )

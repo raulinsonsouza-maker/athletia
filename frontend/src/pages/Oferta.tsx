@@ -163,7 +163,7 @@ export default function Oferta() {
           headline="Seu treino personalizado, pronto para começar hoje."
           subtitle="Treino certo para o seu corpo, que evolui sozinho a cada sessão. No plano de 6 meses sai por R$ 14,98/mês."
           ctaLabel="Quero começar agora"
-          microcopy="Acesso imediato · Cancele quando quiser · Garantia de 7 dias"
+          microcopy=""
         />
 
         {/* Dor — sem botão */}
@@ -318,7 +318,6 @@ export default function Oferta() {
             </div>
 
             <h3 className="mt-8 text-lg font-bold">Crie o seu acesso</h3>
-            <p className="mt-1 text-sm text-light-muted">Sem questionário agora. Depois do acesso, montamos o seu treino.</p>
 
             {!contaPronta ? (
               <form onSubmit={criarConta} className="mt-4 space-y-3">

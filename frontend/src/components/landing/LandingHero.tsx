@@ -46,10 +46,11 @@ export default function LandingHero({
             >
               {ctaLabel}
             </button>
-            {/* Microprovas */}
-            <p className="text-sm md:text-base text-light-muted font-medium">
-              {microcopy}
-            </p>
+            {microcopy ? (
+              <p className="text-sm md:text-base text-light-muted font-medium">
+                {microcopy}
+              </p>
+            ) : null}
           </div>
         </div>
 
