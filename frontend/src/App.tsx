@@ -30,6 +30,7 @@ const OnePage = lazy(() => import('./pages/OnePage'))
 const LandingNew = lazy(() => import('./pages/LandingNew'))
 const LandingAB = lazy(() => import('./pages/LandingAB'))
 const Oferta = lazy(() => import('./pages/Oferta'))
+const Comece = lazy(() => import('./pages/Comece'))
 const MontarTreino = lazy(() => import('./pages/MontarTreino'))
 
 // Lazy load - Rotas protegidas
@@ -101,6 +102,14 @@ function App() {
           <Route 
             path="/oferta" 
             element={<Navigate to="/" replace />}
+          />
+          <Route
+            path="/comece"
+            element={
+              <Suspense fallback={<LoadingFallback />}>
+                <Comece />
+              </Suspense>
+            }
           />
           <Route 
             path="/onboarding" 

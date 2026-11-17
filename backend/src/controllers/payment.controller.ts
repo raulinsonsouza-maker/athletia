@@ -52,7 +52,7 @@ export const assinarComCartao = async (req: AuthRequest, res: Response) => {
     const idempotencyKey = String(req.body?.idempotencyKey || '');
 
     if (!mercadoPagoService.isPlanoId(plano)) {
-      return res.status(400).json({ error: 'Plano inválido. Deve ser MENSAL, TRIMESTRAL ou SEMESTRAL' });
+      return res.status(400).json({ error: 'Plano inválido. Deve ser MENSAL, TRIMESTRAL, SEMESTRAL ou ANUAL' });
     }
     if (!cardTokenId) {
       return res.status(400).json({ error: 'Token do cartão é obrigatório' });
@@ -65,7 +65,10 @@ export const assinarComCartao = async (req: AuthRequest, res: Response) => {
       userId: req.userId,
       plano,
       cardTokenId,
-      idempotencyKey
+      idempotencyKey,
+      paymentMethodId: req.body?.paymentMethodId ? String(req.body.paymentMethodId) : undefined,
+      issuerId: req.body?.issuerId ? String(req.body.issuerId) : undefined,
+      installments: req.body?.installments ? Number(req.body.installments) : 1
     });
 
     return res.status(result.success ? 200 : 402).json(result);
@@ -83,7 +86,7 @@ export const criarPix = async (req: AuthRequest, res: Response) => {
     const idempotencyKey = String(req.body?.idempotencyKey || '');
 
     if (!mercadoPagoService.isPlanoId(plano)) {
-      return res.status(400).json({ error: 'Plano inválido. Deve ser MENSAL, TRIMESTRAL ou SEMESTRAL' });
+      return res.status(400).json({ error: 'Plano inválido. Deve ser MENSAL, TRIMESTRAL, SEMESTRAL ou ANUAL' });
     }
     if (!mercadoPagoService.cpfValido(cpf)) {
       return res.status(400).json({ error: 'CPF inválido' });

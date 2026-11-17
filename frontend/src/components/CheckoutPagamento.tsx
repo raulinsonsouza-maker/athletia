@@ -5,6 +5,7 @@ import api from '../services/auth.service'
 import { useToast } from '../hooks/useToast'
 import { PLANOS_CHECKOUT } from '../constants/planos-precos'
 import { dispararConversaoAssinatura } from '../utils/ads-conversion'
+import { dispararGtag, lerUtm } from '../utils/utm'
 
 declare global {
   interface Window {
@@ -38,11 +39,11 @@ function precoTexto(valor: number) {
 }
 
 export type CheckoutPagamentoProps = {
-  /** Plano inicial. Oferta usa SEMESTRAL; checkout clássico usa MENSAL. */
-  planoInicial?: 'MENSAL' | 'SEMESTRAL'
+  /** Plano inicial. Oferta usa SEMESTRAL; checkout clássico usa MENSAL; /comece usa ANUAL. */
+  planoInicial?: 'MENSAL' | 'SEMESTRAL' | 'ANUAL'
   /** Destaca o semestral (ouro) em vez do mensal. */
   destacarSemestral?: boolean
-  /** Origem analytics: checkout | oferta */
+  /** Origem analytics: checkout | oferta | comece */
   source?: string
   /** Para onde ir após pagar. Default /treinos. */
   onSuccessNavigateTo?: string
@@ -88,7 +89,9 @@ export default function CheckoutPagamento({
   userIdRef.current = user?.id
   assinanteRef.current = Boolean(user?.planoAtivo)
 
-  const plano = PLANOS.find((item) => item.id === planoSelecionado) || PLANOS[0]
+  const plano = PLANOS.find((item) => item.id === planoSelecionado)
+    || PLANOS_CHECKOUT.find((item) => item.id === planoSelecionado)
+    || PLANOS[0]
   const preco = precoTexto(plano.preco)
 
   useEffect(() => {
@@ -118,7 +121,7 @@ export default function CheckoutPagamento({
   }, [])
 
   const concluirAssinatura = async (transactionId?: string) => {
-    const planoAtual = PLANOS.find((item) => item.id === planoRef.current)
+    const planoAtual = PLANOS.find((item) => item.id === planoRef.current) || PLANOS_CHECKOUT.find((item) => item.id === planoRef.current)
     const novoCliente = !assinanteRef.current
     await refreshUser()
     dispararConversaoAssinatura({
@@ -129,7 +132,10 @@ export default function CheckoutPagamento({
     })
     try {
       window.dispatchEvent(new CustomEvent('analytics:event', {
-        detail: { eventType: 'subscription_started', properties: { plan: planoRef.current, source } }
+        detail: {
+          eventType: 'subscription_started',
+          properties: { plan: planoRef.current, source, ...lerUtm() }
+        }
       }))
     } catch {
       // analytics opcional
@@ -137,7 +143,7 @@ export default function CheckoutPagamento({
     navigate(onSuccessNavigateTo)
   }
 
-  const confirmarCartao = async (cardTokenId: string) => {
+  const confirmarCartao = async (cardTokenId: string, extras?: { paymentMethodId?: string; issuerId?: string; installments?: number }) => {
     if (!userIdRef.current) {
       showToast('Faça login novamente.', 'error')
       navigate('/login')
@@ -145,11 +151,20 @@ export default function CheckoutPagamento({
     }
     setLoading(true)
     setError('')
+    dispararGtag('add_payment_info', {
+      currency: 'BRL',
+      value: (PLANOS.find((item) => item.id === planoRef.current) || PLANOS_CHECKOUT.find((item) => item.id === planoRef.current))?.preco || 0,
+      payment_type: 'credit_card',
+      items: [{ item_id: planoRef.current, item_name: `AthletIA ${planoRef.current}`, price: (PLANOS.find((item) => item.id === planoRef.current) || PLANOS_CHECKOUT.find((item) => item.id === planoRef.current))?.preco || 0, quantity: 1 }]
+    })
     try {
       const response = await api.post('/payment/subscribe', {
         plano: planoRef.current,
         cardTokenId,
-        idempotencyKey: crypto.randomUUID()
+        idempotencyKey: crypto.randomUUID(),
+        paymentMethodId: extras?.paymentMethodId,
+        issuerId: extras?.issuerId,
+        installments: extras?.installments || 1
       })
       if (response.data?.status === 'authorized' && response.data?.planoAtivo) {
         await concluirAssinatura(response.data?.transactionId)
@@ -176,6 +191,7 @@ export default function CheckoutPagamento({
         // form anterior saiu
       }
       const planoAtual = PLANOS.find((item) => item.id === planoRef.current)
+        || PLANOS_CHECKOUT.find((item) => item.id === planoRef.current)
       const mp = new window.MercadoPago(publicKey, { locale: 'pt-BR' })
       cardFormRef.current = mp.cardForm({
         amount: (planoAtual?.preco ?? 29.9).toFixed(2),
@@ -210,7 +226,11 @@ export default function CheckoutPagamento({
               setError('Não foi possível ler o cartão. Confira os dados.')
               return
             }
-            void confirmarCartao(dados.token)
+            void confirmarCartao(dados.token, {
+              paymentMethodId: dados.paymentMethodId || dados.payment_method_id,
+              issuerId: dados.issuerId || dados.issuer_id,
+              installments: Number(dados.installments) || 1
+            })
           }
         }
       })
@@ -266,6 +286,12 @@ export default function CheckoutPagamento({
     }
     setLoading(true)
     setError('')
+    dispararGtag('add_payment_info', {
+      currency: 'BRL',
+      value: plano.preco,
+      payment_type: 'pix',
+      items: [{ item_id: planoSelecionado, item_name: `AthletIA ${plano.nome}`, price: plano.preco, quantity: 1 }]
+    })
     try {
       const response = await api.post('/payment/pix', {
         plano: planoSelecionado,
@@ -309,7 +335,7 @@ export default function CheckoutPagamento({
   }
 
   const textoBotao = meio === 'cartao'
-    ? (loading ? 'Processando...' : `Assinar por R$ ${preco}`)
+    ? (loading ? 'Processando...' : `Pagar R$ ${preco}`)
     : pix
       ? (copiado ? 'Código copiado' : 'Copiar código Pix')
       : (loading ? 'Gerando Pix...' : `Pagar R$ ${preco} com Pix`)

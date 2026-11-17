@@ -4,19 +4,32 @@ import { prisma } from '../lib/prisma';
 
 const MP_API = 'https://api.mercadopago.com';
 
-export type PlanoId = 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL';
+export type PlanoId = 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL';
 
-const PLANOS: Record<PlanoId, { nome: string; preco: number; meses: number }> = {
+type PlanoConfig = {
+  nome: string
+  preco: number
+  meses: number
+  /** Pagamento avulso (sem assinatura recorrente / preapproval). */
+  pagamentoUnico?: boolean
+}
+
+const PLANOS: Record<PlanoId, PlanoConfig> = {
   MENSAL: { nome: 'Mensal', preco: 29.9, meses: 1 },
   TRIMESTRAL: { nome: 'Trimestral', preco: 49.9, meses: 3 },
-  SEMESTRAL: { nome: 'Semestral', preco: 89.9, meses: 6 }
+  SEMESTRAL: { nome: 'Semestral', preco: 89.9, meses: 6 },
+  ANUAL: { nome: 'Anual', preco: 67.9, meses: 12, pagamentoUnico: true }
 };
 
 const planIdCache: Partial<Record<PlanoId, string>> = {};
 const locks = new Set<string>();
 
 export function isPlanoId(value: string): value is PlanoId {
-  return value === 'MENSAL' || value === 'TRIMESTRAL' || value === 'SEMESTRAL';
+  return value === 'MENSAL' || value === 'TRIMESTRAL' || value === 'SEMESTRAL' || value === 'ANUAL';
+}
+
+export function obterConfigPlano(plano: PlanoId): PlanoConfig {
+  return PLANOS[plano];
 }
 
 export function cpfValido(cpf: string): boolean {
@@ -321,14 +334,92 @@ export async function assinarComCartao(params: {
   plano: PlanoId;
   cardTokenId: string;
   idempotencyKey: string;
+  paymentMethodId?: string;
+  issuerId?: string;
+  installments?: number;
 }) {
   return withUserLock(params.userId, async () => {
     const user = await prisma.user.findUnique({ where: { id: params.userId } });
     if (!user) throw Object.assign(new Error('Usuário não encontrado'), { statusCode: 404 });
     exigirUsuarioAtivoLivre(user);
 
-    const planId = await garantirPlano(params.plano);
     const config = PLANOS[params.plano];
+
+    // Plano anual (e futuros one-shot): cobrança avulsa, sem renovação automática.
+    if (config.pagamentoUnico) {
+      const body: Record<string, unknown> = {
+        transaction_amount: config.preco,
+        token: params.cardTokenId,
+        description: `AthletIA ${config.nome}`,
+        installments: Math.max(1, Number(params.installments) || 1),
+        external_reference: referencia(params.userId, params.plano),
+        payer: { email: user.email }
+      };
+      if (params.paymentMethodId) body.payment_method_id = params.paymentMethodId;
+      if (params.issuerId) body.issuer_id = Number(params.issuerId) || params.issuerId;
+      const webhook = notificationUrl();
+      if (webhook) body.notification_url = webhook;
+
+      let response;
+      try {
+        response = await axios.post(`${MP_API}/v1/payments`, body, {
+          headers: headers(params.idempotencyKey)
+        });
+      } catch (error: any) {
+        logMpError('pagamento unico cartao', error);
+        throw Object.assign(new Error('Não foi possível autorizar o cartão. Confira os dados ou use outro cartão.'), { statusCode: 402 });
+      }
+
+      const payment = response.data;
+      const paymentId = String(payment.id || '');
+      const status = String(payment.status || '');
+
+      await prisma.user.update({
+        where: { id: params.userId },
+        data: { meioPagamento: 'cartao', mpPreapprovalId: null }
+      });
+
+      await registrarPendente({
+        userId: params.userId,
+        plano: params.plano,
+        transactionId: paymentId,
+        amount: config.preco,
+        paymentMethod: 'credit_card',
+        raw: { id: paymentId, status, oneShot: true }
+      });
+
+      if (status === 'approved') {
+        const ativacao = await ativarPlano({
+          userId: params.userId,
+          plano: params.plano,
+          transactionId: paymentId,
+          amount: Number(payment.transaction_amount || config.preco),
+          paymentMethod: payment.payment_method_id || 'credit_card',
+          meio: 'cartao',
+          raw: { id: paymentId, status, oneShot: true }
+        });
+        return { success: true, status: 'authorized', transactionId: paymentId, ...ativacao };
+      }
+
+      if (status === 'pending' || status === 'in_process' || status === 'in_mediation') {
+        return {
+          success: true,
+          status: 'pending',
+          transactionId: paymentId,
+          planoAtivo: false,
+          message: 'O pagamento do cartão ainda está em análise. O plano entra assim que for aprovado.'
+        };
+      }
+
+      return {
+        success: false,
+        status: status || 'rejected',
+        planoAtivo: false,
+        message: 'O cartão foi recusado. Confira os dados ou use outro cartão.'
+      };
+    }
+
+    const planId = await garantirPlano(params.plano);
 
     let response;
     try {

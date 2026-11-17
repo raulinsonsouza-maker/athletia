@@ -1204,7 +1204,7 @@ export const cadastroSemTrial = async (req: Request, res: Response) => {
 /** Cadastro mínimo da LP /oferta: conta sem onboarding, sem trial. */
 export const cadastroOferta = async (req: Request, res: Response) => {
   try {
-    const { nome, telefone, email, senha } = req.body;
+    const { nome, telefone, email, senha, source, utm } = req.body;
 
     if (!nome || !email || !telefone || !senha) {
       return res.status(400).json({
@@ -1283,7 +1283,10 @@ export const cadastroOferta = async (req: Request, res: Response) => {
 
     try {
       const { registrarEventoAsync } = await import('../services/analytics.service');
-      registrarEventoAsync(user.id, 'oferta_signup', { source: 'oferta' });
+      const origem = typeof source === 'string' && source.trim() ? source.trim() : 'oferta';
+      const utmProps = utm && typeof utm === 'object' ? utm : {};
+      const eventType = origem === 'comece' ? 'comece_signup' : 'oferta_signup';
+      registrarEventoAsync(user.id, eventType, { source: origem, ...utmProps });
     } catch (error) {
       console.error('Erro ao registrar evento oferta_signup:', error);
     }

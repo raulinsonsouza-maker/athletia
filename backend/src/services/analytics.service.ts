@@ -6,6 +6,7 @@ import { prisma } from '../lib/prisma';
 export type AnalyticsEventType =
   | 'user_registered'
   | 'oferta_signup'
+  | 'comece_signup'
   | 'onboarding_completed'
   | 'training_plan_generated'
   | 'training_started'

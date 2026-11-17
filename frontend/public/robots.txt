@@ -20,5 +20,9 @@ Disallow: /pagamento-sucesso
 Disallow: /confirmacao
 Disallow: /assinatura-confirmada
 Disallow: /trial-expirado
+Disallow: /comece
+Disallow: /oferta
+Disallow: /onboarding
+Disallow: /montar-treino
 
 Sitemap: https://athletia.site/sitemap.xml

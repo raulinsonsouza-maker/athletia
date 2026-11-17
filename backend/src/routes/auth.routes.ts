@@ -98,7 +98,7 @@ const cadastroCompletoValidation = [
     .withMessage('Telefone é obrigatório')
     .trim(),
   body('plano')
-    .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'])
+    .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL', 'ANUAL'])
     .withMessage('Plano inválido'),
   body('onboarding')
     .notEmpty()
@@ -163,7 +163,7 @@ const ativarPlanoValidation = [
     .notEmpty()
     .withMessage('UserId é obrigatório'),
   body('plano')
-    .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'])
+    .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL', 'ANUAL'])
     .withMessage('Plano inválido')
 ];
 

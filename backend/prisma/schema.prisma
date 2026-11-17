@@ -17,7 +17,7 @@ model User {
   nome                  String?
   dataNascimento        DateTime? @map("data_nascimento")
   telefone              String? // Telefone com máscara
-  plano                 String? // MENSAL, TRIMESTRAL, SEMESTRAL
+  plano                 String? // MENSAL, TRIMESTRAL, SEMESTRAL, ANUAL
   planoAtivo            Boolean   @default(false) @map("plano_ativo")
   dataPagamento         DateTime? @map("data_pagamento")
   dataExpiracao         DateTime? @map("data_expiracao") // Data de expiração do plano

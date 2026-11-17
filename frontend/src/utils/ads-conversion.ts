@@ -1,7 +1,8 @@
 const PRECOS: Record<string, number> = {
   MENSAL: 29.9,
   TRIMESTRAL: 49.9,
-  SEMESTRAL: 89.9
+  SEMESTRAL: 89.9,
+  ANUAL: 67.9
 }
 
 type ConversaoAssinatura = {

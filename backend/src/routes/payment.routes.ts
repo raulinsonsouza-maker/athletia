@@ -18,8 +18,8 @@ const router = Router();
 
 const checkoutValidation = [
   body('plano')
-    .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL'])
-    .withMessage('Plano inválido. Deve ser MENSAL, TRIMESTRAL ou SEMESTRAL'),
+    .isIn(['MENSAL', 'TRIMESTRAL', 'SEMESTRAL', 'ANUAL'])
+    .withMessage('Plano inválido. Deve ser MENSAL, TRIMESTRAL, SEMESTRAL ou ANUAL'),
   body('email')
     .isEmail()
     .withMessage('Email inválido')

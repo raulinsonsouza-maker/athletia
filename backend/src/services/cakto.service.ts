@@ -113,6 +113,9 @@ function calcularDataExpiracao(plano: string): Date {
     case 'SEMESTRAL':
       hoje.setMonth(hoje.getMonth() + 6);
       break;
+    case 'ANUAL':
+      hoje.setMonth(hoje.getMonth() + 12);
+      break;
     default:
       hoje.setMonth(hoje.getMonth() + 1); // Default: 1 mês
   }
