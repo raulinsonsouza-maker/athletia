@@ -5,6 +5,10 @@ export const PRECO_MENSAL_POR_MES = 'R$ 29,90/mês'
 
 export const PRECO_ANUAL = 67.9
 export const PRECO_ANUAL_FORMATADO = 'R$ 67,90'
+/** Equivalente / parcela no cartão: 67,90 ÷ 12 ≈ 5,66 */
+export const PRECO_ANUAL_PARCELA = 5.66
+export const PRECO_ANUAL_PARCELA_FORMATADO = 'R$ 5,66'
+export const PRECO_ANUAL_12X = `12x de ${PRECO_ANUAL_PARCELA_FORMATADO}`
 
 export type PlanoCheckout = {
   id: 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL'

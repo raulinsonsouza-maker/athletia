@@ -212,7 +212,15 @@ export default function CheckoutPagamento({
           onFormMounted: (mountError: unknown) => {
             if (mountError) setError('Não foi possível carregar o formulário do cartão.')
             const parcelas = document.getElementById('form-checkout__installments') as HTMLSelectElement | null
-            if (parcelas && parcelas.options.length > 0) parcelas.selectedIndex = 0
+            if (parcelas && parcelas.options.length > 0) {
+              const querAnual = planoRef.current === 'ANUAL'
+              const opcao12 = Array.from(parcelas.options).find((option) => option.value === '12' || /^12\b/.test(option.text))
+              if (querAnual && opcao12) {
+                parcelas.value = opcao12.value
+              } else {
+                parcelas.selectedIndex = 0
+              }
+            }
             const documento = document.getElementById('form-checkout__identificationType') as HTMLSelectElement | null
             if (documento) {
               const cpfOption = Array.from(documento.options).find((option) => option.value === 'CPF' || option.text === 'CPF')
@@ -499,7 +507,20 @@ export default function CheckoutPagamento({
           </div>
           <select id="form-checkout__identificationType" className="hidden" aria-hidden="true" />
           <select id="form-checkout__issuer" className="hidden" aria-hidden="true" />
-          <select id="form-checkout__installments" className="hidden" aria-hidden="true" />
+          {planoSelecionado === 'ANUAL' ? (
+            <div className="mt-3">
+              <label className="mb-1 block text-xs text-light-muted" htmlFor="form-checkout__installments">
+                Parcelas
+              </label>
+              <select
+                id="form-checkout__installments"
+                className={inputClass}
+                defaultValue="12"
+              />
+            </div>
+          ) : (
+            <select id="form-checkout__installments" className="hidden" aria-hidden="true" />
+          )}
           <input id="form-checkout__cardholderEmail" type="email" className="hidden" defaultValue={user?.email || ''} />
         </form>
       )}

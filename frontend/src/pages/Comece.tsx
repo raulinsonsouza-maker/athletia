@@ -3,11 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/auth.service'
 import CheckoutPagamento from '../components/CheckoutPagamento'
-import LegalModal from '../components/legal/LegalModal'
-import TermosContent from '../components/legal/TermosContent'
-import PrivacidadeContent from '../components/legal/PrivacidadeContent'
-import CookiesContent from '../components/legal/CookiesContent'
-import { PRECO_ANUAL_FORMATADO } from '../constants/planos-precos'
+import { PRECO_ANUAL_12X, PRECO_ANUAL_FORMATADO } from '../constants/planos-precos'
 import { capturarUtmDaUrl, dispararGtag, lerUtm } from '../utils/utm'
 
 const inputClass =
@@ -51,7 +47,7 @@ const FAQ = [
   },
   {
     q: 'Preciso pagar mensalmente?',
-    a: `Não. ${PRECO_ANUAL_FORMATADO} é o pagamento único pelos 12 meses de acesso.`
+    a: `Não. Você pode pagar em ${PRECO_ANUAL_12X} no cartão ou ${PRECO_ANUAL_FORMATADO} à vista pelo Pix, pelos 12 meses de acesso.`
   },
   {
     q: 'E se eu não gostar?',
@@ -97,9 +93,6 @@ export default function Comece() {
   const [erroConta, setErroConta] = useState('')
   const [contaPronta, setContaPronta] = useState(false)
   const [faqAberto, setFaqAberto] = useState<number | null>(0)
-  const [modalTermos, setModalTermos] = useState(false)
-  const [modalPrivacidade, setModalPrivacidade] = useState(false)
-  const [modalCookies, setModalCookies] = useState(false)
   const checkoutIniciado = useRef(false)
 
   useEffect(() => {
@@ -241,12 +234,7 @@ export default function Comece() {
       <header className="relative z-20 w-full py-4 px-4 md:px-6">
         <div className="max-w-5xl mx-auto flex items-center gap-2.5">
           <img src="/favicon.svg" alt="" className="w-8 h-8 rounded-2xl" width="32" height="32" />
-          <div>
-            <p className="text-lg font-display font-bold tracking-tight leading-none">AthletIA</p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-primary/90">
-              Treinamento personalizado com IA
-            </p>
-          </div>
+          <p className="text-lg font-display font-bold tracking-tight">AthletIA</p>
         </div>
       </header>
 
@@ -266,7 +254,7 @@ export default function Comece() {
               <div className="space-y-3 pt-1">
                 <Cta label="QUERO MEU TREINO PERSONALIZADO" />
                 <p className="text-sm text-light-muted">
-                  12 meses por {PRECO_ANUAL_FORMATADO} · Pagamento único
+                  {PRECO_ANUAL_12X} · ou {PRECO_ANUAL_FORMATADO} à vista
                 </p>
               </div>
             </div>
@@ -354,10 +342,10 @@ export default function Comece() {
               Tenha 12 meses de treinamento personalizado por apenas:
             </p>
             <p className="mt-3 font-display text-5xl md:text-6xl font-extrabold tracking-tight">
-              {PRECO_ANUAL_FORMATADO}
+              {PRECO_ANUAL_12X}
             </p>
-            <p className="mt-3 text-sm font-medium text-light">
-              Pagamento único. Sem mensalidade. Sem renovação automática.
+            <p className="mt-2 text-sm text-light-muted">
+              ou {PRECO_ANUAL_FORMATADO} à vista
             </p>
 
             <div className="mt-8 rounded-[1.75rem] border border-primary/35 bg-gradient-to-b from-primary/12 to-transparent p-6 md:p-8 text-left">
@@ -428,13 +416,10 @@ export default function Comece() {
               <h3 className="mt-2 text-center font-display text-xl font-bold">AthletIA — Plano Anual</h3>
               <p className="mt-1 text-center text-sm text-light-muted">12 meses de acesso.</p>
 
-              <div className="mt-5 flex items-center justify-between rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
-                <span className="text-sm text-light-muted">Total</span>
-                <span className="font-display text-2xl font-extrabold">{PRECO_ANUAL_FORMATADO}</span>
+              <div className="mt-5 rounded-2xl border border-white/10 bg-black/30 px-4 py-4 text-center">
+                <p className="font-display text-2xl font-extrabold">{PRECO_ANUAL_12X}</p>
+                <p className="mt-1 text-sm text-light-muted">ou {PRECO_ANUAL_FORMATADO} à vista</p>
               </div>
-              <p className="mt-2 text-center text-xs text-light-muted">
-                Pagamento único · Sem renovação automática
-              </p>
 
               <div className="mt-8 border-t border-white/10 pt-6">
                 {!contaPronta ? (
@@ -451,7 +436,6 @@ export default function Comece() {
                     >
                       {loadingConta ? 'Criando...' : 'CONTINUAR PARA O PAGAMENTO'}
                     </button>
-                    <p className="text-center text-xs text-light-muted">Pagamento seguro.</p>
                   </form>
                 ) : (
                   <div>
@@ -473,28 +457,6 @@ export default function Comece() {
           </div>
         </section>
       </main>
-
-      <footer className="py-8 px-4 border-t border-white/5">
-        <div className="max-w-3xl mx-auto flex flex-col items-center gap-3 text-xs text-light-muted">
-          <span className="text-primary font-display font-bold text-base">AthletIA</span>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button type="button" onClick={() => setModalTermos(true)} className="hover:text-primary">Termos de Uso</button>
-            <button type="button" onClick={() => setModalPrivacidade(true)} className="hover:text-primary">Política de Privacidade</button>
-            <button type="button" onClick={() => setModalCookies(true)} className="hover:text-primary">Cookies</button>
-          </div>
-          <p>© 2026 AthletIA</p>
-        </div>
-      </footer>
-
-      <LegalModal isOpen={modalTermos} onClose={() => setModalTermos(false)} title="Termos de Uso">
-        <TermosContent />
-      </LegalModal>
-      <LegalModal isOpen={modalPrivacidade} onClose={() => setModalPrivacidade(false)} title="Política de Privacidade">
-        <PrivacidadeContent />
-      </LegalModal>
-      <LegalModal isOpen={modalCookies} onClose={() => setModalCookies(false)} title="Política de Cookies">
-        <CookiesContent />
-      </LegalModal>
     </div>
   )
 }
