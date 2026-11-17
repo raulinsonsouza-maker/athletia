@@ -15,28 +15,68 @@ const inputClass =
 
 const FAQ = [
   {
-    q: 'Preciso já ter experiência com academia?',
-    a: 'Não. O AthletIA atende pessoas com diferentes níveis de experiência, inclusive quem está começando.'
+    q: 'Preciso ter experiência com academia?',
+    a: 'Não. O AthletIA atende diferentes níveis de experiência, inclusive iniciantes.'
   },
   {
     q: 'Posso treinar em casa?',
-    a: 'Sim. O aplicativo permite estruturar treinamentos para casa ou academia.'
+    a: 'Sim. Você pode estruturar seus treinamentos para casa ou academia.'
   },
   {
-    q: 'Como recebo meu treinamento?',
-    a: 'Após a confirmação da compra e a conclusão do cadastro, você poderá acessar o AthletIA e seguir as orientações para criar seu treinamento.'
+    q: 'O pagamento é mensal?',
+    a: `Não. Você paga ${PRECO_ANUAL_FORMATADO} uma única vez e tem 12 meses de acesso.`
   },
   {
-    q: 'O acesso dura quanto tempo?',
-    a: 'O plano anunciado oferece 12 meses de acesso.'
+    q: 'Como funciona a garantia?',
+    a: 'Você tem 7 dias para conhecer o AthletIA e solicitar o reembolso, conforme as condições da garantia.'
+  }
+] as const
+
+const DOR_CARDS = [
+  {
+    title: 'Roupas que incomodam',
+    text: 'Peças que já não vestem como antes e acabam ficando no fundo do armário.'
   },
   {
-    q: 'Existe cobrança mensal?',
-    a: `Não. O valor de ${PRECO_ANUAL_FORMATADO} é pago uma única vez, sem mensalidade ou renovação automática.`
+    title: 'Fotos que você evita',
+    text: 'O reflexo e as fotos mostram uma versão de você com a qual você não se identifica.'
   },
   {
-    q: 'E se eu não gostar?',
-    a: 'Você conta com 7 dias de garantia, conforme as condições apresentadas na compra.'
+    title: 'Sempre “segunda-feira”',
+    text: 'A promessa de começar volta toda semana — e o tempo continua passando.'
+  }
+] as const
+
+const BENEFICIOS = [
+  {
+    title: 'Treinos personalizados',
+    text: 'Montados para o seu perfil, nível e objetivo.'
+  },
+  {
+    title: 'Casa ou academia',
+    text: 'Estruture o treino no lugar onde você realmente vai treinar.'
+  },
+  {
+    title: 'Evolução acompanhada',
+    text: 'Ajustes conforme você avança — sem montar tudo sozinho.'
+  }
+] as const
+
+const PASSOS = [
+  {
+    n: '1',
+    title: 'Informe seu objetivo',
+    text: 'Conte ao AthletIA o que deseja alcançar.'
+  },
+  {
+    n: '2',
+    title: 'Receba seu treinamento',
+    text: 'Seu plano é criado de acordo com seu perfil.'
+  },
+  {
+    n: '3',
+    title: 'Comece a treinar',
+    text: 'Siga seu plano e acompanhe sua evolução.'
   }
 ] as const
 
@@ -58,7 +98,35 @@ function setMeta(name: string, content: string, property = false) {
   el.setAttribute('content', content)
 }
 
-/** Landing de conversão paga — rota /comece. Não altera a home. */
+function IconMirror() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <rect x="6" y="3" width="12" height="18" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M9 7h6M9 17h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconClothes() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <path d="M8 5l4 2 4-2 3 3-2 2v9H7v-9L5 8l3-3z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconClock() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M12 8v5l3 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+const DOR_ICONS = [IconClothes, IconMirror, IconClock]
+
+/** Landing curta de conversão — /comece */
 export default function Comece() {
   const navigate = useNavigate()
   const { user, loading: authLoading, setUserFromResponse } = useAuth()
@@ -81,14 +149,12 @@ export default function Comece() {
 
     const prevTitle = document.title
     document.title = 'Comece sua mudança | AthletIA — 12 meses por R$ 67,90'
-    setMeta('description', 'Você já passou tempo demais adiando a mudança. O AthletIA monta um plano de treino para o seu corpo, objetivo e rotina. 12 meses por R$ 67,90, pagamento único.')
+    setMeta('description', 'Você não está feliz com seu corpo. O AthletIA cria um treinamento personalizado para você começar. 12 meses por R$ 67,90, pagamento único.')
     setMeta('robots', 'noindex, nofollow')
     setMeta('og:title', 'Comece sua mudança | AthletIA', true)
     setMeta('og:description', '12 meses de acesso ao AthletIA por R$ 67,90. Pagamento único, sem renovação automática.', true)
     setMeta('og:url', 'https://athletia.site/comece', true)
     setMeta('og:type', 'website', true)
-    setMeta('twitter:title', 'Comece sua mudança | AthletIA')
-    setMeta('twitter:description', '12 meses de acesso ao AthletIA por R$ 67,90. Pagamento único.')
 
     dispararGtag('page_view', {
       page_title: 'AthletIA - Comece',
@@ -201,293 +267,273 @@ export default function Comece() {
     }
   }
 
-  const CtaButton = ({ label, className = '' }: { label: string; className?: string }) => (
+  const Cta = ({ label }: { label: string }) => (
     <button
       type="button"
       onClick={scrollComprar}
-      className={`btn-primary w-full sm:w-auto text-base md:text-lg px-8 py-4 font-bold shadow-xl shadow-primary/30 ${className}`}
+      className="btn-primary w-full sm:w-auto text-base md:text-lg px-8 py-4 font-bold shadow-xl shadow-primary/35 hover:scale-[1.02] active:scale-[0.98] transition-transform"
     >
       {label}
     </button>
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark via-dark-lighter to-dark text-light">
-      <header className="w-full py-4 md:py-5 px-4 md:px-6 border-b border-grey/30 bg-dark/95 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto flex items-center gap-2.5">
-          <img
-            src="/favicon.svg"
-            alt=""
-            className="w-8 h-8 md:w-9 md:h-9 rounded-2xl"
-            width="36"
-            height="36"
-            loading="eager"
-          />
-          <span className="text-lg md:text-xl font-display font-bold tracking-tight text-light">AthletIA</span>
+    <div className="min-h-screen bg-[#0a0a0b] text-light overflow-x-hidden">
+      <header className="relative z-20 w-full py-4 px-4 md:px-6">
+        <div className="max-w-5xl mx-auto flex items-center gap-2.5">
+          <img src="/favicon.svg" alt="" className="w-8 h-8 rounded-2xl" width="32" height="32" />
+          <span className="text-lg font-display font-bold tracking-tight">AthletIA</span>
         </div>
       </header>
 
       <main id="main-content">
-        {/* 1 — Hero */}
-        <section className="px-4 md:px-6 py-14 md:py-20">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h1 className="font-display text-3xl md:text-5xl font-extrabold leading-tight tracking-tight text-light">
-              Você já passou tempo demais adiando a mudança que deseja ver no espelho.
-            </h1>
-            <div className="space-y-4 text-base md:text-lg text-light-muted leading-relaxed text-left sm:text-center">
-              <p>Você promete que vai começar, tenta novamente e, quando percebe, mais um mês passou.</p>
-              <p>Mas você não precisa continuar nesse ciclo.</p>
-              <p>
-                O AthletIA ajuda você a transformar a vontade de mudar em um plano de treinamento feito para seu corpo,
-                seu objetivo e sua rotina.
+        {/* 1 — HERO */}
+        <section className="relative px-4 md:px-6 pt-6 pb-16 md:pb-20">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(245,158,11,0.16),_transparent_55%)]" />
+          <div className="relative max-w-5xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-center">
+            <div className="space-y-6 text-center lg:text-left">
+              <p className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+                Plano anual · pagamento único
               </p>
+              <h1 className="font-display text-[2rem] sm:text-4xl md:text-5xl font-extrabold leading-[1.12] tracking-tight">
+                Você não está feliz com seu corpo. E sabe disso.
+              </h1>
+              <div className="space-y-3 text-base md:text-lg text-light-muted leading-relaxed max-w-xl mx-auto lg:mx-0">
+                <p>
+                  Talvez você evite algumas fotos, não goste mais de certas roupas ou simplesmente não se reconheça
+                  quando olha no espelho.
+                </p>
+                <p>
+                  Quantas vezes você já prometeu que iria mudar, começou e acabou deixando para depois?
+                </p>
+                <p className="text-light font-medium">Você não precisa continuar nesse ciclo.</p>
+                <p>
+                  Com o AthletIA, você recebe um treinamento personalizado para começar a trabalhar na mudança que
+                  deseja.
+                </p>
+              </div>
+              <div className="space-y-3 pt-1">
+                <Cta label="QUERO COMEÇAR AGORA" />
+                <p className="text-sm text-light-muted">
+                  12 meses de acesso por {PRECO_ANUAL_FORMATADO} · Pagamento único.
+                </p>
+              </div>
             </div>
-            <div className="pt-2 space-y-3">
-              <CtaButton label="QUERO COMEÇAR MINHA MUDANÇA" />
-              <p className="text-sm text-light-muted">12 meses de acesso por {PRECO_ANUAL_FORMATADO} · Pagamento único</p>
-            </div>
-            <div className="pt-6 flex justify-center">
-              <img
-                src="/images/app-preview/Editadas/Hero_nova-400x800.webp"
-                srcSet="/images/app-preview/Editadas/Hero_nova-400x800.webp 400w, /images/app-preview/Editadas/Hero_nova-800x1600.webp 800w"
-                sizes="(max-width: 640px) 220px, 280px"
-                alt="Prévia do aplicativo AthletIA"
-                className="w-[220px] md:w-[280px] rounded-[2rem] shadow-2xl shadow-black/50 border border-white/10"
-                width="400"
-                height="800"
-                loading="eager"
-              />
+
+            <div className="relative mx-auto w-full max-w-[280px] lg:max-w-[320px]">
+              <div className="absolute -inset-8 rounded-full bg-primary/20 blur-3xl" />
+              <div className="relative rounded-[2.2rem] border border-white/15 bg-black/40 p-2 shadow-[0_30px_80px_rgba(0,0,0,0.55)]">
+                <img
+                  src="/images/app-preview/Editadas/Hero_nova-400x800.webp"
+                  srcSet="/images/app-preview/Editadas/Hero_nova-400x800.webp 400w, /images/app-preview/Editadas/Hero_nova-800x1600.webp 800w"
+                  sizes="(max-width: 1024px) 260px, 300px"
+                  alt="Tela de treinos do aplicativo AthletIA"
+                  className="w-full rounded-[1.8rem]"
+                  width="400"
+                  height="800"
+                  loading="eager"
+                />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 2 — Dor */}
-        <section className="px-4 md:px-6 py-14 md:py-16 border-t border-grey/20 bg-dark-lighter/40">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              Você sabe que precisa mudar. O que dói é perceber que continua adiando.
-            </h2>
-            <p className="text-light-muted">Talvez você já tenha passado por isso:</p>
-            <ul className="space-y-3 text-light">
-              {[
-                'Comprar roupas maiores porque as antigas já não vestem como antes.',
-                'Evitar determinadas fotos porque não gosta de como aparece.',
-                'Olhar para o espelho e sentir que está distante da pessoa que gostaria de ser.',
-                'Prometer que segunda-feira será diferente, mas acabar deixando para depois.',
-                'Começar a treinar, perder o ritmo e sentir que voltou à estaca zero.'
-              ].map((item) => (
-                <li key={item} className="flex gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span className="text-sm md:text-base leading-relaxed text-light-muted">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="space-y-3 text-light-muted leading-relaxed">
-              <p>E o mais difícil não é apenas o que você vê no espelho.</p>
-              <p>É perceber quanto tempo está passando enquanto você espera o momento certo para mudar.</p>
+        {/* 2 — IDENTIFICAÇÃO */}
+        <section className="relative px-4 md:px-6 py-14 md:py-16 border-t border-white/5">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(245,158,11,0.08),_transparent_50%)]" />
+          <div className="relative max-w-5xl mx-auto">
+            <div className="max-w-3xl">
+              <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight">
+                O pior não é perceber que você precisa mudar. É perceber que o tempo está passando.
+              </h2>
+              <div className="mt-5 space-y-3 text-light-muted leading-relaxed">
+                <p>
+                  Enquanto você adia, as roupas continuam incomodando. As fotos continuam sendo evitadas. E aquela
+                  promessa de começar continua ficando para a próxima segunda-feira.
+                </p>
+                <p>Talvez você já tenha tentado várias vezes.</p>
+                <p className="text-light font-medium">
+                  O que falta não é mais uma promessa. É ter um plano e começar a seguir.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-10 grid md:grid-cols-3 gap-3 md:gap-4">
+              {DOR_CARDS.map((item, index) => {
+                const Icon = DOR_ICONS[index]
+                return (
+                  <div
+                    key={item.title}
+                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 hover:border-primary/30 transition-colors"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                      <Icon />
+                    </div>
+                    <p className="mt-4 font-bold text-light">{item.title}</p>
+                    <p className="mt-2 text-sm text-light-muted leading-relaxed">{item.text}</p>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
 
-        {/* 3 — Virada */}
-        <section className="px-4 md:px-6 py-14 md:py-16">
-          <div className="max-w-3xl mx-auto space-y-5">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              E se dessa vez você tivesse um caminho para seguir?
-            </h2>
-            <div className="space-y-4 text-light-muted leading-relaxed">
-              <p>Você não precisa esperar sentir mais motivação.</p>
-              <p>
-                Também não precisa tentar descobrir sozinho qual treino fazer, quantas vezes treinar ou como organizar
-                sua rotina.
+        {/* 3 — SOLUÇÃO */}
+        <section className="px-4 md:px-6 py-14 md:py-16 border-t border-white/5 bg-[#101012]">
+          <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+            <div>
+              <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight">
+                Seu treino. Seu objetivo. Um caminho para começar.
+              </h2>
+              <p className="mt-4 text-light-muted leading-relaxed">
+                O AthletIA cria um treinamento personalizado de acordo com seu perfil, seu nível e seus objetivos.
               </p>
-              <p>O primeiro passo é ter uma direção.</p>
-              <p>Um plano que considere seu objetivo, seu nível e a realidade da sua rotina.</p>
-              <p className="text-light font-medium">É para isso que existe o AthletIA.</p>
+
+              <ul className="mt-8 space-y-4">
+                {BENEFICIOS.map((b) => (
+                  <li key={b.title} className="flex gap-3">
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-dark">
+                      ✓
+                    </span>
+                    <div>
+                      <p className="font-bold text-light">{b.title}</p>
+                      <p className="text-sm text-light-muted">{b.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8">
+                <Cta label="QUERO MEU TREINO PERSONALIZADO" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+              <div className="space-y-3 md:space-y-4 pt-6">
+                <img
+                  src="/images/app-preview/feature-treinos.webp"
+                  alt="Lista de treinos no AthletIA"
+                  className="w-full rounded-2xl border border-white/10 shadow-lg shadow-black/40"
+                  loading="lazy"
+                />
+                <img
+                  src="/images/app-preview/feature-exercicios.webp"
+                  alt="Exercícios do treino no AthletIA"
+                  className="w-full rounded-2xl border border-white/10 shadow-lg shadow-black/40"
+                  loading="lazy"
+                />
+              </div>
+              <div className="space-y-3 md:space-y-4">
+                <img
+                  src="/images/app-preview/feature-progresso.webp"
+                  alt="Progresso no AthletIA"
+                  className="w-full rounded-2xl border border-white/10 shadow-lg shadow-black/40"
+                  loading="lazy"
+                />
+                <img
+                  src="/images/app-preview/feature-historico.webp"
+                  alt="Histórico de treinos no AthletIA"
+                  className="w-full rounded-2xl border border-white/10 shadow-lg shadow-black/40"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </section>
 
-        {/* 4 — Produto */}
-        <section className="px-4 md:px-6 py-14 md:py-16 border-y border-grey/20 bg-dark-lighter/40">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              Conheça o AthletIA. Seu próximo passo para cuidar de você.
+        {/* 4 — COMO FUNCIONA */}
+        <section className="px-4 md:px-6 py-14 md:py-16 border-t border-white/5">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight text-center">
+              Você só precisa dar o primeiro passo.
             </h2>
-            <div className="space-y-4 text-light-muted leading-relaxed">
-              <p>
-                O AthletIA é um aplicativo de treinamento personalizado com inteligência artificial, desenvolvido para
-                ajudar você a começar e acompanhar sua evolução.
-              </p>
-              <p>
-                Você informa seus objetivos e recebe um treinamento estruturado de acordo com seu perfil.
-              </p>
-              <p>
-                Sem precisar montar tudo sozinho ou ficar perdido tentando decidir o que fazer a cada treino.
-              </p>
-            </div>
-            <ul className="space-y-4">
-              {[
-                'Treinamento personalizado para seu objetivo e nível.',
-                'Possibilidade de treinar em casa ou na academia.',
-                'Acompanhamento e ajustes do treinamento conforme sua evolução.'
-              ].map((b) => (
-                <li key={b} className="flex gap-3">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-dark">✓</span>
-                  <span className="text-light">{b}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="grid sm:grid-cols-2 gap-4 pt-2">
-              <img
-                src="/images/app-preview/feature-treinos.webp"
-                alt="Tela de treinos do AthletIA"
-                className="rounded-2xl border border-white/10 w-full"
-                loading="lazy"
-              />
-              <img
-                src="/images/app-preview/feature-progresso.webp"
-                alt="Tela de progresso do AthletIA"
-                className="rounded-2xl border border-white/10 w-full"
-                loading="lazy"
-              />
-            </div>
-            <div className="pt-2">
-              <CtaButton label="QUERO COMEÇAR AGORA" />
-            </div>
-          </div>
-        </section>
 
-        {/* 5 — Como funciona */}
-        <section className="px-4 md:px-6 py-14 md:py-16">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight text-center mb-10">
-              Começar é mais simples do que você imagina.
-            </h2>
-            <ol className="space-y-8">
-              {[
-                {
-                  n: '1',
-                  t: 'Conte onde quer chegar',
-                  d: 'Informe seu objetivo, seu nível e as características da sua rotina.'
-                },
-                {
-                  n: '2',
-                  t: 'Receba seu treinamento',
-                  d: 'O AthletIA prepara um plano de treinamento personalizado para você.'
-                },
-                {
-                  n: '3',
-                  t: 'Comece a cuidar de você',
-                  d: 'Siga seu treinamento, acompanhe sua evolução e continue avançando.'
-                }
-              ].map((p) => (
-                <li key={p.n} className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary">
+            <ol className="mt-10 grid md:grid-cols-3 gap-6 relative">
+              <div className="pointer-events-none absolute top-8 left-[16%] right-[16%] hidden md:block h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+              {PASSOS.map((p) => (
+                <li key={p.n} className="relative text-center md:text-left">
+                  <div className="mx-auto md:mx-0 flex h-12 w-12 items-center justify-center rounded-full border border-primary/40 bg-primary/15 text-lg font-bold text-primary">
                     {p.n}
                   </div>
-                  <div>
-                    <p className="font-bold text-light">{p.t}</p>
-                    <p className="mt-1 text-sm text-light-muted leading-relaxed">{p.d}</p>
-                  </div>
+                  <p className="mt-4 font-bold text-light text-lg">{p.title}</p>
+                  <p className="mt-2 text-sm text-light-muted leading-relaxed">{p.text}</p>
                 </li>
               ))}
             </ol>
           </div>
         </section>
 
-        {/* 6 — Futuro */}
-        <section className="px-4 md:px-6 py-14 md:py-16 border-y border-grey/20 bg-dark-lighter/40">
-          <div className="max-w-3xl mx-auto space-y-5">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              Imagine olhar para trás daqui a um ano e perceber que você finalmente começou.
+        {/* 5 — OFERTA */}
+        <section className="relative px-4 md:px-6 py-14 md:py-16 border-t border-white/5 bg-[#101012]">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(245,158,11,0.12),_transparent_60%)]" />
+          <div className="relative max-w-xl mx-auto text-center">
+            <h2 className="font-display text-2xl md:text-4xl font-bold leading-tight">
+              Pare de adiar. Comece a cuidar de você.
             </h2>
-            <div className="space-y-4 text-light-muted leading-relaxed">
-              <p>Imagine não precisar mais adiar aquela mudança.</p>
-              <p>
-                Imagine voltar a se sentir confortável com suas roupas, ter mais disposição para suas atividades e
-                perceber que está fazendo algo por você.
-              </p>
-              <p>Não existe transformação instantânea.</p>
-              <p>
-                Mas existe uma diferença enorme entre continuar prometendo que vai começar e finalmente dar o primeiro
-                passo.
-              </p>
-              <p>Você não precisa resolver tudo hoje.</p>
-              <p className="text-light font-medium">Precisa começar.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* 7 — Oferta */}
-        <section className="px-4 md:px-6 py-14 md:py-16">
-          <div className="max-w-lg mx-auto text-center space-y-5">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              Seu próximo passo começa aqui.
-            </h2>
-            <p className="text-light-muted leading-relaxed">
-              Tenha acesso ao AthletIA por 12 meses e comece a construir uma rotina de treinamento alinhada aos seus
-              objetivos.
+            <p className="mt-4 text-light-muted leading-relaxed">
+              Tenha 12 meses para começar a construir uma rotina de treinamento e trabalhar na mudança que deseja.
             </p>
-            <div className="rounded-3xl border border-primary/40 bg-primary/10 px-6 py-8 text-left">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">AthletIA — Plano Anual</p>
-              <p className="mt-3 font-display text-4xl font-extrabold text-light">{PRECO_ANUAL_FORMATADO}</p>
-              <p className="mt-1 text-sm text-light-muted">Pagamento único.</p>
-              <ul className="mt-5 space-y-2 text-sm text-light">
+
+            <div className="mt-8 rounded-[1.75rem] border border-primary/40 bg-gradient-to-b from-primary/15 to-transparent p-6 md:p-8 text-left shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary">
+                AthletIA — Plano Anual
+              </p>
+              <div className="mt-3 flex items-end gap-2">
+                <span className="font-display text-5xl font-extrabold tracking-tight">{PRECO_ANUAL_FORMATADO}</span>
+              </div>
+              <p className="mt-2 text-sm text-light-muted">
+                Pagamento único. Sem mensalidade e sem renovação automática.
+              </p>
+
+              <ul className="mt-6 space-y-2.5">
                 {[
                   '12 meses de acesso.',
                   'Treinamento personalizado.',
-                  'Acesso pelo período contratado.',
-                  'Sem mensalidade.',
-                  'Sem renovação automática.'
+                  'Treinos em casa ou na academia.',
+                  'Garantia de 7 dias.'
                 ].map((item) => (
-                  <li key={item} className="flex gap-2">
-                    <span className="text-primary">✓</span>
+                  <li key={item} className="flex gap-2 text-sm text-light">
+                    <span className="text-primary font-bold">✓</span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
+
+              <button
+                type="button"
+                onClick={scrollComprar}
+                className="mt-7 h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark shadow-lg shadow-primary/35"
+              >
+                QUERO COMEÇAR AGORA
+              </button>
+              <p className="mt-3 text-center text-xs text-light-muted">
+                Pagamento seguro · Acesso após confirmação do pagamento.
+              </p>
             </div>
-            <CtaButton label="QUERO MEU ACESSO AO ATHLETIA" />
-            <p className="text-sm text-light-muted">Pagamento seguro · Garantia de 7 dias</p>
           </div>
         </section>
 
-        {/* 8 — Garantia */}
-        <section className="px-4 md:px-6 py-14 md:py-16 border-y border-grey/20 bg-dark-lighter/40">
-          <div className="max-w-3xl mx-auto space-y-4 text-center sm:text-left">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              Experimente sem assumir um risco desnecessário.
-            </h2>
-            <p className="text-light-muted leading-relaxed">
-              Você tem 7 dias para conhecer o AthletIA.
-            </p>
-            <p className="text-light-muted leading-relaxed">
-              Se decidir que o aplicativo não é para você, poderá solicitar o reembolso dentro do prazo da garantia,
-              conforme as condições informadas no momento da compra.
-            </p>
-          </div>
-        </section>
-
-        {/* 9 — FAQ */}
-        <section className="px-4 md:px-6 py-14 md:py-16">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light text-center mb-8">
+        {/* 6 — FAQ */}
+        <section className="px-4 md:px-6 py-14 md:py-16 border-t border-white/5">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-display text-2xl md:text-3xl font-bold text-center mb-8">
               Perguntas frequentes
             </h2>
             <div className="space-y-2">
               {FAQ.map((item, index) => {
                 const aberto = faqAberto === index
                 return (
-                  <div key={item.q} className="border border-white/10 rounded-2xl overflow-hidden">
+                  <div key={item.q} className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
                     <button
                       type="button"
                       onClick={() => setFaqAberto(aberto ? null : index)}
                       className="w-full flex items-center justify-between gap-3 px-4 py-4 text-left"
                       aria-expanded={aberto}
                     >
-                      <span className="font-semibold text-light text-sm md:text-base">{item.q}</span>
-                      <span className="text-primary text-xl leading-none">{aberto ? '−' : '+'}</span>
+                      <span className="font-semibold text-sm md:text-base">{item.q}</span>
+                      <span className={`text-primary text-xl leading-none transition-transform ${aberto ? 'rotate-45' : ''}`}>
+                        +
+                      </span>
                     </button>
                     {aberto ? (
                       <p className="px-4 pb-4 text-sm text-light-muted leading-relaxed">{item.a}</p>
@@ -499,106 +545,53 @@ export default function Comece() {
           </div>
         </section>
 
-        {/* 10 — CTA final + checkout */}
-        <section className="px-4 md:px-6 py-14 md:py-16 border-t border-grey/20 bg-dark">
-          <div className="max-w-lg mx-auto text-center space-y-5 mb-12">
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-light leading-tight">
-              A mudança que você deseja começa com uma decisão.
-            </h2>
-            <div className="space-y-3 text-light-muted leading-relaxed">
-              <p>Você já passou tempo demais esperando o momento perfeito.</p>
-              <p>Não precisa esperar mais um mês para começar a cuidar de você.</p>
-              <p className="text-light">Dê o primeiro passo com o AthletIA.</p>
-            </div>
-            <CtaButton label="QUERO COMEÇAR MINHA MUDANÇA" />
-            <p className="text-sm text-light-muted">12 meses de acesso por {PRECO_ANUAL_FORMATADO} · Pagamento único</p>
-          </div>
-
-          <div id="comprar" className="scroll-mt-24 max-w-lg mx-auto">
-            <div className="rounded-3xl border border-white/10 bg-dark-lighter/60 p-5 md:p-6">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary text-center">Pedido</p>
-              <h3 className="mt-2 text-center font-display text-xl font-bold text-light">AthletIA — Plano Anual</h3>
+        {/* CHECKOUT */}
+        <section id="comprar" className="scroll-mt-20 px-4 md:px-6 py-14 md:py-16 border-t border-primary/20 bg-[#0c0c0e]">
+          <div className="max-w-lg mx-auto">
+            <div className="rounded-[1.75rem] border border-white/10 bg-[#141416] p-5 md:p-7 shadow-[0_24px_60px_rgba(0,0,0,0.4)]">
+              <p className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Seu pedido</p>
+              <h3 className="mt-2 text-center font-display text-xl font-bold">AthletIA — Plano Anual</h3>
               <p className="mt-1 text-center text-sm text-light-muted">12 meses de acesso.</p>
-              <p className="mt-4 text-center font-display text-3xl font-extrabold text-light">
-                Total: {PRECO_ANUAL_FORMATADO}
+
+              <div className="mt-5 flex items-center justify-between rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
+                <span className="text-sm text-light-muted">Total</span>
+                <span className="font-display text-2xl font-extrabold">{PRECO_ANUAL_FORMATADO}</span>
+              </div>
+              <p className="mt-2 text-center text-xs text-light-muted">
+                Pagamento único · Sem renovação automática
               </p>
-              <p className="mt-1 text-center text-xs text-light-muted">Pagamento único · Sem renovação automática</p>
 
               <div className="mt-8 border-t border-white/10 pt-6">
-                <h4 className="text-lg font-bold text-light">
+                <h4 className="text-lg font-bold">
                   {contaPronta ? 'Finalize o pagamento' : 'Crie seu acesso'}
                 </h4>
                 <p className="mt-1 text-sm text-light-muted">
                   {contaPronta
                     ? `Conta pronta${user?.email ? ` · ${user.email}` : ''}.`
-                    : 'Preencha os dados para liberar o treino após o pagamento.'}
+                    : 'Preencha seus dados para liberar seu treinamento após a confirmação do pagamento.'}
                 </p>
 
                 {!contaPronta ? (
-                  <form
-                    onSubmit={criarConta}
-                    onFocusCapture={marcarCheckout}
-                    className="mt-5 space-y-3"
-                  >
-                    <input
-                      id="comece-nome"
-                      required
-                      value={nome}
-                      onChange={(e) => setNome(e.target.value)}
-                      className={inputClass}
-                      placeholder="Nome completo"
-                      autoComplete="name"
-                      aria-label="Nome"
-                    />
-                    <input
-                      id="comece-tel"
-                      required
-                      value={telefone}
-                      onChange={(e) => setTelefone(mascararTelefone(e.target.value))}
-                      className={inputClass}
-                      placeholder="Telefone com DDD"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      aria-label="Telefone"
-                    />
-                    <input
-                      id="comece-email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={inputClass}
-                      placeholder="E-mail"
-                      autoComplete="email"
-                      aria-label="E-mail"
-                    />
-                    <input
-                      id="comece-senha"
-                      type="password"
-                      required
-                      minLength={8}
-                      value={senha}
-                      onChange={(e) => setSenha(e.target.value)}
-                      className={inputClass}
-                      placeholder="Senha (mín. 8 caracteres)"
-                      autoComplete="new-password"
-                      aria-label="Senha"
-                    />
+                  <form onSubmit={criarConta} onFocusCapture={marcarCheckout} className="mt-5 space-y-3">
+                    <input id="comece-nome" required value={nome} onChange={(e) => setNome(e.target.value)} className={inputClass} placeholder="Nome completo" autoComplete="name" aria-label="Nome completo" />
+                    <input id="comece-tel" required value={telefone} onChange={(e) => setTelefone(mascararTelefone(e.target.value))} className={inputClass} placeholder="Telefone com DDD" inputMode="tel" autoComplete="tel" aria-label="Telefone com DDD" />
+                    <input id="comece-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="E-mail" autoComplete="email" aria-label="E-mail" />
+                    <input id="comece-senha" type="password" required minLength={8} value={senha} onChange={(e) => setSenha(e.target.value)} className={inputClass} placeholder="Senha (mínimo de 8 caracteres)" autoComplete="new-password" aria-label="Senha" />
                     {erroConta && <p className="text-sm font-semibold text-error">{erroConta}</p>}
                     <button
                       type="submit"
                       disabled={loadingConta}
                       className="h-14 w-full rounded-2xl bg-primary text-base font-bold text-dark shadow-lg shadow-primary/30 disabled:opacity-50"
                     >
-                      {loadingConta ? 'Criando...' : 'Continuar para o pagamento'}
+                      {loadingConta ? 'Criando...' : 'CONTINUAR PARA O PAGAMENTO'}
                     </button>
+                    <p className="text-center text-xs text-light-muted">Pagamento seguro.</p>
                   </form>
                 ) : (
                   <div className="mt-5">
                     <CheckoutPagamento
                       planoInicial="ANUAL"
                       planoControlado="ANUAL"
-                      destacarSemestral={false}
                       source="comece"
                       onSuccessNavigateTo="/montar-treino"
                       mostrarSeletorPlano={false}
@@ -612,19 +605,13 @@ export default function Comece() {
         </section>
       </main>
 
-      <footer className="py-8 px-4 md:px-6 border-t border-grey/20 bg-dark">
+      <footer className="py-8 px-4 border-t border-white/5">
         <div className="max-w-3xl mx-auto flex flex-col items-center gap-3 text-xs text-light-muted">
           <span className="text-primary font-display font-bold text-base">AthletIA</span>
-          <div className="flex gap-4">
-            <button type="button" onClick={() => setModalTermos(true)} className="hover:text-primary">
-              Termos de Uso
-            </button>
-            <button type="button" onClick={() => setModalPrivacidade(true)} className="hover:text-primary">
-              Política de Privacidade
-            </button>
-            <button type="button" onClick={() => setModalCookies(true)} className="hover:text-primary">
-              Cookies
-            </button>
+          <div className="flex flex-wrap justify-center gap-4">
+            <button type="button" onClick={() => setModalTermos(true)} className="hover:text-primary">Termos de Uso</button>
+            <button type="button" onClick={() => setModalPrivacidade(true)} className="hover:text-primary">Política de Privacidade</button>
+            <button type="button" onClick={() => setModalCookies(true)} className="hover:text-primary">Cookies</button>
           </div>
           <p>© 2026 AthletIA</p>
         </div>
